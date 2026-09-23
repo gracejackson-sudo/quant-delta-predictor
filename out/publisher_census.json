@@ -1,0 +1,60 @@
+{
+  "publishers_checked": 5,
+  "other_publishers_checked": 4,
+  "cards_inspected_total": 195,
+  "cards_inspected_others": 157,
+  "others_with_paired_evals": 5,
+  "others_with_verifiable_evals": 0,
+  "others_arith_verified_rows": 0,
+  "control_arith_verified_rows": 142,
+  "control_publisher": "RedHatAI",
+  "control_cards_fetched": 38,
+  "control_cards_with_paired_evals": 26,
+  "per_publisher": [
+    {
+      "publisher": "RedHatAI",
+      "quantized_models_listed": 40,
+      "cards_fetched": 38,
+      "cards_with_paired_evals": 26,
+      "paired_rows_total": 148,
+      "cards_with_verifiable_evals": 25,
+      "arith_verified_rows": 142
+    },
+    {
+      "publisher": "ModelCloud",
+      "quantized_models_listed": 40,
+      "cards_fetched": 37,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "unsloth",
+      "quantized_models_listed": 40,
+      "cards_fetched": 40,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "TheBloke",
+      "quantized_models_listed": 40,
+      "cards_fetched": 40,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "Intel",
+      "quantized_models_listed": 40,
+      "cards_fetched": 40,
+      "cards_with_paired_evals": 5,
+      "paired_rows_total": 25,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    }
+  ]
+}

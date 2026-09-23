@@ -113,7 +113,17 @@ Our pooled w4a16 excess-over-control is -5.00<!-- claim: adv_excess_mean = -4.99
 
 **Decision: pi stays a user-supplied sensitivity parameter.** The tool reports the corrected bound across a range of pi rather than picking one, because picking one would be the least defensible number in the product.
 
-## 5. Relationship to BenchPress
+## 5. Why the corpus has one publisher, measured
+
+The single-publisher limitation was previously an assertion. It is now a measurement. We surveyed 5<!-- claim: pub_publishers_checked = 5.0000 --> publishers on Hugging Face, inspecting 195<!-- claim: pub_cards_inspected = 195.0000 --> quantized model cards, and ran each card through `harvest.extract` -- the same parser that built this corpus, not a fresh heuristic. RedHatAI served as a positive control: a detector that cannot find their paired tables cannot be trusted to report their absence elsewhere.
+
+**Red Hat is not the only publisher of paired evaluations.** Of 157<!-- claim: pub_others_cards = 157.0000 --> cards from the other 4<!-- claim: pub_others_count = 4.0000 --> publishers, 5<!-- claim: pub_others_paired_cards = 5.0000 --> carry before/after pairs -- all of them from Intel. The earlier claim that Red Hat was close to the only such publisher was wrong, and rested on a smaller sample.
+
+**What Red Hat is alone in publishing is the verification.** Their cards print a Recovery column, so every row can be checked against 100 x after/before and rejected if it disagrees. Of the 0<!-- claim: pub_others_verified_rows = 0.0000 --> rows from other publishers that our integrity gate can verify this way, against 142<!-- claim: pub_control_verified_rows = 142.0000 --> from the control, the count speaks for itself: Intel publishes the numbers without the column that makes them self-checking, and reports on a 0--1 scale rather than percentages.
+
+That is the honest form of this limitation. The corpus is single-publisher not because others publish nothing, but because only one publishes in a form this pipeline can verify. Extending to Intel is tractable future work and would require format-specific handling plus an alternative to the recovery check; it is not done here.
+
+## 6. Relationship to BenchPress
 
 BenchPress does not address selection bias at all. Its reliability layer estimates how wrong a prediction is likely to be *within* the published distribution, which is a different axis from whether the published distribution represents reality. That gap is real and unclaimed. We have not closed it either - we have characterised it exactly and shown that one plausible fix does not work.
 

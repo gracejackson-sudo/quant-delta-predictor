@@ -207,6 +207,26 @@ def registry():
         add("adv_excess_worst", w4.excess.min(), 0.01, "worst w4a16 excess")
         add("adv_excess_n", len(w4), 0, "w4a16 excess anchor rows")
 
+    pc = os.path.join(HERE, "..", "out", "publisher_census.json")
+    if os.path.exists(pc):
+        c = json.load(open(pc))
+        oth = [r for r in c["per_publisher"] if r["publisher"] != "RedHatAI"]
+        add("pub_publishers_checked", c["publishers_checked"], 0,
+            "publishers surveyed for paired base/quant evals")
+        add("pub_cards_inspected", c["cards_inspected_total"], 0,
+            "model cards inspected in total")
+        add("pub_others_cards", sum(r["cards_fetched"] for r in oth), 0,
+            "cards inspected from publishers other than RedHatAI")
+        add("pub_others_paired_cards", sum(
+            r["cards_with_paired_evals"] for r in oth), 0,
+            "non-RedHatAI cards with any paired before/after rows")
+        add("pub_others_verified_rows", sum(
+            r["arith_verified_rows"] for r in oth), 0,
+            "non-RedHatAI rows our recovery gate can verify")
+        add("pub_control_verified_rows", c["control_arith_verified_rows"], 0,
+            "RedHatAI rows our recovery gate can verify (positive control)")
+        add("pub_others_count", len(oth), 0, "publishers other than RedHatAI")
+
     bce = os.path.join(HERE, "..", "out", "bias_correction_empirical.json")
     if os.path.exists(bce):
         b_ = json.load(open(bce))

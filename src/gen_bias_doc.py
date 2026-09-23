@@ -211,7 +211,35 @@ def bias_doc():
       "reports the corrected bound across a range of pi rather than picking "
       "one, because picking one would be the least defensible number in the "
       "product.\n")
-    A("## 5. Relationship to BenchPress\n")
+    A("## 5. Why the corpus has one publisher, measured\n")
+    A(f"The single-publisher limitation was previously an assertion. It is now "
+      f"a measurement. We surveyed {n('pub_publishers_checked')} publishers on "
+      f"Hugging Face, inspecting {n('pub_cards_inspected')} quantized model "
+      f"cards, and ran each card through `harvest.extract` -- the same parser "
+      f"that built this corpus, not a fresh heuristic. RedHatAI served as a "
+      f"positive control: a detector that cannot find their paired tables "
+      f"cannot be trusted to report their absence elsewhere.\n")
+    A(f"**Red Hat is not the only publisher of paired evaluations.** Of "
+      f"{n('pub_others_cards')} cards from the other "
+      f"{n('pub_others_count')} publishers, "
+      f"{n('pub_others_paired_cards')} carry before/after pairs -- all of them "
+      f"from Intel. The earlier claim that Red Hat was close to the only such "
+      f"publisher was wrong, and rested on a smaller sample.\n")
+    A(f"**What Red Hat is alone in publishing is the verification.** Their "
+      f"cards print a Recovery column, so every row can be checked against "
+      f"100 x after/before and rejected if it disagrees. Of the "
+      f"{n('pub_others_verified_rows')} rows from other publishers that our "
+      f"integrity gate can verify this way, against "
+      f"{n('pub_control_verified_rows')} from the control, the count speaks "
+      f"for itself: Intel publishes the numbers without the column that makes "
+      f"them self-checking, and reports on a 0--1 scale rather than "
+      f"percentages.\n")
+    A("That is the honest form of this limitation. The corpus is "
+      "single-publisher not because others publish nothing, but because only "
+      "one publishes in a form this pipeline can verify. Extending to Intel is "
+      "tractable future work and would require format-specific handling plus "
+      "an alternative to the recovery check; it is not done here.\n")
+    A("## 6. Relationship to BenchPress\n")
     A("BenchPress does not address selection bias at all. Its reliability "
       "layer estimates how wrong a prediction is likely to be *within* the "
       "published distribution, which is a different axis from whether the "
