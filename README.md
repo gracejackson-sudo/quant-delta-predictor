@@ -25,17 +25,35 @@ python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scikit-learn scipy
 
 ## Use the tool
 
-This is the entry point. No network, no API key; numpy and pandas are enough.
+No network, no API key, no GPU. Three packages: numpy, pandas, scipy.
+
+**Run this one first.** It is the command that shows you what the tool is:
+
+```bash
+./.venv/bin/python src/rank.py w4a16 --size 1.5B
+```
+
+It refuses to answer. For 4-bit weights on a sub-2B model, measured coverage is
+68.8% against the 90% the interval claims, so instead of returning a number it
+prints `INSUFFICIENT CALIBRATION FOR THIS COMBINATION`, shows you the coverage it
+actually measured and the rows it measured it on, and stops.
+
+That is the design. A quantization risk estimate is only worth having if it will
+tell you when not to trust it, and the cells it refuses are exactly the ones where
+a confident-sounding answer would do the most damage.
+
+Once you have seen it decline, the rest:
 
 ```bash
 ./.venv/bin/python src/rank.py                      # rank every scheme
-./.venv/bin/python src/rank.py w4a16 --size 1.5B    # one cell -- this one it refuses
+./.venv/bin/python src/rank.py fp8                  # one scheme it will answer for
 ./.venv/bin/python src/rank.py --form-fields        # what a contributed result needs
 ```
 
-The second command is worth running first: `w4a16|<2B` is a cell where measured coverage
-is 68.8% against the 90% claimed, so the tool prints `INSUFFICIENT CALIBRATION` and explains
-itself rather than returning a number.
+Each scheme comes back with a 90% interval, the worst loss ever observed for it, the
+share of evaluations that lost more than 3pp, how many checkpoints and families back
+it, and a tier. Two cells are refused outright and four more are blocked from the top
+tier for resting on fewer than three distinct checkpoints.
 
 ## Reproduce the research
 
