@@ -9,7 +9,11 @@ artifact is a small number table — a calibrated historical baseline, not a pre
 
 | document | what it holds |
 |---|---|
+| [TOOL_SUMMARY.md](TOOL_SUMMARY.md) | **start here** — one page: what it does, what it refuses, what it cannot do |
 | [FINDINGS.md](FINDINGS.md) | the result, with corrections applied in place |
+| [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md) | per-model prediction has no signal beyond the scheme average |
+| [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias, measured; why no corrected point estimate |
+| [AUDIT_DISCIPLINE.md](AUDIT_DISCIPLINE.md) | the standing audit rule and what it has caught |
 | [RESEARCH.md](RESEARCH.md) | prior-art synthesis + pre-registered predictions, written first |
 | [ADVERSARIAL_AUDIT.md](ADVERSARIAL_AUDIT.md) | attempts to break the headline number |
 | [ACCOUNTING.md](ACCOUNTING.md) | every model, tested or dropped, and why |
@@ -20,7 +24,8 @@ artifact is a small number table — a calibrated historical baseline, not a pre
 ## Setup
 
 ```bash
-python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scikit-learn scipy pytest
+python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scipy
+# scikit-learn and pytest are only needed to re-run the research, not the tool
 ```
 
 ## Use the tool
@@ -56,6 +61,12 @@ it, and a tier. Two cells are refused outright and four more are blocked from th
 tier for resting on fewer than three distinct checkpoints.
 
 ## Reproduce the research
+
+The research scripts need two more packages than the tool does:
+
+```bash
+./.venv/bin/pip install scikit-learn pytest
+```
 
 ```bash
 ./.venv/bin/python src/harvest.py          # rebuild dataset.csv from cards (needs the cards; see data/README.md)
