@@ -1,0 +1,70 @@
+[
+  {
+    "tag": "FINDING",
+    "finding": "the artifact is 18 numbers, not the 12 claimed in FINDINGS.md and RANKING.md. Conservative stratification added 6 size-dependent widths, so the predictor now DOES read a model property (parameter count). The standing claim 'it ignores your model entirely' is no longer true."
+  },
+  {
+    "tag": "OK",
+    "finding": "no benchmark-level and no checkpoint-level signal enters the predicted interval; family appears only in reported diagnostics"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "YES. The choice of conservative-widening over full stratification was made partly on the PROSPECTIVE set (full stratification fell to 84.4% there). Leave-one-family-out alone would have picked the same variant (91.1% vs 90.0% scheme-only vs 89.7% full), so the decision is reproducible from training data - but the prospective number was in front of me when I made it, and that is the same pattern as the Llama-4 parser fix."
+  },
+  {
+    "tag": "FINDING",
+    "finding": "the top-ranked scheme clears the thin-data test by ZERO margin: fp8 has exactly 80 evaluations against a 80 threshold and exactly 4 families against a 4 threshold. One row or one family fewer and rank 1 would be flagged. Knife-edge schemes: ['fp8', 'w8a16']"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "the 90%-ish aggregate hides two broken cells: w4a16 | <2B at 68.8% over 77 rows; w8a16 | >10B at 73.7% over 217 rows"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "only 4.1 of 12 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 805/5719 (14%) of scored rows. Where it does apply it over-covers at 93.0%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
+  },
+  {
+    "tag": "OK",
+    "finding": "N, checkpoints and families print on every row, THIN_DATA flags nvfp4, and a near-threshold warning now fires for fp8 and w8a16 (added by this audit)"
+  },
+  {
+    "tag": "CONFIRMED",
+    "finding": "0 of 6 intervals exclude zero - unchanged from yesterday. No scheme can be called harmful."
+  },
+  {
+    "tag": "FINDING",
+    "finding": "2 Tier A schemes have lost more than 3pp at least once: w8a8_int (-3.32pp), fp8_dynamic (-8.72pp). The old Tier A wording, 'safe to adopt without running your own eval', was indefensible for a scheme with an 8.72pp loss in its history. Relabelled, and a severe-history line now prints on every such scheme regardless of rank."
+  },
+  {
+    "tag": "OK",
+    "finding": "all 6 schemes state their worst observed loss at every tier and rank"
+  },
+  {
+    "tag": "OK",
+    "finding": "2 undercovered cells now refuse to emit a number instead of printing one that looks as confident as a good cell: ['w4a16|<2B', 'w8a16|>10B']"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_CALIBRATION', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 4 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
+  },
+  {
+    "tag": "FINDING",
+    "finding": "4 cells are blocked from Tier A on support, and 3 of them have measured coverage at or above 90%: fp8|<2B (100.0%), nvfp4|2-10B (95.6%), w8a16|<2B (98.8%). Coverage alone would have called these safe."
+  },
+  {
+    "tag": "OK",
+    "finding": "the floor demotes 1 cell(s) that would otherwise rank higher: fp8|<2B A->B"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "3 is a judgement call, not a derived quantity. It is the smallest number at which a cell is not one or two models, and it happens to split this data 4/17. A different corpus would want it re-examined; it is exposed as a constant and recorded in the claims registry rather than buried."
+  },
+  {
+    "tag": "OK",
+    "finding": "a from-scratch stdlib-only reimplementation reproduces the rank order and every displayed number exactly"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "this check earned its keep: it found that fit_calibrated() measured residuals around the STRATUM mean while ConservativeStratified centres intervals on the SCHEME mean. The mismatch mis-sized every calibrated width and wrongly gave w4a16 an UNDERCOVERED flag. Fixed."
+  }
+]

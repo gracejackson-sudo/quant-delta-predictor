@@ -1,0 +1,31 @@
+{
+  "matched_rows": 2,
+  "mean_gap_pp": -3.7766499999999996,
+  "mean_ratio_x": 2.6014908898100835,
+  "per_model": [
+    {
+      "model": "Qwen2.5-0.5B",
+      "published_delta": -2.53,
+      "our_delta": -7.7333,
+      "gap": -5.2033000000000005,
+      "z": -5.28587608203147,
+      "ratio": 3.0566403162055336,
+      "base_acc_agreement_pp": 0.36999999999999744
+    },
+    {
+      "model": "Qwen2.5-1.5B",
+      "published_delta": -2.05,
+      "our_delta": -4.399999999999999,
+      "gap": -2.3499999999999988,
+      "z": -2.927605555512978,
+      "ratio": 2.146341463414634,
+      "base_acc_agreement_pp": 1.4132999999999996
+    }
+  ],
+  "max_abs_z": 5.28587608203147,
+  "min_abs_z": 2.927605555512978,
+  "calib_tokens_ours": 6144,
+  "calib_tokens_production": 1048576,
+  "calib_ratio_x": 170.66666666666666,
+  "caveat_base_vs_instruct": true
+}

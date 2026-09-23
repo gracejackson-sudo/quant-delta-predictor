@@ -1,0 +1,26 @@
+{
+  "0.0": {
+    "anchors_0shot": -3.11,
+    "anchors_5shot": -3.11
+  },
+  "0.05": {
+    "anchors_0shot": -4.25,
+    "anchors_5shot": -5.31
+  },
+  "0.1": {
+    "anchors_0shot": -5.889999999999999,
+    "anchors_5shot": -8.86
+  },
+  "0.15": {
+    "anchors_0shot": -6.21,
+    "anchors_5shot": -13.0
+  },
+  "0.2": {
+    "anchors_0shot": -8.164,
+    "anchors_5shot": -13.866700000000005
+  },
+  "0.3": {
+    "anchors_0shot": -12.279999999999994,
+    "anchors_5shot": -20.46
+  }
+}

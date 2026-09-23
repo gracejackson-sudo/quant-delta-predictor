@@ -1,0 +1,79 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Generating train split:   0%|          | 0/1119 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 1119/1119 [00:00<00:00, 168670.53 examples/s]
+Generating test split:   0%|          | 0/1172 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1172/1172 [00:00<00:00, 290150.18 examples/s]
+Generating validation split:   0%|          | 0/299 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 299/299 [00:00<00:00, 123714.80 examples/s]
+Generating train split:   0%|          | 0/39905 [00:00<?, ? examples/s]Generating train split:  63%|██████▎   | 25000/39905 [00:00<00:00, 131151.67 examples/s]Generating train split: 100%|██████████| 39905/39905 [00:00<00:00, 183606.94 examples/s]
+Generating test split:   0%|          | 0/10003 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 10003/10003 [00:00<00:00, 330107.11 examples/s]
+Generating validation split:   0%|          | 0/10042 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 10042/10042 [00:00<00:00, 336568.57 examples/s]
+Generating test split:   0%|          | 0/14042 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 14042/14042 [00:00<00:00, 602594.86 examples/s]
+Generating validation split:   0%|          | 0/1531 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 1531/1531 [00:00<00:00, 330476.01 examples/s]
+Generating dev split:   0%|          | 0/285 [00:00<?, ? examples/s]Generating dev split: 100%|██████████| 285/285 [00:00<00:00, 120392.45 examples/s]
+Generating auxiliary_train split:   0%|          | 0/99842 [00:00<?, ? examples/s]Generating auxiliary_train split:  23%|██▎       | 23000/99842 [00:00<00:00, 222460.24 examples/s]Generating auxiliary_train split:  58%|█████▊    | 58000/99842 [00:00<00:00, 294011.20 examples/s]Generating auxiliary_train split: 100%|██████████| 99842/99842 [00:00<00:00, 339937.54 examples/s]
+[data] arc_challenge: 1172 items
+[data] hellaswag: 3000 items
+[data] mmlu: 3000 items
+
+=== Qwen2.5-0.5B-Instruct ===
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 2911.58it/s]
+  base arc_challenge    31.57
+  base hellaswag        50.70
+  base mmlu             31.93
+  base eval 68s
+  FAIL control_w4a16_good: HfUriError Invalid HF URI 'hf://datasets/wikitext@b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml'. Repository id must be 'namespace/name', got 'wikitext'.
+  w4a16_randcalib       arc_challenge   31.57 ->  26.45  d= -5.12  flip=0.251
+  w4a16_randcalib       hellaswag       50.70 ->  33.93  d=-16.77  flip=0.282
+  w4a16_randcalib       mmlu            31.93 ->  28.93  d= -3.00  flip=0.203
+  w4a16_randcalib 70s
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code-search-net/code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+  w4a16_wrongdomain     arc_challenge   31.57 ->  29.78  d= -1.79  flip=0.154
+  w4a16_wrongdomain     hellaswag       50.70 ->  42.80  d= -7.90  flip=0.157
+  w4a16_wrongdomain     mmlu            31.93 ->  29.47  d= -2.47  flip=0.153
+  w4a16_wrongdomain 72s
+  w4a16_pertensor       arc_challenge   31.57 ->  24.40  d= -7.17  flip=0.410
+  w4a16_pertensor       hellaswag       50.70 ->  25.77  d=-24.93  flip=0.508
+  w4a16_pertensor       mmlu            31.93 ->  24.93  d= -7.00  flip=0.407
+  w4a16_pertensor 67s
+  w8a8_nosmooth         arc_challenge   31.57 ->  31.66  d= +0.09  flip=0.061
+  w8a8_nosmooth         hellaswag       50.70 ->  49.97  d= -0.73  flip=0.050
+  w8a8_nosmooth         mmlu            31.93 ->  31.43  d= -0.50  flip=0.050
+  w8a8_nosmooth 67s
+
+=== SmolLM-135M-Instruct ===
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 3544.68it/s]
+  base arc_challenge    30.03
+  base hellaswag        39.63
+  base mmlu             29.73
+  base eval 50s
+  FAIL control_w4a16_good: HfUriError Invalid HF URI 'hf://datasets/wikitext@b08601e04326c79dfdd32d625aee71d232d685c3/.huggingface.yaml'. Repository id must be 'namespace/name', got 'wikitext'.
+  w4a16_randcalib       arc_challenge   30.03 ->  29.27  d= -0.77  flip=0.129
+  w4a16_randcalib       hellaswag       39.63 ->  37.83  d= -1.80  flip=0.126
+  w4a16_randcalib       mmlu            29.73 ->  28.23  d= -1.50  flip=0.120
+  w4a16_randcalib 52s
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code-search-net/code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+  w4a16_wrongdomain     arc_challenge   30.03 ->  27.90  d= -2.13  flip=0.131
+  w4a16_wrongdomain     hellaswag       39.63 ->  37.87  d= -1.77  flip=0.114
+  w4a16_wrongdomain     mmlu            29.73 ->  28.40  d= -1.33  flip=0.115
+  w4a16_wrongdomain 54s
+  w4a16_pertensor       arc_challenge   30.03 ->  25.94  d= -4.10  flip=0.404
+  w4a16_pertensor       hellaswag       39.63 ->  25.47  d=-14.17  flip=0.430
+  w4a16_pertensor       mmlu            29.73 ->  26.20  d= -3.53  flip=0.377
+  w4a16_pertensor 50s
+  w8a8_nosmooth         arc_challenge   30.03 ->  29.10  d= -0.94  flip=0.044
+  w8a8_nosmooth         hellaswag       39.63 ->  39.77  d= +0.13  flip=0.035
+  w8a8_nosmooth         mmlu            29.73 ->  29.33  d= -0.40  flip=0.039
+  w8a8_nosmooth 50s
+
+=== Llama-3.2-1B-Instruct ===
+  SKIP Llama-3.2-1B-Instruct: OSError You are trying to access a gated repo.
+Make sure to have access to it at https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct.
+401 Client Error. (Request ID: Root=1-6ab2ce5f-0ba526920a9b53b25e914a79;1814a839-d405-4aa3-a693-a08a2e312872)
+
+Cannot access gated repo for url https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct/resolve/main/config.json.
+Access to model meta-llama/Llama-3.2-1B-Instruct is restricted. You must have access to it and be authenticated to access it. Please log in.
+
+WROTE 24 rows
+BATCH_DONE

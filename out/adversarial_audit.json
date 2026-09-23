@@ -1,0 +1,66 @@
+[
+  {
+    "tag": "OK",
+    "finding": "no row-, checkpoint- or model-level overlap: there is no hard leakage"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "32/186 prospective rows (17%) come from families that ARE in training: Llama-3.1-Nemotron-70B is family 'llama-3.1' and Qwen3-30B-A3B is family 'qwen3'. The claim '7 families never used to build it' was OVERSTATED. They are new checkpoints, not new families."
+  },
+  {
+    "tag": "FINDING",
+    "finding": "YES. The recovery-first column-order fix in harvest.py was written AFTER seeing the Llama-4 GPQA row (a fabricated -68pp delta) in the prospective run. Llama-4's 23 rows are therefore not strictly prospective -- the parser was adapted to that card family."
+  },
+  {
+    "tag": "OK",
+    "finding": "strict subset (131 rows, groups ['deepseek-r1-distill', 'gemma-3', 'nemotron', 'smollm', 'smollm3']): 90.1% coverage, 95% CI [83.6%, 94.6%] still contains nominal 90%"
+  },
+  {
+    "tag": "FINDING",
+    "finding": "the gate removed 6 test rows, so the honest coverage is a RANGE: 87.5% to 90.6%, not a point estimate of 90.2%. Manual inspection below shows the rejected rows are card errors, not extreme-but-valid data."
+  },
+  {
+    "tag": "FINDING",
+    "finding": "10 of the 34 requested models yielded no rows. phi-4, Mistral-Nemo and Devstral were dropped because their names contain no parameter count, so parse_params_b() returned None. FINDINGS.md listed phi-4 among the tested families -- it was never tested. params_b is not even used by the shipped predictor, so this gate discards valid data for no benefit."
+  },
+  {
+    "tag": "OK",
+    "finding": "from-scratch recomputation reproduces 168/186 = 90.3% exactly"
+  },
+  {
+    "tag": "OK",
+    "finding": "delta == acc_after - acc_before on all 186 test rows"
+  },
+  {
+    "tag": "OK",
+    "finding": "all 18 sampled rows: both accuracies appear verbatim in the source card, delta = after-before, interval = scheme mean +/- scheme qhat, and the pass/fail flag matches the interval test"
+  },
+  {
+    "tag": "CONFIRMED",
+    "finding": "the artifact is 12 numbers. It uses no feature of the model other than the scheme label: not size, not family, not benchmark, not base accuracy. It is a lookup table."
+  },
+  {
+    "tag": "CORRECTED",
+    "finding": "an earlier version of this audit claimed the raw empirical band beats conformal (91.9% vs 90.3% here, with bands fitted in-sample on all training data). Under the STRICT protocol used elsewhere -- held-out calibration family, per scheme -- the ordering REVERSES: see src/interval_shape.py, conformal 89.0% at 3.93pp width vs empirical 88.3% at 5.48pp, on the 2306 rows where the empirical band is finite at all. The empirical band's apparent advantage came from returning +/-inf on 43% of rows, and an infinite interval always covers. Conformal stays."
+  },
+  {
+    "tag": "CONFIRMED",
+    "finding": "0 of 6 scheme intervals exclude zero. The tool is STRUCTURALLY incapable of saying 'this config will cost you accuracy' -- for every scheme, 'no change' is inside the 90% interval."
+  },
+  {
+    "tag": "CONFIRMED",
+    "finding": "gemma-3-1b-it W4A16 loses 1.88pp on average and misses the interval on 4 of 6 benchmarks (GSM8K -3.03, MMLU -2.99, ARC -2.90). The tool reports [-2.87, +1.40] and raises no warning. This is the limitation made concrete."
+  },
+  {
+    "tag": "CONFIRMED",
+    "finding": "Qwen3-8B W4A16 on MMLU-Pro loses 8.86pp. The tool neither flags it nor covers it: a user would be told to expect about -0.73pp with a floor of -2.87pp, and would lose 8.9pp. This is the honest worst-case example to publish."
+  },
+  {
+    "tag": "FINDING",
+    "finding": "26 of 32 losses worse than 3pp fall below the interval floor. Large degradations are exactly where the envelope fails, and they are not rare: 32/1003 = 3.2% of all rows."
+  },
+  {
+    "tag": "OK",
+    "finding": "clustering does not materially widen the interval (11.0pp naive vs 11.5pp clustered); coverage misses are spread across models rather than concentrated in one, so the headline CI is not understating uncertainty"
+  }
+]

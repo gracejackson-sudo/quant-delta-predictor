@@ -1,0 +1,62 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[data] arc_challenge: 1172 items
+[data] hellaswag: 3000 items
+[data] mmlu: 3000 items
+
+=== Qwen2.5-0.5B-Instruct ===
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 3521.29it/s]
+  base arc_challenge    31.57
+  base hellaswag        50.70
+  base mmlu             31.93
+  base eval 68s
+Generating test split:   0%|          | 0/4358 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 4358/4358 [00:00<00:00, 456239.44 examples/s]
+Generating train split:   0%|          | 0/36718 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 36718/36718 [00:00<00:00, 1035720.46 examples/s]
+Generating validation split:   0%|          | 0/3760 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 3760/3760 [00:00<00:00, 790228.14 examples/s]
+  control_w4a16_good    arc_challenge   31.57 ->  30.72  d= -0.85  flip=0.131
+  control_w4a16_good    hellaswag       50.70 ->  46.53  d= -4.17  flip=0.112
+  control_w4a16_good    mmlu            31.93 ->  30.87  d= -1.07  flip=0.121
+  control_w4a16_good 72s
+
+=== SmolLM-135M-Instruct ===
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 4101.02it/s]
+  base arc_challenge    30.03
+  base hellaswag        39.63
+  base mmlu             29.73
+  base eval 50s
+  control_w4a16_good    arc_challenge   30.03 ->  28.24  d= -1.79  flip=0.132
+  control_w4a16_good    hellaswag       39.63 ->  38.07  d= -1.57  flip=0.098
+  control_w4a16_good    mmlu            29.73 ->  28.63  d= -1.10  flip=0.110
+  control_w4a16_good 52s
+
+=== Qwen2.5-1.5B-Instruct ===
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  51%|█████     | 171/338 [00:00<00:00, 1692.07it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 1806.85it/s]
+  base arc_challenge    39.51
+  base hellaswag        65.60
+  base mmlu             36.23
+  base eval 120s
+  control_w4a16_good    arc_challenge   39.51 ->  38.14  d= -1.37  flip=0.119
+  control_w4a16_good    hellaswag       65.60 ->  61.87  d= -3.73  flip=0.081
+  control_w4a16_good    mmlu            36.23 ->  34.87  d= -1.37  flip=0.112
+  control_w4a16_good 131s
+  w4a16_randcalib       arc_challenge   39.51 ->  35.67  d= -3.84  flip=0.146
+  w4a16_randcalib       hellaswag       65.60 ->  61.97  d= -3.63  flip=0.097
+  w4a16_randcalib       mmlu            36.23 ->  34.37  d= -1.87  flip=0.113
+  w4a16_randcalib 129s
+`trust_remote_code` is not supported anymore.
+Please check that the Hugging Face dataset 'code-search-net/code_search_net' isn't based on a loading script and remove `trust_remote_code`.
+If the dataset is based on a loading script, please ask the dataset author to remove it and convert it to a standard format like Parquet.
+  w4a16_wrongdomain     arc_challenge   39.51 ->  37.71  d= -1.79  flip=0.144
+  w4a16_wrongdomain     hellaswag       65.60 ->  61.37  d= -4.23  flip=0.105
+  w4a16_wrongdomain     mmlu            36.23 ->  35.73  d= -0.50  flip=0.114
+  w4a16_wrongdomain 132s
+  w4a16_pertensor       arc_challenge   39.51 ->  25.85  d=-13.65  flip=0.444
+  w4a16_pertensor       hellaswag       65.60 ->  26.10  d=-39.50  flip=0.566
+  w4a16_pertensor       mmlu            36.23 ->  26.47  d= -9.77  flip=0.442
+  w4a16_pertensor 119s
+  w8a8_nosmooth         arc_challenge   39.51 ->  39.16  d= -0.34  flip=0.058
+  w8a8_nosmooth         hellaswag       65.60 ->  65.27  d= -0.33  flip=0.036
+  w8a8_nosmooth         mmlu            36.23 ->  36.07  d= -0.17  flip=0.048
+  w8a8_nosmooth 121s
+
+WROTE 21 rows
+BATCH_DONE

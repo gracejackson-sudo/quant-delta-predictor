@@ -1,0 +1,10 @@
+{
+  "n_finite": 2306,
+  "conf_coverage": 0.8902862098872506,
+  "conf_width": 3.9282522770781347,
+  "emp_coverage": 0.8829141370338248,
+  "emp_width": 5.480763226366001,
+  "inf_rows": 1762,
+  "inf_share": 0.4331366764995084,
+  "inf_rows_coverage": 1.0
+}

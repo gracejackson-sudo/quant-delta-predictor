@@ -1,0 +1,22 @@
+{
+  "n_rows": 15,
+  "base_mmlu": {
+    "Qwen2.5-0.5B-Instruct": 47.2,
+    "Qwen2.5-1.5B-Instruct": 59.5667,
+    "SmolLM-135M-Instruct": 25.5667
+  },
+  "published_mmlu_targets": {
+    "Qwen2.5-0.5B-Instruct": 47.42,
+    "Qwen2.5-1.5B-Instruct": 60.98
+  },
+  "at_chance_excluded": [
+    "SmolLM-135M-Instruct"
+  ],
+  "control_mean_5shot": -6.066649999999999,
+  "published_w4a16_mmlu_mean": -1.1782608695652177,
+  "implementation_gap_x": 5.148817343173429,
+  "excess_n": 6,
+  "excess_mean": -10.0667,
+  "excess_worst": -30.3667,
+  "protocol_sensitivity_pi02_pp": 5.702700000000005
+}

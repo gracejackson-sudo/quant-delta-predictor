@@ -1,0 +1,5 @@
+{
+  "_comment": "form_url is the human-facing page the CLI prints. post_endpoint is the raw POST target the hosted form submits to; only src/gen_form_page.py uses it.",
+  "form_url": "https://gracejackson-sudo.github.io/quant-delta-predictor/",
+  "post_endpoint": "https://formspree.io/f/mkjgbwyl"
+}

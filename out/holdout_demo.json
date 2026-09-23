@@ -1,0 +1,52 @@
+{
+  "train_families": [
+    "llama-3.1",
+    "qwen2.5"
+  ],
+  "cal_family": "granite",
+  "per_model": [
+    {
+      "model": "RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic",
+      "family": "mistral",
+      "scheme": "fp8_dynamic",
+      "n": 9,
+      "n_inside": 9,
+      "coverage": 1.0
+    },
+    {
+      "model": "RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16",
+      "family": "llama-3.3",
+      "scheme": "w4a16",
+      "n": 9,
+      "n_inside": 9,
+      "coverage": 1.0
+    },
+    {
+      "model": "RedHatAI/gemma-2-9b-it-quantized.w4a16",
+      "family": "gemma-2",
+      "scheme": "w4a16",
+      "n": 6,
+      "n_inside": 5,
+      "coverage": 0.8333333333333334
+    },
+    {
+      "model": "RedHatAI/Qwen3-8B-quantized.w4a16",
+      "family": "qwen3",
+      "scheme": "w4a16",
+      "n": 11,
+      "n_inside": 8,
+      "coverage": 0.7272727272727273
+    },
+    {
+      "model": "RedHatAI/Llama-3.2-3B-Instruct-FP8-dynamic",
+      "family": "llama-3.2",
+      "scheme": "fp8_dynamic",
+      "n": 7,
+      "n_inside": 7,
+      "coverage": 1.0
+    }
+  ],
+  "pooled_n": 42,
+  "pooled_inside": 38,
+  "pooled_coverage": 0.9047619047619048
+}

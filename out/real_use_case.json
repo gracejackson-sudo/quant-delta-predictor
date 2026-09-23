@@ -1,0 +1,84 @@
+{
+  "n": 186,
+  "inside": 168,
+  "coverage": 0.9032258064516129,
+  "ci": [
+    0.8513698980222946,
+    0.9416315530216027
+  ],
+  "mae": 0.9288151223038921,
+  "mae_baseline": 0.9575746568221002,
+  "mean_half_width": 1.8283007414865842,
+  "by_group": [
+    {
+      "group": "nemotron",
+      "n": 11,
+      "inside": 9,
+      "coverage": 0.8181818181818182,
+      "mae": 1.4413141780499292,
+      "mae_baseline": 1.2814142650495162,
+      "mean_delta": 0.4063636363636363,
+      "worst_delta": -2.28
+    },
+    {
+      "group": "qwen3-30b-a3b",
+      "n": 22,
+      "inside": 19,
+      "coverage": 0.8636363636363636,
+      "mae": 1.329671714554875,
+      "mae_baseline": 1.458181818181818,
+      "mean_delta": -0.19727272727272727,
+      "worst_delta": -6.69
+    },
+    {
+      "group": "gemma-3",
+      "n": 45,
+      "inside": 39,
+      "coverage": 0.8666666666666667,
+      "mae": 0.8623699172052774,
+      "mae_baseline": 0.9472509179926559,
+      "mean_delta": -0.9515555555555556,
+      "worst_delta": -6.37
+    },
+    {
+      "group": "deepseek-r1-distill",
+      "n": 75,
+      "inside": 68,
+      "coverage": 0.9066666666666666,
+      "mae": 1.0077463703861973,
+      "mae_baseline": 1.0088048959608324,
+      "mean_delta": -0.6152,
+      "worst_delta": -8.15
+    },
+    {
+      "group": "llama-4",
+      "n": 23,
+      "inside": 23,
+      "coverage": 1.0,
+      "mae": 0.42668745212885784,
+      "mae_baseline": 0.4083736895322229,
+      "mean_delta": -0.21434782608695652,
+      "worst_delta": -1.03
+    },
+    {
+      "group": "smollm",
+      "n": 9,
+      "inside": 9,
+      "coverage": 1.0,
+      "mae": 0.23066903753429763,
+      "mae_baseline": 0.3583952128382973,
+      "mean_delta": -0.15777777777777777,
+      "worst_delta": -0.71
+    },
+    {
+      "group": "smollm3",
+      "n": 1,
+      "inside": 1,
+      "coverage": 1.0,
+      "mae": 1.374922279792746,
+      "mae_baseline": 1.0285189718482253,
+      "mean_delta": 0.64,
+      "worst_delta": 0.64
+    }
+  ]
+}

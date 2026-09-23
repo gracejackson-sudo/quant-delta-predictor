@@ -1,0 +1,2 @@
+model,base_model,scheme,recipe,params_b,benchmark,acc_before,acc_after,family,n_items,weight_bits,act_bits,num_type,method,is_instruct,notes
+local/SmolLM-135M-Instruct-w2a16-nocalib,SmolLM-135M-Instruct,w2a16,"2-bit weights, GPTQ with 8 random-token calibration samples",0.135,arc_challenge,37.2,25.1,smollm,1172,2,16,int,gptq,1,deliberately mismatched calibration set

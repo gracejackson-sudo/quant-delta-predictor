@@ -1,0 +1,196 @@
+{
+  "artifact": "per-scheme quantization accuracy-delta envelope",
+  "what_it_is": "the observed distribution of (quantized - original) accuracy in percentage points on OpenLLM-style benchmarks, per quantization scheme, with a split-conformal 90% interval. It is a calibrated historical baseline, NOT a per-model predictor.",
+  "built": "2026-09-22",
+  "alpha": 0.1,
+  "target": "acc_after - acc_before, percentage points",
+  "training_data": {
+    "source": "RedHatAI model cards on Hugging Face",
+    "rows": 817,
+    "checkpoints": 38,
+    "families": 8,
+    "benchmarks": 16
+  },
+  "validation": {
+    "leave_one_family_out_coverage": 0.892,
+    "prospective_all_rows": {
+      "n": 186,
+      "inside": 168,
+      "coverage": 0.903,
+      "ci95": [
+        0.851,
+        0.942
+      ]
+    },
+    "prospective_strict": {
+      "n": 131,
+      "inside": 118,
+      "coverage": 0.901,
+      "ci95": [
+        0.836,
+        0.946
+      ],
+      "note": "excludes rows whose family is in training, and Llama-4 (parser was adapted to that card family)"
+    },
+    "coverage_bound_accounting_for_rejected_rows": [
+      0.875,
+      0.906
+    ],
+    "independent_reimplementation": {
+      "script": "verify/independent_check.py",
+      "shares_no_code_with_pipeline": true,
+      "strict_coverage": 0.901,
+      "delta_disagreements": 0,
+      "verdict_disagreements": 0,
+      "rows_compared": 186
+    }
+  },
+  "known_limitations": [
+    "No interval excludes zero, so the tool can never say a config WILL cost accuracy -- only that damage is probably bounded.",
+    "19 of 25 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
+    "Trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from an untuned recipe (outcome-truncated training data).",
+    "Reads exactly 2 inputs: quantization scheme, and size band via 6 size-dependent widths. It reads no family, benchmark or base accuracy.",
+    "Cells refused for insufficient measured calibration: w4a16|<2B, w8a16|>10B. For these the tool emits no interval.",
+    "MoE and reasoning-distilled models are not separately validated."
+  ],
+  "schemes": {
+    "fp8": {
+      "label": "FP8 (8-bit float weights + activations, static scales)",
+      "n_observations": 80,
+      "n_checkpoints": 13,
+      "n_families": 4,
+      "mean_delta_pp": -0.317,
+      "median_delta_pp": -0.22,
+      "conformal_half_width_pp": 0.793,
+      "interval_90_pp": [
+        -1.11,
+        0.48
+      ],
+      "empirical_band_90_pp": [
+        -1.21,
+        0.2
+      ],
+      "worst_observed_delta_pp": -1.9,
+      "validated_coverage_leave_family_out": 0.9053571428571429,
+      "excludes_zero": false,
+      "coverage_worst_family_pct": 86.5,
+      "coverage_worst_family": "mistral",
+      "warning": null
+    },
+    "fp8_dynamic": {
+      "label": "FP8-dynamic (8-bit float, dynamic activation scales)",
+      "n_observations": 200,
+      "n_checkpoints": 22,
+      "n_families": 7,
+      "mean_delta_pp": -0.048,
+      "median_delta_pp": -0.085,
+      "conformal_half_width_pp": 1.392,
+      "interval_90_pp": [
+        -1.44,
+        1.34
+      ],
+      "empirical_band_90_pp": [
+        -1.18,
+        1.73
+      ],
+      "worst_observed_delta_pp": -8.72,
+      "validated_coverage_leave_family_out": 0.9192857142857143,
+      "excludes_zero": false,
+      "coverage_worst_family_pct": 76.8,
+      "coverage_worst_family": "qwen3",
+      "warning": "measured coverage falls to 77% on held-out family 'qwen3', over 7 families of evidence"
+    },
+    "nvfp4": {
+      "label": "NVFP4 (4-bit float weights + activations)",
+      "n_observations": 64,
+      "n_checkpoints": 5,
+      "n_families": 3,
+      "mean_delta_pp": -1.115,
+      "median_delta_pp": -0.845,
+      "conformal_half_width_pp": 2.985,
+      "interval_90_pp": [
+        -4.1,
+        1.87
+      ],
+      "empirical_band_90_pp": [
+        -4.15,
+        1.87
+      ],
+      "worst_observed_delta_pp": -8.12,
+      "validated_coverage_leave_family_out": 0.9330357142857143,
+      "excludes_zero": false,
+      "coverage_worst_family_pct": 70.2,
+      "coverage_worst_family": "llama-3.3",
+      "warning": "measured coverage falls to 70% on held-out family 'llama-3.3', over 3 families of evidence"
+    },
+    "w4a16": {
+      "label": "W4A16 (4-bit weights, 16-bit activations, GPTQ)",
+      "n_observations": 193,
+      "n_checkpoints": 23,
+      "n_families": 7,
+      "mean_delta_pp": -0.735,
+      "median_delta_pp": -0.6,
+      "conformal_half_width_pp": 2.135,
+      "interval_90_pp": [
+        -2.87,
+        1.4
+      ],
+      "empirical_band_90_pp": [
+        -3.22,
+        1.27
+      ],
+      "worst_observed_delta_pp": -8.86,
+      "validated_coverage_leave_family_out": 0.8948926720947447,
+      "excludes_zero": false,
+      "coverage_worst_family_pct": 77.6,
+      "coverage_worst_family": "qwen3",
+      "warning": "measured coverage falls to 78% on held-out family 'qwen3', over 7 families of evidence"
+    },
+    "w8a16": {
+      "label": "W8A16 (8-bit int weights, 16-bit activations)",
+      "n_observations": 86,
+      "n_checkpoints": 15,
+      "n_families": 4,
+      "mean_delta_pp": -0.084,
+      "median_delta_pp": -0.045,
+      "conformal_half_width_pp": 0.896,
+      "interval_90_pp": [
+        -0.98,
+        0.81
+      ],
+      "empirical_band_90_pp": [
+        -1.26,
+        0.71
+      ],
+      "worst_observed_delta_pp": -3.04,
+      "validated_coverage_leave_family_out": 0.8687707641196013,
+      "excludes_zero": false,
+      "coverage_worst_family_pct": 59.1,
+      "coverage_worst_family": "llama-3.1",
+      "warning": "measured coverage falls to 59% on held-out family 'llama-3.1', over 4 families of evidence"
+    },
+    "w8a8_int": {
+      "label": "W8A8-INT (8-bit int weights + activations, SmoothQuant)",
+      "n_observations": 194,
+      "n_checkpoints": 24,
+      "n_families": 7,
+      "mean_delta_pp": -0.32,
+      "median_delta_pp": -0.29,
+      "conformal_half_width_pp": 1.39,
+      "interval_90_pp": [
+        -1.71,
+        1.07
+      ],
+      "empirical_band_90_pp": [
+        -1.97,
+        1.13
+      ],
+      "worst_observed_delta_pp": -3.32,
+      "validated_coverage_leave_family_out": 0.9263622974963182,
+      "excludes_zero": false,
+      "coverage_worst_family_pct": 74.3,
+      "coverage_worst_family": "mistral",
+      "warning": "measured coverage falls to 74% on held-out family 'mistral', over 7 families of evidence"
+    }
+  }
+}
