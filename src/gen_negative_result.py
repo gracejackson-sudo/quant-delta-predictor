@@ -117,10 +117,26 @@ def main():
       "appear in the paper, and its 84 models contain no quantized "
       "checkpoints. Its estimand is a model's absolute score, not the delta "
       "between a model and its compressed self.\n")
+    A("**A closer neighbour, found after the fact.** Tong et al., *Does "
+      "Compression Preserve Uncertainty?* (arXiv:2606.01850) apply conformal "
+      "prediction directly to quantized and sparse LLMs, including W4A16, "
+      "across 12 models from 1B to 70B. On domain that is far closer to this "
+      "work than BenchPress is. On estimand it is a different problem: their "
+      "conformal sets are over label space, built from a compressed model's "
+      "own output probabilities, so the method requires running the "
+      "compressed model. Ours is over historical accuracy deltas and exists "
+      "to avoid running it. Their Figure 2 plots the same quantity this tool "
+      "predicts, `Acc_compressed - Acc_dense`, but measures it rather than "
+      "forecasting it.\n")
+    A("Two of their findings bear on ours. Compression decouples accuracy "
+      "from uncertainty, so an accuracy-only estimate like this one is an "
+      "incomplete picture of deployment risk. And larger models absorb "
+      "compression-induced uncertainty better, which is independent support "
+      "for the size-band behaviour this tool already refuses on.\n")
     A("So the honest framing of this work is not that we built something "
-      "new. It is that we measured something they did not, in a regime where "
-      "their approach does not reach, and the measurement says the per-model "
-      "version of this is not worth building.\n")
+      "new. It is that we measured something neither of them did, and the "
+      "measurement says the per-model version of this is not worth "
+      "building.\n")
 
     A("## 6. Measured left-tail data\n")
     A(f"The published corpus contains only recipes that worked. We rented an "

@@ -285,4 +285,5 @@ within X points with 90% confidence"* — a much smaller but defensible product.
 - [SmoothQuant (Xiao et al., arXiv 2211.10438)](https://arxiv.org/abs/2211.10438) — the activation-smoothing step used for the w8a8 checkpoints
 - [vllm-project/llm-compressor — quantization recipes (GPTQ, SmoothQuant, RTN, AWQ)](https://github.com/vllm-project/llm-compressor)
 - [Choosing the right compression algorithm — LLM Compressor docs](https://docs.vllm.ai/projects/llm-compressor/en/0.10.0.1/steps/choosing-algo/)
+- [Does Compression Preserve Uncertainty? A Unified Benchmark for Quantized and Sparse LLMs via Conformal Prediction (Tong, Wang, Wan, Zhang, Dong & Yuan, arXiv 2606.01850)](https://arxiv.org/abs/2606.01850) — conformal prediction applied directly to quantized LLMs; measures uncertainty after running the model rather than forecasting the delta
 - [RedHatAI model cards on Hugging Face (data source)](https://huggingface.co/RedHatAI)

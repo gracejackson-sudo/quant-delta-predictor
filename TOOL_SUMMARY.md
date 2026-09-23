@@ -62,7 +62,12 @@ The two cells named above, with the measured coverage behind each refusal:
 - 19<!-- claim: n_big_losses_below_floor = 19.0000 --> of 25<!-- claim: n_big_losses = 25.0000 --> observed losses worse than 3pp fell below their interval floor.
 - It is built on configs that were published, i.e. that worked. See `BIAS_CORRECTION.md` for exactly how much that inflates the apparent coverage.
 - It reads 2 inputs and nothing else about your model.
+- It predicts an **accuracy** delta and nothing else. Whether a compressed model stays well calibrated -- whether it still knows what it does not know -- is a separate question this tool does not touch. See *What's next* below.
 - **Every one of the 817<!-- claim: n_rows = 817.0000 --> calibration rows comes from a single publisher (RedHatAI) using a single toolchain (llm-compressor).** Holding out a model family tests transfer across *models*; nothing here tests transfer across *quantization practitioners*. Our own control arm is direct evidence that this matters: run by us rather than by Red Hat, the same scheme on comparable checkpoints came out 2.6<!-- claim: ctrl_ratio_x = 2.6015 -->x more damaging. Read these intervals as what a competent, well-tuned pipeline achieves -- not as what an arbitrary pipeline will.
+
+## What's next
+
+The clearest gap is that accuracy is not the whole of deployment risk. Tong et al. ([arXiv:2606.01850](https://arxiv.org/abs/2606.01850)) benchmark 12 compressed LLMs with conformal prediction and find that compression frequently *decouples* the two: a model can hold its accuracy while its prediction sets inflate, meaning its confidence has degraded even though its answers have not. A natural extension would be to predict prediction-set inflation alongside the accuracy delta. That requires running the compressed model, which is a different pipeline from this tool's forecast-before-running approach, so it is a genuine piece of work rather than an addition. It is not built and not in progress.
 
 ## Evidence quality: what is clean and what is not
 
@@ -99,4 +104,6 @@ This tool differs in three ways, none of which is a better mechanism:
 3. **It characterises its own selection bias** exactly, which BenchPress does not attempt. We have not *corrected* that bias - see `BIAS_CORRECTION.md` for the attempt that failed.
 
 If you want per-model eval prediction, use BenchPress. This is for the narrower question of whether a given quantization scheme is safe enough to adopt without re-running your benchmarks.
+
+**Closer in domain, different in purpose.** Tong et al., *Does Compression Preserve Uncertainty?* ([arXiv:2606.01850](https://arxiv.org/abs/2606.01850), Wuhan University of Technology and NTU, 2026) apply conformal prediction directly to quantized and sparse LLMs -- 12 models from 1B to 70B, W4A16 among the configurations, five tasks. That is a much closer domain than BenchPress. The purpose is different: their conformal sets are built over *label space* from a compressed model's own output probabilities, so the method measures how good a model's uncertainty is **after you have run it**. Ours is built over *historical accuracy deltas across checkpoints*, to give you an interval **before you run anything**. They measure; this forecasts. Their paper is the better reference for whether a compressed model still knows what it does not know; it does not answer how much accuracy a scheme will cost you.
 

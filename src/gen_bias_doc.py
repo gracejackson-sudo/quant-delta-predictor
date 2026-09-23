@@ -319,6 +319,10 @@ def tool_doc():
       "`BIAS_CORRECTION.md` for exactly how much that inflates the apparent "
       "coverage.")
     A("- It reads 2 inputs and nothing else about your model.")
+    A("- It predicts an **accuracy** delta and nothing else. Whether a "
+      "compressed model stays well calibrated -- whether it still knows what "
+      "it does not know -- is a separate question this tool does not touch. "
+      "See *What's next* below.")
     A(f"- **Every one of the {n('n_rows')} calibration rows comes from a "
       f"single publisher (RedHatAI) using a single toolchain "
       f"(llm-compressor).** Holding out a model family tests transfer across "
@@ -328,6 +332,18 @@ def tool_doc():
       f"comparable checkpoints came out {n('ctrl_ratio_x','{:.1f}')}x more "
       f"damaging. Read these intervals as what a competent, well-tuned "
       f"pipeline achieves -- not as what an arbitrary pipeline will.\n")
+    A("## What's next\n")
+    A("The clearest gap is that accuracy is not the whole of deployment risk. "
+      "Tong et al. ([arXiv:2606.01850](https://arxiv.org/abs/2606.01850)) "
+      "benchmark 12 compressed LLMs with conformal prediction and find that "
+      "compression frequently *decouples* the two: a model can hold its "
+      "accuracy while its prediction sets inflate, meaning its confidence has "
+      "degraded even though its answers have not. A natural extension would be "
+      "to predict prediction-set inflation alongside the accuracy delta. That "
+      "requires running the compressed model, which is a different pipeline "
+      "from this tool's forecast-before-running approach, so it is a genuine "
+      "piece of work rather than an addition. It is not built and not in "
+      "progress.\n")
     A("## Evidence quality: what is clean and what is not\n")
     A("**Clean, and safe to rely on:**\n")
     A(f"- *Existence proof.* Deliberately-bad configs produce catastrophic "
@@ -402,6 +418,20 @@ def tool_doc():
     A("If you want per-model eval prediction, use BenchPress. This is for the "
       "narrower question of whether a given quantization scheme is safe "
       "enough to adopt without re-running your benchmarks.\n")
+    A("**Closer in domain, different in purpose.** Tong et al., *Does "
+      "Compression Preserve Uncertainty?* "
+      "([arXiv:2606.01850](https://arxiv.org/abs/2606.01850), Wuhan "
+      "University of Technology and NTU, 2026) apply conformal prediction "
+      "directly to quantized and sparse LLMs -- 12 models from 1B to 70B, "
+      "W4A16 among the configurations, five tasks. That is a much closer "
+      "domain than BenchPress. The purpose is different: their conformal "
+      "sets are built over *label space* from a compressed model's own output "
+      "probabilities, so the method measures how good a model's uncertainty "
+      "is **after you have run it**. Ours is built over *historical accuracy "
+      "deltas across checkpoints*, to give you an interval **before you run "
+      "anything**. They measure; this forecasts. Their paper is the better "
+      "reference for whether a compressed model still knows what it does not "
+      "know; it does not answer how much accuracy a scheme will cost you.\n")
     open(os.path.join(ROOT,"TOOL_SUMMARY.md"),"w").write("\n".join(L)+"\n")
 
 if __name__=="__main__":
