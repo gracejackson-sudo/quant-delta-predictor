@@ -74,8 +74,9 @@ def main():
     fields = "\n".join(field_html(n, r, h) for n, r, h in spec)
     who = field_html("name_and_role",
                      "optional",
-                     'e.g. "ML Research Engineer at Apple". Optional, and '
-                     'applies to either section below.')
+                     'Optional. Anything that fits - "student ML '
+                     'researcher at Berkeley", "ML engineer", "just '
+                     'tinkering". Applies to either section.')
     openfb = field_html("open_feedback", "optional",
                         "What was confusing, what you expected it to do, "
                         "whether it was worth your time. Criticism is more "

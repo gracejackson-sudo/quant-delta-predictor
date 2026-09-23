@@ -62,8 +62,9 @@ a **manual line-by-line pass on 2026-09-22**, which caught three real defects: a
 asserting a claim the same document retracts, a stale test count (60 vs 113), and a missing
 pointer to the measured left tail.
 
-Scope of the gap, measured rather than estimated: **333 untraced numeric literals**, and the
-288-key registry currently backs **none** of them.
+Scope of the gap, measured rather than estimated: as of 2026-09-22, **280 untraced numeric
+literals** in `FINDINGS.md`, and the 293-key claims registry backs **none** of them. (Both
+counts are a snapshot; re-measure with `src/audit_traceability.py` rather than trusting them.)
 
 **This is not fixable by tagging.** The five gated documents are trustworthy because they are
 generated -- the number and its tag come from one computation. Hand-adding tags to a hand-written

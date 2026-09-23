@@ -8,6 +8,12 @@ The corrected headline is **124/138 = 89.9%** (95% CI [83.6%, 94.3%]) on a stric
 set, and the thing being validated should be called a **calibrated historical baseline**, not a
 predictor.
 
+> *Superseded figure, kept deliberately.* Two parser bugs found after this audit (the
+> `Math-|v|-5` and `MATH-500` cases in [PROVENANCE.md](PROVENANCE.md)) changed the row counts,
+> and the current headline is **118/131 = 90.1%**, 95% CI [83.6%, 94.6%], as reported in
+> [FINDINGS.md](FINDINGS.md). The 89.9% above is left in place because this document is a dated
+> record of what that audit concluded, not a live figure.
+
 ---
 
 ## 1. Leakage and contamination

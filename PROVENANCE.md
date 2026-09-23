@@ -5,6 +5,14 @@ informed by a row that was already in the test set?
 
 **Answer: yes — one more, found during this audit. There are now two, both disclosed below.**
 
+> **Note on `data/cards/` and `data/prospective_cards/`.** The raw Hugging Face
+> model cards referenced below are **not shipped in this repository** - they are
+> RedHatAI's content under several different licences, so only the extracted
+> numbers in `data/dataset.csv` are published. Commands below that read those
+> directories will not run against a fresh clone until you refetch the cards.
+> [data/README.md](data/README.md) explains why and gives a script that does it.
+
+
 ---
 
 ## An important limitation of this record
