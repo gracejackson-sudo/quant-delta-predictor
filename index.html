@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Report a quantization result</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: -apple-system, system-ui, sans-serif; line-height: 1.5;
+  max-width: 620px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.35rem; margin-bottom: .25rem; }
+h2 { font-size: 1.05rem; margin: 26px 0 2px; }
+hr { border: 0; border-top: 1px solid #ddd; margin: 26px 0 0; }
+.lede { color: #555; margin-top: 0; }
+.f { margin: 18px 0; }
+label { font-weight: 600; display: block; }
+label::first-letter { text-transform: uppercase; }
+.h { color: #666; font-size: .85rem; margin: 2px 0 6px; }
+.req { color: #b00; font-weight: 400; font-size: .78rem; }
+input, select, textarea { width: 100%; padding: 7px 8px; font-size: 1rem;
+  border: 1px solid #999; border-radius: 4px; box-sizing: border-box;
+  background: transparent; color: inherit; font-family: inherit; }
+button { font-size: 1rem; padding: 10px 18px; border-radius: 4px;
+  border: 1px solid #333; cursor: pointer; }
+.note { font-size: .85rem; color: #666; border-top: 1px solid #ddd;
+  margin-top: 28px; padding-top: 12px; }
+@media (prefers-color-scheme: dark) {
+  .lede, .h, .note { color: #aaa; }
+  .note { border-top-color: #444; }
+  input, select, textarea { border-color: #666; }
+  button { border-color: #aaa; }
+}
+</style>
+</head>
+<body>
+<h1>Report a quantization result</h1>
+<p class="lede">Real measurements from real runs. The cells the tool refuses to
+answer are the ones worth reporting most &mdash; those are the gaps.</p>
+
+<form action="https://formspree.io/f/mkjgbwyl" method="POST">
+<div class="f"><label for="name_and_role">name and role</label>
+<p class="h">e.g. &quot;ML Research Engineer at Apple&quot;. Optional, and applies to either section below.</p>
+<input id="name_and_role" name="name_and_role" type="text">
+</div>
+<hr>
+<h2>1. Report a measured result</h2>
+<p class="lede">If you ran an eval, these are the numbers that help. Leave this
+whole section blank if you just want to give feedback instead.</p>
+<div class="f"><label for="quantization_scheme">quantization scheme <span class="req">needed if reporting a result</span></label>
+<p class="h">w4a16 / w8a8 / w8a16 / fp8 / fp8-dynamic / nvfp4 / other</p>
+<select id="quantization_scheme" name="quantization_scheme">
+<option value="">-- choose --</option>
+<option value="w4a16">w4a16</option>
+<option value="w8a8">w8a8</option>
+<option value="w8a16">w8a16</option>
+<option value="fp8">fp8</option>
+<option value="fp8-dynamic">fp8-dynamic</option>
+<option value="nvfp4">nvfp4</option>
+<option value="other">other</option>
+</select>
+</div>
+<div class="f"><label for="model_size_params_b">model size (billions of parameters) <span class="req">needed if reporting a result</span></label>
+<p class="h">e.g. 1.5 - a number in billions</p>
+<input id="model_size_params_b" name="model_size_params_b" type="text">
+</div>
+<div class="f"><label for="model_family_or_name">model family or name</label>
+<p class="h">e.g. Qwen2.5, Llama-3.1. Leave blank if you cannot share it</p>
+<input id="model_family_or_name" name="model_family_or_name" type="text">
+</div>
+<div class="f"><label for="benchmark">benchmark <span class="req">needed if reporting a result</span></label>
+<p class="h">mmlu / arc_challenge / hellaswag / gsm8k / winogrande / truthfulqa / other</p>
+<select id="benchmark" name="benchmark">
+<option value="">-- choose --</option>
+<option value="mmlu">mmlu</option>
+<option value="arc_challenge">arc_challenge</option>
+<option value="hellaswag">hellaswag</option>
+<option value="gsm8k">gsm8k</option>
+<option value="winogrande">winogrande</option>
+<option value="truthfulqa">truthfulqa</option>
+<option value="other">other</option>
+</select>
+</div>
+<div class="f"><label for="accuracy_before">accuracy before quantization <span class="req">needed if reporting a result</span></label>
+<p class="h">unquantized score, 0-100 scale</p>
+<input id="accuracy_before" name="accuracy_before" type="text">
+</div>
+<div class="f"><label for="accuracy_after">accuracy after quantization <span class="req">needed if reporting a result</span></label>
+<p class="h">quantized score, 0-100 scale</p>
+<input id="accuracy_after" name="accuracy_after" type="text">
+</div>
+<div class="f"><label for="eval_harness_and_shots">eval harness and shot count</label>
+<p class="h">e.g. lm-eval-harness, MMLU 5-shot. Needed to compare like with like</p>
+<input id="eval_harness_and_shots" name="eval_harness_and_shots" type="text">
+</div>
+<div class="f"><label for="quantization_tool_and_config">quantization tool and config</label>
+<p class="h">e.g. llm-compressor GPTQ, 512x2048 calibration, group 128</p>
+<textarea id="quantization_tool_and_config" name="quantization_tool_and_config" rows="3"></textarea>
+</div>
+<div class="f"><label for="anything_unusual">anything unusual</label>
+<p class="h">especially: did anything go wrong, or was this a config you would not recommend?</p>
+<textarea id="anything_unusual" name="anything_unusual" rows="3"></textarea>
+</div>
+<div class="f"><label for="contact_optional">contact (only if you want a reply)</label>
+<p class="h">only if you want a reply</p>
+<input id="contact_optional" name="contact_optional" type="text">
+</div>
+<hr>
+<h2>2. Open feedback</h2>
+<p class="lede">You can send this on its own &mdash; nothing above is required.</p>
+<div class="f"><label for="open_feedback">your feedback</label>
+<p class="h">Anything at all: what was confusing, what you wanted it to answer, whether you would use it, what is wrong with it. No structured result needed.</p>
+<textarea id="open_feedback" name="open_feedback" rows="3"></textarea>
+</div>
+<button type="submit">Send</button>
+</form>
+
+<p class="note">Submissions are reviewed by a human before anything enters the
+dataset; nothing is ingested automatically. Only what you type here is sent
+&mdash; there is no tracking on this page or in the tool.</p>
+</body>
+</html>
