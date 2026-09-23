@@ -56,8 +56,8 @@ registry. Do not hand-edit numbers in that file.
 ## Known gap: FINDINGS.md is outside the claim gate
 
 `verify_claims.py` and `audit_traceability.py` cover the five **generated** documents
-(`RANKING.md`, `NEGATIVE_RESULT.md`, `BIAS_CORRECTION.md`, `TOOL_SUMMARY.md`,
-`TALKING_POINTS.md`). `FINDINGS.md` is hand-written and covered by neither. It was verified by
+(`RANKING.md`, `NEGATIVE_RESULT.md`, `BIAS_CORRECTION.md`, `TOOL_SUMMARY.md`).
+`FINDINGS.md` is hand-written and covered by neither. It was verified by
 a **manual line-by-line pass on 2026-09-22**, which caught three real defects: a pull-quote
 asserting a claim the same document retracts, a stale test count (60 vs 113), and a missing
 pointer to the measured left tail.

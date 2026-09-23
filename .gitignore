@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .DS_Store
 out/requests.log
+DAY_1.md
+TALKING_POINTS.md
+src/gen_talking_points.py

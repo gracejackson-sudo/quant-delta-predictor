@@ -5,7 +5,7 @@ Pure Python (xhtml2pdf + reportlab) so it needs no Homebrew/system libraries.
 Fonts are registered from macOS system TTFs so that arrows, +/-, <=, Greek and
 box characters in the docs render instead of coming out as black squares.
 
-Output: ~/Desktop/EF-evidence/*.pdf  (one per doc, plus a combined file)
+Output: ~/Desktop/quant-delta-docs/*.pdf  (one per doc, plus a combined file)
 """
 from __future__ import annotations
 
@@ -36,10 +36,9 @@ def _register_fonts():
                                       italic=name, boldItalic=name)
 
 SRC = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DST = os.path.expanduser("~/Desktop/EF-evidence")
+DST = os.path.expanduser("~/Desktop/quant-delta-docs")
 
 DOCS = [
-    ("DAY_1.md", "1 - Day 1 Findings"),
     ("RESEARCH.md", "2 - Research (written before building)"),
     ("FINDINGS.md", "3 - Full Findings"),
     ("ADVERSARIAL_AUDIT.md", "4 - Adversarial Audit"),

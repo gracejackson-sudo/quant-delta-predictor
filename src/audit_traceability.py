@@ -13,8 +13,9 @@ import os, re, sys
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
-OUTWARD = ["TOOL_SUMMARY.md", "NEGATIVE_RESULT.md", "TALKING_POINTS.md",
-           "BIAS_CORRECTION.md"]
+OUTWARD = [f for f in ("TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
+                       "BIAS_CORRECTION.md")
+           if os.path.exists(os.path.join(ROOT, f))]
 
 CLAIM = re.compile(r"<!--\s*claim:\s*([^\s]+)\s*=\s*([-+0-9.]+)\s*-->")
 NUM = re.compile(r"(?<![\w.])[-+]?\d+(?:\.\d+)?(?![\d])")

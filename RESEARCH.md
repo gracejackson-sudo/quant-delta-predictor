@@ -131,7 +131,7 @@ single delta is ~0.4pp on the big benchmarks and ~1–4pp on the small ones.** O
 IFEval, TruthfulQA, GPQA and MuSR, the noise is the same order as the signal or larger. That is a
 hard ceiling on achievable R². It is not a modeling problem and no amount of XGBoost fixes it.
 
-**This is the single most important thing I learned tonight, and it generates a concrete prediction:
+**This is the single most important thing this review surfaced, and it generates a concrete prediction:
 a good predictor will have low R² and wide intervals, and that will be the *correct* answer rather
 than a failure.** It also tells me *where* the achievable signal lives: the high-n benchmarks
 (MMLU, MMLU-Pro, HellaSwag, BBH), where noise is ~0.4pp.
@@ -184,7 +184,7 @@ splits and report both.**
   I have never evaluated."
 
 I predict Split A shows excellent coverage and Split B shows undercoverage. **The gap between them
-is the real headline of tonight's experiment**, and reporting only Split A would be the way this
+is the real headline of this experiment**, and reporting only Split A would be the way this
 project quietly becomes fraudulent.
 
 ---
@@ -234,12 +234,12 @@ Writing these down now so the audits later have something to check me against.
 
 1. **Non-exchangeability / clustered rows.** Addressed by Split B, not solved.
 2. **`acc_before` is itself a noisy measurement**, so I have errors-in-variables on a key feature.
-   This biases its coefficient toward zero (regression dilution). Unaddressed tonight.
+   This biases its coefficient toward zero (regression dilution). Unaddressed in this pass.
 3. **Selection bias in the data source.** Red Hat publishes quantized checkpoints they consider
    *good*. Configs that destroyed a model never got a model card. So my training distribution is
    **truncated on the outcome** — I will systematically underpredict damage for a badly-chosen
    config, which is exactly the case a user most needs warning about. This is a fundamental,
-   unfixable-tonight limitation of using published cards, and it's the honest answer to "what
+   limitation of using published cards that this design cannot fix, and it's the honest answer to "what
    breaks for a stranger."
 4. **Harness drift.** Cards span different lm-eval forks, prompt styles, and chat templates
    (Llama-3.1 cards note results changed after Meta modified the chat template). Base numbers are

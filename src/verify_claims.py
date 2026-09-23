@@ -27,9 +27,11 @@ from strata import (ConservativeStratified, SchemeOnlyBaseline,  # noqa: E402
 import rank as R  # noqa: E402
 
 HERE = os.path.dirname(__file__)
-DOCS = [os.path.join(HERE, "..", f) for f in
+# Generated docs. Any that are absent from a given checkout are skipped, so a
+# doc can be kept out of the public repo without breaking the gate.
+DOCS = [p for p in (os.path.join(HERE, "..", f) for f in
         ("RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
-         "TOOL_SUMMARY.md", "TALKING_POINTS.md")]
+         "TOOL_SUMMARY.md")) if os.path.exists(p)]
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 CELLS = os.path.join(HERE, "..", "out", "cell_coverage.json")
 

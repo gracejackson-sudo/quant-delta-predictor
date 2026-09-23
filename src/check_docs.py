@@ -15,7 +15,7 @@ HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
 DOCS = [f for f in sorted(os.listdir(ROOT)) if f.endswith(".md")]
 GENERATED = {"RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
-             "TOOL_SUMMARY.md", "TALKING_POINTS.md"}
+             "TOOL_SUMMARY.md"}
 
 # statements that must not reappear anywhere user-facing
 BANNED = [
@@ -73,7 +73,7 @@ def main():
                 seg = t[max(0, m.start() - 70):m.start() + 70].replace("\n", " ")
                 # audit docs are allowed to quote what they retracted
                 if f in ("ADVERSARIAL_AUDIT.md", "AUDIT_DISCIPLINE.md",
-                         "PROVENANCE.md", "FINDINGS.md", "DAY_1.md"):
+                         "PROVENANCE.md", "FINDINGS.md"):
                     continue
                 # a doc is allowed to QUOTE the banned list when documenting
                 # the rule itself; detect the quoted-list context

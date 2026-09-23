@@ -363,7 +363,7 @@ Shift to the **narrower claim**, which the numbers actually support:
 
 That is publishable, honest, and genuinely useful as a deployment sanity check. The version that
 takes a model family and tells you what *your* model will lose is not supported by this evidence,
-and tonight's result is that the bottleneck is measurement noise plus data selection, not model
+and the result here is that the bottleneck is measurement noise plus data selection, not model
 capacity.
 
 ---
