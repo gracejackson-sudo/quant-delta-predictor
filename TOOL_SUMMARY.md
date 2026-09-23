@@ -1,12 +1,14 @@
 # Quantization scheme risk tool - what it is, honestly
 
 > ## ⚠ Read this first
-> We quantized real models on an A100 with deliberately-bad configs -- the largest single effect being wrong scale granularity, per-tensor instead of per-group -- and measured losses up to **-39.5<!-- claim: adv_worst_delta = -39.5000 -->pp** (16<!-- claim: adv_bad_over_3pp = 16.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows lost 3pp or more; separately 2<!-- claim: adv_control_over_3pp = 2.0000 --> of 9<!-- claim: adv_control_rows = 9.0000 --> rows from our *correct* control arm did too). The worst loss anywhere in the published corpus this tool is calibrated on is -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp. **Scope:** that left tail was measured only on models of 1.5<!-- claim: adv_max_params_b = 1.5000 -->B and below -- a size band this tool refuses to answer for at w4a16 -- so it is evidence that catastrophic damage is reachable, not a measured bound for larger models.
+> We quantized real models on an A100 with deliberately-bad configs and measured losses to **-39.5<!-- claim: adv_worst_delta = -39.5000 -->pp**. The largest single effect was wrong scale granularity: per-tensor instead of per-group.
+> 16<!-- claim: adv_bad_over_3pp = 16.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows lost 3pp or more. Separately, 2<!-- claim: adv_control_over_3pp = 2.0000 --> of 9<!-- claim: adv_control_rows = 9.0000 --> rows from our *correct* control arm did too. The worst loss anywhere in the published corpus this tool is calibrated on is -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp.
+> **Scope:** that left tail was measured only at 1.5<!-- claim: adv_max_params_b = 1.5000 -->B and below, a band this tool refuses to answer for at w4a16. It shows catastrophic damage is reachable. It is not a measured bound for larger models.
 > **Treat every interval below as a floor on risk, not a ceiling.** Published recipes are the ones that worked; yours may not be one of them.
 
 > *What we can and cannot back up:* the losses above are measured and reproducible. How much worse a botched recipe is **than a professionally-tuned one** is not something we can yet put a number on - see "Evidence quality" below.
 
-A calibrated, audited, deliberately conservative decision aid for 3<!-- claim: min_cell_checkpoints = 3.0000 --> specific quantization schemes. Not a predictor. Not novel relative to BenchPress on the core mechanism.
+A calibrated, audited, deliberately conservative decision aid for 6<!-- claim: n_schemes = 6.0000 --> specific quantization schemes. Not a predictor. Not novel relative to BenchPress on the core mechanism.
 
 Built on 817<!-- claim: n_rows = 817.0000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.0000 --> checkpoints across 8<!-- claim: n_families = 8.0000 --> model families (RedHatAI model cards).
 

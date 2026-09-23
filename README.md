@@ -57,60 +57,28 @@ tier for resting on fewer than three distinct checkpoints.
 
 ## Reproduce the research
 
-Rebuild the dataset from the cached model cards (no network needed):
-
 ```bash
-./.venv/bin/python src/harvest.py
+./.venv/bin/python src/harvest.py          # rebuild dataset.csv from cards (needs the cards; see data/README.md)
+./.venv/bin/python src/run_final.py        # all three split regimes and calibration variants
+./.venv/bin/python src/demo_holdout.py     # train on 2 families, predict unseen models
+./.venv/bin/python src/real_use_case.py    # prospective test on never-seen families (needs network)
+./.venv/bin/python src/diagnose.py         # which failure mode this is
+./.venv/bin/python src/validate_strata.py  # does size stratification help? mostly not - see RANKING.md
+./.venv/bin/python src/build_envelope.py && ./.venv/bin/python src/cli.py --list
+./.venv/bin/python -m pytest tests -q      # the test suite
 ```
 
-Final evaluation across all three split regimes and calibration variants:
+The audits, and the full exclusion census:
 
 ```bash
-./.venv/bin/python src/run_final.py
+./.venv/bin/python src/audit.py && ./.venv/bin/python src/adversarial_audit.py && ./.venv/bin/python src/census.py
 ```
 
-The held-out demo — train on 2 families, predict real unseen models:
-
-```bash
-./.venv/bin/python src/demo_holdout.py
-```
-
-The prospective test — freeze the predictor, then download model cards for families never used
-in development (needs network):
-
-```bash
-./.venv/bin/python src/real_use_case.py
-```
-
-Diagnostics, the three audits, the adversarial audit, and the full exclusion census:
-
-```bash
-./.venv/bin/python src/diagnose.py && ./.venv/bin/python src/audit.py && ./.venv/bin/python src/adversarial_audit.py && ./.venv/bin/python src/census.py
-```
-
-Fully independent re-verification — stdlib only, no project imports, regenerates the headline
-coverage from the raw cards and diffs it against the pipeline row by row:
+Independent re-verification — stdlib only, no project imports. Regenerates the headline coverage
+from the raw cards and diffs it against the pipeline row by row:
 
 ```bash
 python3 verify/independent_check.py
-```
-
-Does size stratification help? (it mostly does not - see RANKING.md):
-
-```bash
-./.venv/bin/python src/validate_strata.py
-```
-
-The shippable artifact and the single-scheme lookup:
-
-```bash
-./.venv/bin/python src/build_envelope.py && ./.venv/bin/python src/cli.py --list
-```
-
-Tests:
-
-```bash
-./.venv/bin/python -m pytest tests -q
 ```
 
 ## Data

@@ -50,6 +50,7 @@ def registry():
 
     add("n_numbers_in_predictor", meta["n_numbers_in_predictor"], 0,
         "2*len(by_scheme) + widening cells")
+    add("n_schemes", meta["n_schemes"], 0, "rows in the ranking table")
     add("n_size_dependent_widths", meta["n_size_dependent_widths"], 0,
         "cells whose half_width exceeds their scheme's")
     add("intervals_excluding_zero", meta["intervals_excluding_zero"], 0,

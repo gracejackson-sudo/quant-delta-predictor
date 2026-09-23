@@ -87,13 +87,10 @@ claim than the one I set out to test, and it is defensible.
 
 ## 1. Did a held-out real result land inside the predicted interval? Show the numbers.
 
-Yes. Two levels of rigor, all with real measured values.
+Yes. Two levels of rigor, both with real measured values.
 
-*(An earlier draft opened with a single flagship model scored across nine
-benchmarks, 9/9 inside. It was cut: all nine rows carry the same prediction and
-the same interval, so it is one prediction scored nine times on correlated
-benchmarks, not nine independent successes. §1b and §1c below are the real
-evidence.)*
+*(A single-model table was cut from this section: nine benchmarks sharing one
+prediction and one interval is one result scored nine times, not nine.)*
 
 ### 1b. Five held-out models, five unseen families
 
@@ -350,9 +347,9 @@ this data lives. I would not bet the week on it.
 
 ---
 
-## Recommendation for the week
+## The claim this supports
 
-Shift to the **narrower claim**, which the numbers actually support:
+The narrower claim, which the numbers actually carry:
 
 > For the six quantization schemes Red Hat publishes, here is a conformal-calibrated envelope on
 > the OpenLLM accuracy delta, validated at **118/131 = 90.1%** empirical coverage (95% CI
@@ -361,10 +358,9 @@ Shift to the **narrower claim**, which the numbers actually support:
 > untuned recipes. It is calibrated only on recipes that were published, i.e. that worked: for
 > measured behaviour of deliberately-bad recipes see [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md).
 
-That is publishable, honest, and genuinely useful as a deployment sanity check. The version that
-takes a model family and tells you what *your* model will lose is not supported by this evidence,
-and the result here is that the bottleneck is measurement noise plus data selection, not model
-capacity.
+That is defensible and useful as a deployment sanity check. The version that takes a model family
+and tells you what *your* model will lose is not supported by this evidence: the bottleneck is
+measurement noise plus data selection, not model capacity.
 
 ---
 
