@@ -1,0 +1,17 @@
+NOTICE
+======
+
+This file records the provenance and licensing of the DATA in this repository.
+The software and analysis are MIT licensed; see LICENSE.
+
+This license covers the code and the analysis in this repository.
+
+`data/dataset.csv` contains numeric evaluation results extracted from publicly
+published Hugging Face model cards by RedHatAI. Those are measurements of fact
+rather than creative expression. The underlying model cards are NOT
+redistributed here; they remain under their own licenses (Apache-2.0, MIT, and
+the Llama and Gemma community licenses, varying per model). See data/README.md
+for how to fetch them yourself.
+
+See data/README.md for what is and is not included, why, and how to refetch
+the model cards yourself.

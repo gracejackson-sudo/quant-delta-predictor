@@ -135,7 +135,7 @@ as a well-calibrated one.
 
 ## Data and licence
 
-This repository is MIT licensed (see `LICENSE`). The raw Hugging Face model
+This repository is MIT licensed (see `LICENSE`); data provenance is recorded in `NOTICE`. The raw Hugging Face model
 cards the dataset was extracted from are **not redistributed** here — they are
 RedHatAI's content under several different licences. `data/dataset.csv` (the
 extracted numbers) is included and is all the tool needs. See

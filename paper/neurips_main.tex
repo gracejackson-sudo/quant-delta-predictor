@@ -1,14 +1,37 @@
-\documentclass[11pt]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{booktabs,amsmath,amssymb,graphicx,hyperref,xcolor,url}
-\usepackage[numbers]{natbib}
-\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\documentclass{article}
+
+% Official NeurIPS 2026 style, downloaded from the NeurIPS 2026 Call for
+% Papers (Formatting_Instructions_For_NeurIPS_2026.zip). No option = the
+% anonymised submission format required for double-blind review.
+% Use [preprint] for arXiv, [final] for camera-ready.
+\usepackage{neurips_2026}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
 \input{numbers}
 
-\title{\textbf{Calibrated Risk Envelopes for LLM Quantization,\\
-and the Limits of Predicting Compression Damage}}
-\author{Grace Jackson}
-\date{September 2026}
+\title{Calibrated Risk Envelopes for LLM Quantization,\\
+and the Limits of Predicting Compression Damage}
+
+% Anonymised for double-blind review. The NeurIPS style renders
+% "Anonymous Author(s)" automatically when the [final] option is absent.
+\author{%
+  Anonymous Author(s) \\
+  Affiliation \\
+  Address \\
+  \texttt{email} \\
+}
 
 \begin{document}
 \maketitle

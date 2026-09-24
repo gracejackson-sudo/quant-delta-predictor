@@ -12,7 +12,8 @@ import json, os, re, sys, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-TEX = open(os.path.join(HERE, "main.tex")).read()
+TEXNAME = sys.argv[1] if len(sys.argv) > 1 else "main.tex"
+TEX = open(os.path.join(HERE, TEXNAME)).read()
 NUMS = open(os.path.join(HERE, "numbers.tex")).read()
 BIB = open(os.path.join(HERE, "refs.bib")).read()
 fail, warn = [], []
@@ -22,7 +23,7 @@ def head(t): print("\n" + "=" * 68 + f"\n{t}\n" + "=" * 68)
 
 
 # ---------------------------------------------------------------- 1
-head("1. CLAIM TRACING")
+head(f"1. CLAIM TRACING  [{TEXNAME}]")
 defined = set(re.findall(r"\\newcommand\{\\(\w+)\}", NUMS))
 used = set(re.findall(r"\\([A-Z]\w+)", TEX))
 cand = {m for m in used if m not in defined}

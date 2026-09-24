@@ -19,16 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-NOTE ON DATA
-
-This license covers the code and the analysis in this repository.
-
-`data/dataset.csv` contains numeric evaluation results extracted from publicly
-published Hugging Face model cards by RedHatAI. Those are measurements of fact
-rather than creative expression. The underlying model cards are NOT
-redistributed here; they remain under their own licenses (Apache-2.0, MIT, and
-the Llama and Gemma community licenses, varying per model). See data/README.md
-for how to fetch them yourself.
