@@ -14,7 +14,7 @@ import os, re, sys
 HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
 OUTWARD = [f for f in ("TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
-                       "BIAS_CORRECTION.md")
+                       "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md")
            if os.path.exists(os.path.join(ROOT, f))]
 
 CLAIM = re.compile(r"<!--\s*claim:\s*([^\s]+)\s*=\s*([-+0-9.]+)\s*-->")
@@ -42,6 +42,9 @@ EXEMPT = {
     "2606.24020", "2606", "24020", "6.2", "84", "133",
     # Tong et al. 2026, conformal prediction on quantized/sparse LLMs
     "2606.01850", "01850",
+    # figures quoted verbatim FROM the external report being verified; the
+    # values we computed against them are registry-backed above
+    "0.27", "1.52",
     "90", "0.90", "95", "0.05", "10", "9", "19", "3", "2", "1", "0",
     "4", "5", "6", "8", "16", "25", "100", "50", "512", "2048", "24",
     "256", "1.5", "0.5", "4.0", "2.0", "1.0", "27.01", "1.83", "23.3",

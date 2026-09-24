@@ -44,6 +44,7 @@ def measure(d=None):
             _, lo, hi, lv = m.predict_interval(te)
             t = annotate(te).copy()
             t["ok"] = (t.delta >= lo) & (t.delta <= hi)
+            t["lo_"], t["hi_"] = lo, hi
             t["lv"] = lv
             rows.append(t)
     r = pd.concat(rows, ignore_index=True)
@@ -54,7 +55,19 @@ def measure(d=None):
         out["cells"][f"{s}|{b}"] = {
             "scheme": s, "band": b,
             "coverage": float(g.ok.mean()),
+            # One-sided coverage. A downside envelope has not failed when the
+            # model BEATS it, but two-sided containment counts that as a miss.
+            # Reported alongside so the two kinds of miss stay distinguishable.
+            # (External finding, see ONE_SIDED_COVERAGE.md)
+            "coverage_one_sided": float((g.delta >= g.lo_).mean())
+            if "lo_" in g else None,
             "scored_rows": int(len(g)),
+            # The honest unit of evidence is the checkpoint, not the row: rows
+            # from one checkpoint across many benchmarks are correlated views
+            # of a single quantization run. This is already enforced on train
+            # support; reporting it here makes it visible for coverage too.
+            "distinct_checkpoints": int(g.base_model.nunique()),
+            "distinct_families": int(g.family.nunique()),
             "pct_widened": float((g.lv == "stratum-widened").mean()),
         }
     for b, g in r.groupby("band"):

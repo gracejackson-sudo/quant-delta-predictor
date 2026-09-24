@@ -248,13 +248,19 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
             e["refused"] = True
             e["refusal_coverage"] = c["coverage"]
             e["refusal_rows"] = c["scored_rows"]
+            e["refusal_ckpts"] = c.get("distinct_checkpoints")
+            e["refusal_fams"] = c.get("distinct_families")
+            e["refusal_one_sided"] = c.get("coverage_one_sided")
             flags.append("INSUFFICIENT_CALIBRATION")
             notes.append(
                 f"no interval is shown for {e['scheme']} at {band}: the "
                 f"interval was measured to contain the true result "
                 f"{c['coverage']*100:.1f}% of the time here "
-                f"({c['scored_rows']} scored rows), against the 90% it "
-                f"claims. Run your own evaluation for this combination")
+                f"({c['scored_rows']} scored rows from "
+                f"{c.get('distinct_checkpoints', '?')} distinct checkpoints "
+                f"across {c.get('distinct_families', '?')} families), against "
+                f"the 90% it claims. Run your own evaluation for this "
+                f"combination")
 
     # Worst observed loss is stated for EVERY scheme, at every rank and tier.
     if e["worst_observed"] <= -risk_pp:
@@ -466,7 +472,14 @@ def report(ranked, unknown, risk_pp, band, moe, meta=None):  # noqa: C901
                   "COMBINATION")
             print(f"                     measured coverage here "
                   f"{e['refusal_coverage']*100:.1f}% over "
-                  f"{e['refusal_rows']} scored rows, against 90% claimed")
+                  f"{e['refusal_rows']} scored rows from "
+                  f"{e.get('refusal_ckpts', '?')} distinct checkpoints, "
+                  f"against 90% claimed")
+            if e.get("refusal_one_sided") is not None:
+                print(f"                     counting only losses below the "
+                      f"lower bound it is "
+                      f"{e['refusal_one_sided']*100:.1f}% "
+                      f"(see ONE_SIDED_COVERAGE.md)")
             for ln in feedback.refused_prompt([e["scheme"]], w - 21):
                 print("                     " + ln)
         else:

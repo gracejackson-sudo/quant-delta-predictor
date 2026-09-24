@@ -31,7 +31,7 @@ HERE = os.path.dirname(__file__)
 # doc can be kept out of the public repo without breaking the gate.
 DOCS = [p for p in (os.path.join(HERE, "..", f) for f in
         ("RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
-         "TOOL_SUMMARY.md")) if os.path.exists(p)]
+         "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md")) if os.path.exists(p)]
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 CELLS = os.path.join(HERE, "..", "out", "cell_coverage.json")
 
@@ -226,6 +226,29 @@ def registry():
         add("pub_control_verified_rows", c["control_arith_verified_rows"], 0,
             "RedHatAI rows our recovery gate can verify (positive control)")
         add("pub_others_count", len(oth), 0, "publishers other than RedHatAI")
+
+    osa = os.path.join(HERE, "..", "out", "one_sided_audit.json")
+    if os.path.exists(osa):
+        o = json.load(open(osa))
+        add("os_pooled_pct", o["pooled_coverage_pct"], 0.1,
+            "pooled coverage recomputed in the one-sided audit")
+        add("os_pooled_rows", o["pooled_scored_rows"], 0,
+            "pooled scored rows recomputed in the one-sided audit")
+        for cell, v in o["cells"].items():
+            for bm, mm in (v.get("miss_mean_by_checkpoint") or {}).items():
+                add(f"os_missmean::{cell}::{bm}", mm, 0.01,
+                    f"mean delta of misses for {bm} in {cell}")
+            for key, tol in (("two_sided_pct", 0.1), ("one_sided_pct", 0.1),
+                             ("below_lo_pct", 0.1), ("above_hi_pct", 0.1),
+                             ("scored_rows", 0), ("distinct_checkpoints", 0),
+                             ("distinct_families", 0),
+                             ("distinct_model_benchmark", 0),
+                             ("boot90_lo", 1.0), ("boot90_hi", 1.0)):
+                add(f"os_{key}::{cell}", v[key], tol,
+                    f"{key} for {cell} (one-sided audit)")
+            for bm, pct in v["per_checkpoint_coverage_pct"].items():
+                add(f"os_ckpt::{cell}::{bm}", pct, 0.1,
+                    f"coverage for {bm} in {cell}")
 
     cq = os.path.join(HERE, "..", "out", "card_quality.json")
     if os.path.exists(cq):
