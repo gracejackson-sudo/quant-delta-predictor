@@ -179,8 +179,11 @@ above the lower bound \OneSidedCellWfourSmall\% of the time over
 (two-sided containment \CovCellWfourSmall\%), and \texttt{w8a16|>10B} at
 \OneSidedCellWsixteenBig\% over \RowsCellWsixteenBig{} rows from
 \CkptsCellWsixteenBig{} checkpoints (two-sided \CovCellWsixteenBig\%).
-The distinction was identified by an external reader; the two-sided figure
-makes \texttt{w8a16|>10B} look worse than the risk warrants.
+The distinction was identified by an external reader. Comparing a one-sided
+measurement against the printed 90\% is the \emph{lenient} reading, not a
+flattering one: the interval is symmetric, so the permitted 10\% is split
+across two tails, and pooled one-sided coverage across all scored rows is
+\PooledOneSided\%. Both cells are refused even under the lenient comparison.
 
 \paragraph{A support floor.} Coverage measured on many benchmarks from one
 checkpoint is not independent evidence; it is one quantization run viewed many

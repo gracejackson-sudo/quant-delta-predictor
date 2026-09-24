@@ -50,7 +50,17 @@ def measure(d=None):
     r = pd.concat(rows, ignore_index=True)
 
     out = {"nominal": NOMINAL, "pooled": {
-        "coverage": float(r.ok.mean()), "scored_rows": int(len(r))}, "cells": {}}
+        "coverage": float(r.ok.mean()),
+        # Pooled one-sided coverage. The interval is mean +/- q on |delta-mu|,
+        # a symmetric construction, so its nominal ONE-sided level is not 90%
+        # but roughly 95%: the 10% that may miss is split across two tails.
+        # Reporting this stops a one-sided measurement being compared against
+        # a two-sided nominal, which would flatter every cell.
+        "coverage_one_sided": float((r.delta >= r.lo_).mean())
+        if "lo_" in r else None,
+        "below_lo": float((r.delta < r.lo_).mean()) if "lo_" in r else None,
+        "above_hi": float((r.delta > r.hi_).mean()) if "hi_" in r else None,
+        "scored_rows": int(len(r))}, "cells": {}}
     for (s, b), g in r.groupby(["scheme", "band"]):
         out["cells"][f"{s}|{b}"] = {
             "scheme": s, "band": b,

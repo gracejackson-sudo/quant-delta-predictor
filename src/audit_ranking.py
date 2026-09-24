@@ -214,12 +214,18 @@ def r3_cannot_warn(d, table):
 
     print("\n[R3.2b] refused cells (no interval emitted)")
     cc = R.load_cell_coverage()
+    # Must use the SAME criterion the tool refuses on, or this audit can
+    # silently disagree with the product it is auditing.
+    def _judged(v):
+        return v.get("coverage_one_sided") or v["coverage"]
+
     refused = sorted(k for k, v in cc.get("cells", {}).items()
-                     if v["coverage"] < R.REFUSE_BELOW
+                     if _judged(v) < R.REFUSE_BELOW
                      and v["scored_rows"] >= R.REFUSE_MIN_ROWS)
     for key in refused:
         c = cc["cells"][key]
-        print(f"   {key:<22} measured {c['coverage']*100:.1f}% over "
+        print(f"   {key:<22} one-sided {_judged(c)*100:.1f}% "
+              f"(two-sided {c['coverage']*100:.1f}%) over "
               f"{c['scored_rows']} rows -> INSUFFICIENT CALIBRATION")
     note("OK" if refused else "FINDING",
          f"{len(refused)} undercovered cells now refuse to emit a number "

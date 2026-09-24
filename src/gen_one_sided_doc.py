@@ -125,6 +125,25 @@ def main():
       f"[{n('os_boot90_lo::'+W4,'{:.0f}')}%, {n('os_boot90_hi::'+W4,'{:.0f}')}%] "
       f"-- the earned refusal is also the better-evidenced one.\n")
 
+    A("## What the one-sided figure should be compared against\n")
+    A(f"A fair objection: the tool prints a two-sided 90% interval, so "
+      f"measuring a one-sided property and comparing it to 90% could look "
+      f"like choosing the flattering number. It is the opposite.\n")
+    A(f"The interval is symmetric -- a mean plus or minus one conformal "
+      f"half-width on the absolute residual -- so the 10% permitted to miss is "
+      f"split across two tails. Pooled across all "
+      f"{n('pooled_scored_rows')} scored rows that split is "
+      f"{n('pooled_below_lo_pct','{:.1f}')}% below the lower bound and "
+      f"{n('pooled_above_hi_pct','{:.1f}')}% above it, giving a pooled "
+      f"one-sided coverage of {n('pooled_one_sided_pct','{:.1f}')}%. **The "
+      f"nominal one-sided level for this construction is therefore about 95%, "
+      f"not 90%.**\n")
+    A(f"Judging a one-sided measurement against 90% is the lenient comparison. "
+      f"Both refused cells fail it anyway: "
+      f"{n('os_one_sided_pct::'+W4,'{:.1f}')}% and "
+      f"{n('os_one_sided_pct::'+W8,'{:.1f}')}%. Against the ~95% that the "
+      f"construction actually implies they fail by a wider margin. The "
+      f"refusals are not a product of the scoring choice.\n")
     A("## What has changed, and what has not\n")
     A("**Done.** Every coverage figure now reports the number of distinct "
       "checkpoints and families beside it, in the JSON artifact and in the "

@@ -230,6 +230,13 @@ def registry():
             "RedHatAI rows our recovery gate can verify (positive control)")
         add("pub_others_count", len(oth), 0, "publishers other than RedHatAI")
 
+    if cc.get("pooled", {}).get("coverage_one_sided") is not None:
+        add("pooled_one_sided_pct", 100 * cc["pooled"]["coverage_one_sided"],
+            0.1, "pooled one-sided coverage")
+        add("pooled_below_lo_pct", 100 * cc["pooled"]["below_lo"], 0.1,
+            "pooled share of rows below the lower bound")
+        add("pooled_above_hi_pct", 100 * cc["pooled"]["above_hi"], 0.1,
+            "pooled share of rows above the upper bound")
     for key, v in cc["cells"].items():
         if v.get("coverage_one_sided") is not None:
             add(f"cell_ckpts::{key}", v.get("distinct_checkpoints", 0), 0,

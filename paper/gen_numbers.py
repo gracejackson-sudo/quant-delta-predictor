@@ -37,6 +37,7 @@ M = {
     "BigLossBelow": ("n_big_losses_below_floor", "{:.0f}"),
     "BigLoss": ("n_big_losses", "{:.0f}"),
     "CellsBlocked": ("n_cells_blocked_from_tier_a", "{:.0f}"),
+    "PooledOneSided": ("pooled_one_sided_pct", "{:.1f}"),
     "PubChecked": ("pub_publishers_checked", "{:.0f}"),
     "PubCards": ("pub_cards_inspected", "{:.0f}"),
     "PubOthersCards": ("pub_others_cards", "{:.0f}"),

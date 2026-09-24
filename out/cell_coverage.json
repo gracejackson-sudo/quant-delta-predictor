@@ -2,6 +2,9 @@
   "nominal": 0.9,
   "pooled": {
     "coverage": 0.9095995803462144,
+    "coverage_one_sided": 0.9513901031648889,
+    "below_lo": 0.048609896835111036,
+    "above_hi": 0.04179052281867459,
     "scored_rows": 5719
   },
   "cells": {

@@ -49,6 +49,14 @@ But the evidence is narrower than the label. Those 77<!-- claim: os_scored_rows:
 
 What remains after that is one checkpoint. Resampling whole checkpoints puts a 90% interval of [46<!-- claim: os_boot90_lo::w8a16\|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16\|>10B = 98.1000 -->%] around the headline figure. That span cannot distinguish *this cell is uncalibrated* from *one Llama checkpoint is an outlier*. By contrast `w4a16|<2B` resamples to [63<!-- claim: os_boot90_lo::w4a16\|<2B = 62.9000 -->%, 74<!-- claim: os_boot90_hi::w4a16\|<2B = 73.8000 -->%] -- the earned refusal is also the better-evidenced one.
 
+## What the one-sided figure should be compared against
+
+A fair objection: the tool prints a two-sided 90% interval, so measuring a one-sided property and comparing it to 90% could look like choosing the flattering number. It is the opposite.
+
+The interval is symmetric -- a mean plus or minus one conformal half-width on the absolute residual -- so the 10% permitted to miss is split across two tails. Pooled across all 5719<!-- claim: pooled_scored_rows = 5719.0000 --> scored rows that split is 4.9<!-- claim: pooled_below_lo_pct = 4.8610 -->% below the lower bound and 4.2<!-- claim: pooled_above_hi_pct = 4.1791 -->% above it, giving a pooled one-sided coverage of 95.1<!-- claim: pooled_one_sided_pct = 95.1390 -->%. **The nominal one-sided level for this construction is therefore about 95%, not 90%.**
+
+Judging a one-sided measurement against 90% is the lenient comparison. Both refused cells fail it anyway: 70.1<!-- claim: os_one_sided_pct::w4a16\|<2B = 70.1299 -->% and 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->%. Against the ~95% that the construction actually implies they fail by a wider margin. The refusals are not a product of the scoring choice.
+
 ## What has changed, and what has not
 
 **Done.** Every coverage figure now reports the number of distinct checkpoints and families beside it, in the JSON artifact and in the tool's own output. The same standard already applied to training support now applies to coverage.
