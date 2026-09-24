@@ -841,3 +841,24 @@ def test_download_scripts_are_guarded():
         src = open(p).read()
         assert "diskguard" in src, f"{rel} downloads but does not check disk"
         assert "require_free_gb" in src, f"{rel} imports guard but never calls it"
+
+
+def test_no_unescaped_pipe_in_table_claim_tags():
+    """Claim tags inside markdown TABLE rows must escape the pipe.
+
+    GFM splits a table row on any unescaped pipe, including one inside an HTML
+    comment, which breaks the table and prints the raw tag on github.com.
+    python-markdown renders it correctly, so a local PDF check does not catch
+    this -- hence a test.
+    """
+    import glob, os, re
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    bad_key = re.compile(r"claim:\s*[^\s]*?(?<!\\)\|")
+    offenders = []
+    for f in glob.glob(os.path.join(root, "*.md")):
+        for i, line in enumerate(open(f, encoding="utf-8"), 1):
+            if line.startswith("|") and bad_key.search(line):
+                offenders.append(f"{os.path.basename(f)}:{i}")
+    assert not offenders, (
+        "unescaped pipe in a claim tag inside a table row: "
+        + ", ".join(offenders[:5]))

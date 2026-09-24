@@ -36,23 +36,23 @@ Under strict held-out calibration the widening applies to 14<!-- claim: widening
 
 | cell | training rows | checkpoints |
 |---|---|---|
-| `fp8_dynamic\|2-10B` | 87<!-- claim: cell_train_rows::fp8_dynamic|2-10B = 87.0000 --> | 10<!-- claim: cell_train_ckpt::fp8_dynamic|2-10B = 10.0000 --> |
-| `fp8_dynamic\|<2B` | 19<!-- claim: cell_train_rows::fp8_dynamic|<2B = 19.0000 --> | 3<!-- claim: cell_train_ckpt::fp8_dynamic|<2B = 3.0000 --> |
-| `fp8_dynamic\|>10B` | 94<!-- claim: cell_train_rows::fp8_dynamic|>10B = 94.0000 --> | 9<!-- claim: cell_train_ckpt::fp8_dynamic|>10B = 9.0000 --> |
-| `fp8\|2-10B` | 43<!-- claim: cell_train_rows::fp8|2-10B = 43.0000 --> | 7<!-- claim: cell_train_ckpt::fp8|2-10B = 7.0000 --> |
-| `fp8\|<2B` | 6<!-- claim: cell_train_rows::fp8|<2B = 6.0000 --> | 1<!-- claim: cell_train_ckpt::fp8|<2B = 1.0000 --> |
-| `fp8\|>10B` | 31<!-- claim: cell_train_rows::fp8|>10B = 31.0000 --> | 5<!-- claim: cell_train_ckpt::fp8|>10B = 5.0000 --> |
-| `nvfp4\|2-10B` | 13<!-- claim: cell_train_rows::nvfp4|2-10B = 13.0000 --> | 1<!-- claim: cell_train_ckpt::nvfp4|2-10B = 1.0000 --> |
-| `nvfp4\|>10B` | 51<!-- claim: cell_train_rows::nvfp4|>10B = 51.0000 --> | 4<!-- claim: cell_train_ckpt::nvfp4|>10B = 4.0000 --> |
-| `w4a16\|2-10B` | 102<!-- claim: cell_train_rows::w4a16|2-10B = 102.0000 --> | 13<!-- claim: cell_train_ckpt::w4a16|2-10B = 13.0000 --> |
-| `w4a16\|<2B` | 11<!-- claim: cell_train_rows::w4a16|<2B = 11.0000 --> | 2<!-- claim: cell_train_ckpt::w4a16|<2B = 2.0000 --> |
-| `w4a16\|>10B` | 80<!-- claim: cell_train_rows::w4a16|>10B = 80.0000 --> | 8<!-- claim: cell_train_ckpt::w4a16|>10B = 8.0000 --> |
-| `w8a16\|2-10B` | 43<!-- claim: cell_train_rows::w8a16|2-10B = 43.0000 --> | 8<!-- claim: cell_train_ckpt::w8a16|2-10B = 8.0000 --> |
-| `w8a16\|<2B` | 12<!-- claim: cell_train_rows::w8a16|<2B = 12.0000 --> | 2<!-- claim: cell_train_ckpt::w8a16|<2B = 2.0000 --> |
-| `w8a16\|>10B` | 31<!-- claim: cell_train_rows::w8a16|>10B = 31.0000 --> | 5<!-- claim: cell_train_ckpt::w8a16|>10B = 5.0000 --> |
-| `w8a8_int\|2-10B` | 93<!-- claim: cell_train_rows::w8a8_int|2-10B = 93.0000 --> | 12<!-- claim: cell_train_ckpt::w8a8_int|2-10B = 12.0000 --> |
-| `w8a8_int\|<2B` | 29<!-- claim: cell_train_rows::w8a8_int|<2B = 29.0000 --> | 4<!-- claim: cell_train_ckpt::w8a8_int|<2B = 4.0000 --> |
-| `w8a8_int\|>10B` | 72<!-- claim: cell_train_rows::w8a8_int|>10B = 72.0000 --> | 8<!-- claim: cell_train_ckpt::w8a8_int|>10B = 8.0000 --> |
+| `fp8_dynamic\|2-10B` | 87<!-- claim: cell_train_rows::fp8_dynamic\|2-10B = 87.0000 --> | 10<!-- claim: cell_train_ckpt::fp8_dynamic\|2-10B = 10.0000 --> |
+| `fp8_dynamic\|<2B` | 19<!-- claim: cell_train_rows::fp8_dynamic\|<2B = 19.0000 --> | 3<!-- claim: cell_train_ckpt::fp8_dynamic\|<2B = 3.0000 --> |
+| `fp8_dynamic\|>10B` | 94<!-- claim: cell_train_rows::fp8_dynamic\|>10B = 94.0000 --> | 9<!-- claim: cell_train_ckpt::fp8_dynamic\|>10B = 9.0000 --> |
+| `fp8\|2-10B` | 43<!-- claim: cell_train_rows::fp8\|2-10B = 43.0000 --> | 7<!-- claim: cell_train_ckpt::fp8\|2-10B = 7.0000 --> |
+| `fp8\|<2B` | 6<!-- claim: cell_train_rows::fp8\|<2B = 6.0000 --> | 1<!-- claim: cell_train_ckpt::fp8\|<2B = 1.0000 --> |
+| `fp8\|>10B` | 31<!-- claim: cell_train_rows::fp8\|>10B = 31.0000 --> | 5<!-- claim: cell_train_ckpt::fp8\|>10B = 5.0000 --> |
+| `nvfp4\|2-10B` | 13<!-- claim: cell_train_rows::nvfp4\|2-10B = 13.0000 --> | 1<!-- claim: cell_train_ckpt::nvfp4\|2-10B = 1.0000 --> |
+| `nvfp4\|>10B` | 51<!-- claim: cell_train_rows::nvfp4\|>10B = 51.0000 --> | 4<!-- claim: cell_train_ckpt::nvfp4\|>10B = 4.0000 --> |
+| `w4a16\|2-10B` | 102<!-- claim: cell_train_rows::w4a16\|2-10B = 102.0000 --> | 13<!-- claim: cell_train_ckpt::w4a16\|2-10B = 13.0000 --> |
+| `w4a16\|<2B` | 11<!-- claim: cell_train_rows::w4a16\|<2B = 11.0000 --> | 2<!-- claim: cell_train_ckpt::w4a16\|<2B = 2.0000 --> |
+| `w4a16\|>10B` | 80<!-- claim: cell_train_rows::w4a16\|>10B = 80.0000 --> | 8<!-- claim: cell_train_ckpt::w4a16\|>10B = 8.0000 --> |
+| `w8a16\|2-10B` | 43<!-- claim: cell_train_rows::w8a16\|2-10B = 43.0000 --> | 8<!-- claim: cell_train_ckpt::w8a16\|2-10B = 8.0000 --> |
+| `w8a16\|<2B` | 12<!-- claim: cell_train_rows::w8a16\|<2B = 12.0000 --> | 2<!-- claim: cell_train_ckpt::w8a16\|<2B = 2.0000 --> |
+| `w8a16\|>10B` | 31<!-- claim: cell_train_rows::w8a16\|>10B = 31.0000 --> | 5<!-- claim: cell_train_ckpt::w8a16\|>10B = 5.0000 --> |
+| `w8a8_int\|2-10B` | 93<!-- claim: cell_train_rows::w8a8_int\|2-10B = 93.0000 --> | 12<!-- claim: cell_train_ckpt::w8a8_int\|2-10B = 12.0000 --> |
+| `w8a8_int\|<2B` | 29<!-- claim: cell_train_rows::w8a8_int\|<2B = 29.0000 --> | 4<!-- claim: cell_train_ckpt::w8a8_int\|<2B = 4.0000 --> |
+| `w8a8_int\|>10B` | 72<!-- claim: cell_train_rows::w8a8_int\|>10B = 72.0000 --> | 8<!-- claim: cell_train_ckpt::w8a8_int\|>10B = 8.0000 --> |
 
 MoE support is 24<!-- claim: moe_rows = 24.0000 --> rows from 4<!-- claim: moe_checkpoints = 4.0000 --> checkpoints, all Mixtral, which is why MoE is carried as a flag rather than its own interval.
 
@@ -99,23 +99,23 @@ Two coverage figures are given. **One-sided** is how often the true result staye
 
 | cell | scored rows | checkpoints | one-sided | two-sided |
 |---|---|---|---|---|
-| `w4a16\|<2B` | 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> | 2<!-- claim: cell_ckpts::w4a16|<2B = 2.0000 --> | 70.1<!-- claim: cell_one_sided_pct::w4a16|<2B = 70.1299 -->% **refused** | 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->% |
-| `w8a16\|>10B` | 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 --> | 5<!-- claim: cell_ckpts::w8a16|>10B = 5.0000 --> | 81.1<!-- claim: cell_one_sided_pct::w8a16|>10B = 81.1060 -->% **refused** | 73.7<!-- claim: cell_coverage_pct::w8a16|>10B = 73.7327 -->% |
-| `fp8\|2-10B` | 301<!-- claim: cell_rows::fp8|2-10B = 301.0000 --> | 7<!-- claim: cell_ckpts::fp8|2-10B = 7.0000 --> | 91.0<!-- claim: cell_one_sided_pct::fp8|2-10B = 91.0299 -->% | 88.4<!-- claim: cell_coverage_pct::fp8|2-10B = 88.3721 -->% |
-| `w4a16\|2-10B` | 714<!-- claim: cell_rows::w4a16|2-10B = 714.0000 --> | 13<!-- claim: cell_ckpts::w4a16|2-10B = 13.0000 --> | 93.3<!-- claim: cell_one_sided_pct::w4a16|2-10B = 93.2773 -->% | 89.4<!-- claim: cell_coverage_pct::w4a16|2-10B = 89.3557 -->% |
-| `w8a8_int\|>10B` | 504<!-- claim: cell_rows::w8a8_int|>10B = 504.0000 --> | 8<!-- claim: cell_ckpts::w8a8_int|>10B = 8.0000 --> | 93.1<!-- claim: cell_one_sided_pct::w8a8_int|>10B = 93.0556 -->% | 89.9<!-- claim: cell_coverage_pct::w8a8_int|>10B = 89.8810 -->% |
-| `w8a8_int\|<2B` | 203<!-- claim: cell_rows::w8a8_int|<2B = 203.0000 --> | 4<!-- claim: cell_ckpts::w8a8_int|<2B = 4.0000 --> | 94.1<!-- claim: cell_one_sided_pct::w8a8_int|<2B = 94.0887 -->% | 91.1<!-- claim: cell_coverage_pct::w8a8_int|<2B = 91.1330 -->% |
-| `fp8_dynamic\|>10B` | 658<!-- claim: cell_rows::fp8_dynamic|>10B = 658.0000 --> | 9<!-- claim: cell_ckpts::fp8_dynamic|>10B = 9.0000 --> | 97.3<!-- claim: cell_one_sided_pct::fp8_dynamic|>10B = 97.2644 -->% | 91.2<!-- claim: cell_coverage_pct::fp8_dynamic|>10B = 91.1854 -->% |
-| `fp8_dynamic\|2-10B` | 609<!-- claim: cell_rows::fp8_dynamic|2-10B = 609.0000 --> | 10<!-- claim: cell_ckpts::fp8_dynamic|2-10B = 10.0000 --> | 97.4<!-- claim: cell_one_sided_pct::fp8_dynamic|2-10B = 97.3727 -->% | 91.5<!-- claim: cell_coverage_pct::fp8_dynamic|2-10B = 91.4614 -->% |
-| `fp8\|>10B` | 217<!-- claim: cell_rows::fp8|>10B = 217.0000 --> | 5<!-- claim: cell_ckpts::fp8|>10B = 5.0000 --> | 94.5<!-- claim: cell_one_sided_pct::fp8|>10B = 94.4700 -->% | 91.7<!-- claim: cell_coverage_pct::fp8|>10B = 91.7051 -->% |
-| `w4a16\|>10B` | 560<!-- claim: cell_rows::w4a16|>10B = 560.0000 --> | 8<!-- claim: cell_ckpts::w4a16|>10B = 8.0000 --> | 98.8<!-- claim: cell_one_sided_pct::w4a16|>10B = 98.7500 -->% | 92.5<!-- claim: cell_coverage_pct::w4a16|>10B = 92.5000 -->% |
-| `nvfp4\|>10B` | 357<!-- claim: cell_rows::nvfp4|>10B = 357.0000 --> | 4<!-- claim: cell_ckpts::nvfp4|>10B = 4.0000 --> | 95.0<!-- claim: cell_one_sided_pct::nvfp4|>10B = 94.9580 -->% | 92.7<!-- claim: cell_coverage_pct::nvfp4|>10B = 92.7171 -->% |
-| `w8a16\|2-10B` | 301<!-- claim: cell_rows::w8a16|2-10B = 301.0000 --> | 8<!-- claim: cell_ckpts::w8a16|2-10B = 8.0000 --> | 97.3<!-- claim: cell_one_sided_pct::w8a16|2-10B = 97.3422 -->% | 93.0<!-- claim: cell_coverage_pct::w8a16|2-10B = 93.0233 -->% |
-| `w8a8_int\|2-10B` | 651<!-- claim: cell_rows::w8a8_int|2-10B = 651.0000 --> | 12<!-- claim: cell_ckpts::w8a8_int|2-10B = 12.0000 --> | 98.6<!-- claim: cell_one_sided_pct::w8a8_int|2-10B = 98.6175 -->% | 95.2<!-- claim: cell_coverage_pct::w8a8_int|2-10B = 95.2381 -->% |
-| `nvfp4\|2-10B` | 91<!-- claim: cell_rows::nvfp4|2-10B = 91.0000 --> | 1<!-- claim: cell_ckpts::nvfp4|2-10B = 1.0000 --> | 98.9<!-- claim: cell_one_sided_pct::nvfp4|2-10B = 98.9011 -->% | 95.6<!-- claim: cell_coverage_pct::nvfp4|2-10B = 95.6044 -->% |
-| `fp8_dynamic\|<2B` | 133<!-- claim: cell_rows::fp8_dynamic|<2B = 133.0000 --> | 3<!-- claim: cell_ckpts::fp8_dynamic|<2B = 3.0000 --> | 97.7<!-- claim: cell_one_sided_pct::fp8_dynamic|<2B = 97.7444 -->% | 97.7<!-- claim: cell_coverage_pct::fp8_dynamic|<2B = 97.7444 -->% |
-| `w8a16\|<2B` | 84<!-- claim: cell_rows::w8a16|<2B = 84.0000 --> | 2<!-- claim: cell_ckpts::w8a16|<2B = 2.0000 --> | 100.0<!-- claim: cell_one_sided_pct::w8a16|<2B = 100.0000 -->% | 98.8<!-- claim: cell_coverage_pct::w8a16|<2B = 98.8095 -->% |
-| `fp8\|<2B` | 42<!-- claim: cell_rows::fp8|<2B = 42.0000 --> | 1<!-- claim: cell_ckpts::fp8|<2B = 1.0000 --> | 100.0<!-- claim: cell_one_sided_pct::fp8|<2B = 100.0000 -->% | 100.0<!-- claim: cell_coverage_pct::fp8|<2B = 100.0000 -->% |
+| `w4a16\|<2B` | 77<!-- claim: cell_rows::w4a16\|<2B = 77.0000 --> | 2<!-- claim: cell_ckpts::w4a16\|<2B = 2.0000 --> | 70.1<!-- claim: cell_one_sided_pct::w4a16\|<2B = 70.1299 -->% **refused** | 68.8<!-- claim: cell_coverage_pct::w4a16\|<2B = 68.8312 -->% |
+| `w8a16\|>10B` | 217<!-- claim: cell_rows::w8a16\|>10B = 217.0000 --> | 5<!-- claim: cell_ckpts::w8a16\|>10B = 5.0000 --> | 81.1<!-- claim: cell_one_sided_pct::w8a16\|>10B = 81.1060 -->% **refused** | 73.7<!-- claim: cell_coverage_pct::w8a16\|>10B = 73.7327 -->% |
+| `fp8\|2-10B` | 301<!-- claim: cell_rows::fp8\|2-10B = 301.0000 --> | 7<!-- claim: cell_ckpts::fp8\|2-10B = 7.0000 --> | 91.0<!-- claim: cell_one_sided_pct::fp8\|2-10B = 91.0299 -->% | 88.4<!-- claim: cell_coverage_pct::fp8\|2-10B = 88.3721 -->% |
+| `w4a16\|2-10B` | 714<!-- claim: cell_rows::w4a16\|2-10B = 714.0000 --> | 13<!-- claim: cell_ckpts::w4a16\|2-10B = 13.0000 --> | 93.3<!-- claim: cell_one_sided_pct::w4a16\|2-10B = 93.2773 -->% | 89.4<!-- claim: cell_coverage_pct::w4a16\|2-10B = 89.3557 -->% |
+| `w8a8_int\|>10B` | 504<!-- claim: cell_rows::w8a8_int\|>10B = 504.0000 --> | 8<!-- claim: cell_ckpts::w8a8_int\|>10B = 8.0000 --> | 93.1<!-- claim: cell_one_sided_pct::w8a8_int\|>10B = 93.0556 -->% | 89.9<!-- claim: cell_coverage_pct::w8a8_int\|>10B = 89.8810 -->% |
+| `w8a8_int\|<2B` | 203<!-- claim: cell_rows::w8a8_int\|<2B = 203.0000 --> | 4<!-- claim: cell_ckpts::w8a8_int\|<2B = 4.0000 --> | 94.1<!-- claim: cell_one_sided_pct::w8a8_int\|<2B = 94.0887 -->% | 91.1<!-- claim: cell_coverage_pct::w8a8_int\|<2B = 91.1330 -->% |
+| `fp8_dynamic\|>10B` | 658<!-- claim: cell_rows::fp8_dynamic\|>10B = 658.0000 --> | 9<!-- claim: cell_ckpts::fp8_dynamic\|>10B = 9.0000 --> | 97.3<!-- claim: cell_one_sided_pct::fp8_dynamic\|>10B = 97.2644 -->% | 91.2<!-- claim: cell_coverage_pct::fp8_dynamic\|>10B = 91.1854 -->% |
+| `fp8_dynamic\|2-10B` | 609<!-- claim: cell_rows::fp8_dynamic\|2-10B = 609.0000 --> | 10<!-- claim: cell_ckpts::fp8_dynamic\|2-10B = 10.0000 --> | 97.4<!-- claim: cell_one_sided_pct::fp8_dynamic\|2-10B = 97.3727 -->% | 91.5<!-- claim: cell_coverage_pct::fp8_dynamic\|2-10B = 91.4614 -->% |
+| `fp8\|>10B` | 217<!-- claim: cell_rows::fp8\|>10B = 217.0000 --> | 5<!-- claim: cell_ckpts::fp8\|>10B = 5.0000 --> | 94.5<!-- claim: cell_one_sided_pct::fp8\|>10B = 94.4700 -->% | 91.7<!-- claim: cell_coverage_pct::fp8\|>10B = 91.7051 -->% |
+| `w4a16\|>10B` | 560<!-- claim: cell_rows::w4a16\|>10B = 560.0000 --> | 8<!-- claim: cell_ckpts::w4a16\|>10B = 8.0000 --> | 98.8<!-- claim: cell_one_sided_pct::w4a16\|>10B = 98.7500 -->% | 92.5<!-- claim: cell_coverage_pct::w4a16\|>10B = 92.5000 -->% |
+| `nvfp4\|>10B` | 357<!-- claim: cell_rows::nvfp4\|>10B = 357.0000 --> | 4<!-- claim: cell_ckpts::nvfp4\|>10B = 4.0000 --> | 95.0<!-- claim: cell_one_sided_pct::nvfp4\|>10B = 94.9580 -->% | 92.7<!-- claim: cell_coverage_pct::nvfp4\|>10B = 92.7171 -->% |
+| `w8a16\|2-10B` | 301<!-- claim: cell_rows::w8a16\|2-10B = 301.0000 --> | 8<!-- claim: cell_ckpts::w8a16\|2-10B = 8.0000 --> | 97.3<!-- claim: cell_one_sided_pct::w8a16\|2-10B = 97.3422 -->% | 93.0<!-- claim: cell_coverage_pct::w8a16\|2-10B = 93.0233 -->% |
+| `w8a8_int\|2-10B` | 651<!-- claim: cell_rows::w8a8_int\|2-10B = 651.0000 --> | 12<!-- claim: cell_ckpts::w8a8_int\|2-10B = 12.0000 --> | 98.6<!-- claim: cell_one_sided_pct::w8a8_int\|2-10B = 98.6175 -->% | 95.2<!-- claim: cell_coverage_pct::w8a8_int\|2-10B = 95.2381 -->% |
+| `nvfp4\|2-10B` | 91<!-- claim: cell_rows::nvfp4\|2-10B = 91.0000 --> | 1<!-- claim: cell_ckpts::nvfp4\|2-10B = 1.0000 --> | 98.9<!-- claim: cell_one_sided_pct::nvfp4\|2-10B = 98.9011 -->% | 95.6<!-- claim: cell_coverage_pct::nvfp4\|2-10B = 95.6044 -->% |
+| `fp8_dynamic\|<2B` | 133<!-- claim: cell_rows::fp8_dynamic\|<2B = 133.0000 --> | 3<!-- claim: cell_ckpts::fp8_dynamic\|<2B = 3.0000 --> | 97.7<!-- claim: cell_one_sided_pct::fp8_dynamic\|<2B = 97.7444 -->% | 97.7<!-- claim: cell_coverage_pct::fp8_dynamic\|<2B = 97.7444 -->% |
+| `w8a16\|<2B` | 84<!-- claim: cell_rows::w8a16\|<2B = 84.0000 --> | 2<!-- claim: cell_ckpts::w8a16\|<2B = 2.0000 --> | 100.0<!-- claim: cell_one_sided_pct::w8a16\|<2B = 100.0000 -->% | 98.8<!-- claim: cell_coverage_pct::w8a16\|<2B = 98.8095 -->% |
+| `fp8\|<2B` | 42<!-- claim: cell_rows::fp8\|<2B = 42.0000 --> | 1<!-- claim: cell_ckpts::fp8\|<2B = 1.0000 --> | 100.0<!-- claim: cell_one_sided_pct::fp8\|<2B = 100.0000 -->% | 100.0<!-- claim: cell_coverage_pct::fp8\|<2B = 100.0000 -->% |
 
 | size band | coverage |
 |---|---|
@@ -123,7 +123,7 @@ Two coverage figures are given. **One-sided** is how often the true result staye
 | 2-10B | 91.8<!-- claim: band_coverage_pct::2-10B = 91.7885 -->% |
 | >10B | 90.0<!-- claim: band_coverage_pct::>10B = 89.9721 -->% |
 
-Two cells fall below the 85<!-- claim: poor_coverage_threshold_pct = 85.0000 -->% threshold. For those combinations the tool prints `INSUFFICIENT CALIBRATION` and no interval, because a number shown there would look exactly as confident as a well-calibrated one. Neither can be fixed with current data: `w4a16\|<2B` has 11<!-- claim: cell_train_rows::w4a16|<2B = 11.0000 --> training rows from 2<!-- claim: cell_train_ckpt::w4a16|<2B = 2.0000 --> checkpoints, and the widening that would fix `w8a16\|>10B` needs 9+ calibration rows and rarely gets them.
+Two cells fall below the 85<!-- claim: poor_coverage_threshold_pct = 85.0000 -->% threshold. For those combinations the tool prints `INSUFFICIENT CALIBRATION` and no interval, because a number shown there would look exactly as confident as a well-calibrated one. Neither can be fixed with current data: `w4a16\|<2B` has 11<!-- claim: cell_train_rows::w4a16\|<2B = 11.0000 --> training rows from 2<!-- claim: cell_train_ckpt::w4a16\|<2B = 2.0000 --> checkpoints, and the widening that would fix `w8a16\|>10B` needs 9+ calibration rows and rarely gets them.
 
 ### Training support floor
 
@@ -133,10 +133,10 @@ Measured coverage alone cannot earn Tier A. A size cell must also rest on at lea
 
 | cell | training rows | checkpoints | measured coverage | Tier A? |
 |---|---|---|---|---|
-| `fp8\|<2B` | 6<!-- claim: cell_train_rows2::fp8|<2B = 6.0000 --> | 1<!-- claim: cell_train_ckpt2::fp8|<2B = 1.0000 --> | 100.0<!-- claim: cell_coverage_pct::fp8|<2B = 100.0000 -->% | blocked |
-| `nvfp4\|2-10B` | 13<!-- claim: cell_train_rows2::nvfp4|2-10B = 13.0000 --> | 1<!-- claim: cell_train_ckpt2::nvfp4|2-10B = 1.0000 --> | 95.6<!-- claim: cell_coverage_pct::nvfp4|2-10B = 95.6044 -->% | blocked |
-| `w4a16\|<2B` | 11<!-- claim: cell_train_rows2::w4a16|<2B = 11.0000 --> | 2<!-- claim: cell_train_ckpt2::w4a16|<2B = 2.0000 --> | 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->% | blocked |
-| `w8a16\|<2B` | 12<!-- claim: cell_train_rows2::w8a16|<2B = 12.0000 --> | 2<!-- claim: cell_train_ckpt2::w8a16|<2B = 2.0000 --> | 98.8<!-- claim: cell_coverage_pct::w8a16|<2B = 98.8095 -->% | blocked |
+| `fp8\|<2B` | 6<!-- claim: cell_train_rows2::fp8\|<2B = 6.0000 --> | 1<!-- claim: cell_train_ckpt2::fp8\|<2B = 1.0000 --> | 100.0<!-- claim: cell_coverage_pct::fp8\|<2B = 100.0000 -->% | blocked |
+| `nvfp4\|2-10B` | 13<!-- claim: cell_train_rows2::nvfp4\|2-10B = 13.0000 --> | 1<!-- claim: cell_train_ckpt2::nvfp4\|2-10B = 1.0000 --> | 95.6<!-- claim: cell_coverage_pct::nvfp4\|2-10B = 95.6044 -->% | blocked |
+| `w4a16\|<2B` | 11<!-- claim: cell_train_rows2::w4a16\|<2B = 11.0000 --> | 2<!-- claim: cell_train_ckpt2::w4a16\|<2B = 2.0000 --> | 68.8<!-- claim: cell_coverage_pct::w4a16\|<2B = 68.8312 -->% | blocked |
+| `w8a16\|<2B` | 12<!-- claim: cell_train_rows2::w8a16\|<2B = 12.0000 --> | 2<!-- claim: cell_train_ckpt2::w8a16\|<2B = 2.0000 --> | 98.8<!-- claim: cell_coverage_pct::w8a16\|<2B = 98.8095 -->% | blocked |
 
 Three of these have excellent measured coverage. That is the point: high coverage on one checkpoint is not evidence that the interval generalises, only that it fitted one model.
 

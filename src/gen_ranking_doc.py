@@ -32,9 +32,17 @@ def v(key):
 
 
 def n(key, fmt="{:.0f}"):
-    """Emit a number together with the tag that lets it be re-verified."""
+    """Emit a number together with the tag that lets it be re-verified.
+
+    The pipe in a key such as `cell_rows::w4a16|<2B` is escaped: GFM treats an
+    unescaped pipe as a column delimiter anywhere in a table row, including
+    inside an HTML comment, so leaving it raw splits the row and prints the tag
+    as visible text on github.com. python-markdown is permissive, so a local
+    render gives no warning. The claim parsers unescape it on read.
+    """
     val = v(key)
-    return f"{fmt.format(val)}<!-- claim: {key} = {val:.4f} -->"
+    safe = key.replace("|", chr(92) + "|")
+    return f"{fmt.format(val)}<!-- claim: {safe} = {val:.4f} -->"
 
 
 def main():
