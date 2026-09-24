@@ -60,6 +60,13 @@ QUANT_HINT = re.compile(
     r"(fp8|w4a16|w8a8|w8a16|int8|int4|nvfp4|mxfp4|quantized|compressed|"
     r"this model|awq|gptq)", re.I
 )
+# Column headers that name the UNQUANTIZED parent. Needed for cards that
+# tabulate a base against several quantized variants at once (4+ numeric
+# columns), which the 2/3-column logic below cannot orient.
+BASE_HINT = re.compile(
+    r"(bf16|fp16|fp32|float16|baseline|original|unquantized|dense|"
+    r"full[- ]precision|non[- ]quantized|base model|\bbase\b)", re.I
+)
 
 
 AGGREGATE_RE = re.compile(r"average|recovery|^score$")
@@ -225,6 +232,25 @@ def table_layout(table):
     return {"width": width, "rec_idx": None, "quant_idx": None}
 
 
+def _base_column(header_cells, width):
+    """Index of the unquantized-parent column among `width` numeric columns.
+
+    Returns None unless exactly one column is identifiable as the base, so an
+    ambiguous header produces no rows rather than a guessed pairing.
+    """
+    if not header_cells or len(header_cells) < width:
+        return None
+    tail = header_cells[-width:]
+    hits = [i for i, c in enumerate(tail) if BASE_HINT.search(c)]
+    if len(hits) != 1:
+        return None
+    # a column naming a quantization scheme is not the base, even if it also
+    # matches a base hint (e.g. "W8A16" contains "16")
+    if QUANT_HINT.search(tail[hits[0]]):
+        return None
+    return hits[0]
+
+
 def _candidate_tiers(layout):
     """
     Ordered tiers of candidate column assignments as INDEX triples
@@ -282,6 +308,12 @@ def extract(text, diag=None):
     for table, layout in tables:
         swap = bool(layout and layout.get("quant_idx") == 0
                     and layout.get("rec_idx") != 0)
+        # the header is the first row with no numeric run; kept so that a
+        # wide table (base against several variants) can be oriented
+        header_cells = None
+        for cells in table:
+            if header_cells is None and not parse_row(cells)[1]:
+                header_cells = [c for c in cells if c.strip()]
         for cells in table:
             label, nums = parse_row(cells)
             if label is None or not nums:
@@ -295,9 +327,29 @@ def extract(text, diag=None):
                 continue
 
             raw = cells[len(cells) - len(nums):]
-            if len(nums) not in (2, 3):
+            if len(nums) < 2:
                 if diag is not None:
                     diag.append((f"numeric_run_len_{len(nums)}", bench))
+                continue
+            if len(nums) > 3 and _base_column(header_cells, len(nums)) is None:
+                # wide table we cannot orient: record it rather than dropping
+                # it silently, so the census can count what we fail to read
+                if diag is not None:
+                    diag.append((f"wide_table_unoriented_{len(nums)}", bench))
+                continue
+
+            if len(nums) == 3 and (layout is None
+                                   or layout.get("rec_idx") is None) \
+                    and _base_column(header_cells, 3) is not None:
+                # base against two quantized variants, with no recovery column
+                # to verify against (Intel's layout). Emit both pairs, marked
+                # sign-unverifiable, rather than failing the recovery check and
+                # rejecting a table that is perfectly readable.
+                bi = _base_column(header_cells, 3)
+                if min(nums) > 0:
+                    for ai in range(3):
+                        if ai != bi:
+                            yield bench, nums[bi], nums[ai], "multicol"
                 continue
 
             if len(nums) == 3:
@@ -333,7 +385,22 @@ def extract(text, diag=None):
                 a, b = nums
                 before, after = (b, a) if swap else (a, b)
                 yield bench, before, after, "header_only"
-            # len(nums) not in (2,3): ambiguous, skip silently
+            elif len(nums) > 3:
+                # A base column tabulated against several quantized variants.
+                # Each (base, variant) pair is a legitimate paired measurement,
+                # so emit one row per variant rather than dropping the table.
+                #
+                # There is no recovery column to check these against, so they
+                # are marked "multicol" and are sign-unverifiable by the same
+                # standard as two-column tables. They are deliberately given a
+                # distinct orientation tag so they can be excluded from any
+                # strict, recovery-verified subset.
+                bi = _base_column(header_cells, len(nums))
+                if bi is not None:
+                    for ai in range(len(nums)):
+                        if ai == bi:
+                            continue
+                        yield bench, nums[bi], nums[ai], "multicol"
 
 
 # ---------------------------------------------------------------- config parse

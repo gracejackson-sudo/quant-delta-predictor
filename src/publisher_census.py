@@ -28,6 +28,7 @@ from concurrent.futures import ThreadPoolExecutor
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import harvest  # noqa: E402
+import diskguard  # noqa: E402
 
 OUT = os.path.join(HERE, "..", "out")
 CACHE = os.path.join(OUT, "publisher_cards")
@@ -112,6 +113,9 @@ def survey(author):
 
 
 def main():
+    # cards are small but there are hundreds of them
+    print(diskguard.report("card cache", 0.5))
+    diskguard.require_free_gb(0.5, "the publisher card cache")
     os.makedirs(OUT, exist_ok=True)
     results = [survey(p) for p in PUBLISHERS]
 

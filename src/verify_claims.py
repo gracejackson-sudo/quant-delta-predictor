@@ -227,6 +227,20 @@ def registry():
             "RedHatAI rows our recovery gate can verify (positive control)")
         add("pub_others_count", len(oth), 0, "publishers other than RedHatAI")
 
+    cq = os.path.join(HERE, "..", "out", "card_quality.json")
+    if os.path.exists(cq):
+        q = json.load(open(cq))
+        pp = q["per_publisher"]
+        add("cq_cards_scored", q["n_cards"], 0, "model cards scored")
+        add("cq_publishers", q["n_publishers"], 0, "publishers scored")
+        add("cq_rec_redhat", pp["RedHatAI"]["recovery_printed"], 0.1,
+            "% RedHatAI cards printing a recovery figure")
+        add("cq_rec_best_other", max(
+            v["recovery_printed"] for k, v in pp.items() if k != "RedHatAI"),
+            0.1, "best non-RedHatAI recovery-printing rate")
+        add("cq_parser_missed", q["parser_missed_total"], 0,
+            "cards with a benchmark table the parser could not read")
+
     bce = os.path.join(HERE, "..", "out", "bias_correction_empirical.json")
     if os.path.exists(bce):
         b_ = json.load(open(bce))

@@ -32,7 +32,9 @@ import torch.nn as nn
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-DEV = "cuda"
+# Resolves to cuda on a GPU box, so GPU numerics are unchanged; falls back
+# to cpu so the harness can be smoke-tested before any metered instance.
+DEV = "cuda" if torch.cuda.is_available() else "cpu"
 SEED = 1234
 OUTDIR = "/home/ubuntu/work"
 N_MMLU = 3000

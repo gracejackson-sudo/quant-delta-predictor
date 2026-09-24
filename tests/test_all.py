@@ -808,3 +808,36 @@ def test_no_hand_typed_numbers_in_outward_facing_docs():
     """
     import audit_traceability
     assert audit_traceability.main() == 0
+
+
+# --------------------------------------------------------------- disk guard
+def test_diskguard_refuses_impossible_download():
+    """The guard must refuse, not warn, when space is short.
+
+    Two downloads filled the disk on 2026-09-23 before this existed. The
+    failure mode that matters is proceeding anyway, so this asserts the
+    refusal is an exception rather than a printed message.
+    """
+    import diskguard
+    with pytest.raises(SystemExit) as e:
+        diskguard.require_free_gb(10_000_000, "an impossible download")
+    assert "REFUSING TO START" in str(e.value)
+    assert "Nothing has been downloaded" in str(e.value)
+
+
+def test_diskguard_allows_when_space_is_ample():
+    import diskguard
+    assert diskguard.require_free_gb(0.0, "a zero-byte download") > 0
+
+
+def test_download_scripts_are_guarded():
+    """Every script that downloads must consult the guard first."""
+    import os
+    here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for rel in ("src/publisher_census.py", "gpu/lora_forgetting.py"):
+        p = os.path.join(here, rel)
+        if not os.path.exists(p):
+            continue
+        src = open(p).read()
+        assert "diskguard" in src, f"{rel} downloads but does not check disk"
+        assert "require_free_gb" in src, f"{rel} imports guard but never calls it"

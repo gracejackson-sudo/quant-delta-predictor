@@ -1,0 +1,71 @@
+{
+  "standard": [
+    "base_named",
+    "before_reported",
+    "after_reported",
+    "recovery_printed",
+    "recovery_checks",
+    "harness_stated"
+  ],
+  "n_cards": 339,
+  "n_publishers": 5,
+  "per_publisher": {
+    "RedHatAI": {
+      "cards": 182,
+      "mean_score_of_6": 4.68,
+      "base_named": 84.6,
+      "before_reported": 76.4,
+      "after_reported": 76.4,
+      "recovery_printed": 77.5,
+      "recovery_checks": 72.0,
+      "harness_stated": 81.3,
+      "parser_missed": 4
+    },
+    "Intel": {
+      "cards": 40,
+      "mean_score_of_6": 1.0,
+      "base_named": 52.5,
+      "before_reported": 12.5,
+      "after_reported": 12.5,
+      "recovery_printed": 0.0,
+      "recovery_checks": 0.0,
+      "harness_stated": 22.5,
+      "parser_missed": 4
+    },
+    "ModelCloud": {
+      "cards": 37,
+      "mean_score_of_6": 0.38,
+      "base_named": 27.0,
+      "before_reported": 0.0,
+      "after_reported": 0.0,
+      "recovery_printed": 0.0,
+      "recovery_checks": 0.0,
+      "harness_stated": 10.8,
+      "parser_missed": 6
+    },
+    "TheBloke": {
+      "cards": 40,
+      "mean_score_of_6": 0.9,
+      "base_named": 87.5,
+      "before_reported": 0.0,
+      "after_reported": 0.0,
+      "recovery_printed": 0.0,
+      "recovery_checks": 0.0,
+      "harness_stated": 2.5,
+      "parser_missed": 0
+    },
+    "unsloth": {
+      "cards": 40,
+      "mean_score_of_6": 0.75,
+      "base_named": 52.5,
+      "before_reported": 0.0,
+      "after_reported": 0.0,
+      "recovery_printed": 2.5,
+      "recovery_checks": 0.0,
+      "harness_stated": 20.0,
+      "parser_missed": 5
+    }
+  },
+  "parser_missed_total": 19,
+  "note": "No overall 'percentage checkable' is reported: checks C2/C3/C5 use a parser written for one publisher's layout and measurably under-read the others."
+}
