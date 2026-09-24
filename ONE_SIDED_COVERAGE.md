@@ -15,39 +15,39 @@ Every figure below was recomputed from `data/dataset.csv` by `src/one_sided_audi
 | check | they claimed | we computed | verdict |
 |---|---|---|---|
 | pooled coverage | 91.0% / 5719 | 91.0<!-- claim: os_pooled_pct = 90.9600 -->% / 5719<!-- claim: os_pooled_rows = 5719.0000 --> | matches |
-| `w8a16\|>10B` two-sided | 73.7% / 217 | 73.7<!-- claim: os_two_sided_pct::w8a16|>10B = 73.7327 -->% / 217<!-- claim: os_scored_rows::w8a16|>10B = 217.0000 --> | matches |
-| `w4a16\|<2B` two-sided | 68.8% / 77 | 68.8<!-- claim: os_two_sided_pct::w4a16|<2B = 68.8312 -->% / 77<!-- claim: os_scored_rows::w4a16|<2B = 77.0000 --> | matches |
-| `w8a16\|>10B` checkpoints | 5 | 5<!-- claim: os_distinct_checkpoints::w8a16|>10B = 5.0000 --> | matches |
-| `w8a16\|>10B` distinct (model, benchmark) | 31 | 31<!-- claim: os_distinct_model_benchmark::w8a16|>10B = 31.0000 --> | matches |
-| `w4a16\|<2B` checkpoints | 2 | 2<!-- claim: os_distinct_checkpoints::w4a16|<2B = 2.0000 --> | matches |
-| `w4a16\|<2B` distinct rows | 11 | 11<!-- claim: os_distinct_model_benchmark::w4a16|<2B = 11.0000 --> | matches |
-| `w8a16\|>10B` one-sided | 81.1% | 81.1<!-- claim: os_one_sided_pct::w8a16|>10B = 81.1060 -->% | matches |
-| `w4a16\|<2B` below lower bound | 29.9% | 29.9<!-- claim: os_below_lo_pct::w4a16|<2B = 29.8701 -->% | matches |
-| `w8a16\|>10B` cluster 90% interval | [46%, 98%] | [46<!-- claim: os_boot90_lo::w8a16|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16|>10B = 98.1000 -->%] | matches |
+| `w8a16\|>10B` two-sided | 73.7% / 217 | 73.7<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.7327 -->% / 217<!-- claim: os_scored_rows::w8a16\|>10B = 217.0000 --> | matches |
+| `w4a16\|<2B` two-sided | 68.8% / 77 | 68.8<!-- claim: os_two_sided_pct::w4a16\|<2B = 68.8312 -->% / 77<!-- claim: os_scored_rows::w4a16\|<2B = 77.0000 --> | matches |
+| `w8a16\|>10B` checkpoints | 5 | 5<!-- claim: os_distinct_checkpoints::w8a16\|>10B = 5.0000 --> | matches |
+| `w8a16\|>10B` distinct (model, benchmark) | 31 | 31<!-- claim: os_distinct_model_benchmark::w8a16\|>10B = 31.0000 --> | matches |
+| `w4a16\|<2B` checkpoints | 2 | 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> | matches |
+| `w4a16\|<2B` distinct rows | 11 | 11<!-- claim: os_distinct_model_benchmark::w4a16\|<2B = 11.0000 --> | matches |
+| `w8a16\|>10B` one-sided | 81.1% | 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% | matches |
+| `w4a16\|<2B` below lower bound | 29.9% | 29.9<!-- claim: os_below_lo_pct::w4a16\|<2B = 29.8701 -->% | matches |
+| `w8a16\|>10B` cluster 90% interval | [46%, 98%] | [46<!-- claim: os_boot90_lo::w8a16\|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16\|>10B = 98.1000 -->%] | matches |
 
 ### Per-checkpoint coverage, verified against raw data
 
 | checkpoint | measured |
 |---|---|
-| `Meta-Llama-3.1-405B-Instruct` | 66.7<!-- claim: os_ckpt::w8a16|>10B::Meta-Llama-3.1-405B-Instruct = 66.6667 -->% |
-| `Meta-Llama-3.1-70B-Instruct` | 16.3<!-- claim: os_ckpt::w8a16|>10B::Meta-Llama-3.1-70B-Instruct = 16.3265 -->% |
-| `Qwen2.5-32B` | 97.6<!-- claim: os_ckpt::w8a16|>10B::Qwen2.5-32B = 97.6190 -->% |
-| `Qwen2.5-72B` | 97.6<!-- claim: os_ckpt::w8a16|>10B::Qwen2.5-72B = 97.6190 -->% |
-| `gemma-2-27b-it` | 100.0<!-- claim: os_ckpt::w8a16|>10B::gemma-2-27b-it = 100.0000 -->% |
+| `Meta-Llama-3.1-405B-Instruct` | 66.7<!-- claim: os_ckpt::w8a16\|>10B::Meta-Llama-3.1-405B-Instruct = 66.6667 -->% |
+| `Meta-Llama-3.1-70B-Instruct` | 16.3<!-- claim: os_ckpt::w8a16\|>10B::Meta-Llama-3.1-70B-Instruct = 16.3265 -->% |
+| `Qwen2.5-32B` | 97.6<!-- claim: os_ckpt::w8a16\|>10B::Qwen2.5-32B = 97.6190 -->% |
+| `Qwen2.5-72B` | 97.6<!-- claim: os_ckpt::w8a16\|>10B::Qwen2.5-72B = 97.6190 -->% |
+| `gemma-2-27b-it` | 100.0<!-- claim: os_ckpt::w8a16\|>10B::gemma-2-27b-it = 100.0000 -->% |
 
 ### One description of theirs that did not verify
 
-They wrote that every 405B miss is above the upper bound *"(mean delta +0.27pp)"* and every 70B miss below the lower bound *"(mean -1.52pp)"*. The directional split is exactly right. The two means are not the mean delta **of the misses** -- those are +0.74<!-- claim: os_missmean::w8a16|>10B::Meta-Llama-3.1-405B-Instruct = 0.7400 -->pp and -1.85<!-- claim: os_missmean::w8a16|>10B::Meta-Llama-3.1-70B-Instruct = -1.8468 -->pp -- they are the mean delta across **all** rows for each checkpoint. Their arithmetic is correct; the phrasing points at the wrong subset. It does not affect the conclusion.
+They wrote that every 405B miss is above the upper bound *"(mean delta +0.27pp)"* and every 70B miss below the lower bound *"(mean -1.52pp)"*. The directional split is exactly right. The two means are not the mean delta **of the misses** -- those are +0.74<!-- claim: os_missmean::w8a16\|>10B::Meta-Llama-3.1-405B-Instruct = 0.7400 -->pp and -1.85<!-- claim: os_missmean::w8a16\|>10B::Meta-Llama-3.1-70B-Instruct = -1.8468 -->pp -- they are the mean delta across **all** rows for each checkpoint. Their arithmetic is correct; the phrasing points at the wrong subset. It does not affect the conclusion.
 
 ## The conclusion
 
-**`w4a16|<2B` is an earned refusal.** 29.9<!-- claim: os_below_lo_pct::w4a16|<2B = 29.8701 -->% of its rows fall below the lower bound and only 1.3<!-- claim: os_above_hi_pct::w4a16|<2B = 1.2987 -->% above the upper one, so scoring it one-sided barely moves it: 68.8<!-- claim: os_two_sided_pct::w4a16|<2B = 68.8312 -->% to 70.1<!-- claim: os_one_sided_pct::w4a16|<2B = 70.1299 -->%. The damage is real and on the side that matters.
+**`w4a16|<2B` is an earned refusal.** 29.9<!-- claim: os_below_lo_pct::w4a16\|<2B = 29.8701 -->% of its rows fall below the lower bound and only 1.3<!-- claim: os_above_hi_pct::w4a16\|<2B = 1.2987 -->% above the upper one, so scoring it one-sided barely moves it: 68.8<!-- claim: os_two_sided_pct::w4a16\|<2B = 68.8312 -->% to 70.1<!-- claim: os_one_sided_pct::w4a16\|<2B = 70.1299 -->%. The damage is real and on the side that matters.
 
-But the evidence is narrower than the label. Those 77<!-- claim: os_scored_rows::w4a16|<2B = 77.0000 --> rows are 11<!-- claim: os_distinct_model_benchmark::w4a16|<2B = 11.0000 --> distinct (model, benchmark) results from 2<!-- claim: os_distinct_checkpoints::w4a16|<2B = 2.0000 --> checkpoints in 1<!-- claim: os_distinct_families::w4a16|<2B = 1.0000 --> family. **The claim the data supports is about small Qwen, not about every model under 2B.**
+But the evidence is narrower than the label. Those 77<!-- claim: os_scored_rows::w4a16\|<2B = 77.0000 --> rows are 11<!-- claim: os_distinct_model_benchmark::w4a16\|<2B = 11.0000 --> distinct (model, benchmark) results from 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> checkpoints in 1<!-- claim: os_distinct_families::w4a16\|<2B = 1.0000 --> family. **The claim the data supports is about small Qwen, not about every model under 2B.**
 
-**`w8a16|>10B` is substantially a scoring artefact.** 7.4<!-- claim: os_above_hi_pct::w8a16|>10B = 7.3733 -->% of its rows sit *above* the upper bound -- the model beat the envelope, which is not a risk anyone needs protecting from. Counting only losses below the lower bound moves it from 73.7<!-- claim: os_two_sided_pct::w8a16|>10B = 73.7327 -->% to 81.1<!-- claim: os_one_sided_pct::w8a16|>10B = 81.1060 -->%, close to the 90% it claims.
+**`w8a16|>10B` is substantially a scoring artefact.** 7.4<!-- claim: os_above_hi_pct::w8a16\|>10B = 7.3733 -->% of its rows sit *above* the upper bound -- the model beat the envelope, which is not a risk anyone needs protecting from. Counting only losses below the lower bound moves it from 73.7<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.7327 -->% to 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->%, close to the 90% it claims.
 
-What remains after that is one checkpoint. Resampling whole checkpoints puts a 90% interval of [46<!-- claim: os_boot90_lo::w8a16|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16|>10B = 98.1000 -->%] around the headline figure. That span cannot distinguish *this cell is uncalibrated* from *one Llama checkpoint is an outlier*. By contrast `w4a16|<2B` resamples to [63<!-- claim: os_boot90_lo::w4a16|<2B = 62.9000 -->%, 74<!-- claim: os_boot90_hi::w4a16|<2B = 73.8000 -->%] -- the earned refusal is also the better-evidenced one.
+What remains after that is one checkpoint. Resampling whole checkpoints puts a 90% interval of [46<!-- claim: os_boot90_lo::w8a16\|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16\|>10B = 98.1000 -->%] around the headline figure. That span cannot distinguish *this cell is uncalibrated* from *one Llama checkpoint is an outlier*. By contrast `w4a16|<2B` resamples to [63<!-- claim: os_boot90_lo::w4a16\|<2B = 62.9000 -->%, 74<!-- claim: os_boot90_hi::w4a16\|<2B = 73.8000 -->%] -- the earned refusal is also the better-evidenced one.
 
 ## What has changed, and what has not
 
@@ -57,7 +57,7 @@ What remains after that is one checkpoint. Resampling whole checkpoints puts a 9
 
 ## Open question
 
-A cell resting on 2<!-- claim: os_distinct_checkpoints::w4a16|<2B = 2.0000 --> checkpoints and one resting on 5<!-- claim: os_distinct_checkpoints::w8a16|>10B = 5.0000 --> are currently treated as the same kind of evidence, and the tool has only two states: answer, or refuse. Neither fits a cell where the honest position is *there is not enough evidence to judge*. Whether to add that third state is an open design question, recorded here rather than resolved quietly.
+A cell resting on 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> checkpoints and one resting on 5<!-- claim: os_distinct_checkpoints::w8a16\|>10B = 5.0000 --> are currently treated as the same kind of evidence, and the tool has only two states: answer, or refuse. Neither fits a cell where the honest position is *there is not enough evidence to judge*. Whether to add that third state is an open design question, recorded here rather than resolved quietly.
 
 ## Credit
 

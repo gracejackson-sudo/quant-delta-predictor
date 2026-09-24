@@ -9,8 +9,15 @@ R = registry()
 
 
 def n(k, fmt="{:.0f}"):
+    """Figure plus its claim tag.
+
+    The pipe is escaped inside the tag as well as in visible text: GFM treats
+    an unescaped pipe as a column delimiter anywhere in a table row, including
+    inside an HTML comment, which splits the row and exposes the raw tag on
+    github.com. The claim parsers unescape it.
+    """
     v = R[k][0]
-    return f"{fmt.format(v)}<!-- claim: {k} = {v:.4f} -->"
+    return f"{fmt.format(v)}<!-- claim: {k.replace('|', chr(92) + '|')} = {v:.4f} -->"
 
 
 W8, W4 = "w8a16|>10B", "w4a16|<2B"

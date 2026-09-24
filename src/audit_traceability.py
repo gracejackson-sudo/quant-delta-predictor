@@ -18,6 +18,9 @@ OUTWARD = [f for f in ("TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
            if os.path.exists(os.path.join(ROOT, f))]
 
 CLAIM = re.compile(r"<!--\s*claim:\s*([^\s]+)\s*=\s*([-+0-9.]+)\s*-->")
+# keys may carry an escaped pipe (see gen_one_sided_doc.n); undo it
+def _unesc(k):
+    return k.replace("\\|", "|")
 NUM = re.compile(r"(?<![\w.])[-+]?\d+(?:\.\d+)?(?![\d])")
 
 # Numbers that are legitimately literal rather than measured results.

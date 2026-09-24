@@ -379,6 +379,9 @@ def registry():
 
 
 CLAIM_RE = re.compile(r"<!--\s*claim:\s*([^\s]+)\s*=\s*([-+0-9.]+)\s*-->")
+# keys may carry an escaped pipe (see gen_one_sided_doc.n); undo it
+def _unesc(k):
+    return k.replace("\\|", "|")
 
 
 def main():
@@ -387,7 +390,8 @@ def main():
     for d_ in DOCS:
         if not os.path.exists(d_):
             continue
-        found = CLAIM_RE.findall(open(d_, encoding="utf-8").read())
+        found = [(_unesc(k), v) for k, v in
+                 CLAIM_RE.findall(open(d_, encoding="utf-8").read())]
         per_doc[os.path.basename(d_)] = len(found)
         claims += found
     print(f"registry entries : {len(reg)}")
