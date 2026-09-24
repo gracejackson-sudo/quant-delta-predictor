@@ -48,6 +48,9 @@ def registry():
     def add(k, v, tol, how):
         reg[k] = (float(v), tol, how)
 
+    import rank as _R
+    add("refuse_below_pct", 100 * _R.REFUSE_BELOW, 0,
+        "coverage threshold below which a cell is refused")
     add("n_numbers_in_predictor", meta["n_numbers_in_predictor"], 0,
         "2*len(by_scheme) + widening cells")
     add("n_schemes", meta["n_schemes"], 0, "rows in the ranking table")
@@ -226,6 +229,14 @@ def registry():
         add("pub_control_verified_rows", c["control_arith_verified_rows"], 0,
             "RedHatAI rows our recovery gate can verify (positive control)")
         add("pub_others_count", len(oth), 0, "publishers other than RedHatAI")
+
+    for key, v in cc["cells"].items():
+        if v.get("coverage_one_sided") is not None:
+            add(f"cell_ckpts::{key}", v.get("distinct_checkpoints", 0), 0,
+                f"distinct checkpoints behind {key}")
+            add(f"cell_one_sided_pct::{key}",
+                100 * v["coverage_one_sided"], 0.1,
+                f"one-sided coverage for {key}")
 
     osa = os.path.join(HERE, "..", "out", "one_sided_audit.json")
     if os.path.exists(osa):

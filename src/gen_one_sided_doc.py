@@ -130,11 +130,23 @@ def main():
       "checkpoints and families beside it, in the JSON artifact and in the "
       "tool's own output. The same standard already applied to training "
       "support now applies to coverage.\n")
-    A("**Not done, deliberately.** The refusal threshold still uses two-sided "
-      "coverage. Switching it would likely stop refusing "
-      f"`{W8}`, which changes a published headline and propagates to the "
-      "one-page summary, the ranking document and the paper. That is a "
-      "decision to take deliberately, not a side effect of a bug fix.\n")
+    A(f"**Also done.** The refusal threshold now scores one-sided coverage. "
+      f"The tool's behaviour matches what this document argues is correct.\n")
+    A(f"**The outcome was not what was expected, and that is worth recording.** "
+      f"The change was made in the expectation that `{W8}` would stop being "
+      f"refused. It did not. The refusal threshold is "
+      f"{n('refuse_below_pct','{:.0f}')}%, not the 90% the interval "
+      f"advertises, and {n('os_one_sided_pct::'+W8,'{:.1f}')}% is still below "
+      f"it. **Both cells remain refused, and the refused-cell list is "
+      f"unchanged.** What changed is the criterion and the number reported "
+      f"beside each refusal: `{W8}` is now shown as "
+      f"{n('os_one_sided_pct::'+W8,'{:.1f}')}% rather than "
+      f"{n('os_two_sided_pct::'+W8,'{:.1f}')}%, which is a fairer description "
+      f"of the same evidence.\n")
+    A("The finding stands regardless: the two cells fail for different "
+      "reasons, and the tool now measures the one that matters. But it would "
+      "have been easy to report this change as having flipped a refusal, and "
+      "it did not.\n")
     A("## Open question\n")
     A(f"A cell resting on {n('os_distinct_checkpoints::'+W4)} checkpoints and "
       f"one resting on {n('os_distinct_checkpoints::'+W8)} are currently "

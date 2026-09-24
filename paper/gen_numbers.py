@@ -83,6 +83,8 @@ def main():
     for cell, mac in (("w4a16|<2B", "CellWfourSmall"),
                       ("w8a16|>10B", "CellWsixteenBig")):
         for pre, key, fmt in (("Cov", "cell_coverage_pct", "{:.1f}"),
+                              ("OneSided", "cell_one_sided_pct", "{:.1f}"),
+                              ("Ckpts", "cell_ckpts", "{:.0f}"),
                               ("Rows", "cell_rows", "{:.0f}")):
             k = f"{key}::{cell}"
             if k in R:

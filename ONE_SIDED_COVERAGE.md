@@ -53,7 +53,11 @@ What remains after that is one checkpoint. Resampling whole checkpoints puts a 9
 
 **Done.** Every coverage figure now reports the number of distinct checkpoints and families beside it, in the JSON artifact and in the tool's own output. The same standard already applied to training support now applies to coverage.
 
-**Not done, deliberately.** The refusal threshold still uses two-sided coverage. Switching it would likely stop refusing `w8a16|>10B`, which changes a published headline and propagates to the one-page summary, the ranking document and the paper. That is a decision to take deliberately, not a side effect of a bug fix.
+**Also done.** The refusal threshold now scores one-sided coverage. The tool's behaviour matches what this document argues is correct.
+
+**The outcome was not what was expected, and that is worth recording.** The change was made in the expectation that `w8a16|>10B` would stop being refused. It did not. The refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->%, not the 90% the interval advertises, and 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% is still below it. **Both cells remain refused, and the refused-cell list is unchanged.** What changed is the criterion and the number reported beside each refusal: `w8a16|>10B` is now shown as 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% rather than 73.7<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.7327 -->%, which is a fairer description of the same evidence.
+
+The finding stands regardless: the two cells fail for different reasons, and the tool now measures the one that matters. But it would have been easy to report this change as having flipped a refusal, and it did not.
 
 ## Open question
 

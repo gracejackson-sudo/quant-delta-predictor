@@ -44,6 +44,12 @@ THIN_ROWS = 80               # below this, calibration support is thin
 THIN_FAMILIES = 4            # below this, it is one vendor's models
 POOR_COVERAGE = 0.85         # validated coverage below nominal by >5pp
 REFUSE_BELOW = 0.85          # per-cell measured coverage below this -> no number
+# Which coverage the refusal is scored on. The risk this tool exists to bound
+# is accuracy LOSS, so the guarantee that matters is one-sided: does the true
+# delta stay at or above the lower bound? A model that BEATS its envelope has
+# not exposed anyone to anything, but two-sided containment counts that as a
+# miss and can make a cell look uncalibrated when it is merely outperforming.
+# See ONE_SIDED_COVERAGE.md for the external report that prompted this.
 REFUSE_MIN_ROWS = 50         # ...provided the measurement itself is not thin
 MIN_CELL_CHECKPOINTS = 3     # distinct checkpoints a cell needs to reach Tier A
 
@@ -226,7 +232,7 @@ def build_table(d=None):
         "pooled_scored_rows": cc.get("pooled", {}).get("scored_rows"),
         "refused_cells": sorted(
             k for k, v in cc.get("cells", {}).items()
-            if v["coverage"] < REFUSE_BELOW
+            if (v.get("coverage_one_sided") or v["coverage"]) < REFUSE_BELOW
             and v["scored_rows"] >= REFUSE_MIN_ROWS),
     }
     return table
@@ -243,19 +249,24 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
     # number that looks as confident as a well-calibrated one.
     if band and cell_cov:
         c = cell_cov.get("cells", {}).get(f"{e['scheme']}|{band}")
-        if c and c["coverage"] < REFUSE_BELOW and \
+        # one-sided where available; fall back to two-sided for artifacts
+        # written before coverage_one_sided existed
+        judged = c.get("coverage_one_sided") if c else None
+        if judged is None and c:
+            judged = c.get("coverage")
+        if c and judged < REFUSE_BELOW and \
                 c["scored_rows"] >= REFUSE_MIN_ROWS:
             e["refused"] = True
-            e["refusal_coverage"] = c["coverage"]
+            e["refusal_coverage"] = judged
+            e["refusal_two_sided"] = c["coverage"]
             e["refusal_rows"] = c["scored_rows"]
             e["refusal_ckpts"] = c.get("distinct_checkpoints")
             e["refusal_fams"] = c.get("distinct_families")
-            e["refusal_one_sided"] = c.get("coverage_one_sided")
             flags.append("INSUFFICIENT_CALIBRATION")
             notes.append(
-                f"no interval is shown for {e['scheme']} at {band}: the "
-                f"interval was measured to contain the true result "
-                f"{c['coverage']*100:.1f}% of the time here "
+                f"no interval is shown for {e['scheme']} at {band}: the true "
+                f"result stayed at or above the lower bound only "
+                f"{judged*100:.1f}% of the time here "
                 f"({c['scored_rows']} scored rows from "
                 f"{c.get('distinct_checkpoints', '?')} distinct checkpoints "
                 f"across {c.get('distinct_families', '?')} families), against "
@@ -470,16 +481,14 @@ def report(ranked, unknown, risk_pp, band, moe, meta=None):  # noqa: C901
             print("   expected change   NOT SHOWN")
             print("   90% interval      INSUFFICIENT CALIBRATION FOR THIS "
                   "COMBINATION")
-            print(f"                     measured coverage here "
-                  f"{e['refusal_coverage']*100:.1f}% over "
+            print(f"                     losses stayed above the lower bound "
+                  f"only {e['refusal_coverage']*100:.1f}% of the time, over "
                   f"{e['refusal_rows']} scored rows from "
-                  f"{e.get('refusal_ckpts', '?')} distinct checkpoints, "
-                  f"against 90% claimed")
-            if e.get("refusal_one_sided") is not None:
-                print(f"                     counting only losses below the "
-                      f"lower bound it is "
-                      f"{e['refusal_one_sided']*100:.1f}% "
-                      f"(see ONE_SIDED_COVERAGE.md)")
+                  f"{e.get('refusal_ckpts', '?')} distinct checkpoints")
+            if e.get("refusal_two_sided") is not None:
+                print(f"                     (two-sided containment "
+                      f"{e['refusal_two_sided']*100:.1f}%; the refusal is "
+                      f"scored one-sided - see ONE_SIDED_COVERAGE.md)")
             for ln in feedback.refused_prompt([e["scheme"]], w - 21):
                 print("                     " + ln)
         else:

@@ -95,25 +95,27 @@ Strict protocol: the test family is unseen and the calibration family is a diffe
 
 Pooled: 91.0<!-- claim: pooled_cell_coverage_pct = 90.9600 -->% over 5719<!-- claim: pooled_scored_rows = 5719.0000 --> scored rows, against 90% claimed.
 
-| cell | scored rows | coverage |
-|---|---|---|
-| `w4a16\|<2B` | 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> | 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->% **refused** |
-| `w8a16\|>10B` | 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 --> | 73.7<!-- claim: cell_coverage_pct::w8a16|>10B = 73.7327 -->% **refused** |
-| `fp8\|2-10B` | 301<!-- claim: cell_rows::fp8|2-10B = 301.0000 --> | 88.4<!-- claim: cell_coverage_pct::fp8|2-10B = 88.3721 -->% |
-| `w4a16\|2-10B` | 714<!-- claim: cell_rows::w4a16|2-10B = 714.0000 --> | 89.4<!-- claim: cell_coverage_pct::w4a16|2-10B = 89.3557 -->% |
-| `w8a8_int\|>10B` | 504<!-- claim: cell_rows::w8a8_int|>10B = 504.0000 --> | 89.9<!-- claim: cell_coverage_pct::w8a8_int|>10B = 89.8810 -->% |
-| `w8a8_int\|<2B` | 203<!-- claim: cell_rows::w8a8_int|<2B = 203.0000 --> | 91.1<!-- claim: cell_coverage_pct::w8a8_int|<2B = 91.1330 -->% |
-| `fp8_dynamic\|>10B` | 658<!-- claim: cell_rows::fp8_dynamic|>10B = 658.0000 --> | 91.2<!-- claim: cell_coverage_pct::fp8_dynamic|>10B = 91.1854 -->% |
-| `fp8_dynamic\|2-10B` | 609<!-- claim: cell_rows::fp8_dynamic|2-10B = 609.0000 --> | 91.5<!-- claim: cell_coverage_pct::fp8_dynamic|2-10B = 91.4614 -->% |
-| `fp8\|>10B` | 217<!-- claim: cell_rows::fp8|>10B = 217.0000 --> | 91.7<!-- claim: cell_coverage_pct::fp8|>10B = 91.7051 -->% |
-| `w4a16\|>10B` | 560<!-- claim: cell_rows::w4a16|>10B = 560.0000 --> | 92.5<!-- claim: cell_coverage_pct::w4a16|>10B = 92.5000 -->% |
-| `nvfp4\|>10B` | 357<!-- claim: cell_rows::nvfp4|>10B = 357.0000 --> | 92.7<!-- claim: cell_coverage_pct::nvfp4|>10B = 92.7171 -->% |
-| `w8a16\|2-10B` | 301<!-- claim: cell_rows::w8a16|2-10B = 301.0000 --> | 93.0<!-- claim: cell_coverage_pct::w8a16|2-10B = 93.0233 -->% |
-| `w8a8_int\|2-10B` | 651<!-- claim: cell_rows::w8a8_int|2-10B = 651.0000 --> | 95.2<!-- claim: cell_coverage_pct::w8a8_int|2-10B = 95.2381 -->% |
-| `nvfp4\|2-10B` | 91<!-- claim: cell_rows::nvfp4|2-10B = 91.0000 --> | 95.6<!-- claim: cell_coverage_pct::nvfp4|2-10B = 95.6044 -->% |
-| `fp8_dynamic\|<2B` | 133<!-- claim: cell_rows::fp8_dynamic|<2B = 133.0000 --> | 97.7<!-- claim: cell_coverage_pct::fp8_dynamic|<2B = 97.7444 -->% |
-| `w8a16\|<2B` | 84<!-- claim: cell_rows::w8a16|<2B = 84.0000 --> | 98.8<!-- claim: cell_coverage_pct::w8a16|<2B = 98.8095 -->% |
-| `fp8\|<2B` | 42<!-- claim: cell_rows::fp8|<2B = 42.0000 --> | 100.0<!-- claim: cell_coverage_pct::fp8|<2B = 100.0000 -->% |
+Two coverage figures are given. **One-sided** is how often the true result stayed at or above the interval's lower bound, and it is what the refusal is scored on: the risk being bounded is accuracy loss, so a model that beats its envelope has not failed anyone. **Two-sided** is plain containment, shown for context. See `ONE_SIDED_COVERAGE.md`.
+
+| cell | scored rows | checkpoints | one-sided | two-sided |
+|---|---|---|---|---|
+| `w4a16\|<2B` | 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> | 2<!-- claim: cell_ckpts::w4a16|<2B = 2.0000 --> | 70.1<!-- claim: cell_one_sided_pct::w4a16|<2B = 70.1299 -->% **refused** | 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->% |
+| `w8a16\|>10B` | 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 --> | 5<!-- claim: cell_ckpts::w8a16|>10B = 5.0000 --> | 81.1<!-- claim: cell_one_sided_pct::w8a16|>10B = 81.1060 -->% **refused** | 73.7<!-- claim: cell_coverage_pct::w8a16|>10B = 73.7327 -->% |
+| `fp8\|2-10B` | 301<!-- claim: cell_rows::fp8|2-10B = 301.0000 --> | 7<!-- claim: cell_ckpts::fp8|2-10B = 7.0000 --> | 91.0<!-- claim: cell_one_sided_pct::fp8|2-10B = 91.0299 -->% | 88.4<!-- claim: cell_coverage_pct::fp8|2-10B = 88.3721 -->% |
+| `w4a16\|2-10B` | 714<!-- claim: cell_rows::w4a16|2-10B = 714.0000 --> | 13<!-- claim: cell_ckpts::w4a16|2-10B = 13.0000 --> | 93.3<!-- claim: cell_one_sided_pct::w4a16|2-10B = 93.2773 -->% | 89.4<!-- claim: cell_coverage_pct::w4a16|2-10B = 89.3557 -->% |
+| `w8a8_int\|>10B` | 504<!-- claim: cell_rows::w8a8_int|>10B = 504.0000 --> | 8<!-- claim: cell_ckpts::w8a8_int|>10B = 8.0000 --> | 93.1<!-- claim: cell_one_sided_pct::w8a8_int|>10B = 93.0556 -->% | 89.9<!-- claim: cell_coverage_pct::w8a8_int|>10B = 89.8810 -->% |
+| `w8a8_int\|<2B` | 203<!-- claim: cell_rows::w8a8_int|<2B = 203.0000 --> | 4<!-- claim: cell_ckpts::w8a8_int|<2B = 4.0000 --> | 94.1<!-- claim: cell_one_sided_pct::w8a8_int|<2B = 94.0887 -->% | 91.1<!-- claim: cell_coverage_pct::w8a8_int|<2B = 91.1330 -->% |
+| `fp8_dynamic\|>10B` | 658<!-- claim: cell_rows::fp8_dynamic|>10B = 658.0000 --> | 9<!-- claim: cell_ckpts::fp8_dynamic|>10B = 9.0000 --> | 97.3<!-- claim: cell_one_sided_pct::fp8_dynamic|>10B = 97.2644 -->% | 91.2<!-- claim: cell_coverage_pct::fp8_dynamic|>10B = 91.1854 -->% |
+| `fp8_dynamic\|2-10B` | 609<!-- claim: cell_rows::fp8_dynamic|2-10B = 609.0000 --> | 10<!-- claim: cell_ckpts::fp8_dynamic|2-10B = 10.0000 --> | 97.4<!-- claim: cell_one_sided_pct::fp8_dynamic|2-10B = 97.3727 -->% | 91.5<!-- claim: cell_coverage_pct::fp8_dynamic|2-10B = 91.4614 -->% |
+| `fp8\|>10B` | 217<!-- claim: cell_rows::fp8|>10B = 217.0000 --> | 5<!-- claim: cell_ckpts::fp8|>10B = 5.0000 --> | 94.5<!-- claim: cell_one_sided_pct::fp8|>10B = 94.4700 -->% | 91.7<!-- claim: cell_coverage_pct::fp8|>10B = 91.7051 -->% |
+| `w4a16\|>10B` | 560<!-- claim: cell_rows::w4a16|>10B = 560.0000 --> | 8<!-- claim: cell_ckpts::w4a16|>10B = 8.0000 --> | 98.8<!-- claim: cell_one_sided_pct::w4a16|>10B = 98.7500 -->% | 92.5<!-- claim: cell_coverage_pct::w4a16|>10B = 92.5000 -->% |
+| `nvfp4\|>10B` | 357<!-- claim: cell_rows::nvfp4|>10B = 357.0000 --> | 4<!-- claim: cell_ckpts::nvfp4|>10B = 4.0000 --> | 95.0<!-- claim: cell_one_sided_pct::nvfp4|>10B = 94.9580 -->% | 92.7<!-- claim: cell_coverage_pct::nvfp4|>10B = 92.7171 -->% |
+| `w8a16\|2-10B` | 301<!-- claim: cell_rows::w8a16|2-10B = 301.0000 --> | 8<!-- claim: cell_ckpts::w8a16|2-10B = 8.0000 --> | 97.3<!-- claim: cell_one_sided_pct::w8a16|2-10B = 97.3422 -->% | 93.0<!-- claim: cell_coverage_pct::w8a16|2-10B = 93.0233 -->% |
+| `w8a8_int\|2-10B` | 651<!-- claim: cell_rows::w8a8_int|2-10B = 651.0000 --> | 12<!-- claim: cell_ckpts::w8a8_int|2-10B = 12.0000 --> | 98.6<!-- claim: cell_one_sided_pct::w8a8_int|2-10B = 98.6175 -->% | 95.2<!-- claim: cell_coverage_pct::w8a8_int|2-10B = 95.2381 -->% |
+| `nvfp4\|2-10B` | 91<!-- claim: cell_rows::nvfp4|2-10B = 91.0000 --> | 1<!-- claim: cell_ckpts::nvfp4|2-10B = 1.0000 --> | 98.9<!-- claim: cell_one_sided_pct::nvfp4|2-10B = 98.9011 -->% | 95.6<!-- claim: cell_coverage_pct::nvfp4|2-10B = 95.6044 -->% |
+| `fp8_dynamic\|<2B` | 133<!-- claim: cell_rows::fp8_dynamic|<2B = 133.0000 --> | 3<!-- claim: cell_ckpts::fp8_dynamic|<2B = 3.0000 --> | 97.7<!-- claim: cell_one_sided_pct::fp8_dynamic|<2B = 97.7444 -->% | 97.7<!-- claim: cell_coverage_pct::fp8_dynamic|<2B = 97.7444 -->% |
+| `w8a16\|<2B` | 84<!-- claim: cell_rows::w8a16|<2B = 84.0000 --> | 2<!-- claim: cell_ckpts::w8a16|<2B = 2.0000 --> | 100.0<!-- claim: cell_one_sided_pct::w8a16|<2B = 100.0000 -->% | 98.8<!-- claim: cell_coverage_pct::w8a16|<2B = 98.8095 -->% |
+| `fp8\|<2B` | 42<!-- claim: cell_rows::fp8|<2B = 42.0000 --> | 1<!-- claim: cell_ckpts::fp8|<2B = 1.0000 --> | 100.0<!-- claim: cell_one_sided_pct::fp8|<2B = 100.0000 -->% | 100.0<!-- claim: cell_coverage_pct::fp8|<2B = 100.0000 -->% |
 
 | size band | coverage |
 |---|---|

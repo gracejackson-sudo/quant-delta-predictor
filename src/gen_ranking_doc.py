@@ -146,16 +146,25 @@ def main():
       "is a different unseen family.\n")
     A(f"Pooled: {n('pooled_cell_coverage_pct', '{:.1f}')}% over "
       f"{n('pooled_scored_rows')} scored rows, against 90% claimed.\n")
-    A("| cell | scored rows | coverage |")
-    A("|---|---|---|")
+    A("Two coverage figures are given. **One-sided** is how often the true "
+      "result stayed at or above the interval's lower bound, and it is what "
+      "the refusal is scored on: the risk being bounded is accuracy loss, so "
+      "a model that beats its envelope has not failed anyone. **Two-sided** "
+      "is plain containment, shown for context. See `ONE_SIDED_COVERAGE.md`.\n")
+    A("| cell | scored rows | checkpoints | one-sided | two-sided |")
+    A("|---|---|---|---|---|")
     cells = sorted((k for k in REG if k.startswith("cell_coverage_pct::")),
                    key=v)
     for key in cells:
         cell = key.split("::", 1)[1]
-        cov = v(key)
-        mark = " **refused**" if cov < v("poor_coverage_threshold_pct") else ""
+        osk = f"cell_one_sided_pct::{cell}"
+        judged = v(osk) if osk in REG else v(key)
+        mark = " **refused**" if judged < v("refuse_below_pct") else ""
+        one = n(osk, "{:.1f}") + "%" if osk in REG else "n/a"
+        ckk = f"cell_ckpts::{cell}"
         A(f"| `{esc(cell)}` | {n('cell_rows::' + cell)} | "
-          f"{n(key, '{:.1f}')}%{mark} |")
+          f"{n(ckk) if ckk in REG else '?'} | {one}{mark} | "
+          f"{n(key, '{:.1f}')}% |")
     A("")
     A("| size band | coverage |")
     A("|---|---|")

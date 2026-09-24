@@ -19,7 +19,9 @@ Built on 817<!-- claim: n_rows = 817.0000 --> published evaluations from 38<!-- 
 
 Most of what this tool does is give you a calibrated interval. The part worth your attention is what it does when it should not give you one.
 
-Two (scheme, size) cells have measured coverage so far below the 90% they advertise that the tool declines to answer for them at all: `w4a16|<2B` at 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->% over 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> scored rows, and `w8a16|>10B` at 73.7<!-- claim: cell_coverage_pct::w8a16|>10B = 73.7327 -->% over 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 -->. It prints `INSUFFICIENT CALIBRATION`, shows the coverage it actually measured, and stops. A further 4<!-- claim: n_cells_blocked_from_tier_a = 4.0000 --> cells are barred from the top tier for resting on fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> distinct checkpoints.
+The refusal is scored on the guarantee that matters for a risk tool: how often the true result stayed at or above the interval's lower bound. A model that beats its envelope has not exposed anyone to anything, so counting that as a failure would refuse cells that are merely outperforming (see `ONE_SIDED_COVERAGE.md`).
+
+Two (scheme, size) cells fall far enough below the 90% they advertise that the tool declines to answer for them at all: `w4a16|<2B`, where losses stayed above the lower bound 70.1<!-- claim: cell_one_sided_pct::w4a16|<2B = 70.1299 -->% of the time over 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> scored rows, and `w8a16|>10B` at 81.1<!-- claim: cell_one_sided_pct::w8a16|>10B = 81.1060 -->% over 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 -->. It prints `INSUFFICIENT CALIBRATION`, shows what it measured, and stops. A further 4<!-- claim: n_cells_blocked_from_tier_a = 4.0000 --> cells are barred from the top tier for resting on fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> distinct checkpoints.
 
 A risk estimate is only worth having if it tells you when not to trust it. The refused cells are exactly where a confident-sounding number would do the most damage.
 
@@ -49,10 +51,10 @@ Input a quantization scheme, optionally a model size band. Output a 90% interval
 
 ## The refused cells, in full
 
-The two cells named above, with the measured coverage behind each refusal:
+The two cells named above, with both figures behind each refusal. The one-sided number is the criterion; the two-sided one is shown for context:
 
-- `w4a16|<2B` - measured 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->% over 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> scored rows
-- `w8a16|>10B` - measured 73.7<!-- claim: cell_coverage_pct::w8a16|>10B = 73.7327 -->% over 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 --> scored rows
+- `w4a16|<2B` - losses above the lower bound 70.1<!-- claim: cell_one_sided_pct::w4a16|<2B = 70.1299 -->% of the time (two-sided containment 68.8<!-- claim: cell_coverage_pct::w4a16|<2B = 68.8312 -->%), over 77<!-- claim: cell_rows::w4a16|<2B = 77.0000 --> scored rows from 2<!-- claim: cell_ckpts::w4a16|<2B = 2.0000 --> distinct checkpoints
+- `w8a16|>10B` - losses above the lower bound 81.1<!-- claim: cell_one_sided_pct::w8a16|>10B = 81.1060 -->% of the time (two-sided containment 73.7<!-- claim: cell_coverage_pct::w8a16|>10B = 73.7327 -->%), over 217<!-- claim: cell_rows::w8a16|>10B = 217.0000 --> scored rows from 5<!-- claim: cell_ckpts::w8a16|>10B = 5.0000 --> distinct checkpoints
 
 `fp8|<2B` is the clearest case of the support rule doing work: 100.0<!-- claim: cell_coverage_pct::fp8|<2B = 100.0000 -->% measured coverage, which looks perfect, from a single checkpoint (1<!-- claim: cell_train_ckpt2::fp8|<2B = 1.0000 -->) measured many ways. Rows from one quantization run are correlated views of that run, not independent evidence, so the cell is capped below Tier A.
 

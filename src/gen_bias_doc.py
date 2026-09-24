@@ -287,14 +287,19 @@ def tool_doc():
     A("## The part that matters: it refuses\n")
     A("Most of what this tool does is give you a calibrated interval. The part "
       "worth your attention is what it does when it should not give you one.\n")
-    A(f"Two (scheme, size) cells have measured coverage so far below the 90% "
-      f"they advertise that the tool declines to answer for them at all: "
-      f"`w4a16|<2B` at "
-      f"{n('cell_coverage_pct::w4a16|<2B','{:.1f}')}% over "
+    A(f"The refusal is scored on the guarantee that matters for a risk tool: "
+      f"how often the true result stayed at or above the interval's lower "
+      f"bound. A model that beats its envelope has not exposed anyone to "
+      f"anything, so counting that as a failure would refuse cells that are "
+      f"merely outperforming (see `ONE_SIDED_COVERAGE.md`).\n")
+    A(f"Two (scheme, size) cells fall far enough below the 90% they advertise "
+      f"that the tool declines to answer for them at all: "
+      f"`w4a16|<2B`, where losses stayed above the lower bound "
+      f"{n('cell_one_sided_pct::w4a16|<2B','{:.1f}')}% of the time over "
       f"{n('cell_rows::w4a16|<2B')} scored rows, and `w8a16|>10B` at "
-      f"{n('cell_coverage_pct::w8a16|>10B','{:.1f}')}% over "
+      f"{n('cell_one_sided_pct::w8a16|>10B','{:.1f}')}% over "
       f"{n('cell_rows::w8a16|>10B')}. It prints `INSUFFICIENT CALIBRATION`, "
-      f"shows the coverage it actually measured, and stops. A further "
+      f"shows what it measured, and stops. A further "
       f"{n('n_cells_blocked_from_tier_a')} cells are barred from the top tier "
       f"for resting on fewer than {n('min_cell_checkpoints')} distinct "
       f"checkpoints.\n")
@@ -324,13 +329,19 @@ def tool_doc():
           f"{n('n::'+s)} | **{e['tier']}** |")
     A("")
     A("## The refused cells, in full\n")
-    A(f"The two cells named above, with the measured coverage behind each "
-      f"refusal:\n")
+    A(f"The two cells named above, with both figures behind each refusal. The "
+      f"one-sided number is the criterion; the two-sided one is shown for "
+      f"context:\n")
     for key in sorted(k for k,vv in cc["cells"].items()
-                      if vv["coverage"]<R.REFUSE_BELOW
+                      if (vv.get("coverage_one_sided") or vv["coverage"])
+                      < R.REFUSE_BELOW
                       and vv["scored_rows"]>=R.REFUSE_MIN_ROWS):
-        A(f"- `{key}` - measured {n('cell_coverage_pct::'+key,'{:.1f}')}% over "
-          f"{n('cell_rows::'+key)} scored rows")
+        A(f"- `{key}` - losses above the lower bound "
+          f"{n('cell_one_sided_pct::'+key,'{:.1f}')}% of the time "
+          f"(two-sided containment {n('cell_coverage_pct::'+key,'{:.1f}')}%), "
+          f"over {n('cell_rows::'+key)} scored rows from "
+          f"{n('cell_ckpts::'+key) if 'cell_ckpts::'+key in REG else '?'} "
+          f"distinct checkpoints")
     A("")
     A(f"`fp8|<2B` is the clearest case of the support rule doing work: "
       f"{n('cell_coverage_pct::fp8|<2B','{:.1f}')}% measured coverage, which "
