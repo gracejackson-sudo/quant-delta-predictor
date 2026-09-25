@@ -1,5 +1,49 @@
 # quant_delta_predictor
 
+**Before you compress a model: how much accuracy did other people lose doing the same thing?**
+A small command-line tool that answers from published results, and says so when it does not
+have enough evidence to answer.
+
+## Try it in about a minute
+
+```bash
+git clone https://github.com/gracejackson-sudo/quant-delta-predictor && cd quant-delta-predictor
+python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scipy
+./.venv/bin/python src/rank.py fp8_dynamic --size 5B    # a case it can speak to
+./.venv/bin/python src/rank.py w4a16 --size 1.5B        # a case it says it cannot judge
+```
+
+No network, API key or GPU is needed after the install. The first run takes about half a minute.
+
+**What you will see.** The first command returns a historical range of accuracy change for that
+scheme, with no warning flags, and still shows the worst loss ever observed, which is worth reading.
+The second prints a range too, but marks it `INSUFFICIENT_EVIDENCE`, drops the scheme to Tier C, and
+explains why: for 4-bit weights on sub-2B models there are too few independent published checkpoints
+to trust a number. That flag is the tool declining to vouch for its own output.
+
+## What it is, and is not
+
+- **It is** a table of historical ranges: per quantization scheme, how much accuracy published
+  checkpoints lost, checked against checkpoints it was not built from.
+- **It is not** a per-model predictor. Predicting the loss for one specific model did not work:
+  most of the differences between models were benchmark measurement noise.
+- **Two separate limits, easy to confuse.** (1) *Noise* is why per-model prediction fails.
+  (2) *Thin evidence* is why the tool flags a scheme-and-size combination: not enough independent
+  published checkpoints, which has nothing to do with noise.
+- **Read every range as a floor on risk, not a ceiling.** It is built from one publisher's
+  checkpoints, so a badly tuned recipe can do far worse than anything in the record.
+
+## Where to go next
+
+1. [TOOL_SUMMARY.md](TOOL_SUMMARY.md): one page, what it does, what it flags, what it cannot do
+2. [FINDINGS.md](FINDINGS.md): the research result, with corrections applied in place
+3. [`paper/`](paper/): the write-up
+
+Everything else is in the table below.
+
+---
+
+## All documentation
 Feasibility spike: given `(base model, quantization config)`, predict the accuracy delta on
 OpenLLM-style benchmarks with a calibrated prediction interval.
 
@@ -38,16 +82,17 @@ No network, no API key, no GPU. Three packages: numpy, pandas, scipy.
 ./.venv/bin/python src/rank.py w4a16 --size 1.5B
 ```
 
-It refuses to answer. For 4-bit weights on a sub-2B model, measured coverage is
-68.8% against the 90% the interval claims, so instead of returning a number it
-prints `INSUFFICIENT CALIBRATION FOR THIS COMBINATION`, shows you the coverage it
-actually measured and the rows it measured it on, and stops.
+It does not give you a clean answer. It prints the historical range for 4-bit weights, then flags
+that cell `INSUFFICIENT_EVIDENCE`: measured coverage there rests on only two checkpoints, so the tool
+demotes W4A16 to Tier C and tells you to run your own evaluation. A cell is *refused* outright, with
+its interval withheld (`INSUFFICIENT CALIBRATION`), only when measured coverage is poor on enough
+independent checkpoints; none currently is.
 
-That is the design. A quantization risk estimate is only worth having if it will
-tell you when not to trust it, and the cells it refuses are exactly the ones where
-a confident-sounding answer would do the most damage.
+That is the design. A quantization risk estimate is only worth having if it will tell you when not
+to trust it, and the cells it flags are exactly the ones where a confident-sounding answer would do
+the most damage.
 
-Once you have seen it decline, the rest:
+Once you have seen it flag a cell, the rest:
 
 ```bash
 ./.venv/bin/python src/rank.py                      # rank every scheme
@@ -57,8 +102,8 @@ Once you have seen it decline, the rest:
 
 Each scheme comes back with a 90% interval, the worst loss ever observed for it, the
 share of evaluations that lost more than 3pp, how many checkpoints and families back
-it, and a tier. Two cells are refused outright and four more are blocked from the top
-tier for resting on fewer than three distinct checkpoints.
+it, and a tier. Cells resting on fewer than three distinct checkpoints, or whose coverage
+estimate is too uncertain to judge, are marked `INSUFFICIENT_EVIDENCE`; `RANKING.md` lists them.
 
 ## Reproduce the research
 
