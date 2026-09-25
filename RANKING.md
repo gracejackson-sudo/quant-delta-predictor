@@ -95,7 +95,7 @@ Strict protocol: the test family is unseen and the calibration family is a diffe
 
 Pooled: 91.0<!-- claim: pooled_cell_coverage_pct = 90.9600 -->% over 5719<!-- claim: pooled_scored_rows = 5719.0000 --> scored rows, against 90% claimed.
 
-Two coverage figures are given. **One-sided** is how often the true result stayed at or above the interval's lower bound, and it is what the refusal is scored on: the risk being bounded is accuracy loss, so a model that beats its envelope has not failed anyone. **Two-sided** is plain containment, shown for context. See `ONE_SIDED_COVERAGE.md`.
+Two coverage figures are given. **One-sided** is how often the true result stayed at or above the interval's lower bound, and it is what the verdict is scored on: the risk being bounded is accuracy loss, so a model that beats its envelope has not failed anyone. **Two-sided** is plain containment, shown for context. See `ONE_SIDED_COVERAGE.md`.
 
 | cell | scored rows | checkpoints | one-sided | two-sided |
 |---|---|---|---|---|

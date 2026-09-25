@@ -53,7 +53,7 @@ artifact is a small number table — a calibrated historical baseline, not a pre
 
 | document | what it holds |
 |---|---|
-| [TOOL_SUMMARY.md](TOOL_SUMMARY.md) | **start here** — one page: what it does, what it refuses, what it cannot do |
+| [TOOL_SUMMARY.md](TOOL_SUMMARY.md) | one page: what it does, what it flags, what it cannot do (the best next read after the first screen) |
 | [FINDINGS.md](FINDINGS.md) | the result, with corrections applied in place |
 | [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md) | per-model prediction has no signal beyond the scheme average |
 | [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias, measured; why no corrected point estimate |

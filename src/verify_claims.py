@@ -89,6 +89,9 @@ def registry():
         sum(1 for v in cc.get("support", {}).values()
             if v["train_checkpoints"] < R.MIN_CELL_CHECKPOINTS), 0,
         "cells below the checkpoint floor")
+    add("n_cells_refused",
+        sum(1 for v in cc.get("cells", {}).values() if R.classify_cell(v) == "refused"), 0,
+        "cells currently refused (interval withheld)")
     add("n_cells_total", len(cc.get("cells", {})), 0,
         "total scheme/size cells")
     add("n_cells_insufficient_evidence",

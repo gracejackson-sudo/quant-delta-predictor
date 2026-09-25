@@ -156,7 +156,7 @@ def main():
       f"{n('pooled_scored_rows')} scored rows, against 90% claimed.\n")
     A("Two coverage figures are given. **One-sided** is how often the true "
       "result stayed at or above the interval's lower bound, and it is what "
-      "the refusal is scored on: the risk being bounded is accuracy loss, so "
+      "the verdict is scored on: the risk being bounded is accuracy loss, so "
       "a model that beats its envelope has not failed anyone. **Two-sided** "
       "is plain containment, shown for context. See `ONE_SIDED_COVERAGE.md`.\n")
     A("| cell | scored rows | checkpoints | one-sided | two-sided |")

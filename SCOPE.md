@@ -62,9 +62,11 @@ These came directly out of the audit and are the difference between honest and m
    from 5 unseen checkpoint groups, with the 87.5%–90.6% bound from gate-rejected rows stated.
 6. **NVFP4 carries a warning**: 64 evaluations from 3 families, 15.6% of them losing >3pp, and
    coverage that falls to 70% on the worst held-out family.
-7. **Undercovered cells are refused, not estimated**: where measured per-cell coverage falls
-   below threshold the tool prints `INSUFFICIENT CALIBRATION` and no interval (see
-   [RANKING.md](RANKING.md) for the per-cell table).
+7. **Undercovered or thinly supported cells are flagged, not trusted**: a cell is marked
+   `INSUFFICIENT_EVIDENCE` when it rests on too few checkpoints or its coverage estimate is too
+   uncertain to judge (the range is still printed, demoted to Tier C), and is *refused* with
+   `INSUFFICIENT CALIBRATION` and no interval only when coverage is measurably poor on adequate
+   evidence (see [RANKING.md](RANKING.md) for the per-cell table).
 
 ## Explicitly out of scope
 
