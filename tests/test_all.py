@@ -872,3 +872,16 @@ def test_no_unescaped_pipe_in_table_claim_tags():
     assert not offenders, (
         "unescaped pipe in a claim tag inside a table row: "
         + ", ".join(offenders[:5]))
+
+
+def test_cluster_bootstrap_bounds_do_not_depend_on_the_random_stream():
+    """With few clusters the bootstrap is discrete and its 5th percentile can sit
+    on an atom boundary; the bounds must be exact, not seed-dependent."""
+    import numpy as np, cluster_boot
+    ok, n = [50.0, 30.0, 45.0, 20.0], [50.0, 33.0, 48.0, 40.0]
+    ref = cluster_boot.bounds(ok, n)
+    for seed in range(20):
+        assert cluster_boot.bounds(ok, n, rng=np.random.default_rng(seed)) == ref
+    # exact value check on a case small enough to reason about: two clusters
+    lo, hi = cluster_boot.bounds([0.0, 10.0], [10.0, 10.0])
+    assert (lo, hi) == (0.0, 100.0)

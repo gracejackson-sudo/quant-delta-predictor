@@ -16,6 +16,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from model import load                      # noqa: E402
 from strata import ConservativeStratified, annotate  # noqa: E402
+import cluster_boot  # noqa: E402
 
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 OUT = os.path.join(HERE, "..", "out", "one_sided_audit.json")
@@ -57,12 +58,10 @@ def main():
         g["ok_one_sided"] = g.delta >= g.lo
         groups = [x for _, x in g.groupby("base_model")]
         n_groups = len(groups)
-        # cluster (whole-checkpoint) bootstrap of the ONE-SIDED statistic,
-        # since that is what the refusal decision is actually judged on
-        boot = [pd.concat([groups[i] for i in
-                           rng.integers(0, n_groups, n_groups)]).ok_one_sided.mean()
-                for _ in range(20000)]
-        boot = np.array(boot) * 100
+        # cluster (whole-checkpoint) bootstrap of the ONE-SIDED statistic; exact
+        # for few clusters so the bound does not depend on a random stream
+        blo, bhi = cluster_boot.bounds([x.ok_one_sided.sum() for x in groups],
+                                       [len(x) for x in groups], rng=rng)
         per_ckpt = {bm: round(100 * x.ok.mean(), 4)
                     for bm, x in g.groupby("base_model")}
         miss = g[~g.ok]
@@ -79,8 +78,8 @@ def main():
             "distinct_model_benchmark": int(g.groupby(
                 ["model", "benchmark"]).ngroups),
             "per_checkpoint_coverage_pct": per_ckpt,
-            "boot90_lo": round(float(np.percentile(boot, 5)), 1),
-            "boot90_hi": round(float(np.percentile(boot, 95)), 1),
+            "boot90_lo": round(float(blo), 1),
+            "boot90_hi": round(float(bhi), 1),
             "boot90_n_clusters": n_groups,
             "miss_mean_by_checkpoint": {
                 bm: round(float(x[~x.ok].delta.mean()), 4)

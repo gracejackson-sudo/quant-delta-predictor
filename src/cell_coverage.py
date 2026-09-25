@@ -21,6 +21,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 from model import load  # noqa: E402
 from strata import ConservativeStratified, annotate  # noqa: E402
+import cluster_boot  # noqa: E402
 
 HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
@@ -72,16 +73,12 @@ def measure(d=None):
         # is coarse (few achievable resample compositions) rather than smooth,
         # which is exactly why a checkpoint-count floor is also needed below,
         # not a substitute for one. (External finding, see ONE_SIDED_COVERAGE.md)
-        groups = [gg for _, gg in g.groupby("base_model")]
-        one_sided_ok = (g.delta >= g.lo_) if "lo_" in g else None
-        if one_sided_ok is not None:
-            g = g.assign(_ok1=one_sided_ok)
-            groups = [gg.assign(_ok1=(gg.delta >= gg.lo_)) for _, gg in g.groupby("base_model")]
-            boot = [pd.concat([groups[i] for i in
-                               rng.integers(0, n_ckpts, n_ckpts)])._ok1.mean()
-                    for _ in range(20000)]
-            boot90_lo = round(float(np.percentile(boot, 5)) * 100, 1)
-            boot90_hi = round(float(np.percentile(boot, 95)) * 100, 1)
+        if "lo_" in g:
+            _g = g.assign(_ok1=(g.delta >= g.lo_))
+            _grp = [gg._ok1.to_numpy() for _, gg in _g.groupby("base_model")]
+            _lo, _hi = cluster_boot.bounds([x.sum() for x in _grp],
+                                           [len(x) for x in _grp], rng=rng)
+            boot90_lo, boot90_hi = round(float(_lo), 1), round(float(_hi), 1)
         else:
             boot90_lo = boot90_hi = None
         out["cells"][f"{s}|{b}"] = {

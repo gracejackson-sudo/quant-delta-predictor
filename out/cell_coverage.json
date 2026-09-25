@@ -18,7 +18,7 @@
       "distinct_families": 4,
       "pct_widened": 0.023255813953488372,
       "boot90_lo": 84.0,
-      "boot90_hi": 97.5
+      "boot90_hi": 97.6
     },
     "fp8|<2B": {
       "scheme": "fp8",
@@ -54,7 +54,7 @@
       "distinct_families": 5,
       "pct_widened": 0.35960591133004927,
       "boot90_lo": 95.0,
-      "boot90_hi": 99.2
+      "boot90_hi": 99.1
     },
     "fp8_dynamic|<2B": {
       "scheme": "fp8_dynamic",
@@ -137,7 +137,7 @@
       "distinct_checkpoints": 8,
       "distinct_families": 4,
       "pct_widened": 0.09464285714285714,
-      "boot90_lo": 97.4,
+      "boot90_lo": 97.5,
       "boot90_hi": 99.8
     },
     "w8a16|2-10B": {
@@ -185,7 +185,7 @@
       "distinct_checkpoints": 12,
       "distinct_families": 5,
       "pct_widened": 0.1152073732718894,
-      "boot90_lo": 97.3,
+      "boot90_lo": 97.4,
       "boot90_hi": 99.6
     },
     "w8a8_int|<2B": {
