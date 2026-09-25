@@ -69,3 +69,17 @@ what it accepted and rejected.
 Source data: evaluation results published by **RedHatAI** on Hugging Face —
 <https://huggingface.co/RedHatAI>. The quantized checkpoints were produced with
 [llm-compressor](https://github.com/vllm-project/llm-compressor).
+
+
+## Qwen3.5 (kept separate)
+
+`data/qwen35/published_rows.csv` holds published quantization deltas for Qwen3.5
+checkpoints, extracted from Red Hat's model cards by `src/qwen35_published.py`
+through the unchanged `harvest.harvest_card` parser. It is **not** part of
+`dataset.csv` and is never pooled with it: Qwen3.5 uses a different architecture
+(a multimodal wrapper with alternating linear- and full-attention layers) and a
+different distillation recipe, so its rows are for side-by-side comparison with
+Qwen2.5's only. Its cards report a different benchmark set (GPQA, GSM8K, IFEval,
+MMLU-Pro), so comparisons are indicative, not like-for-like. Rejected rows and
+their reasons are in `published_rejects.csv`. Raw cards are cached locally under
+`out/qwen35_cards/` and are not redistributed.

@@ -2,11 +2,22 @@
 __pycache__/
 *.pyc
 .DS_Store
-out/requests.log
-DAY_1.md
-TALKING_POINTS.md
-src/gen_talking_points.py
+# large intermediate prediction dumps from multi-seed runs; regenerate with
+# src/run_experiments.py and src/run_final.py
+out/preds_*.csv
+out/final_*.csv
 DAY_2_TALKING_POINTS.md
+SUBMISSION_COVER.md
 OVERNIGHT_RESEARCH.md
 out/publisher_cards/
 OUTREACH_POST_DRAFT.md
+LORA_PIPELINE_STATUS.md
+DAY_3_TALKING_POINTS.md
+ENGAGEMENT_SUMMARY.md
+CARD_QUALITY_FINDING.md
+DAY_4_PLAN.md
+DAY_4_TALKING_POINTS.md
+DAY_4_SCRIPT_DRAFT.md
+NARRATIVE_TECHNICAL.md
+NARRATIVE_GENERAL.md
+out/qwen35_cards/

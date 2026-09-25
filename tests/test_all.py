@@ -885,3 +885,23 @@ def test_cluster_bootstrap_bounds_do_not_depend_on_the_random_stream():
     # exact value check on a case small enough to reason about: two clusters
     lo, hi = cluster_boot.bounds([0.0, 10.0], [10.0, 10.0])
     assert (lo, hi) == (0.0, 100.0)
+
+
+def test_qwen35_published_rows_are_kept_separate_from_the_corpus():
+    """Qwen3.5 is a different architecture and distillation recipe: its rows may be
+    compared with Qwen2.5's but must never enter (or overlap) the main corpus."""
+    import csv
+    root = os.path.join(os.path.dirname(__file__), "..")
+    q = list(csv.DictReader(open(os.path.join(root, "data", "qwen35", "published_rows.csv"))))
+    d = list(csv.DictReader(open(os.path.join(root, "data", "dataset.csv"))))
+    assert q and all(r["family"] == "qwen3.5" for r in q)
+    assert not any("qwen3.5" in r["model"].lower() or r["family"] == "qwen3.5" for r in d)
+    assert {r["model"] for r in q}.isdisjoint({r["model"] for r in d})
+    assert all(r["verified"] == "1" for r in q)          # every row passed the recovery gate
+    assert {r["moe"] for r in q} == {"0", "1"}           # MoE flagged, not silently mixed in
+
+
+def test_qwen35_ingestion_only_reads_quantized_qwen35_repos():
+    import qwen35_published as Q
+    ids = Q.repos()
+    assert ids and all("Qwen3.5-" in i and "speculator" not in i for i in ids)

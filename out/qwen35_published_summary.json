@@ -1,0 +1,30 @@
+{
+  "repos_listed": 10,
+  "cards_fetched": 10,
+  "cards_with_rows": 10,
+  "rows": 40,
+  "verified_rows": 40,
+  "rejects": 32,
+  "by_scheme": {
+    "fp8_dynamic": {
+      "n": 20,
+      "mean": -0.21,
+      "worst": -1.4
+    },
+    "nvfp4": {
+      "n": 4,
+      "mean": -0.47,
+      "worst": -0.84
+    },
+    "w4a16": {
+      "n": 8,
+      "mean": -2.138,
+      "worst": -6.5
+    },
+    "w8a8_int": {
+      "n": 8,
+      "mean": -0.325,
+      "worst": -1.1
+    }
+  }
+}

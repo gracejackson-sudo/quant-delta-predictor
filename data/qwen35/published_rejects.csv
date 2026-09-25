@@ -1,0 +1,33 @@
+model,benchmark,reason
+RedHatAI/Qwen3.5-122B-A10B-FP8-dynamic,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-122B-A10B-FP8-dynamic,AIME 25 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-122B-A10B-FP8-dynamic,LiveCodeBench v6 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-122B-A10B-FP8-dynamic,ifeval,recovery_mismatch
+RedHatAI/Qwen3.5-122B-A10B-NVFP4,AIME 2025,benchmark_not_whitelisted
+RedHatAI/Qwen3.5-122B-A10B-NVFP4,Math 500,benchmark_not_whitelisted
+RedHatAI/Qwen3.5-35B-A3B-FP8-dynamic,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-35B-A3B-FP8-dynamic,AIME 25 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-35B-A3B-FP8-dynamic,LiveCodeBench v6 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-35B-A3B-FP8-dynamic,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-397B-A17B-FP8-dynamic,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-397B-A17B-FP8-dynamic,AIME 25 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-397B-A17B-FP8-dynamic,LiveCodeBench v6 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-397B-A17B-FP8-dynamic,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-4B-FP8-dynamic,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-4B-FP8-dynamic,AIME 2025 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-4B-FP8-dynamic,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-4B-quantized.w4a16,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-4B-quantized.w4a16,AIME 2025 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-4B-quantized.w4a16,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-4B-quantized.w8a8,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-4B-quantized.w8a8,AIME 2025 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-4B-quantized.w8a8,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-9B-FP8-dynamic,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-9B-FP8-dynamic,AIME 2025 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-9B-FP8-dynamic,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-9B-quantized.w4a16,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-9B-quantized.w4a16,AIME 2025 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-9B-quantized.w4a16,ifeval,duplicate_benchmark_discarded
+RedHatAI/Qwen3.5-9B-quantized.w8a8,Math 500 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-9B-quantized.w8a8,AIME 2025 (0-shot),benchmark_not_whitelisted
+RedHatAI/Qwen3.5-9B-quantized.w8a8,ifeval,duplicate_benchmark_discarded
