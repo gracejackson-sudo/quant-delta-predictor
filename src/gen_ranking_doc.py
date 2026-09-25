@@ -181,11 +181,14 @@ def main():
         if k in REG:
             A(f"| {b} | {n(k, '{:.1f}')}% |")
     A("")
-    A(f"Two cells fall below the {n('poor_coverage_threshold_pct')}% "
-      f"threshold. For those combinations the tool prints "
-      f"`INSUFFICIENT CALIBRATION` and no interval, because a number shown "
-      f"there would look exactly as confident as a well-calibrated one. "
-      f"Neither can be fixed with current data: "
+    A(f"Two cells were originally flagged for falling below the "
+      f"{n('poor_coverage_threshold_pct')}% threshold. Under the three-state "
+      f"rule neither is a confident refusal: both are `insufficient_evidence`. "
+      f"For an `insufficient_evidence` cell the tool still prints the "
+      f"all-sizes interval, but demotes the scheme to Tier C and says the "
+      f"cell cannot be judged; only a `refused` cell has its interval "
+      f"withheld (`INSUFFICIENT CALIBRATION`), and none currently is. "
+      f"Neither flagged cell can be fixed with current data: "
       f"`w4a16\\|<2B` has {n('cell_train_rows::w4a16|<2B')} training rows from "
       f"{n('cell_train_ckpt::w4a16|<2B')} checkpoints, and the widening that "
       f"would fix `w8a16\\|>10B` needs 9+ calibration rows and rarely gets "

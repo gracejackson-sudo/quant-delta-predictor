@@ -123,7 +123,7 @@ Two coverage figures are given. **One-sided** is how often the true result staye
 | 2-10B | 91.8<!-- claim: band_coverage_pct::2-10B = 91.7885 -->% |
 | >10B | 90.0<!-- claim: band_coverage_pct::>10B = 89.9721 -->% |
 
-Two cells fall below the 85<!-- claim: poor_coverage_threshold_pct = 85.0000 -->% threshold. For those combinations the tool prints `INSUFFICIENT CALIBRATION` and no interval, because a number shown there would look exactly as confident as a well-calibrated one. Neither can be fixed with current data: `w4a16\|<2B` has 11<!-- claim: cell_train_rows::w4a16\|<2B = 11.0000 --> training rows from 2<!-- claim: cell_train_ckpt::w4a16\|<2B = 2.0000 --> checkpoints, and the widening that would fix `w8a16\|>10B` needs 9+ calibration rows and rarely gets them.
+Two cells were originally flagged for falling below the 85<!-- claim: poor_coverage_threshold_pct = 85.0000 -->% threshold. Under the three-state rule neither is a confident refusal: both are `insufficient_evidence`. For an `insufficient_evidence` cell the tool still prints the all-sizes interval, but demotes the scheme to Tier C and says the cell cannot be judged; only a `refused` cell has its interval withheld (`INSUFFICIENT CALIBRATION`), and none currently is. Neither flagged cell can be fixed with current data: `w4a16\|<2B` has 11<!-- claim: cell_train_rows::w4a16\|<2B = 11.0000 --> training rows from 2<!-- claim: cell_train_ckpt::w4a16\|<2B = 2.0000 --> checkpoints, and the widening that would fix `w8a16\|>10B` needs 9+ calibration rows and rarely gets them.
 
 ### Training support floor
 

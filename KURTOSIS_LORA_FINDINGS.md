@@ -2,7 +2,7 @@
 
 *Working note, 25 September 2026. GPU run on a rented A100-SXM4-40GB. Every number below is reproduced by
 `gpu/analyze_lora_kurtosis.py`, which reads the two raw artifacts directly --
-none is hand-typed. Not published.*
+none is hand-typed.*
 
 ## The question
 

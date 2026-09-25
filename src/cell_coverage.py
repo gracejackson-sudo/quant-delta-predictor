@@ -139,7 +139,9 @@ def main():
           f"{res['pooled']['scored_rows']} scored rows\n")
     print(f"{'cell':<24}{'scored':>8}{'coverage':>10}{'widened':>9}")
     for k, v in sorted(res["cells"].items(), key=lambda kv: kv[1]["coverage"]):
-        mark = "  <-- below nominal" if v["coverage"] < 0.85 else ""
+        one = v.get("coverage_one_sided")
+        mark = ("  <-- one-sided below 85%"
+                if (one if one is not None else v["coverage"]) < 0.85 else "")
         print(f"{k:<24}{v['scored_rows']:>8}{v['coverage']*100:>9.1f}%"
               f"{v['pct_widened']*100:>8.0f}%{mark}")
     print(f"\nwrote {OUT}")

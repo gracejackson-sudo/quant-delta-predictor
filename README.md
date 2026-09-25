@@ -129,9 +129,12 @@ This is enforced mechanically, not by discipline:
 ./.venv/bin/python src/verify_claims.py     # re-verify every number
 ```
 
-Where a `(scheme, size band)` cell has measured coverage below threshold, the tool prints
-`INSUFFICIENT CALIBRATION` and **no interval**, rather than a number that would look as confident
-as a well-calibrated one.
+Each `(scheme, size band)` cell gets one of three verdicts. A cell with adequately supported
+coverage is *trusted*. A cell whose coverage is measurably poor is *refused*: the tool prints
+`INSUFFICIENT CALIBRATION` and **no interval**. A cell resting on fewer than three checkpoints, or
+whose checkpoint-bootstrap interval straddles the 85% line, is *insufficient evidence*: the interval
+is still printed, but the scheme is demoted to Tier C with a note that the cell cannot be judged.
+At present no cell is refused; the cells in the third state are listed in `RANKING.md`.
 
 ## Data and licence
 

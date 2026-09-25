@@ -344,9 +344,10 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
                 f"{judged*100:.1f}% of the time here "
                 f"({c['scored_rows']} scored rows from "
                 f"{c.get('distinct_checkpoints', '?')} distinct checkpoints "
-                f"across {c.get('distinct_families', '?')} families), against "
-                f"the 90% it claims. Run your own evaluation for this "
-                f"combination")
+                f"across {c.get('distinct_families', '?')} families), below the "
+                f"{REFUSE_BELOW*100:.0f}% refusal threshold (the one-sided "
+                f"nominal level is about 95%). Run your own evaluation for "
+                f"this combination")
 
     # Worst observed loss is stated for EVERY scheme, at every rank and tier.
     if e["worst_observed"] <= -risk_pp:

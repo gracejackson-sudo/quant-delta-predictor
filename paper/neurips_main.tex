@@ -169,10 +169,13 @@ measure coverage directly, and the tool returns one of three verdicts. A cell
 is \emph{trusted} when measured coverage is adequate and adequately supported.
 It is \emph{refused}---\texttt{INSUFFICIENT CALIBRATION}, no interval---when
 coverage is measurably poor on a sufficient number of scored rows. It is
-\emph{insufficient evidence}, again with no interval, when the cell rests on
+\emph{insufficient evidence} when the cell rests on
 fewer than \MinCkpt{} distinct checkpoints, or when a checkpoint-level cluster
 bootstrap 90\% interval on its coverage straddles the \RefuseBelow\% line. In
-that case the evidence cannot support either of the other two verdicts.
+that case the evidence cannot support either of the other two verdicts. The
+tool still prints the all-sizes interval for such a cell, but demotes the scheme
+to the lowest tier and states that the cell cannot be judged; only a refused
+cell has its interval withheld.
 
 Coverage is scored \emph{one-sided}: how often the true delta stayed at or
 above the interval's lower bound. The risk this tool bounds is accuracy loss,
