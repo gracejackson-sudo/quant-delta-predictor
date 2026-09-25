@@ -52,6 +52,7 @@ M = {
     "PubIntelPaired": ("pub_intel_paired_cards", "{:.0f}"),
     "NCellsInsuff": ("n_cells_insufficient_evidence", "{:.0f}"),
     "NCellsTotal": ("n_cells_total", "{:.0f}"),
+    "NCellsRefused": ("n_cells_refused", "{:.0f}"),
     "RefuseBelow": ("refuse_below_pct", "{:.0f}"),
     "BootLoWsixteenBig": ("os_boot90_lo::w8a16|>10B", "{:.0f}"),
     "BootHiWsixteenBig": ("os_boot90_hi::w8a16|>10B", "{:.0f}"),

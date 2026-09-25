@@ -905,3 +905,20 @@ def test_qwen35_ingestion_only_reads_quantized_qwen35_repos():
     import qwen35_published as Q
     ids = Q.repos()
     assert ids and all("Qwen3.5-" in i and "speculator" not in i for i in ids)
+
+
+def test_external_feedback_doc_cites_only_real_commits():
+    """Every commit hash in EXTERNAL_FEEDBACK.md must resolve in git history,
+    so the trail it claims can actually be followed. Skipped outside a git
+    checkout."""
+    import re, subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    if not os.path.isdir(os.path.join(root, ".git")):
+        return
+    text = open(os.path.join(root, "EXTERNAL_FEEDBACK.md")).read()
+    hashes = set(re.findall(r"`([0-9a-f]{7})`", text))
+    assert hashes, "the doc should cite commits"
+    for h in hashes:
+        r = subprocess.run(["git", "cat-file", "-t", h], cwd=root,
+                           capture_output=True, text=True)
+        assert r.stdout.strip() == "commit", f"{h} is not a commit"

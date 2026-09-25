@@ -14,7 +14,7 @@ import os, re, sys
 HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
 OUTWARD = [f for f in ("TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
-                       "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md",
+                       "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md", "EXTERNAL_FEEDBACK.md",
                        "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md")
            if os.path.exists(os.path.join(ROOT, f))]
 

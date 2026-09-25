@@ -31,7 +31,7 @@ HERE = os.path.dirname(__file__)
 # doc can be kept out of the public repo without breaking the gate.
 DOCS = [p for p in (os.path.join(HERE, "..", f) for f in
         ("RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
-         "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md",
+         "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md", "EXTERNAL_FEEDBACK.md",
          "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md")) if os.path.exists(p)]
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 CELLS = os.path.join(HERE, "..", "out", "cell_coverage.json")
@@ -184,6 +184,19 @@ def registry():
             add(f"bias_naive_mass::{sc}", vv["naive_mass_below"], 1e-4,
                 f"naive mass below bound, {sc}")
 
+    q35 = os.path.join(HERE, "..", "data", "qwen35", "published_rows.csv")
+    q35r = os.path.join(HERE, "..", "data", "qwen35", "published_rejects.csv")
+    if os.path.exists(q35) and os.path.exists(q35r):
+        import pandas as _pd
+        _q = _pd.read_csv(q35)
+        add("qwen35_pub_rows", len(_q), 0, "published Qwen3.5 rows kept")
+        add("qwen35_pub_verified", int(_q.verified.sum()), 0,
+            "of those, passing the recovery check")
+        add("qwen35_pub_repos", _q.model.nunique(), 0,
+            "quantized Qwen3.5 repos with rows")
+        add("qwen35_pub_rejects", len(_pd.read_csv(q35r)), 0,
+            "published Qwen3.5 rows rejected")
+
     adv = os.path.join(HERE, "..", "data", "adversarial",
                        "adversarial_runs.csv")
     if os.path.exists(adv):
@@ -215,6 +228,10 @@ def registry():
             "control rows losing >=3pp")
         add("adv_max_params_b", a.params_b.max(), 0.01,
             "largest model in the adversarial arm")
+        add("adv_min_params_b", a.params_b.min(), 0.001,
+            "smallest model in the adversarial arm")
+        add("adv_mid_params_b", sorted(a.params_b.unique())[1], 0.001,
+            "middle size in the adversarial arm")
         w4 = bad[(bad.scheme == "w4a16") & bad.excess.notna()]
         add("adv_excess_mean", w4.excess.mean(), 0.01,
             "mean w4a16 excess over control")

@@ -15,7 +15,7 @@ HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
 DOCS = [f for f in sorted(os.listdir(ROOT)) if f.endswith(".md")]
 GENERATED = {"RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
-             "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md"}
+             "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md", "EXTERNAL_FEEDBACK.md"}
 
 # statements that must not reappear anywhere user-facing
 BANNED = [
