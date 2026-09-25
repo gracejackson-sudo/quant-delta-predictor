@@ -166,6 +166,53 @@ def registry():
                 f"mean |predicted delta| at rank {rk}")
             add(f"t2_n::{rk}", v_["n"], 0, f"rows scored at rank {rk}")
 
+    # --- Track 2b: the low-rank claim re-tested after external review.
+    # Variance and correlations are recomputed here from the raw data; the
+    # prediction runs (about 20 minutes, needs BenchPress's released code) are
+    # read from out/track2_benchpress.json.
+    import track2_lowrank as _t2
+    _M2 = _t2.build_matrix(_pdr.read_csv(DATA).pipe(lambda x: x[x.acc_before >= _MAB]))
+    for _k in range(3, 7):
+        _n, _c, _v = _t2.fair_variance_explained(_M2, _k)
+        add(f"t2b_fair_rows_k{_k}", _n, 0, f"fully observed rows, {_k} benchmarks")
+        add(f"t2b_fair_rank2_k{_k}_pct", 100 * _v, 0.05,
+            f"rank-2 variance, mean-centred, {_k} benchmarks")
+        _n, _c, _v = _t2.fair_variance_explained(_M2, _k, base_only=True)
+        add(f"t2b_fair_base_rank2_k{_k}_pct", 100 * _v, 0.05,
+            f"rank-2 variance, base rows only, {_k} benchmarks")
+    add("t2b_filled_global_mean_pct", 100 * float(_M2.isna().to_numpy().mean()), 0.05,
+        "share of cells the original variance figure filled with one mean")
+    for _b in ("gpqa", "musr"):
+        _nb = _t2.best_neighbour(_M2, _b)
+        add(f"t2b_corr_{_b}", _nb[0], 0.005, f"strongest neighbour correlation, {_b}")
+        add(f"t2b_corr_{_b}_overlap", _nb[2], 0, f"rows behind that correlation, {_b}")
+    t2bp = os.path.join(HERE, "..", "out", "track2_benchpress.json")
+    if os.path.exists(t2bp):
+        _sm = json.load(open(t2bp))["summary"]
+        for _id, _key in (("orig", "original|sib=0|random"),
+                          ("orig_nosib", "original|sib=1|random"),
+                          ("bp", "benchpress|sib=0|random"),
+                          ("bp_nosib", "benchpress|sib=1|random"),
+                          ("orig_pred", "original|sib=0|predictive"),
+                          ("bp_pred", "benchpress|sib=0|predictive")):
+            _v = _sm[_key]
+            for _f, _tol in (("mae", 0.005), ("mae_scheme_mean", 0.005),
+                             ("mae_zero", 0.005), ("ratio_vs_scheme_mean", 0.005),
+                             ("mean_abs_pred", 0.005), ("corr_pred_true", 0.005),
+                             ("n_severe", 0), ("severe_caught", 0.05),
+                             ("false_alarms", 0.05), ("n", 0)):
+                add(f"t2b_{_f}::{_id}", _v[_f], _tol, f"track 2b {_id}: {_f}")
+            if _id in ("orig", "bp"):
+                add(f"t2b_mae_sd::{_id}", _v["mae_sd"], 0.005, f"track 2b {_id}: seed sd")
+        add("t2b_seeds", json.load(open(t2bp))["seeds"], 0, "seeds averaged")
+        add("t2b_bp_improvement_pct",
+            100 * (1 - _sm["benchpress|sib=0|random"]["mae"]
+                   / _sm["original|sib=0|random"]["mae"]), 0.5,
+            "BenchPress method's error reduction versus our original imputer")
+        # External figure, read from the BenchPress paper's abstract
+        # (arXiv:2606.24020: held-out scores recovered within 4.6 points).
+        add("benchpress_reported_error_pts", 4.6, 0, "BenchPress abstract, held-out error")
+
     # --- negative-result headline numbers
     add("mae_floor_pp", 0.5293677169647244, 0.002,
         "irreducible MAE from evaluation noise (run_final)")

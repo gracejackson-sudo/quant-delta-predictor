@@ -83,6 +83,39 @@ def variance_explained(M, max_rank=6):
     return [float(ev[:r].sum()) for r in range(1, max_rank + 1)]
 
 
+def fair_variance_explained(M, k, rank=2, base_only=False):
+    """Variance explained by `rank` factors on the largest fully observed
+    submatrix with k benchmarks, each column mean-centred (the method of the
+    BenchPress paper; suggested by its author on review). Returns
+    (rows, columns, fraction). Unlike variance_explained() this fills nothing.
+    """
+    import itertools
+    sub = M.loc[[r for r in M.index if r.startswith("BASE::")]] if base_only else M
+    X = sub.to_numpy(float)
+    ob = ~np.isnan(X)
+    best = None
+    for combo in itertools.combinations(range(X.shape[1]), k):
+        n = int(ob[:, combo].all(1).sum())
+        if best is None or n > best[0]:
+            best = (n, combo)
+    n, combo = best
+    full = X[ob[:, combo].all(1)][:, combo]
+    s = np.linalg.svd(full - full.mean(0), compute_uv=False)
+    return n, [sub.columns[i] for i in combo], float((s[:rank] ** 2).sum() / (s ** 2).sum())
+
+
+def best_neighbour(M, bench, min_overlap=8):
+    """(correlation, other benchmark, overlap) of the benchmark most correlated
+    with `bench`, using pairwise-complete rows with at least min_overlap pairs."""
+    c = []
+    for o in M.columns:
+        if o != bench:
+            ok = M[[bench, o]].dropna()
+            if len(ok) >= min_overlap:
+                c.append((float(np.corrcoef(ok[bench], ok[o])[0, 1]), o, len(ok)))
+    return max(c) if c else None
+
+
 def run(d, rank=2, k_revealed=3, seed=0):
     M = build_matrix(d)
     rng = np.random.default_rng(seed)

@@ -68,44 +68,103 @@ def main():
       "schemes is nearly identical to the spread for 4-bit schemes: the "
       "measurement is louder than the effect.\n")
 
-    A("## 4. Low-rank structure does not transfer (Track 2)\n")
+    A("## 4. Low-rank structure and paired deltas (Track 2, revised after external review)\n")
     A("BenchPress (arXiv:2606.24020) predicts unseen benchmark scores by "
       "exploiting the fact that a frontier-model score matrix is roughly "
       "rank-2. We tested whether that structure helps on **paired** "
       "quantization deltas.\n")
-    A(f"Our matrix is {n('t2_matrix_rows')} rows (base and quantized "
-      f"checkpoints) x {n('t2_matrix_cols')} benchmarks, "
-      f"{n('t2_fill_pct', '{:.1f}')}% filled. Rank-2 explains "
-      f"{n('t2_var_explained_rank2_pct', '{:.1f}')}% of standardised "
-      f"variance here, against the >90% BenchPress reports on frontier "
-      f"models.\n")
-    A("Protocol: reveal the full base-model row plus 3 of the quantized "
-      "model's scores, predict the rest, and read off the implied delta.\n")
-    A("| rank | rows scored | low-rank MAE | scheme-mean MAE | always-zero MAE |")
-    A("|---|---|---|---|---|")
-    for rk in ("2", "3", "5"):
-        if f"t2_mae_lowrank::{rk}" not in REG: continue
-        A(f"| {rk} | {n('t2_n::' + rk)} | "
-          f"**{n('t2_mae_lowrank::' + rk, '{:.3f}')}** | "
-          f"{n('t2_mae_scheme::' + rk, '{:.3f}')} | "
-          f"{n('t2_mae_zero::' + rk, '{:.3f}')} |")
+    A("> **Correction.** The first version of this section made three "
+      "statements that a BenchPress author showed, on reviewing our code, to "
+      "be wrong or unfair. (1) It said rank-2 explains "
+      f"{n('t2_var_explained_rank2_pct', '{:.1f}')}% of the variance in our "
+      f"matrix, against over 90% for BenchPress. That figure was computed "
+      f"after filling {n('t2b_filled_global_mean_pct', '{:.1f}')}% of the "
+      f"matrix with one global mean, which weakens any low-rank structure. "
+      f"Measured as the BenchPress paper does it, the structure is present "
+      f"(table below). (2) It tested a plain SVD-completion approximation, "
+      f"not BenchPress's method. (3) It called the resulting error gap 'an "
+      f"order of magnitude'; even our own numbers showed about "
+      f"{n('t2_mae_lowrank::2', '{:.0f}')} versus "
+      f"{n('t2_mae_scheme::2', '{:.1f}')}. What follows replaces it.\n")
+    A("### 4a. Is the structure there?\n")
+    A("Largest fully observed submatrix with k benchmarks, each column "
+      "mean-centred, nothing filled:\n")
+    A("| benchmarks | rows (base + quantized) | rank-2 variance | base rows only |")
+    A("|---|---|---|---|")
+    for k in range(3, 7):
+        A(f"| {k} | {n(f't2b_fair_rows_k{k}')} | "
+          f"{n(f't2b_fair_rank2_k{k}_pct', '{:.2f}')}% | "
+          f"{n(f't2b_fair_base_rank2_k{k}_pct', '{:.2f}')}% |")
     A("")
-    A(f"We predicted low-rank would *collapse to zero* and miss the damaging "
-      f"cases. It does something worse: at rank 2 the mean absolute predicted "
-      f"delta is {n('t2_mean_abs_pred::2', '{:.2f}')}pp, against true deltas "
-      f"whose mean absolute size is {n('t2_mae_zero::2', '{:.2f}')}pp. The "
-      f"reconstruction noise floor is an order of magnitude larger than the "
-      f"quantity being estimated.\n")
-    A("**That is the transferable lesson:** low-rank score-matrix completion "
-      "is built for cross-model variation of tens of points. A paired "
-      "quantization delta lives at ~1pp. The method is not wrong; it is "
-      "operating below its own resolution.\n")
-    A("*Caveat, stated plainly:* this is a fast approximation using plain "
-      "iterative-SVD completion, not a reimplementation of BenchPress. Their "
-      "link functions, regularisation search and bias terms would sharpen "
-      "point accuracy. They could not close an order-of-magnitude "
-      "resolution gap, and their own reported 90% conformal interval width "
-      "is 27.01 score points, but we did not test their exact method.\n")
+    A("Yes: rank-2 explains 88% to 99% here, as the reviewer said. Two "
+      "cautions on reading it. With only 3 to 6 columns, two factors can "
+      "explain a large share almost by construction, so this is a weak test "
+      "next to BenchPress's 133 benchmarks. And each quantized checkpoint sits "
+      "next to its own base, so the rows are not independent; the base-only "
+      "column removes that and gives the same picture. What it establishes is "
+      "that cross-model variation is low-rank. It says nothing yet about "
+      "whether that helps predict a one-point paired delta.\n")
+    A("### 4b. Does BenchPress's actual method predict the delta?\n")
+    A(f"Protocol, unchanged: reveal the full base-model row plus 3 of the "
+      f"quantized model's scores, predict the rest, read off the implied "
+      f"delta. Now run with BenchPress's released predictor (Logit + Bias ALS, "
+      f"rank 2, default regularisation, unmodified code; a one-off spot check on their own released "
+      f"matrix gave a median error near their reported figure, but that check "
+      f"is not among this repository's scripts) and with our original imputer, "
+      f"averaged over {n('t2b_seeds')} random draws of the revealed scores "
+      f"on {n('t2b_n::bp')} scored rows. Errors are in accuracy points.\n")
+    A("| method | MAE (sd over draws) | scheme-mean MAE | always-zero MAE | MAE / scheme-mean | correlation with true delta |")
+    A("|---|---|---|---|---|---|")
+    for lab, i in (("our original imputer", "orig"),
+                   ("BenchPress Logit + Bias ALS", "bp"),
+                   ("BenchPress, target's sibling rows removed", "bp_nosib")):
+        sd = f" ({n('t2b_mae_sd::' + i, '{:.2f}')})" if i in ("orig", "bp") else ""
+        A(f"| {lab} | {n('t2b_mae::' + i, '{:.2f}')}{sd} | "
+          f"{n('t2b_mae_scheme_mean::' + i, '{:.2f}')} | "
+          f"{n('t2b_mae_zero::' + i, '{:.2f}')} | "
+          f"{n('t2b_ratio_vs_scheme_mean::' + i, '{:.1f}')}x | "
+          f"{n('t2b_corr_pred_true::' + i, '{:.2f}')} |")
+    A("")
+    A(f"Using their method instead of ours improves the error by about "
+      f"{n('t2b_bp_improvement_pct', '{:.0f}')}% but does "
+      f"not close the gap: it is still {n('t2b_ratio_vs_scheme_mean::bp', '{:.1f}')} "
+      f"times the error of the six-number scheme lookup, the predicted deltas "
+      f"are uncorrelated with the true ones, and it flags "
+      f"{n('t2b_false_alarms::bp', '{:.0f}')} rows that were not severe as "
+      f"losing at least 1.5 points while catching "
+      f"{n('t2b_severe_caught::bp', '{:.1f}')} of {n('t2b_n_severe::bp')} severe ones. "
+      f"The likely reason is scale, not a flaw in their method: BenchPress "
+      f"reports recovering held-out scores to within about {n('benchpress_reported_error_pts', '{:.1f}')} points, and a "
+      f"paired quantization delta averages {n('t2b_mae_zero::bp', '{:.1f}')} points in size, so an "
+      f"estimate built from cross-benchmark prediction cannot resolve it. "
+      f"Our error of {n('t2b_mae::bp', '{:.1f}')} points on a sparser, "
+      f"16-benchmark matrix is the same order as their own.\n")
+    A("### 4c. The reviewer's two smaller points\n")
+    A(f"- **Benchmarks without close neighbours.** Confirmed: the strongest "
+      f"correlation for GPQA is {n('t2b_corr_gpqa', '{:.2f}')} "
+      f"(over {n('t2b_corr_gpqa_overlap')} rows) and for MuSR "
+      f"{n('t2b_corr_musr', '{:.2f}')} (over {n('t2b_corr_musr_overlap')} rows). "
+      f"Correlations elsewhere are near 1 but rest on very few overlapping "
+      f"rows and on base and quantized rows that duplicate each other, so we "
+      f"do not treat them as strong evidence.\n")
+    A(f"- **Choosing the known scores.** Revealing the 3 most predictive "
+      f"benchmarks instead of 3 random ones gave a ratio to the lookup of "
+      f"{n('t2b_ratio_vs_scheme_mean::bp_pred', '{:.1f}')}x for BenchPress "
+      f"and {n('t2b_ratio_vs_scheme_mean::orig_pred', '{:.1f}')}x for our "
+      f"imputer, against {n('t2b_ratio_vs_scheme_mean::bp', '{:.1f}')}x and "
+      f"{n('t2b_ratio_vs_scheme_mean::orig', '{:.1f}')}x with random ones. "
+      f"That is a single deterministic run, with predictiveness ranked from "
+      f"base rows that include the model being tested, and it changes which "
+      f"rows are scored, so it is a weak check; it does not change the "
+      f"conclusion.\n")
+    A("**What this now supports, and what it does not.** With BenchPress's "
+      "released method on our matrix, low-rank completion still predicts the "
+      "paired delta several times worse than a per-scheme average. It does "
+      "not support an order-of-magnitude claim, and it does not show that "
+      "BenchPress fails on its own task. *Not tested:* their exact evaluation "
+      "harness; regularisation and rank tuned on our data; revealing more "
+      "than 3 scores; applying low-rank structure to the deltas themselves "
+      "rather than to scores. Any of these could change the picture.\n")
 
     A("## 5. Relationship to BenchPress\n")
     A("BenchPress solves the same problem shape: predict an eval result, "
@@ -220,9 +279,11 @@ def main():
     A("The pattern worth naming: **every time a result improved without a "
       "mechanism to explain it, the improvement was an artefact.** Infinite "
       "intervals covering 100%. In-sample calibration flattering NVFP4 from "
-      "74% to 94%. Low-rank completion looking plausible until its noise "
-      "floor was compared to the signal. The discipline that produced the "
+      "74% to 94%. The discipline that produced the "
       "usable results is refusing to accept an unexplained improvement.\n")
+    A("Errors also ran the other way: our first low-rank comparison was "
+      "unfair to the method it tested, and an external reviewer corrected it "
+      "(section 4).\n")
     A("## 8. What we would still build\n")
     A("- A per-scheme calibrated envelope, which is what the data supports. "
       "See `RANKING.md`.\n"
@@ -230,8 +291,9 @@ def main():
       "adversarial data rather than an assumed tail shape. See "
       "`BIAS_CORRECTION.md`.\n")
     A("What we would not build again: a per-model predictor. The noise floor "
-      "forbids it and two independent method families (feature regression, "
-      "low-rank completion) both failed to beat a six-number lookup.\n")
+      "forbids it, and two independent method families (feature regression "
+      "and low-rank completion, the latter re-tested with BenchPress's own "
+      "code) both failed to beat a six-number lookup.\n")
 
     open(DOC, "w").write("\n".join(L) + "\n")
     print(f"wrote {DOC} ({len(L)} lines)")

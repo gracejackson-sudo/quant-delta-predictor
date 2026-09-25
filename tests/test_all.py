@@ -922,3 +922,21 @@ def test_external_feedback_doc_cites_only_real_commits():
         r = subprocess.run(["git", "cat-file", "-t", h], cwd=root,
                            capture_output=True, text=True)
         assert r.stdout.strip() == "commit", f"{h} is not a commit"
+
+
+def test_fair_variance_uses_only_fully_observed_cells():
+    """The reviewer-suggested variance measure must fill nothing: a rank-1
+    matrix with holes still reads as rank-1 on its fully observed part, and a
+    noisy column outside the chosen submatrix must not leak in."""
+    import numpy as np, pandas as pd
+    import track2_lowrank as t
+    rng = np.random.default_rng(0)
+    u = rng.normal(size=(30, 1))
+    X = u @ np.array([[1.0, 2.0, -1.0]]) + 5.0
+    X = np.column_stack([X, rng.normal(size=30)])
+    X[:10, 3] = np.nan
+    M = pd.DataFrame(X, index=[f"BASE::m{i}" for i in range(30)],
+                     columns=list("abcd"))
+    n, cols, ve = t.fair_variance_explained(M, 3, rank=1)
+    assert n == 30 and set(cols) == {"a", "b", "c"}
+    assert ve > 0.999
