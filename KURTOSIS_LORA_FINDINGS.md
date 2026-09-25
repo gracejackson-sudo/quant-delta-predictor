@@ -1,7 +1,6 @@
 # Does weight-outlier kurtosis predict LoRA-merge forgetting?
 
-*Working note, 25 September 2026. GPU run on a Lambda A100-SXM4-40GB
-(150.136.41.182). Every number below is reproduced by
+*Working note, 25 September 2026. GPU run on a rented A100-SXM4-40GB. Every number below is reproduced by
 `gpu/analyze_lora_kurtosis.py`, which reads the two raw artifacts directly --
 none is hand-typed. Not published.*
 
