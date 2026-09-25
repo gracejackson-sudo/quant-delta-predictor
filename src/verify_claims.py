@@ -67,6 +67,13 @@ def registry():
     add("pooled_scored_rows", cc["pooled"]["scored_rows"], 0,
         "src/cell_coverage.py pooled")
     add("n_rows", meta["n_rows"], 0, "rows after acc_before>=20")
+    import pandas as _pdr
+    from model import MIN_ACC_BEFORE as _MAB
+    _raw = len(_pdr.read_csv(DATA))
+    add("n_rows_raw", _raw, 0, "rows extracted, before any filtering")
+    add("n_rows_dropped_near_chance", _raw - meta["n_rows"], 0,
+        "extracted rows dropped for a near-chance baseline")
+    add("min_acc_before_pct", _MAB, 0, "baseline accuracy floor, in points")
     add("n_checkpoints", meta["n_checkpoints"], 0, "distinct base models")
     add("n_families", meta["n_families"], 0, "distinct families")
 

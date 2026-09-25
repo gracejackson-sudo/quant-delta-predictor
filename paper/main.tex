@@ -48,7 +48,7 @@ practice the only way to know is to run the evaluation.
 This paper asks whether that number can be forecast from the public record.
 Model publishers release quantized checkpoints with benchmark tables comparing
 the compressed model against its dense parent. Aggregated, these are hundreds
-of paired measurements of exactly the quantity of interest (\Nrows{} in our harvest).
+of paired measurements of exactly the quantity of interest (\NrowsRaw{} extracted in our harvest).
 
 Our contributions:
 
@@ -110,8 +110,9 @@ to our own artifact in \S\ref{sec:limits}.
 
 We harvest published model cards into rows of
 \((\text{model}, \text{scheme}, \text{benchmark},
-\text{acc}_{\text{before}}, \text{acc}_{\text{after}})\), yielding \Nrows{}
-rows after filtering, across \Nckpt{} base checkpoints, \Nfam{} families and
+\text{acc}_{\text{before}}, \text{acc}_{\text{after}})\), yielding \NrowsRaw{}
+rows, of which \Nrows{} remain after dropping \NrowsDropped{} whose baseline accuracy is below
+\MinAccBefore{}\% (near chance, where a delta is uninformative), across \Nckpt{} base checkpoints, \Nfam{} families and
 \Nsch{} schemes.
 
 \paragraph{An integrity gate.} Cards typically print a \emph{Recovery \%}

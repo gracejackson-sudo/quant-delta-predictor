@@ -74,7 +74,9 @@ def main():
       "removed from that file in `cef5eff`. We do not know whether it is the "
       "item the ML engineer meant, since the transcript does not name the file.\n")
     A("**What is not fixed:** the address is still present in three earlier "
-      "commits (`077da61`, `99f1ca5`, `37364d2`). We did not rewrite history: "
+      "commits on `main` (`077da61`, `99f1ca5`, `37364d2`) and in one "
+      "orphaned commit that is no longer on any branch but can still be "
+      "fetched by its hash. We did not rewrite history: "
       "the instance no longer exists, and a rewrite would change every "
       "published hash. That is a judgement call, and it is open.\n")
 
@@ -108,11 +110,13 @@ def main():
       "advertised at 90% splits its 10% across two tails. That matches the "
       "number the ML engineer gave, but we cannot confirm it is the same quantity. "
       "That the nominal one-sided level is about 95% was already stated "
-      "in the docs and the refusal message (`fd682b2`, derivation in "
-      "`ONE_SIDED_COVERAGE.md`) before this feedback arrived, so it is not "
-      "a fix made in response. What was done afterwards is a sweep for "
-      "stale statements of the refusal behaviour in the docs, paper and "
-      "messages (`a31a1f7`).\n")
+      "in the docs (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) "
+      "before this feedback arrived, so that part is not a response to it. "
+      "What was done afterwards is a sweep for stale statements of the "
+      "refusal behaviour in the docs, paper and messages (`a31a1f7`), which "
+      "also changed the refusal message: it had compared coverage against "
+      "the 90% the interval claims, and now cites the refusal threshold and "
+      "the one-sided level.\n")
     A("**What is open:** whether 85% is the right refusal line has not been "
       "revisited. It is a design choice we have not re-derived, and the engineer's "
       "comment may be an argument for moving it.\n")
@@ -167,9 +171,10 @@ def main():
       "the tool is and is not, ahead of all existing links (`00d5d18`), with "
       "stale refusal text corrected (`8fbe7e5`). No documentation was "
       "removed. The rendering was checked on the live github.com page, not "
-      "only locally. One caveat: the README says the first run takes about "
-      "half a minute; that was a one-time cold-import cost in a fresh "
-      "environment on one machine, and the wording overstates it.\n")
+      "only locally. One correction: the block first said the first run takes "
+      "about half a minute. That was a one-time cold-import cost in a fresh "
+      "environment on one machine, not the tool's runtime, and it has since "
+      "been reworded.\n")
 
     A("### C2. Another metric or benchmark\n")
     A("**What was said:** the methodology looked sound, but it \"would be "

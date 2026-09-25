@@ -13,7 +13,7 @@ python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scipy
 ./.venv/bin/python src/rank.py w4a16 --size 1.5B        # a case it says it cannot judge
 ```
 
-No network, API key or GPU is needed after the install. The first run takes about half a minute.
+No network, API key or GPU is needed after the install. Runs after the install take a few seconds; the very first one can take longer while numpy, pandas and scipy load for the first time.
 
 **What you will see.** The first command returns a historical range of accuracy change for that
 scheme, with no warning flags, and still shows the worst loss ever observed, which is worth reading.

@@ -13,6 +13,8 @@ R = {k: v[0] for k, v in registry().items()}
 
 # macro name -> (registry key, format)
 M = {
+    "NrowsRaw": ("n_rows_raw", "{:.0f}"), "NrowsDropped": ("n_rows_dropped_near_chance", "{:.0f}"),
+    "MinAccBefore": ("min_acc_before_pct", "{:.0f}"),
     "Nrows": ("n_rows", "{:.0f}"), "Nckpt": ("n_checkpoints", "{:.0f}"),
     "Nfam": ("n_families", "{:.0f}"), "Nsch": ("n_schemes", "{:.0f}"),
     "MinCkpt": ("min_cell_checkpoints", "{:.0f}"),

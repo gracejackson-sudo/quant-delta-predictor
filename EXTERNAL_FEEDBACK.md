@@ -28,7 +28,7 @@ The external ML engineer tested the tool against internal models of their own or
 
 **What we found:** one address, belonging to a cloud GPU instance that has since been terminated, in `KURTOSIS_LORA_FINDINGS.md`. It was removed from that file in `cef5eff`. We do not know whether it is the item the ML engineer meant, since the transcript does not name the file.
 
-**What is not fixed:** the address is still present in three earlier commits (`077da61`, `99f1ca5`, `37364d2`). We did not rewrite history: the instance no longer exists, and a rewrite would change every published hash. That is a judgement call, and it is open.
+**What is not fixed:** the address is still present in three earlier commits on `main` (`077da61`, `99f1ca5`, `37364d2`) and in one orphaned commit that is no longer on any branch but can still be fetched by its hash. We did not rewrite history: the instance no longer exists, and a rewrite would change every published hash. That is a judgement call, and it is open.
 
 ### M2. Inconsistent verdicts on repeated identical runs
 
@@ -42,7 +42,7 @@ The external ML engineer tested the tool against internal models of their own or
 
 **What was said:** the 85% refusal line "is slightly higher than that," around 95.1 in their experiments. It is unclear from the transcript what quantity that 95.1 measures.
 
-**What we found:** the refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->% and is stated as such. Separately, pooled one-sided coverage of the interval is 95.1<!-- claim: pooled_one_sided_pct = 95.1390 -->%, which is the interval's real one-sided nominal level, since a symmetric interval advertised at 90% splits its 10% across two tails. That matches the number the ML engineer gave, but we cannot confirm it is the same quantity. That the nominal one-sided level is about 95% was already stated in the docs and the refusal message (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) before this feedback arrived, so it is not a fix made in response. What was done afterwards is a sweep for stale statements of the refusal behaviour in the docs, paper and messages (`a31a1f7`).
+**What we found:** the refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->% and is stated as such. Separately, pooled one-sided coverage of the interval is 95.1<!-- claim: pooled_one_sided_pct = 95.1390 -->%, which is the interval's real one-sided nominal level, since a symmetric interval advertised at 90% splits its 10% across two tails. That matches the number the ML engineer gave, but we cannot confirm it is the same quantity. That the nominal one-sided level is about 95% was already stated in the docs (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) before this feedback arrived, so that part is not a response to it. What was done afterwards is a sweep for stale statements of the refusal behaviour in the docs, paper and messages (`a31a1f7`), which also changed the refusal message: it had compared coverage against the 90% the interval claims, and now cites the refusal threshold and the one-sided level.
 
 **What is open:** whether 85% is the right refusal line has not been revisited. It is a design choice we have not re-derived, and the engineer's comment may be an argument for moving it.
 
@@ -74,7 +74,7 @@ The external technical collaborator gave feedback on a call as a reviewer who wo
 
 **What was said:** the README is well written, but "links to a lot of files," so it is "a little hard to know where to get started."
 
-**What was done:** a first-screen block with a one-minute path (clone, install, two example commands) and a short statement of what the tool is and is not, ahead of all existing links (`00d5d18`), with stale refusal text corrected (`8fbe7e5`). No documentation was removed. The rendering was checked on the live github.com page, not only locally. One caveat: the README says the first run takes about half a minute; that was a one-time cold-import cost in a fresh environment on one machine, and the wording overstates it.
+**What was done:** a first-screen block with a one-minute path (clone, install, two example commands) and a short statement of what the tool is and is not, ahead of all existing links (`00d5d18`), with stale refusal text corrected (`8fbe7e5`). No documentation was removed. The rendering was checked on the live github.com page, not only locally. One correction: the block first said the first run takes about half a minute. That was a one-time cold-import cost in a fresh environment on one machine, not the tool's runtime, and it has since been reworded.
 
 ### C2. Another metric or benchmark
 
