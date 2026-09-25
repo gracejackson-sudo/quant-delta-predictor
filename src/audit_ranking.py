@@ -212,25 +212,32 @@ def r3_cannot_warn(d, table):
          f"tier and rank" if not silent
          else f"schemes silent about their worst loss: {silent}")
 
-    print("\n[R3.2b] refused cells (no interval emitted)")
+    print("\n[R3.2b] refused / insufficient-evidence cells (no interval emitted)")
     cc = R.load_cell_coverage()
-    # Must use the SAME criterion the tool refuses on, or this audit can
-    # silently disagree with the product it is auditing.
+    # Must use the SAME classifier the tool judges with (R.classify_cell), or
+    # this audit can silently disagree with the product it is auditing.
     def _judged(v):
         return v.get("coverage_one_sided") or v["coverage"]
 
-    refused = sorted(k for k, v in cc.get("cells", {}).items()
-                     if _judged(v) < R.REFUSE_BELOW
-                     and v["scored_rows"] >= R.REFUSE_MIN_ROWS)
+    states = {k: R.classify_cell(v) for k, v in cc.get("cells", {}).items()}
+    refused = sorted(k for k, s in states.items() if s == "refused")
+    insuff = sorted(k for k, s in states.items() if s == "insufficient_evidence")
     for key in refused:
         c = cc["cells"][key]
         print(f"   {key:<22} one-sided {_judged(c)*100:.1f}% "
               f"(two-sided {c['coverage']*100:.1f}%) over "
               f"{c['scored_rows']} rows -> INSUFFICIENT CALIBRATION")
-    note("OK" if refused else "FINDING",
-         f"{len(refused)} undercovered cells now refuse to emit a number "
-         f"instead of printing one that looks as confident as a good cell: "
-         f"{refused}")
+    for key in insuff:
+        c = cc["cells"][key]
+        print(f"   {key:<22} one-sided {_judged(c)*100:.1f}% "
+              f"ckpts {c.get('distinct_checkpoints')} "
+              f"boot90 [{c.get('boot90_lo')}, {c.get('boot90_hi')}] "
+              f"-> INSUFFICIENT EVIDENCE")
+    note("OK" if (refused or insuff) else "FINDING",
+         f"{len(refused)} undercovered cells refuse to emit a number, "
+         f"{len(insuff)} more lack enough evidence (too few checkpoints or "
+         f"a straddling bootstrap interval) to be judged either way: "
+         f"refused={refused} insufficient_evidence={insuff}")
 
     print("\n[R3.3] the known-bad config: gemma-3-1b-it W4A16")
     real = [-3.03, -2.99, -2.90, -2.41, -1.34, 1.40]

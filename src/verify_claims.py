@@ -31,7 +31,8 @@ HERE = os.path.dirname(__file__)
 # doc can be kept out of the public repo without breaking the gate.
 DOCS = [p for p in (os.path.join(HERE, "..", f) for f in
         ("RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
-         "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md")) if os.path.exists(p)]
+         "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md",
+         "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md")) if os.path.exists(p)]
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 CELLS = os.path.join(HERE, "..", "out", "cell_coverage.json")
 
@@ -88,6 +89,13 @@ def registry():
         sum(1 for v in cc.get("support", {}).values()
             if v["train_checkpoints"] < R.MIN_CELL_CHECKPOINTS), 0,
         "cells below the checkpoint floor")
+    add("n_cells_total", len(cc.get("cells", {})), 0,
+        "total scheme/size cells")
+    add("n_cells_insufficient_evidence",
+        sum(1 for v in cc.get("cells", {}).values()
+            if R.classify_cell(v) == "insufficient_evidence"), 0,
+        "cells reclassified to insufficient_evidence by the checkpoint/"
+        "bootstrap floor")
 
     add("widening_share_pct", cc["widening"]["share"] * 100, 0.5,
         "share of scored rows where a widened cell applied")
@@ -229,6 +237,51 @@ def registry():
         add("pub_control_verified_rows", c["control_arith_verified_rows"], 0,
             "RedHatAI rows our recovery gate can verify (positive control)")
         add("pub_others_count", len(oth), 0, "publishers other than RedHatAI")
+        add("pub_others_verifiable_cards", sum(
+            r["cards_with_verifiable_evals"] for r in oth), 0,
+            "non-RedHatAI cards with any gate-verifiable rows")
+        by = {r["publisher"]: r for r in c["per_publisher"]}
+        for pub, key in (("Intel", "intel"), ("RedHatAI", "redhat")):
+            if pub in by:
+                add(f"pub_{key}_cards", by[pub]["cards_fetched"], 0,
+                    f"{pub} cards inspected")
+                add(f"pub_{key}_paired_cards",
+                    by[pub]["cards_with_paired_evals"], 0,
+                    f"{pub} cards with paired before/after rows")
+                add(f"pub_{key}_verified_rows",
+                    by[pub]["arith_verified_rows"], 0,
+                    f"{pub} rows our recovery gate can verify")
+
+    lc = os.path.join(HERE, "..", "data", "adversarial", "lora_forgetting.csv")
+    kj = os.path.join(HERE, "..", "data", "adversarial", "weight_kurtosis.json")
+    if os.path.exists(lc) and os.path.exists(kj):
+        # re-derived straight from the two raw GPU-run artifacts
+        from scipy import stats as _st
+        lo = pd.read_csv(lc)
+        km = {m_["model"]: m_ for m_ in json.load(open(kj))}
+        both = sorted(set(lo.base_model) & set(km))
+        add("lk_lora_pairs", len(lo), 0, "LoRA adapters evaluated")
+        add("lk_lora_models", lo.base_model.nunique(), 0,
+            "base models with LoRA forgetting measured")
+        add("lk_kurt_models", len(km), 0, "models with kurtosis measured")
+        add("lk_overlap_models", len(both), 0,
+            "models with BOTH kurtosis and LoRA forgetting measured")
+        add("lk_forget_max_pp", lo.forgetting.max(), 0.01,
+            "largest LoRA forgetting value (most positive)")
+        add("lk_forget_min_pp", lo.forgetting.min(), 0.01,
+            "largest LoRA forgetting value (most negative)")
+        sub = lo[lo.base_model.isin(both)].copy()
+        sub["k3"] = sub.base_model.map(
+            lambda m_: km[m_]["pct_channels_kurt_gt_3"])
+        add("lk_pooled_rows", len(sub), 0,
+            "rows with a kurtosis value (pseudo-replicated)")
+        add("lk_pooled_pearson", _st.pearsonr(sub.k3, sub.forgetting)[0], 0.001,
+            "pooled Pearson r, kurtosis vs forgetting")
+        add("lk_pooled_spearman", _st.spearmanr(sub.k3, sub.forgetting)[0],
+            0.001, "pooled Spearman r, kurtosis vs forgetting")
+        rr = _st.spearmanr(lo.lora_rank, lo.forgetting)
+        add("lk_rank_spearman", rr[0], 0.001, "Spearman r, LoRA rank vs forgetting")
+        add("lk_rank_p", rr[1], 0.001, "p-value of that Spearman r")
 
     if cc.get("pooled", {}).get("coverage_one_sided") is not None:
         add("pooled_one_sided_pct", 100 * cc["pooled"]["coverage_one_sided"],

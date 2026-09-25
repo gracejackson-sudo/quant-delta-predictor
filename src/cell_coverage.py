@@ -15,6 +15,7 @@ import json
 import os
 import sys
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -61,7 +62,28 @@ def measure(d=None):
         "below_lo": float((r.delta < r.lo_).mean()) if "lo_" in r else None,
         "above_hi": float((r.delta > r.hi_).mean()) if "hi_" in r else None,
         "scored_rows": int(len(r))}, "cells": {}}
+    rng = np.random.default_rng(0)
     for (s, b), g in r.groupby(["scheme", "band"]):
+        n_ckpts = int(g.base_model.nunique())
+        # Cluster (whole-checkpoint) bootstrap of the ONE-SIDED statistic --
+        # the one the refusal decision is actually judged on. Resampling rows
+        # would treat correlated per-checkpoint rows as independent evidence;
+        # resampling checkpoints does not. With few checkpoints this interval
+        # is coarse (few achievable resample compositions) rather than smooth,
+        # which is exactly why a checkpoint-count floor is also needed below,
+        # not a substitute for one. (External finding, see ONE_SIDED_COVERAGE.md)
+        groups = [gg for _, gg in g.groupby("base_model")]
+        one_sided_ok = (g.delta >= g.lo_) if "lo_" in g else None
+        if one_sided_ok is not None:
+            g = g.assign(_ok1=one_sided_ok)
+            groups = [gg.assign(_ok1=(gg.delta >= gg.lo_)) for _, gg in g.groupby("base_model")]
+            boot = [pd.concat([groups[i] for i in
+                               rng.integers(0, n_ckpts, n_ckpts)])._ok1.mean()
+                    for _ in range(20000)]
+            boot90_lo = round(float(np.percentile(boot, 5)) * 100, 1)
+            boot90_hi = round(float(np.percentile(boot, 95)) * 100, 1)
+        else:
+            boot90_lo = boot90_hi = None
         out["cells"][f"{s}|{b}"] = {
             "scheme": s, "band": b,
             "coverage": float(g.ok.mean()),
@@ -76,9 +98,11 @@ def measure(d=None):
             # from one checkpoint across many benchmarks are correlated views
             # of a single quantization run. This is already enforced on train
             # support; reporting it here makes it visible for coverage too.
-            "distinct_checkpoints": int(g.base_model.nunique()),
+            "distinct_checkpoints": n_ckpts,
             "distinct_families": int(g.family.nunique()),
             "pct_widened": float((g.lv == "stratum-widened").mean()),
+            "boot90_lo": boot90_lo,
+            "boot90_hi": boot90_hi,
         }
     for b, g in r.groupby("band"):
         out.setdefault("bands", {})[b] = {

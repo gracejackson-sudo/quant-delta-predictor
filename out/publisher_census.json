@@ -1,12 +1,12 @@
 {
-  "publishers_checked": 5,
-  "other_publishers_checked": 4,
-  "cards_inspected_total": 195,
-  "cards_inspected_others": 157,
-  "others_with_paired_evals": 5,
-  "others_with_verifiable_evals": 0,
-  "others_arith_verified_rows": 0,
-  "control_arith_verified_rows": 142,
+  "publishers_checked": 10,
+  "other_publishers_checked": 9,
+  "cards_inspected_total": 260,
+  "cards_inspected_others": 222,
+  "others_with_paired_evals": 10,
+  "others_with_verifiable_evals": 1,
+  "others_arith_verified_rows": 6,
+  "control_arith_verified_rows": 147,
   "control_publisher": "RedHatAI",
   "control_cards_fetched": 38,
   "control_cards_with_paired_evals": 26,
@@ -16,9 +16,9 @@
       "quantized_models_listed": 40,
       "cards_fetched": 38,
       "cards_with_paired_evals": 26,
-      "paired_rows_total": 148,
+      "paired_rows_total": 153,
       "cards_with_verifiable_evals": 25,
-      "arith_verified_rows": 142
+      "arith_verified_rows": 147
     },
     {
       "publisher": "ModelCloud",
@@ -51,8 +51,53 @@
       "publisher": "Intel",
       "quantized_models_listed": 40,
       "cards_fetched": 40,
-      "cards_with_paired_evals": 5,
-      "paired_rows_total": 25,
+      "cards_with_paired_evals": 9,
+      "paired_rows_total": 71,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "bartowski",
+      "quantized_models_listed": 0,
+      "cards_fetched": 0,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "neuralmagic",
+      "quantized_models_listed": 1,
+      "cards_fetched": 1,
+      "cards_with_paired_evals": 1,
+      "paired_rows_total": 6,
+      "cards_with_verifiable_evals": 1,
+      "arith_verified_rows": 6
+    },
+    {
+      "publisher": "casperhansen",
+      "quantized_models_listed": 40,
+      "cards_fetched": 24,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "mlx-community",
+      "quantized_models_listed": 40,
+      "cards_fetched": 40,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
+      "cards_with_verifiable_evals": 0,
+      "arith_verified_rows": 0
+    },
+    {
+      "publisher": "QuantFactory",
+      "quantized_models_listed": 0,
+      "cards_fetched": 0,
+      "cards_with_paired_evals": 0,
+      "paired_rows_total": 0,
       "cards_with_verifiable_evals": 0,
       "arith_verified_rows": 0
     }

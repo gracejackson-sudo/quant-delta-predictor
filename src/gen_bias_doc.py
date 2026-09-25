@@ -222,23 +222,26 @@ def bias_doc():
     A(f"**Red Hat is not the only publisher of paired evaluations.** Of "
       f"{n('pub_others_cards')} cards from the other "
       f"{n('pub_others_count')} publishers, "
-      f"{n('pub_others_paired_cards')} carry before/after pairs -- all of them "
-      f"from Intel. The earlier claim that Red Hat was close to the only such "
-      f"publisher was wrong, and rested on a smaller sample.\n")
-    A(f"**What Red Hat is alone in publishing is the verification.** Their "
-      f"cards print a Recovery column, so every row can be checked against "
-      f"100 x after/before and rejected if it disagrees. Of the "
+      f"{n('pub_others_paired_cards')} carry before/after pairs, "
+      f"{n('pub_intel_paired_cards')} of them Intel's. The earlier claim that "
+      f"Red Hat was close to the only such publisher was wrong, and rested on "
+      f"a smaller sample.\n")
+    A(f"**What Red Hat's cards do routinely is publish the verification.** "
+      f"Their cards print a Recovery column, so every row can be checked "
+      f"against 100 x after/before and rejected if it disagrees. Of the "
       f"{n('pub_others_verified_rows')} rows from other publishers that our "
       f"integrity gate can verify this way, against "
-      f"{n('pub_control_verified_rows')} from the control, the count speaks "
-      f"for itself: Intel publishes the numbers without the column that makes "
-      f"them self-checking, and reports on a 0--1 scale rather than "
-      f"percentages.\n")
+      f"{n('pub_control_verified_rows')} from the control, all come from "
+      f"{n('pub_others_verifiable_cards')} card in total, and "
+      f"{n('pub_intel_verified_rows')} from Intel, which publishes the numbers "
+      f"without the column that makes them self-checking and reports on a "
+      f"0--1 scale rather than percentages.\n")
     A("That is the honest form of this limitation. The corpus is "
-      "single-publisher not because others publish nothing, but because only "
-      "one publishes in a form this pipeline can verify. Extending to Intel is "
-      "tractable future work and would require format-specific handling plus "
-      "an alternative to the recovery check; it is not done here.\n")
+      "single-publisher not because others publish nothing, but because Red "
+      "Hat's cards are, by a wide margin, the ones published in a form this "
+      "pipeline can verify. Extending to Intel is tractable future work and "
+      "would require format-specific handling plus an alternative to the "
+      "recovery check; it is not done here.\n")
     A("## 6. Relationship to BenchPress\n")
     A("BenchPress does not address selection bias at all. Its reliability "
       "layer estimates how wrong a prediction is likely to be *within* the "

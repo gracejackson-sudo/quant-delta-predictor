@@ -35,7 +35,9 @@ CACHE = os.path.join(OUT, "publisher_cards")
 RESULT = os.path.join(OUT, "publisher_census.json")
 
 # RedHatAI first: it is the positive control, not just another row.
-PUBLISHERS = ["RedHatAI", "ModelCloud", "unsloth", "TheBloke", "Intel"]
+PUBLISHERS = ["RedHatAI", "ModelCloud", "unsloth", "TheBloke", "Intel",
+              "bartowski", "neuralmagic", "casperhansen", "mlx-community",
+              "QuantFactory"]
 PER_PUBLISHER = 40
 QUANT_RE = re.compile(r"4bit|8bit|gptq|awq|w4a16|w8a8|w8a16|int4|int8|fp8|"
                       r"nvfp4|quantiz", re.I)
@@ -96,7 +98,8 @@ def survey(author):
     if not ids:
         return {"publisher": author, "quantized_models_listed": 0,
                 "cards_fetched": 0, "cards_with_paired_evals": 0,
-                "paired_rows_total": 0}
+                "paired_rows_total": 0, "cards_with_verifiable_evals": 0,
+                "arith_verified_rows": 0}
     with ThreadPoolExecutor(8) as ex:
         texts = list(ex.map(card_text, ids))
     fetched = [t for t in texts if t]

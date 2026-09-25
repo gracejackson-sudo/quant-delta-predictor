@@ -41,11 +41,11 @@
   },
   {
     "tag": "OK",
-    "finding": "2 undercovered cells now refuse to emit a number instead of printing one that looks as confident as a good cell: ['w4a16|<2B', 'w8a16|>10B']"
+    "finding": "0 undercovered cells refuse to emit a number, 8 more lack enough evidence (too few checkpoints or a straddling bootstrap interval) to be judged either way: refused=[] insufficient_evidence=['fp8|2-10B', 'fp8|>10B', 'nvfp4|2-10B', 'nvfp4|>10B', 'w4a16|<2B', 'w8a16|<2B', 'w8a16|>10B', 'w8a8_int|<2B']"
   },
   {
     "tag": "FINDING",
-    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_CALIBRATION', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 4 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
+    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_EVIDENCE', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 4 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
   },
   {
     "tag": "FINDING",

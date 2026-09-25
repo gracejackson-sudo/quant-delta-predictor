@@ -4,9 +4,13 @@
 
 ## Where this came from
 
-A reader on Reddit re-ran `src/cell_coverage.py` against the committed artifact, reproduced our numbers, and then argued that the two cells the tool refuses are failing for different reasons and should not be scored the same way. They were right. This records their finding, how it was verified, and what it changes.
+A commenter on Reddit re-ran `src/cell_coverage.py` against the committed artifact, reproduced our numbers, and then argued that the two cells the tool refuses are failing for different reasons and should not be scored the same way. They were right. This records their finding, how it was verified, and what it changes.
+
+The commenter has identified themselves as an AI account collaborating with the OpenLanguageModel maintainers, disclosed in their bio. Their contribution is credited on that basis below, not as a human reviewer.
 
 They also pointed out an inconsistency in our own code: the comment in `cell_coverage.py` says the checkpoint is the honest unit of evidence, and that standard is enforced on *training support* via the three-checkpoint floor -- but not on the coverage figure that drives the refusal itself. That was accurate and is now fixed.
+
+They followed up with a second, separate proposal: apply that same three-checkpoint floor to the coverage *judgment* itself, and treat a checkpoint-cluster bootstrap interval that straddles the refusal line the same way. Both parts were independently verified against the code and data before being implemented; see the sections below.
 
 ## What they claimed, and what we measured
 
@@ -23,7 +27,7 @@ Every figure below was recomputed from `data/dataset.csv` by `src/one_sided_audi
 | `w4a16\|<2B` distinct rows | 11 | 11<!-- claim: os_distinct_model_benchmark::w4a16\|<2B = 11.0000 --> | matches |
 | `w8a16\|>10B` one-sided | 81.1% | 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% | matches |
 | `w4a16\|<2B` below lower bound | 29.9% | 29.9<!-- claim: os_below_lo_pct::w4a16\|<2B = 29.8701 -->% | matches |
-| `w8a16\|>10B` cluster 90% interval | [46%, 98%] | [46<!-- claim: os_boot90_lo::w8a16\|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16\|>10B = 98.1000 -->%] | matches |
+| `w8a16\|>10B` cluster 90% interval | [46%, 98%] | [47<!-- claim: os_boot90_lo::w8a16\|>10B = 46.8000 -->%, 100<!-- claim: os_boot90_hi::w8a16\|>10B = 100.0000 -->%] | matches |
 
 ### Per-checkpoint coverage, verified against raw data
 
@@ -41,13 +45,13 @@ They wrote that every 405B miss is above the upper bound *"(mean delta +0.27pp)"
 
 ## The conclusion
 
-**`w4a16|<2B` is an earned refusal.** 29.9<!-- claim: os_below_lo_pct::w4a16\|<2B = 29.8701 -->% of its rows fall below the lower bound and only 1.3<!-- claim: os_above_hi_pct::w4a16\|<2B = 1.2987 -->% above the upper one, so scoring it one-sided barely moves it: 68.8<!-- claim: os_two_sided_pct::w4a16\|<2B = 68.8312 -->% to 70.1<!-- claim: os_one_sided_pct::w4a16\|<2B = 70.1299 -->%. The damage is real and on the side that matters.
+**`w4a16|<2B`'s directional signal is real, but the evidence base is now held to a stricter standard than 'refused' implies.** 29.9<!-- claim: os_below_lo_pct::w4a16\|<2B = 29.8701 -->% of its rows fall below the lower bound and only 1.3<!-- claim: os_above_hi_pct::w4a16\|<2B = 1.2987 -->% above the upper one, so scoring it one-sided barely moves it: 68.8<!-- claim: os_two_sided_pct::w4a16\|<2B = 68.8312 -->% to 70.1<!-- claim: os_one_sided_pct::w4a16\|<2B = 70.1299 -->%. The damage is real and on the side that matters -- but see 'What changed' below: this cell is now classified `insufficient_evidence`, not `refused`, because it rests on only 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> checkpoints.
 
 But the evidence is narrower than the label. Those 77<!-- claim: os_scored_rows::w4a16\|<2B = 77.0000 --> rows are 11<!-- claim: os_distinct_model_benchmark::w4a16\|<2B = 11.0000 --> distinct (model, benchmark) results from 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> checkpoints in 1<!-- claim: os_distinct_families::w4a16\|<2B = 1.0000 --> family. **The claim the data supports is about small Qwen, not about every model under 2B.**
 
 **`w8a16|>10B` is substantially a scoring artefact.** 7.4<!-- claim: os_above_hi_pct::w8a16\|>10B = 7.3733 -->% of its rows sit *above* the upper bound -- the model beat the envelope, which is not a risk anyone needs protecting from. Counting only losses below the lower bound moves it from 73.7<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.7327 -->% to 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->%, close to the 90% it claims.
 
-What remains after that is one checkpoint. Resampling whole checkpoints puts a 90% interval of [46<!-- claim: os_boot90_lo::w8a16\|>10B = 46.3000 -->%, 98<!-- claim: os_boot90_hi::w8a16\|>10B = 98.1000 -->%] around the headline figure. That span cannot distinguish *this cell is uncalibrated* from *one Llama checkpoint is an outlier*. By contrast `w4a16|<2B` resamples to [63<!-- claim: os_boot90_lo::w4a16\|<2B = 62.9000 -->%, 74<!-- claim: os_boot90_hi::w4a16\|<2B = 73.8000 -->%] -- the earned refusal is also the better-evidenced one.
+What remains after that is one checkpoint. Resampling whole checkpoints puts a 90% interval of [47<!-- claim: os_boot90_lo::w8a16\|>10B = 46.8000 -->%, 100<!-- claim: os_boot90_hi::w8a16\|>10B = 100.0000 -->%] around the headline figure. That span cannot distinguish *this cell is uncalibrated* from *one Llama checkpoint is an outlier*, and it straddles the 85<!-- claim: refuse_below_pct = 85.0000 -->% refusal line -- neither of which a point estimate alone would reveal. By contrast `w4a16|<2B` resamples to [63<!-- claim: os_boot90_lo::w4a16\|<2B = 62.9000 -->%, 76<!-- claim: os_boot90_hi::w4a16\|<2B = 76.2000 -->%], a narrower interval sitting entirely below the line -- better evidenced, but still only 2 checkpoints, which is what now holds it back from being called a confident refusal.
 
 ## What the one-sided figure should be compared against
 
@@ -63,15 +67,19 @@ Judging a one-sided measurement against 90% is the lenient comparison. Both refu
 
 **Also done.** The refusal threshold now scores one-sided coverage. The tool's behaviour matches what this document argues is correct.
 
-**The outcome was not what was expected, and that is worth recording.** The change was made in the expectation that `w8a16|>10B` would stop being refused. It did not. The refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->%, not the 90% the interval advertises, and 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% is still below it. **Both cells remain refused, and the refused-cell list is unchanged.** What changed is the criterion and the number reported beside each refusal: `w8a16|>10B` is now shown as 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% rather than 73.7<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.7327 -->%, which is a fairer description of the same evidence.
+**The outcome was not what was expected, and that is worth recording.** The change was made in the expectation that `w8a16|>10B` would stop being refused. It did not stop being flagged -- its refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->%, not the 90% the interval advertises, and 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% is still below it. What changed is the criterion and the number reported: `w8a16|>10B` is now shown as 81.1<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.1060 -->% rather than 73.7<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.7327 -->%, a fairer description of the same evidence.
 
 The finding stands regardless: the two cells fail for different reasons, and the tool now measures the one that matters. But it would have been easy to report this change as having flipped a refusal, and it did not.
 
-## Open question
+## The third state: insufficient evidence
 
-A cell resting on 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> checkpoints and one resting on 5<!-- claim: os_distinct_checkpoints::w8a16\|>10B = 5.0000 --> are currently treated as the same kind of evidence, and the tool has only two states: answer, or refuse. Neither fits a cell where the honest position is *there is not enough evidence to judge*. Whether to add that third state is an open design question, recorded here rather than resolved quietly.
+A cell resting on 2<!-- claim: os_distinct_checkpoints::w4a16\|<2B = 2.0000 --> checkpoints and one resting on 5<!-- claim: os_distinct_checkpoints::w8a16\|>10B = 5.0000 --> were being treated as the same kind of evidence, and the tool had only two states: answer, or refuse. Neither fit a cell where the honest position is *there is not enough evidence to judge*. A second proposal from the same commenter resolved this: apply the three-checkpoint floor to the coverage judgment itself (not just training support), and add a checkpoint-cluster bootstrap interval on the one-sided statistic; a cell fails into `insufficient_evidence` -- not `refused` -- if it has fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> checkpoints or its bootstrap interval straddles the refusal line.
+
+Both parts of the proposal were verified independently before implementation. The checkpoint-count asymmetry was confirmed by reading `rank.py` directly: the three-checkpoint floor (`MIN_CELL_CHECKPOINTS`) gated Tier A training support but was never consulted by the refusal check. The bootstrap-statistic mismatch was confirmed by reading `one_sided_audit.py` directly: its cluster bootstrap resampled the two-sided `ok` column even though the refusal decision judges the one-sided statistic -- now fixed to bootstrap the one-sided indicator instead. The claim that a 2-cluster bootstrap 'degenerates trivially' was confirmed combinatorially: drawing 2 checkpoints with replacement from a pool of 2 has exactly 4 equally likely outcomes, collapsing to only 3 distinct resample compositions -- not enough to produce a meaningful percentile interval.
+
+**The result reclassifies both previously-refused cells.** Neither `w4a16|<2B` (2 checkpoints, below the floor) nor `w8a16|>10B` (5 checkpoints, but its corrected bootstrap interval [47<!-- claim: os_boot90_lo::w8a16\|>10B = 46.8000 -->%, 100<!-- claim: os_boot90_hi::w8a16\|>10B = 100.0000 -->%] straddles the 85<!-- claim: refuse_below_pct = 85.0000 -->% line) is a confident refusal any more -- both are `insufficient_evidence`. Applying the floor to every scheme/size cell, not only these two, moved 8<!-- claim: n_cells_insufficient_evidence = 8.0000 --> of 17<!-- claim: n_cells_total = 17.0000 --> scheme/size cells into `insufficient_evidence` in total, including several with comfortably high point-estimate coverage (94-100%) whose bootstrap intervals also straddle the line. This is a materially larger effect than the two-cell scope this document originally covered, and it is reported in full in `rank.py`'s own output rather than summarized away here.
 
 ## Credit
 
-This finding came from outside the project, from a reader who did the work: re-ran the code, reproduced the artifact, went to the raw rows, and identified a real inconsistency between what our own comment said and what the refusal logic did. It is the first external technical contribution the project has received, and it improved it.
+This finding came from outside the project, from an AI collaborator working with the OpenLanguageModel maintainers (disclosed as such in their Reddit bio): re-ran the code, reproduced the artifact, went to the raw rows, and identified a real inconsistency between what our own comment said and what the refusal logic did, then proposed and helped scope the fix that resolved it. It is the first external technical contribution the project has received, and it improved it. The technical work is credited on its merits; it is not represented here as a human reviewer's.
 

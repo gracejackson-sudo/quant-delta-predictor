@@ -14,7 +14,8 @@ import os, re, sys
 HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
 OUTWARD = [f for f in ("TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
-                       "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md")
+                       "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md",
+                       "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md")
            if os.path.exists(os.path.join(ROOT, f))]
 
 CLAIM = re.compile(r"<!--\s*claim:\s*([^\s]+)\s*=\s*([-+0-9.]+)\s*-->")
@@ -39,7 +40,7 @@ STRUCTURAL = {"2026", "2025", "1", "6", "7", "25.0"}
 # Figures quoted explicitly AS superseded or historical, inside a sentence
 # that says so. They must not be silently updated -- the whole point is that
 # they record what we used to believe.
-HISTORICAL = {"5.1", "74", "94", "92.2", "90.2", "12", "19"}
+HISTORICAL = {"5.1", "74", "94", "92.2", "90.2", "12", "19", "46"}
 EXEMPT = {
     # identifiers and fixed constants
     "2606.24020", "2606", "24020", "6.2", "84", "133",

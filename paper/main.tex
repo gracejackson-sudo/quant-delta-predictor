@@ -59,7 +59,7 @@ Our contributions:
     than burying it.
   \item \textbf{A calibrated envelope that does work} (\S\ref{sec:results}),
     conditioned on scheme alone, with measured coverage on held-out families
-    and an explicit refusal rule for cells where coverage is poor.
+    and an explicit rule that withholds an interval where coverage is poor or the evidence is too thin to judge.
   \item \textbf{A measurement of the corpus's own selection bias}
     (\S\ref{sec:tail}), via GPU experiments on deliberately-faulted
     configurations---data the published record structurally cannot contain.
@@ -141,26 +141,41 @@ index to exist, we return \(\infty\) rather than a misleadingly finite band.
 interval advertised at 90\% was in fact a 68\% interval for NVFP4 users---the
 users who most need it. We therefore calibrate per scheme.
 
-\paragraph{A refusal rule.} For each (scheme, size-band) cell we measure
-coverage directly. Where measured coverage falls below a threshold on a
-sufficient number of scored rows, the tool emits
-\texttt{INSUFFICIENT CALIBRATION} and no interval.
+\paragraph{A three-state verdict.} For each (scheme, size-band) cell we
+measure coverage directly, and the tool returns one of three verdicts. A cell
+is \emph{trusted} when measured coverage is adequate and adequately supported.
+It is \emph{refused}---\texttt{INSUFFICIENT CALIBRATION}, no interval---when
+coverage is measurably poor on a sufficient number of scored rows. It is
+\emph{insufficient evidence}, again with no interval, when the cell rests on
+fewer than \MinCkpt{} distinct checkpoints, or when a checkpoint-level cluster
+bootstrap 90\% interval on its coverage straddles the \RefuseBelow\% line. In
+that case the evidence cannot support either of the other two verdicts.
 
-The refusal is scored on \emph{one-sided} coverage: how often the true delta
-stayed at or above the interval's lower bound. The risk this tool bounds is
-accuracy loss, and a model that beats its envelope has exposed no one to
-anything, so counting that as a failure would refuse cells that are merely
-outperforming. Two cells are refused: \texttt{w4a16|<2B}, where losses stayed
-above the lower bound \OneSidedCellWfourSmall\% of the time over
-\RowsCellWfourSmall{} rows from \CkptsCellWfourSmall{} checkpoints
-(two-sided containment \CovCellWfourSmall\%), and \texttt{w8a16|>10B} at
-\OneSidedCellWsixteenBig\% over \RowsCellWsixteenBig{} rows from
-\CkptsCellWsixteenBig{} checkpoints (two-sided \CovCellWsixteenBig\%).
-The distinction was identified by an external reader. Comparing a one-sided
-measurement against the printed 90\% is the \emph{lenient} reading, not a
-flattering one: the interval is symmetric, so the permitted 10\% is split
+Coverage is scored \emph{one-sided}: how often the true delta stayed at or
+above the interval's lower bound. The risk this tool bounds is accuracy loss,
+and a model that beats its envelope has exposed no one to anything, so counting
+that as a failure would flag cells that are merely outperforming. Comparing a
+one-sided measurement against the printed 90\% is the \emph{lenient} reading,
+not a flattering one: the interval is symmetric, so the permitted 10\% is split
 across two tails, and pooled one-sided coverage across all scored rows is
-\PooledOneSided\%. Both cells are refused even under the lenient comparison.
+\PooledOneSided\%.
+
+Two cells were flagged under the earlier two-state rule, and neither is a
+confident refusal under the three-state one. \texttt{w4a16|<2B} had one-sided
+coverage of \OneSidedCellWfourSmall\% over \RowsCellWfourSmall{} rows
+(two-sided \CovCellWfourSmall\%), but those rows come from only
+\CkptsCellWfourSmall{} checkpoints. \texttt{w8a16|>10B} had \OneSidedCellWsixteenBig\%
+over \RowsCellWsixteenBig{} rows from \CkptsCellWsixteenBig{} checkpoints
+(two-sided \CovCellWsixteenBig\%), and its bootstrap interval,
+[\BootLoWsixteenBig, \BootHiWsixteenBig]\%, straddles the threshold. Both are
+now \emph{insufficient evidence}. We had scoped the change to those two cells;
+applying the rule to every cell moved \NCellsInsuff{} of \NCellsTotal{} into
+that state, including several whose point-estimate coverage looked comfortable.
+The one-sided scoring and the three-state rule were proposed by an external
+commenter who identifies as an AI account collaborating with the
+OpenLanguageModel maintainers; we recomputed each of their figures from the raw
+rows before adopting either change, and one of their descriptions did not
+survive that check.
 
 \paragraph{A support floor.} Coverage measured on many benchmarks from one
 checkpoint is not independent evidence; it is one quantization run viewed many
@@ -290,12 +305,14 @@ calibration volume can dominate scheme choice. We measured how confining this
 is: surveying \PubChecked{} publishers and \PubCards{} quantized model cards,
 \PubOthersPaired{} of \PubOthersCards{} cards from the other
 \PubOthersCount{} publishers carry paired before/after evaluations, so others
-do publish them. What no other publisher in the sample provides is a
+do publish them. What the other publishers almost never provide is a
 \emph{Recovery} column, which is what lets each row be checked against
 \(100 \times \text{after}/\text{before}\) and rejected on disagreement: of
-their rows, \PubOthersVerified{} pass that gate, against \PubCtrlVerified{}
-from the control publisher. The corpus is single-publisher not because others
-publish nothing, but because only one publishes in a self-verifying form.
+their rows, \PubOthersVerified{} pass that gate, all from
+\PubOthersVerifiableCards{} card, against \PubCtrlVerified{} from the control
+publisher. The corpus is single-publisher not because others publish nothing,
+but because the control publisher's cards are, by a wide margin, the ones
+published in a self-verifying form.
 
 \paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the
@@ -358,8 +375,8 @@ numeric literal.
 Per-model prediction of quantization accuracy damage does not work on published
 data, and the reason is measurement noise rather than model capacity. What does
 work is narrower: a per-scheme calibrated envelope, validated at
-\(90.1\%\) coverage on unseen checkpoints, that refuses to answer where its own
-measured coverage is poor. The more useful contribution may be the limitation
+\(90.1\%\) coverage on unseen checkpoints, that declines to answer where its own
+measured coverage is poor or too thinly supported to judge. The more useful contribution may be the limitation
 itself---the published record of quantized models is outcome-truncated, and we
 measured losses roughly four times worse than anything it contains. A risk
 estimate built on that record is a floor on risk, not a ceiling, and should say

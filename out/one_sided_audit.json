@@ -19,8 +19,9 @@
         "Qwen2.5-72B": 97.619,
         "gemma-2-27b-it": 100.0
       },
-      "boot90_lo": 46.3,
-      "boot90_hi": 98.1,
+      "boot90_lo": 46.8,
+      "boot90_hi": 100.0,
+      "boot90_n_clusters": 5,
       "miss_mean_by_checkpoint": {
         "Meta-Llama-3.1-405B-Instruct": 0.74,
         "Meta-Llama-3.1-70B-Instruct": -1.8468,
@@ -43,7 +44,8 @@
         "Qwen2.5-1.5B": 73.8095
       },
       "boot90_lo": 62.9,
-      "boot90_hi": 73.8,
+      "boot90_hi": 76.2,
+      "boot90_n_clusters": 2,
       "miss_mean_by_checkpoint": {
         "Qwen2.5-0.5B": -4.4608,
         "Qwen2.5-1.5B": -2.8182

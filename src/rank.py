@@ -51,7 +51,37 @@ REFUSE_BELOW = 0.85          # per-cell measured coverage below this -> no numbe
 # miss and can make a cell look uncalibrated when it is merely outperforming.
 # See ONE_SIDED_COVERAGE.md for the external report that prompted this.
 REFUSE_MIN_ROWS = 50         # ...provided the measurement itself is not thin
+
+
+def classify_cell(v):
+    """One shared classifier for a cell_coverage.json cell: 'trusted',
+    'insufficient_evidence', or 'refused'. Used by both the per-scheme
+    assess() notes and the top-level refused/insufficient-evidence lists, so
+    the two views of the same evidence cannot silently diverge."""
+    judged = v.get("coverage_one_sided")
+    if judged is None:
+        judged = v.get("coverage")
+    if judged is None or v.get("scored_rows", 0) < REFUSE_MIN_ROWS:
+        return "trusted"  # too little data to judge at all; unchanged status quo
+    ckpts = v.get("distinct_checkpoints")
+    boot_lo, boot_hi = v.get("boot90_lo"), v.get("boot90_hi")
+    thin_ckpts = ckpts is not None and ckpts < MIN_CELL_CHECKPOINTS
+    straddles = (boot_lo is not None and boot_hi is not None and
+                 boot_lo < REFUSE_BELOW * 100 < boot_hi)
+    if thin_ckpts or straddles:
+        return "insufficient_evidence"
+    if judged < REFUSE_BELOW:
+        return "refused"
+    return "trusted"
+
+
 MIN_CELL_CHECKPOINTS = 3     # distinct checkpoints a cell needs to reach Tier A
+# Also the coverage-judgment floor: below this many checkpoints, a cluster
+# bootstrap over checkpoints has too few achievable resample compositions to
+# be a meaningful interval (e.g. 2 checkpoints -> only 3 possible resample
+# mixtures out of 20000 draws), so the tool cannot confidently call a cell
+# either "trusted" or "refused" -- it is a third state, "insufficient
+# evidence." Independently verified external finding; see ONE_SIDED_COVERAGE.md.
 
 # Why distinct checkpoints and not scored rows: one checkpoint evaluated on 13
 # benchmarks produces 13 rows, but they are 13 correlated views of a single
@@ -232,8 +262,10 @@ def build_table(d=None):
         "pooled_scored_rows": cc.get("pooled", {}).get("scored_rows"),
         "refused_cells": sorted(
             k for k, v in cc.get("cells", {}).items()
-            if (v.get("coverage_one_sided") or v["coverage"]) < REFUSE_BELOW
-            and v["scored_rows"] >= REFUSE_MIN_ROWS),
+            if classify_cell(v) == "refused"),
+        "insufficient_evidence_cells": sorted(
+            k for k, v in cc.get("cells", {}).items()
+            if classify_cell(v) == "insufficient_evidence"),
     }
     return table
 
@@ -243,10 +275,27 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
     """Flags and notes for one scheme. Notes are printed, never swallowed."""
     flags, notes = [], []
     e["refused"] = False
+    e["insufficient_evidence"] = False
 
     # Refusal: if this exact (scheme, size band) cell was MEASURED to cover far
     # below nominal, the tool declines to print an interval rather than show a
     # number that looks as confident as a well-calibrated one.
+    #
+    # Before that judgment is trusted at all, two evidence-floor checks run
+    # first. Either one produces a THIRD state -- "insufficient evidence" --
+    # distinct from both "trusted" and "refused":
+    #   (a) fewer than MIN_CELL_CHECKPOINTS distinct checkpoints. The same
+    #       floor already applied to training support now applies to the
+    #       coverage judgment itself.
+    #   (b) the checkpoint-cluster bootstrap 90% interval on one-sided
+    #       coverage straddles REFUSE_BELOW. A point estimate can sit below
+    #       the line while the interval around it is too wide to say so with
+    #       any confidence.
+    # A cell can fail (a) or (b) and still have a point estimate comfortably
+    # above REFUSE_BELOW -- that is not a contradiction, it means the point
+    # estimate itself is not trustworthy yet, which is the whole reason for
+    # this state. (External finding, independently verified; see
+    # ONE_SIDED_COVERAGE.md.)
     if band and cell_cov:
         c = cell_cov.get("cells", {}).get(f"{e['scheme']}|{band}")
         # one-sided where available; fall back to two-sided for artifacts
@@ -254,13 +303,39 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
         judged = c.get("coverage_one_sided") if c else None
         if judged is None and c:
             judged = c.get("coverage")
-        if c and judged < REFUSE_BELOW and \
-                c["scored_rows"] >= REFUSE_MIN_ROWS:
+        ckpts = c.get("distinct_checkpoints") if c else None
+        boot_lo = c.get("boot90_lo") if c else None
+        boot_hi = c.get("boot90_hi") if c else None
+        thin_ckpts = ckpts is not None and ckpts < MIN_CELL_CHECKPOINTS
+        straddles = (boot_lo is not None and boot_hi is not None and
+                     boot_lo < REFUSE_BELOW * 100 < boot_hi)
+        state = classify_cell(c) if c else "trusted"
+        if state == "insufficient_evidence":
+            e["insufficient_evidence"] = True
+            e["evidence_coverage"] = judged
+            e["evidence_ckpts"] = ckpts
+            e["evidence_boot90"] = [boot_lo, boot_hi]
+            e["evidence_reason"] = (
+                "checkpoint floor" if thin_ckpts and not straddles else
+                "bootstrap straddle" if straddles and not thin_ckpts else
+                "checkpoint floor and bootstrap straddle")
+            flags.append("INSUFFICIENT_EVIDENCE")
+            notes.append(
+                f"{e['scheme']} at {band} is neither trusted nor refused: "
+                f"its measured one-sided coverage is {judged*100:.1f}% from "
+                f"only {ckpts} distinct checkpoints, and the checkpoint "
+                f"bootstrap 90% interval [{boot_lo:.0f}%, {boot_hi:.0f}%] "
+                f"{'straddles' if straddles else 'sits below'} the "
+                f"{REFUSE_BELOW*100:.0f}% line the tool judges against "
+                f"-- {e['evidence_reason']}. There is not enough independent "
+                f"evidence here to call this cell either way; run your own "
+                f"evaluation")
+        elif state == "refused":
             e["refused"] = True
             e["refusal_coverage"] = judged
             e["refusal_two_sided"] = c["coverage"]
             e["refusal_rows"] = c["scored_rows"]
-            e["refusal_ckpts"] = c.get("distinct_checkpoints")
+            e["refusal_ckpts"] = ckpts
             e["refusal_fams"] = c.get("distinct_families")
             flags.append("INSUFFICIENT_CALIBRATION")
             notes.append(
@@ -356,7 +431,7 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
                     f"ratio as a direction, not a number")
     # When a size band is given and we are NOT refusing, state the measured
     # coverage for that exact cell rather than a blanket claim about size.
-    if band and cell_cov and not e["refused"]:
+    if band and cell_cov and not e["refused"] and not e["insufficient_evidence"]:
         c = cell_cov.get("cells", {}).get(f"{e['scheme']}|{band}")
         if c:
             notes.append(
@@ -395,7 +470,7 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
 
 
 def tier_of(flags):
-    if "INSUFFICIENT_CALIBRATION" in flags:
+    if "INSUFFICIENT_CALIBRATION" in flags or "INSUFFICIENT_EVIDENCE" in flags:
         return "C"
     if {"TAIL_RISK", "UNDERCOVERED"} & set(flags):
         return "C"
@@ -560,6 +635,11 @@ def report(ranked, unknown, risk_pp, band, moe, meta=None):  # noqa: C901
             f"over {M['pooled_scored_rows']} scored rows; cells refused for "
             f"insufficient calibration: "
             f"{', '.join(M.get('refused_cells', [])) or 'none'}")
+        lims.append(
+            "cells with insufficient evidence to judge either way (fewer "
+            f"than {MIN_CELL_CHECKPOINTS} checkpoints or a checkpoint-"
+            f"bootstrap interval straddling {REFUSE_BELOW*100:.0f}%): "
+            f"{', '.join(M.get('insufficient_evidence_cells', [])) or 'none'}")
     for L in lims:
         for j, line in enumerate(_wrap(L, w - 4)):
             print(("  - " if j == 0 else "    ") + line)

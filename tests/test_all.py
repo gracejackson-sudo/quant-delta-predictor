@@ -411,9 +411,10 @@ def test_worst_case_discrepancy_is_always_surfaced(table):
 
 def test_small_model_queries_state_measured_cell_coverage(table):
     """
-    At a given size every scheme must either refuse, or state the MEASURED
-    coverage for that cell. A blanket 'not validated at this size' claim was
-    removed because it was itself unverified prose.
+    At a given size every scheme must either refuse, be held back for
+    insufficient evidence, or state the MEASURED coverage for that cell. A
+    blanket 'not validated at this size' claim was removed because it was
+    itself unverified prose.
     """
     cc = R.load_cell_coverage()
     for s in table:
@@ -424,6 +425,9 @@ def test_small_model_queries_state_measured_cell_coverage(table):
                                 cell_cov=cc)
         if e.get("refused"):
             assert "INSUFFICIENT_CALIBRATION" in flags
+            assert R.tier_of(flags) == "C"
+        elif e.get("insufficient_evidence"):
+            assert "INSUFFICIENT_EVIDENCE" in flags
             assert R.tier_of(flags) == "C"
         else:
             assert any("measured to contain the true result" in n
@@ -465,20 +469,26 @@ def test_worst_case_line_is_tier_independent(table):
     assert {e["tier"] for e in ranked} >= {"A", "C"}   # both tiers present
 
 
-def test_undercovered_cells_are_refused_not_estimated():
-    """w4a16|<2B and w8a16|>10B must not emit a confident-looking number."""
+def test_undercovered_cells_are_refused_or_insufficient_not_estimated():
+    """A cell that fails the coverage judgment -- whether cleanly refused or
+    held back by the checkpoint/bootstrap evidence floor -- must not emit a
+    confident-looking number. This does not assert which of the two states a
+    given cell lands in; that is a property of the evidence, not a constant
+    to pin down (see ONE_SIDED_COVERAGE.md: the checkpoint floor moved both
+    previously-refused cells into 'insufficient evidence')."""
     cc = R.load_cell_coverage()
     table = R.build_table()
-    refused = [k for k, v in cc["cells"].items()
-               if v["coverage"] < R.REFUSE_BELOW
-               and v["scored_rows"] >= R.REFUSE_MIN_ROWS]
-    assert refused, "expected at least one refused cell"
-    for key in refused:
+    flagged = [k for k, v in cc["cells"].items()
+               if R.classify_cell(v) in ("refused", "insufficient_evidence")]
+    assert flagged, "expected at least one refused or insufficient-evidence cell"
+    for key in flagged:
         scheme, band = key.split("|")
         ranked, _ = R.rank([scheme], table, band=band, cell_cov=cc)
         e = ranked[0]
-        assert e["refused"] is True, key
-        assert "INSUFFICIENT_CALIBRATION" in e["flags"], key
+        assert e["refused"] is True or e["insufficient_evidence"] is True, key
+        expected_flag = ("INSUFFICIENT_CALIBRATION" if e["refused"]
+                          else "INSUFFICIENT_EVIDENCE")
+        assert expected_flag in e["flags"], key
         assert e["tier"] == "C", key
 
 
