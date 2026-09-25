@@ -1,0 +1,9 @@
+base_model,adapter,benchmark,n_items,acc_before,acc_after,forgetting,flip_rate,lora_rank
+Qwen/Qwen2.5-1.5B-Instruct,Hazde/careerbot_PG6_Qwen_Qwen2.5-1.5B-Instruct_model_LoRA_5,mmlu,3000,59.6,59.5,-0.1,0.003,2
+Qwen/Qwen2.5-1.5B-Instruct,bharati2324/Qwen2.5-1.5B-Instruct-Code-LoRA-r16,mmlu,3000,59.6,59.0667,-0.5333,0.0327,16
+Qwen/Qwen2.5-1.5B-Instruct,zjudai/flowertune-general-nlp-lora-qwen2.5-1.5b-instruct,mmlu,3000,59.6,59.7333,0.1333,0.018,32
+Qwen/Qwen2.5-1.5B-Instruct,DreamGallery/Qwen-Qwen2.5-1.5B-Instruct-1727452927,mmlu,3000,59.6,57.4,-2.2,0.1107,128
+Qwen/Qwen2.5-0.5B-Instruct,taronklm/Qwen2.5-0.5B-Instruct-lora-chatbot,mmlu,3000,47.2667,47.4667,0.2,0.0333,4
+Qwen/Qwen2.5-0.5B-Instruct,Ionio-ai/Qwen2.5-0.5B-Instruct-Ecommerce-Extraction-LoRA,mmlu,3000,47.2667,45.4,-1.8667,0.1093,32
+Qwen/Qwen2.5-3B-Instruct,patilshrinivas/Qwen2.5-3B-Instruct-qlora-drug-ade-relation-extractor,mmlu,3000,66.7,65.7333,-0.9667,0.0843,16
+Qwen/Qwen2.5-3B-Instruct,agastyasridharan/Qwen2.5-3B-Instruct-Sheldon-SFT-v3a-LoRA,mmlu,3000,66.7,65.7,-1.0,0.0967,32
