@@ -45,12 +45,12 @@ delta can be predicted instead. Using \Nrows{} published evaluations spanning
 \Nckpt{} base checkpoints, \Nfam{} model families and \Nsch{} quantization
 schemes, we report three results. First, a \emph{negative} one: per-model
 prediction carries almost no signal. Under leave-one-family-out validation the
-best learned predictor beats a global mean by \(0.03\)pp of MAE, and both ridge
+best predictor, a per-scheme mean, beats a global mean by \(\MaeGain\)pp of MAE, and both ridge
 regression and gradient boosting are \emph{worse} than guessing the average,
-because 33--100\% of the variance on most benchmarks is evaluation noise.
+because evaluation noise accounts for at least a third of the variance on \NoiseNThird{} of \NoiseNBench{} benchmarks.
 Second, a positive one: conditioning only on the quantization scheme yields
-split-conformal intervals with \(90.1\%\) empirical coverage
-(\(118/131\), 95\% CI \([83.6,94.6]\)) on checkpoints never used in
+split-conformal intervals with \(\ProspCov\%\) empirical coverage
+(\(\ProspInside/\ProspN\), 95\% CI \([\ProspCILo,\ProspCIHi]\)) on checkpoints never used in
 construction. Third, and most consequential for practice: the published corpus
 is outcome-truncated. Every configuration in it is one that someone chose to
 release. We rented an A100 and measured deliberately-faulted configurations,
@@ -59,19 +59,19 @@ observing losses to \(\AdvWorst{}\)pp against a published worst case of
 below, and on configurations engineered to fail rather than typical ones. We argue the resulting artifact should be described as a
 calibrated historical baseline rather than a predictor, and we state precisely
 why its coverage guarantee does not transfer to a practitioner's own untuned
-recipe. Code, data and every figure's provenance are public.
+recipe. Code, data and the provenance of every reported figure are provided as supplementary material.
 \end{abstract}
 
 \section{Introduction}
 
 Post-training quantization is now routine. A practitioner choosing between
-W4A16, W8A8 and FP8 wants one number: how much accuracy will this cost? The
-honest answer today is that nobody knows without running the evaluation.
+W4A16, W8A8 and FP8 wants one number: how much accuracy will this cost? In
+practice the only way to know is to run the evaluation.
 
 This paper asks whether that number can be forecast from the public record.
 Model publishers release quantized checkpoints with benchmark tables comparing
-the compressed model against its dense parent. Aggregated, these are thousands
-of paired measurements of exactly the quantity of interest.
+the compressed model against its dense parent. Aggregated, these are hundreds
+of paired measurements of exactly the quantity of interest (\Nrows{} in our harvest).
 
 Our contributions:
 
@@ -86,8 +86,8 @@ Our contributions:
   \item \textbf{A measurement of the corpus's own selection bias}
     (\S\ref{sec:tail}), via GPU experiments on deliberately-faulted
     configurations---data the published record structurally cannot contain.
-  \item \textbf{An audit} (\S\ref{sec:audit}) recording every error we found in
-    our own work, including two that changed published claims.
+  \item \textbf{An audit} (\S\ref{sec:audit}) recording errors we found in
+    our own work, including ones that changed published numbers and claims.
 \end{enumerate}
 
 \section{Related Work}
@@ -98,7 +98,7 @@ whether to trust it, wrap it in a conformal interval, and decide whether to skip
 the real run. Their score matrix over 84 frontier models and 133 benchmarks is
 approximately rank-2. We do not claim novelty against them on mechanism. Their
 estimand is a model's absolute score; ours is the paired delta between a model
-and its compressed self, and their corpus contains no quantized checkpoints.
+and its compressed self, and quantized checkpoints do not appear in their paper.
 
 \paragraph{Conformal prediction on compressed models.}
 Tong et al.~\cite{tong2026compression} apply conformal prediction directly to
@@ -118,12 +118,12 @@ llm-compressor~\cite{llmcompressor}.
 
 \paragraph{The source of our data.} Kurti\'c et al.~\cite{kurtic2024halfmillion}
 report over 500{,}000 evaluations of quantized Llama-3.1 models, finding
-recovery above 99\% of baseline. That work does not address whether the
+recovery above 99\% of the average OpenLLM~v1 score for every scheme tested. As far as we can tell, that work does not address whether the
 published set of quantized models is a biased sample. Characterising that gap is
 the contribution of \S\ref{sec:tail}.
 
-\paragraph{Selection bias.} Survivorship bias in benchmark corpora has been
-formalised and quantified in information retrieval~\cite{gupta2022survivorship}.
+\paragraph{Selection bias.} Survivorship bias has been
+identified and measured in a widely used retrieval benchmark~\cite{gupta2022survivorship}.
 Conformal prediction's guarantee is known to fail under selection:
 conditional on a selection event, calibration data are no longer exchangeable
 with a test point~\cite{barber2023beyond,jin2024focal}. We apply this directly
@@ -142,8 +142,8 @@ column alongside the before/after pair. This is redundant information, and we
 exploit it: for every three-column row we check
 \(\text{recovery} \approx 100 \times \text{after}/\text{before}\) to a tolerance
 derived from the card's own printed precision, and reject rows that disagree.
-This caught fabricated values arising from column-order variation between
-publishers, and internally inconsistent cards. Rejections are recorded rather
+This caught spurious values that our parser produced under column-order variation between
+card templates, and internally inconsistent cards. Rejections are recorded rather
 than silently dropped.
 
 \paragraph{A structural limitation, stated at the outset.} All rows come from a
@@ -217,7 +217,7 @@ predictor & MAE (pp) & beats global mean? \\
 per-scheme mean (shipped) & \MaeSchememean & yes \\
 global mean (baseline)    & \MaeGlobalmean & --- \\
 per-(scheme \(\times\) benchmark) & \MaeSchemebench & \textbf{no} \\
-ridge, 38 features        & \MaeRidge      & \textbf{no} \\
+ridge regression        & \MaeRidge      & \textbf{no} \\
 per-benchmark mean        & \MaeBenchmean  & \textbf{no} \\
 gradient boosting         & \MaeGradboost  & \textbf{no} \\
 \bottomrule
@@ -226,19 +226,19 @@ gradient boosting         & \MaeGradboost  & \textbf{no} \\
 
 Ridge and gradient boosting are both \emph{worse} than predicting the global
 average. Adding model size, bit-width, method, benchmark identity and headroom
-all degraded out-of-family performance.
+each degraded out-of-family performance.
 
 \paragraph{Why.} Estimating per-benchmark evaluation noise from near-lossless
 schemes---whose true delta should be approximately zero---gives a noise floor
-that accounts for 33--100\% of observed variance on most benchmarks. On GSM8K
-the noise alone is \(\pm 2\)pp, while the quantity being predicted has mean
-\(-0.36\)pp. The target is a difference of two noisy quantities that largely
+that accounts for anywhere from \NoiseMinPct\% of the observed variance to all of it across \NoiseNBench{} benchmarks. On GSM8K
+the deltas of supposedly lossless schemes have a standard deviation of \GsmNoiseSd{}pp, while the quantity being predicted has mean
+\(\TargetMean\)pp. The target is a difference of two noisy quantities that largely
 cancel: the numerically smallest and hardest-to-predict summary of quantization
 damage available.
 
 \paragraph{Implication.} The entire fitted artifact is \NpredNums{} numbers.
 A raw per-scheme historical quantile band, with no model and no conformal
-machinery, achieves comparable coverage. What conformal contributes is a
+machinery, is a serious competitor: it looked better covered in-sample, though under the strict protocol that advantage disappears (\S\ref{sec:audit}). What conformal contributes is a
 finite-sample guarantee and a principled rule for small-\(n\) schemes, not
 accuracy. We therefore describe the result as a \emph{calibrated historical
 baseline}, not a predictor.
@@ -263,7 +263,7 @@ nvfp4       & [\LoNvfp, \HiNvfp]                 & \WorstNvfp{}pp         & \Sev
 \paragraph{Prospective validation.} After freezing the method we harvested
 checkpoints not used during development. Under a strict protocol that excludes
 any family present in training and any card whose format informed a parser fix,
-coverage is \(118/131 = 90.1\%\), 95\% Clopper--Pearson CI \([83.6, 94.6]\),
+coverage is \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI \([\ProspCILo, \ProspCIHi]\),
 against a nominal 90\%. A from-scratch, standard-library-only reimplementation
 sharing no code with the pipeline reproduces this figure with zero
 disagreements.
@@ -296,9 +296,9 @@ published protocol reproduces published base accuracy (\BaseQwenSmall{} against
 \PubQwenSmall{}; \BaseQwenMid{} against \PubQwenMid{}), closing the harness
 question. It exposed a larger one: our own \emph{correctly-configured} control
 is \CtrlRatio\(\times\) more damaging than published W4A16 on closely comparable
-checkpoints (mean gap \CtrlGap{}pp, \(z = \CtrlZmin\) and \(\CtrlZmax\)). The
-cause is approximately \CalibRatio\(\times\) less calibration data than
-production defaults, not a bug. Consequently, excess-over-control measures
+checkpoints (mean gap \CtrlGap{}pp, \(z = \CtrlZmin\) and \(\CtrlZmax\)). We
+attribute this to approximately \CalibRatio\(\times\) less calibration data than
+production defaults; we found no bug. Consequently, excess-over-control measures
 \emph{bad recipe versus mediocre recipe}, not versus production. It is a
 conservative anchor, not a bound, and we decline to publish a corrected point
 estimate: the correction moves by \ProtoSens{}pp depending on the anchor set,
@@ -306,14 +306,14 @@ and we have only \ExcessN{} rows from two models.
 
 \section{Limitations}\label{sec:limits}
 
-\paragraph{The guarantee is conditional, and void where it matters most.}
+\paragraph{The guarantee is conditional, and absent where it matters most.}
 Split conformal gives exact coverage under exchangeability between calibration
 and test. Our calibration set is the set of configurations a publisher chose to
 release---a selection event. Conditional on selection, calibration points are
 not exchangeable with an arbitrary test point and the guarantee does not
 transfer~\cite{barber2023beyond,jin2024focal}. It holds for a new checkpoint
-drawn from the same publication process. It is \textbf{void} for a recipe the
-reader tuned themselves and that nobody would have published---which is the case
+drawn from the same publication process. It carries \textbf{no guarantee} for a recipe the
+reader tuned themselves and that no publisher would have released---which is the case
 a practitioner most wants covered.
 
 \paragraph{Accuracy is not the whole of deployment risk.}
@@ -327,7 +327,7 @@ control arm (\S\ref{sec:tail}) is direct evidence that practitioner and
 calibration volume can dominate scheme choice. We measured how confining this
 is: surveying \PubChecked{} publishers and \PubCards{} quantized model cards,
 \PubOthersPaired{} of \PubOthersCards{} cards from the other
-\PubOthersCount{} publishers carry paired before/after evaluations, so others
+\PubOthersCount{} publishers carry paired before/after evaluations, \PubIntelPaired{} of them Intel's, so others
 do publish them. What the other publishers almost never provide is a
 \emph{Recovery} column, which is what lets each row be checked against
 \(100 \times \text{after}/\text{before}\) and rejected on disagreement: of
@@ -339,7 +339,7 @@ published in a self-verifying form.
 
 \paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the
-support floor, and note that a cluster bootstrap over checkpoints does not
+support floor, and note that a cluster bootstrap over model configurations does not
 materially widen the headline interval, but the unit of analysis remains a row.
 
 \section{Audit}\label{sec:audit}
@@ -352,25 +352,35 @@ survived---would misrepresent how the result was obtained.
 \begin{itemize}
   \item \emph{A retracted headline.} An early claim that held-out models came
     from families never used in construction was wrong; they were new
-    checkpoints of families already present. The strict figure is \(118/131\).
+    checkpoints of families already present. The strict figure is \(\ProspInside/\ProspN\).
   \item \emph{Two parser bugs.} A benchmark label typo cost 11 training rows;
     separately, \texttt{MATH-500} was matched as \texttt{Math-Lvl-5},
     contaminating 7 test rows with scores from a different benchmark.
   \item \emph{A centring mismatch.} Calibration measured residuals about the
     stratum mean while intervals centred on the scheme mean, mis-sizing every
     calibrated width. Found only by independent reimplementation.
-  \item \emph{A column-order fault.} One publisher orders columns
-    \([\text{recovery}, \text{base}, \text{quant}]\), producing a fabricated
+  \item \emph{A column-order fault.} One card template orders columns
+    \([\text{recovery}, \text{base}, \text{quant}]\), which our parser turned into a spurious
     \(-68\)pp delta. The integrity gate rejected 10 of 11 rows on that card,
     passing only the one where \(\text{base} = \text{quant}\) made the check
     degenerate.
+  \item \emph{A retracted single-publisher claim.} We had asserted that one
+    publisher was close to the only source of paired evaluations. A census of
+    \PubChecked{} publishers found \PubOthersPaired{} paired-evaluation cards
+    outside the control publisher, \PubIntelPaired{} of them Intel's; what
+    differs is whose rows can be verified (\S\ref{sec:limits}).
+  \item \emph{A bootstrap on the wrong statistic.} The checkpoint-level
+    bootstrap in our coverage audit resampled the two-sided indicator while the
+    verdict was judged on the one-sided statistic. An external commenter asked
+    for it to wrap the one-sided figure, which exposed the mismatch
+    (\S\ref{sec:method}).
 \end{itemize}
 
 \paragraph{A regression we nearly shipped.} An audit indicated that a raw
 asymmetric empirical band covered better than the shipped symmetric conformal
-interval (93.4\% versus 89.6\%). Since quantization damage is left-skewed, a
+interval (\BandEmpCov\% versus \BandConfCov\%). Since quantization damage is left-skewed, a
 symmetric band is obviously the wrong shape, and we were about to switch. On
-measuring first, the empirical band returns an \emph{infinite} interval on 43\%
+measuring first, the empirical band returns an \emph{infinite} interval on \InfShare\%
 of rows, because a two-sided empirical index requires more calibration points
 than are often available. An infinite interval covers by construction. On rows
 where both are finite, the original wins on coverage \emph{and} width. The
@@ -387,21 +397,23 @@ rows that were already in the test set. Rather than silently retain them, we
 record which fixes were test-informed and exclude the affected family from the
 strict headline.
 
-\paragraph{Mechanical verification.} Every figure in this paper is a macro
-generated from a claims registry that recomputes each value from source
-artifacts; no number here is hand-typed. The accompanying repository enforces
-this with a test that fails if any outward-facing document contains an untraced
-numeric literal.
+\paragraph{Mechanical verification.} The figures this paper reports as
+results are macros generated from a claims registry that recomputes each value
+from source artifacts, and the accompanying code fails a test if an
+outward-facing document contains an untraced numeric literal. The exceptions
+are historical figures in the error list above (row counts and the
+\(-68\)pp delta) and the 90\% marginal-interval figure in \S\ref{sec:method},
+which are quoted from the provenance record rather than recomputed.
 
 \section{Conclusion}
 
 Per-model prediction of quantization accuracy damage does not work on published
-data, and the reason is measurement noise rather than model capacity. What does
+data, and the reason is largely measurement noise rather than model capacity. What does
 work is narrower: a per-scheme calibrated envelope, validated at
-\(90.1\%\) coverage on unseen checkpoints, that declines to answer where its own
+\(\ProspCov\%\) coverage on unseen checkpoints, that declines to answer where its own
 measured coverage is poor or too thinly supported to judge. The more useful contribution may be the limitation
 itself---the published record of quantized models is outcome-truncated, and we
-measured losses roughly four times worse than anything it contains. A risk
+measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
 estimate built on that record is a floor on risk, not a ceiling, and should say
 so.
 

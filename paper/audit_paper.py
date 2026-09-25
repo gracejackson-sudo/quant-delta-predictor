@@ -81,6 +81,42 @@ for i in ids:
     if not ok:
         fail.append(f"arXiv id does not resolve: {i}")
 
+# author metadata: compare each bib entry's surnames and title against arXiv's
+# own record. An id that resolves says nothing about who wrote the paper.
+def _norm(x):
+    import unicodedata
+    x = re.sub(r"\\[`'^\"~=.]\{?(\w)\}?", r"\1", x)
+    x = unicodedata.normalize("NFKD", x).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z ]", "", x.lower()).strip()
+
+try:
+    _x = urllib.request.urlopen(urllib.request.Request(
+        "https://export.arxiv.org/api/query?max_results=50&id_list=" + ",".join(ids),
+        headers={"User-Agent": "curl/8"}), timeout=40).read().decode()
+    _rec = {}
+    for _e in re.findall(r"<entry>(.*?)</entry>", _x, re.S):
+        _id = re.search(r"arxiv.org/abs/([\d.]+)", _e).group(1)
+        _rec[_id] = ([_norm(a).split()[-1] for a in
+                      re.findall(r"<author>\s*<name>(.*?)</name>", _e, re.S)],
+                     _norm(re.sub(r"\s+", " ", re.search(
+                         r"<title>(.*?)</title>", _e, re.S).group(1))))
+    for _blk in re.findall(r"@\w+\{[^@]*?\n\}", BIB, re.S):
+        _m = re.search(r"eprint\s*=\s*\{([\d.]+)\}", _blk)
+        if not _m or _m.group(1) not in _rec:
+            continue
+        _au = re.search(r"author\s*=\s*\{(.*?)\},?\s*\n", _blk, re.S).group(1)
+        _sur = [_norm(a.split(",")[0]).split()[-1] for a in
+                re.split(r"\s+and\s+", re.sub(r"\s+", " ", _au))]
+        _want = _rec[_m.group(1)][0]
+        _ok = _sur == _want
+        print(f"   authors {_m.group(1):<11} {'OK' if _ok else 'MISMATCH'}"
+              + ("" if _ok else f"  bib={_sur} arxiv={_want}"))
+        if not _ok:
+            fail.append(f"bib authors differ from arXiv for {_m.group(1)}: "
+                        f"{_sur} vs {_want}")
+except Exception as _e:
+    warn.append(f"could not compare bib authors against arXiv: {_e}")
+
 # ---------------------------------------------------------------- 3
 head("3. OVERCLAIM SCAN")
 BANNED = [

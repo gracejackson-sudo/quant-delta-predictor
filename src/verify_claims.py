@@ -283,6 +283,41 @@ def registry():
         add("lk_rank_spearman", rr[0], 0.001, "Spearman r, LoRA rank vs forgetting")
         add("lk_rank_p", rr[1], 0.001, "p-value of that Spearman r")
 
+    # ---- figures the paper quotes in its abstract and body ----
+    add("target_mean_pp", d.delta.mean(), 0.005, "mean accuracy delta, all rows")
+    add("target_sd_pp", d.delta.std(), 0.005, "sd of accuracy delta, all rows")
+    _near = d[d.scheme.isin(["w8a16", "fp8_dynamic"])]
+    _sh = []
+    for _b, _g in d.groupby("benchmark"):
+        _nb = _near[_near.benchmark == _b]
+        if len(_g) >= 20 and len(_nb) >= 8:
+            _sh.append((_b, _nb.delta.var(ddof=1) / _g.delta.var(ddof=1),
+                        _nb.delta.std()))
+    add("noise_n_bench", len(_sh), 0, "benchmarks with a noise-floor estimate")
+    add("noise_n_third", sum(1 for x in _sh if x[1] >= 1 / 3), 0,
+        "benchmarks where noise is at least a third of the variance")
+    add("noise_min_pct", 100 * min(x[1] for x in _sh), 0.5,
+        "smallest noise share of variance across benchmarks")
+    add("noise_gsm8k_sd_pp", dict((x[0], x[2]) for x in _sh).get("gsm8k", 0),
+        0.05, "sd of GSM8K deltas for near-lossless schemes")
+    icp = os.path.join(HERE, "..", "out", "independent_check.csv")
+    if os.path.exists(icp):
+        import re as _re
+        from scipy.stats import beta as _beta
+        _ic = pd.read_csv(icp)
+        _st = _ic[~_ic.model.map(lambda m_: bool(
+            _re.search(r"Llama-3\.1", m_.split("/")[-1], _re.I)
+            or _re.search(r"(^|[-_])Qwen3(?![.\d])", m_.split("/")[-1], _re.I)
+            or _re.search(r"Llama-4", m_.split("/")[-1], _re.I)))]
+        _k, _n = int(_st.inside.sum()), len(_st)
+        add("prosp_n", _n, 0, "strict prospective rows (independent check)")
+        add("prosp_inside", _k, 0, "strict prospective rows inside the interval")
+        add("prosp_cov_pct", 100 * _k / _n, 0.05, "strict prospective coverage")
+        add("prosp_ci_lo", 100 * _beta.ppf(0.025, _k, _n - _k + 1), 0.05,
+            "Clopper-Pearson 95% lower bound")
+        add("prosp_ci_hi", 100 * _beta.ppf(0.975, _k + 1, _n - _k), 0.05,
+            "Clopper-Pearson 95% upper bound")
+
     if cc.get("pooled", {}).get("coverage_one_sided") is not None:
         add("pooled_one_sided_pct", 100 * cc["pooled"]["coverage_one_sided"],
             0.1, "pooled one-sided coverage")
@@ -446,6 +481,10 @@ def registry():
     add("moe_rows", int(d.moe.sum()), 0, "rows flagged MoE")
     add("moe_checkpoints", int(d[d.moe].base_model.nunique()), 0,
         "MoE checkpoints")
+    if "pred_mae::scheme_mean" in reg:
+        add("mae_gain_pp",
+            reg["pred_mae::global_mean"][0] - reg["pred_mae::scheme_mean"][0],
+            0.0005, "LOFO MAE gain of the per-scheme mean over the global mean")
     return reg
 
 
