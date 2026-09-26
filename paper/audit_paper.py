@@ -50,7 +50,8 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # documented exemptions, each checked by hand:
           "000",   # part of "500{,}000", an external figure from Kurtic et al.
           "3.1",   # part of the model name "Llama-3.1", not a measurement
-          "7"}     # "7 test rows" -- a historical figure in the audit record
+          "7",     # "7 test rows" -- a historical figure in the audit record
+          "1.7"}   # "up to 1.7B parameters", external: Kumar et al. abstract (arXiv:2411.04330)
 hand = sorted({n for n in NUM.findall(body) if n not in EXEMPT})
 if hand:
     warn.append(f"hand-typed numerals in prose (verify each): {hand}")

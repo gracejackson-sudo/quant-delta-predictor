@@ -477,9 +477,12 @@ def tool_doc():
       "withholds the interval only when coverage is measurably poor on "
       "adequate evidence. BenchPress reports a trust probability per "
       "prediction instead.\n"
-      "3. **It characterises its own selection bias** exactly, which "
-      "BenchPress does not attempt. We have not *corrected* that bias - see "
-      "`BIAS_CORRECTION.md` for the attempt that failed.\n")
+      "3. **It states how selection bias would degrade its own coverage**, "
+      "under a stated censoring assumption, which BenchPress does not "
+      "attempt. We have not *measured the size* of that bias or corrected "
+      "it - see `BIAS_CORRECTION.md` for the attempt that failed. The GPU "
+      "runs show that far worse outcomes exist than the corpus contains; "
+      "they do not say how common they are.\n")
     A("If you want per-model eval prediction, use BenchPress. This is for the "
       "narrower question of whether a given quantization scheme is safe "
       "enough to adopt without re-running your benchmarks.\n")

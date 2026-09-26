@@ -372,6 +372,13 @@ def registry():
         "benchmarks where noise is at least a third of the variance")
     add("noise_min_pct", 100 * min(x[1] for x in _sh), 0.5,
         "smallest noise share of variance across benchmarks")
+    add("noise_max_pct", 100 * max(x[1] for x in _sh), 0.5,
+        "largest noise share of variance across benchmarks")
+    add("noise_n_ge100", sum(1 for x in _sh if x[1] >= 1), 0,
+        "benchmarks whose noise estimate is at or above the total variance")
+    add("noise_n_small", sum(1 for _b_, _g_ in d.groupby("benchmark")
+                              if len(_g_) >= 20 and 8 <= len(_near[_near.benchmark == _b_]) <= 10),
+        0, "benchmarks whose noise estimate rests on 10 or fewer near-lossless rows")
     add("noise_gsm8k_sd_pp", dict((x[0], x[2]) for x in _sh).get("gsm8k", 0),
         0.05, "sd of GSM8K deltas for near-lossless schemes")
     icp = os.path.join(HERE, "..", "out", "independent_check.csv")
@@ -391,6 +398,29 @@ def registry():
             "Clopper-Pearson 95% lower bound")
         add("prosp_ci_hi", 100 * _beta.ppf(0.975, _k + 1, _n - _k), 0.05,
             "Clopper-Pearson 95% upper bound")
+        # Composition of the strict prospective set, and a cluster-aware interval.
+        import numpy as _np
+        add("prosp_n_schemes", _st.scheme.nunique(), 0,
+            "schemes with any strict prospective row")
+        add("prosp_all_rows", len(_ic), 0, "all prospective rows, before the strict filter")
+        add("prosp_all_cov_pct", 100 * _ic.inside.mean(), 0.05,
+            "coverage over all prospective rows")
+        for _s, _g in _st.groupby("scheme"):
+            add(f"prosp_scheme_rows::{_s}", len(_g), 0, f"strict prospective rows, {_s}")
+            add(f"prosp_scheme_ckpts::{_s}", _g.model.nunique(), 0,
+                f"quantized checkpoints behind those rows, {_s}")
+            add(f"prosp_scheme_cov_pct::{_s}", 100 * _g.inside.mean(), 0.05,
+                f"strict prospective coverage, {_s}")
+        _cl = [_x.inside.to_numpy(float) for _, _x in _st.groupby("model")]
+        _S = _np.array([_c.sum() for _c in _cl]); _N = _np.array([len(_c) for _c in _cl])
+        _rng = _np.random.default_rng(0)
+        _bs = [_S[_i].sum() / _N[_i].sum() for _i in
+               (_rng.integers(0, len(_cl), len(_cl)) for _ in range(10000))]
+        add("prosp_clus_lo", 100 * _np.percentile(_bs, 2.5), 0.3,
+            "cluster bootstrap 95% lower bound, resampling quantized checkpoints")
+        add("prosp_clus_hi", 100 * _np.percentile(_bs, 97.5), 0.3,
+            "cluster bootstrap 95% upper bound, resampling quantized checkpoints")
+        add("prosp_clus_n", len(_cl), 0, "quantized checkpoints resampled")
 
     if cc.get("pooled", {}).get("coverage_one_sided") is not None:
         add("pooled_one_sided_pct", 100 * cc["pooled"]["coverage_one_sided"],
@@ -542,6 +572,30 @@ def registry():
         for k, v_ in json.load(open(pcp))["weighted"].items():
             add(f"pred_mae::{k}", v_, 0.0005,
                 f"leave-one-family-out MAE for {k}")
+
+    # Is the per-scheme mean's small advantage distinguishable from zero?
+    # Leave-one-family-out, recomputed here; bootstrap resamples base checkpoints.
+    import numpy as _np2
+    _rows = []
+    for _f in sorted(d.family.unique()):
+        _tr, _te = d[d.family != _f], d[d.family == _f]
+        _sm2, _g2 = _tr.groupby("scheme").delta.mean(), _tr.delta.mean()
+        _t = _te.copy()
+        _t["diff"] = ((_t.delta - _g2).abs()
+                      - (_t.delta - _t.scheme.map(_sm2).fillna(_g2)).abs())
+        _rows.append(_t)
+    _r = pd.concat(_rows)
+    _cl2 = [_x["diff"].to_numpy() for _, _x in _r.groupby("base_model")]
+    _S2 = _np2.array([_c.sum() for _c in _cl2]); _N2 = _np2.array([len(_c) for _c in _cl2])
+    _rng2 = _np2.random.default_rng(0)
+    _b2 = [_S2[_i].sum() / _N2[_i].sum() for _i in
+           (_rng2.integers(0, len(_cl2), len(_cl2)) for _ in range(20000))]
+    add("mae_gain_ci_lo", _np2.percentile(_b2, 2.5), 0.003,
+        "checkpoint-bootstrap 95% lower bound of the per-scheme-mean MAE gain")
+    add("mae_gain_ci_hi", _np2.percentile(_b2, 97.5), 0.003,
+        "checkpoint-bootstrap 95% upper bound of the per-scheme-mean MAE gain")
+    add("mae_gain_fams_pos", int((_r.groupby("family")["diff"].mean() > 0).sum()), 0,
+        "held-out families where the per-scheme mean beats the global mean")
 
     add("headroom_pp", 0.7545 - 0.5293677169647244, 0.002,
         "global-mean baseline MAE minus the evaluation-noise floor")

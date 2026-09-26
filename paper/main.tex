@@ -22,18 +22,22 @@ delta can be predicted instead. Using \Nrows{} published evaluations spanning
 \Nckpt{} base checkpoints, \Nfam{} model families and \Nsch{} quantization
 schemes, we report three results. First, a \emph{negative} one: per-model
 prediction carries almost no signal. Under leave-one-family-out validation the
-best predictor, a per-scheme mean, beats a global mean by \(\MaeGain\)pp of MAE, and both ridge
+best predictor, a per-scheme mean, beats a global mean by \(\MaeGain\)pp of MAE (95\% checkpoint-bootstrap CI \([\MaeGainLo, \MaeGainHi]\)), and both ridge
 regression and gradient boosting are \emph{worse} than guessing the average,
 because evaluation noise accounts for at least a third of the variance on \NoiseNThird{} of \NoiseNBench{} benchmarks.
 Second, a positive one: conditioning only on the quantization scheme yields
 split-conformal intervals with \(\ProspCov\%\) empirical coverage
 (\(\ProspInside/\ProspN\), 95\% CI \([\ProspCILo,\ProspCIHi]\)) on checkpoints never used in
-construction. Third, and most consequential for practice: the published corpus
+construction. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes, and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
+Each (scheme, size-band) cell returns one of three verdicts: trusted; insufficient evidence, where the interval is still
+shown but the scheme is demoted and flagged; or refused, where the interval is withheld. Currently \NCellsInsuff{} of \NCellsTotal{}
+cells are insufficient evidence and \NCellsRefused{} are refused. Third, and most consequential for practice: the published corpus
 is outcome-truncated. Every configuration in it is one that someone chose to
 release. We rented an A100 and measured deliberately-faulted configurations,
 observing losses to \(\AdvWorst{}\)pp against a published worst case of
 \(\WorstWfour{}\)pp---measured, we stress, only on models of \AdvMaxB{}B and
-below, and on configurations engineered to fail rather than typical ones. We argue the resulting artifact should be described as a
+below, and on configurations engineered to fail rather than typical ones. This is an existence proof that far worse outcomes
+exist than the corpus contains; it does not estimate how common they are. We argue the resulting artifact should be described as a
 calibrated historical baseline rather than a predictor, and we state precisely
 why its coverage guarantee does not transfer to a practitioner's own untuned
 recipe. Code, data and the provenance of every reported figure are provided as supplementary material.
@@ -59,10 +63,17 @@ Our contributions:
     than burying it.
   \item \textbf{A calibrated envelope that does work} (\S\ref{sec:results}),
     conditioned on scheme alone, with measured coverage on held-out families
-    and an explicit rule that withholds an interval where coverage is poor or the evidence is too thin to judge.
-  \item \textbf{A measurement of the corpus's own selection bias}
+    and a three-state verdict for each (scheme, size-band) cell: \emph{trusted};
+    \emph{insufficient evidence}, where the interval is still shown but the
+    scheme is demoted and the cell flagged as one the tool cannot judge; or
+    \emph{refused}, where the interval is withheld. Currently \NCellsInsuff{} of
+    \NCellsTotal{} cells are insufficient evidence and \NCellsRefused{} are refused.
+  \item \textbf{An existence proof that the corpus omits severe outcomes}
     (\S\ref{sec:tail}), via GPU experiments on deliberately-faulted
     configurations---data the published record structurally cannot contain.
+    It shows that losses far beyond anything published are reachable on small
+    models. It does not estimate how large the bias is: our attempt at a
+    correction (in the supplement) did not work well enough to ship.
   \item \textbf{An audit} (\S\ref{sec:audit}) recording errors we found in
     our own work, including ones that changed published numbers and claims.
 \end{enumerate}
@@ -78,7 +89,7 @@ estimand is a model's absolute score; ours is the paired delta between a model
 and its compressed self, and quantized checkpoints do not appear in their paper.
 
 \paragraph{Conformal prediction on compressed models.}
-Tong et al.~\cite{tong2026compression} apply conformal prediction directly to
+\citet{tong2026compression} apply conformal prediction directly to
 quantized and sparse LLMs, which is a closer domain than BenchPress. The
 estimand differs: their conformal sets are over label space, constructed from a
 compressed model's own output probabilities, so the method measures uncertainty
@@ -91,9 +102,11 @@ ours can claim (\S\ref{sec:limits}).
 
 \paragraph{Quantization methods.} The checkpoints we harvest are produced with
 GPTQ~\cite{frantar2022gptq} and SmoothQuant~\cite{xiao2022smoothquant} via
-llm-compressor~\cite{llmcompressor}.
+llm-compressor~\cite{llmcompressor}. \citet{kumar2024scaling} fit a functional form that predicts degradation
+from training and inference in varied precisions, using pretraining runs of models up to 1.7B parameters. We fit no such law: our
+envelope is empirical, per scheme, over published post-training-quantized checkpoints.
 
-\paragraph{The source of our data.} Kurti\'c et al.~\cite{kurtic2024halfmillion}
+\paragraph{The source of our data.} \citet{kurtic2024halfmillion}
 report over 500{,}000 evaluations of quantized Llama-3.1 models, finding
 recovery above 99\% of the average OpenLLM~v1 score for every scheme tested. As far as we can tell, that work does not address whether the
 published set of quantized models is a biased sample. Characterising that gap is
@@ -132,13 +145,13 @@ this distinction matters.
 
 \section{Method}\label{sec:method}
 
-\paragraph{Split conformal.} Given calibration residuals
+\paragraph{Split conformal.} Following split conformal regression~\cite{lei2018distribution}, given calibration residuals
 \(\{s_i\}_{i=1}^{n}\) and level \(\alpha\), the interval half-width is the
 \(\lceil (n+1)(1-\alpha) \rceil\)-th smallest score, which gives exact
 finite-sample coverage under exchangeability. Where \(n\) is too small for that
 index to exist, we return \(\infty\) rather than a misleadingly finite band.
 
-\paragraph{Mondrian (group-conditional) calibration.} A single marginal
+\paragraph{Mondrian (group-conditional) calibration.} Calibrating separately within categories is the Mondrian construction of \citet{vovk2005algorithmic}, applied to regression by \citet{bostrom2020mondrian}. A single marginal
 interval advertised at 90\% was in fact a 68\% interval for NVFP4 users---the
 users who most need it. We therefore calibrate per scheme.
 
@@ -205,6 +218,8 @@ gradient boosting         & \MaeGradboost  & \textbf{no} \\
 \end{tabular}
 \end{center}
 
+The per-scheme mean's advantage is small: \MaeGain{}pp, with a checkpoint-bootstrap 95\% CI of \([\MaeGainLo, \MaeGainHi]\)pp, and it is
+positive in \MaeGainFamsPos{} of the \Nfam{} held-out families. It is a distinguishable but modest gain.
 Ridge and gradient boosting are both \emph{worse} than predicting the global
 average. Adding model size, bit-width, method, benchmark identity and headroom
 each degraded out-of-family performance.
@@ -215,7 +230,9 @@ that accounts for anywhere from \NoiseMinPct\% of the observed variance to all o
 the deltas of supposedly lossless schemes have a standard deviation of \GsmNoiseSd{}pp, while the quantity being predicted has mean
 \(\TargetMean\)pp. The target is a difference of two noisy quantities that largely
 cancel: the numerically smallest and hardest-to-predict summary of quantization
-damage available.
+damage available. Two cautions on the noise figures. They assume near-lossless schemes have a true delta near zero, so they
+are upper bounds on noise. And \NoiseNSmall{} of the \NoiseNBench{} estimates rest on 10 or fewer rows; one, at \NoiseMaxPct\%, exceeds the total
+variance, which we attribute to sampling error rather than treat as a finding.
 
 \paragraph{Implication.} The entire fitted artifact is \NpredNums{} numbers.
 A raw per-scheme historical quantile band, with no model and no conformal
@@ -247,7 +264,29 @@ any family present in training and any card whose format informed a parser fix,
 coverage is \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI \([\ProspCILo, \ProspCIHi]\),
 against a nominal 90\%. A from-scratch, standard-library-only reimplementation
 sharing no code with the pipeline reproduces this figure with zero
-disagreements.
+disagreements. That checks the computation, not the validity of the design.
+
+\paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
+not \ProspN{} independent observations: a bootstrap that resamples checkpoints gives a 95\% interval of
+\([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level one. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4
+have no prospective rows, so the figure says nothing about them.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+scheme & strict rows & checkpoints & covered (\%) \\
+\midrule
+w4a16       & \ProspRowsWfour & \ProspCkptsWfour & \ProspCovWfour \\
+w8a8\_int   & \ProspRowsWeightint & \ProspCkptsWeightint & \ProspCovWeightint \\
+fp8\_dynamic& \ProspRowsFpdyn & \ProspCkptsFpdyn & \ProspCovFpdyn \\
+w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeightsixteen \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+W4A16, the most common scheme, dominates the pooled figure and sits below the nominal 90\%; the other schemes rest on few
+checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
+did not manufacture the headline.
 
 \paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
 intervals exclude zero: the tool can never state that a scheme \emph{will} cost
@@ -298,7 +337,7 @@ reader tuned themselves and that no publisher would have released---which is the
 a practitioner most wants covered.
 
 \paragraph{Accuracy is not the whole of deployment risk.}
-Tong et al.~\cite{tong2026compression} show compression frequently decouples
+\citet{tong2026compression} show compression frequently decouples
 accuracy from uncertainty: a model can hold accuracy while its prediction sets
 inflate. A scheme this work calls low-risk on accuracy may still degrade
 uncertainty quality. We measure none of that.
@@ -318,10 +357,15 @@ publisher. The corpus is single-publisher not because others publish nothing,
 but because the control publisher's cards are, by a wide margin, the ones
 published in a self-verifying form.
 
+\paragraph{What can and cannot be re-run.} The supplement recomputes every tagged figure from the data files it ships. It cannot
+re-run the faulted-configuration experiments (they need a GPU; the recorded results are included), the harvest from raw model
+cards (the cards are not redistributed), or the prospective-card checks (those files are not included), and re-running the
+low-rank comparison mentioned in the supplement needs a checkout of BenchPress's released code.
+
 \paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the
-support floor, and note that a cluster bootstrap over model configurations does not
-materially widen the headline interval, but the unit of analysis remains a row.
+support floor, and note that a bootstrap over the \ProspClusN{} quantized checkpoints gives \([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level interval,
+but the unit of analysis remains a row.
 
 \section{Audit}\label{sec:audit}
 
@@ -391,8 +435,10 @@ which are quoted from the provenance record rather than recomputed.
 Per-model prediction of quantization accuracy damage does not work on published
 data, and the reason is largely measurement noise rather than model capacity. What does
 work is narrower: a per-scheme calibrated envelope, validated at
-\(\ProspCov\%\) coverage on unseen checkpoints, that declines to answer where its own
-measured coverage is poor or too thinly supported to judge. The more useful contribution may be the limitation
+\(\ProspCov\%\) coverage on unseen checkpoints for \ProspSchemes{} of the \Nsch{} schemes, and that says which
+of its own cells it cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
+shown but flagged and the scheme demoted; or refused, in which case the interval is withheld. Today \NCellsInsuff{} of
+\NCellsTotal{} cells are insufficient evidence and \NCellsRefused{} are refused. The more useful contribution may be the limitation
 itself---the published record of quantized models is outcome-truncated, and we
 measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
 estimate built on that record is a floor on risk, not a ceiling, and should say

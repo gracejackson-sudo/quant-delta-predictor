@@ -940,3 +940,22 @@ def test_fair_variance_uses_only_fully_observed_cells():
     n, cols, ve = t.fair_variance_explained(M, 3, rank=1)
     assert n == 30 and set(cols) == {"a", "b", "c"}
     assert ve > 0.999
+
+
+def test_paper_describes_the_three_verdicts_not_the_old_two_state_rule():
+    """The paper once said the tool 'declines to answer' or 'withholds an
+    interval' where evidence is thin. In fact insufficient-evidence cells still
+    print their interval; only refused cells withhold it. Keep the abstract,
+    contributions and conclusion on the three-state wording."""
+    root = os.path.join(os.path.dirname(__file__), "..", "paper")
+    found = [n for n in ("neurips_main.tex", "main.tex", "tmlr_main.tex")
+             if os.path.exists(os.path.join(root, n))]
+    assert found, "no paper source found"
+    for name in found:
+        s = open(os.path.join(root, name)).read()
+        for stale in ("declines to answer", "an explicit rule that withholds"):
+            assert stale not in s, f"{name}: stale two-state wording {stale!r}"
+        head = s.split("\\section{Introduction}")[0]
+        assert "insufficient evidence" in head, f"{name}: abstract lacks the middle verdict"
+        tail = s.split("\\section{Conclusion}")[1]
+        assert "insufficient evidence" in tail and "refused" in tail, name

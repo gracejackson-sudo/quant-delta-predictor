@@ -56,7 +56,7 @@ artifact is a small number table — a calibrated historical baseline, not a pre
 | [TOOL_SUMMARY.md](TOOL_SUMMARY.md) | one page: what it does, what it flags, what it cannot do (the best next read after the first screen) |
 | [FINDINGS.md](FINDINGS.md) | the result, with corrections applied in place |
 | [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md) | per-model prediction has no signal beyond the scheme average |
-| [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias, measured; why no corrected point estimate |
+| [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias: what is identified, what is not, and why there is no corrected point estimate |
 | [AUDIT_DISCIPLINE.md](AUDIT_DISCIPLINE.md) | the standing audit rule and what it has caught |
 | [RESEARCH.md](RESEARCH.md) | prior-art synthesis + pre-registered predictions, written first |
 | [ADVERSARIAL_AUDIT.md](ADVERSARIAL_AUDIT.md) | attempts to break the headline number |
