@@ -72,11 +72,11 @@ Modelling a user's recipe as competent with probability 1-pi and botched with pr
 
 ### Session 2: matching the published harness, and what it exposed
 
-Our first run scored MMLU 0-shot and got 47.42<!-- claim: s2_pub_qwen05 = 47.4200 --> published versus a much lower measured value. Rerunning at 5-shot with letter scoring reproduces published base accuracy closely: 47.20<!-- claim: s2_base_qwen05 = 47.2000 --> against 47.42<!-- claim: s2_pub_qwen05 = 47.4200 --> for Qwen2.5-0.5B, and 59.57<!-- claim: s2_base_qwen15 = 59.5667 --> against 60.98<!-- claim: s2_pub_qwen15 = 60.9800 --> for Qwen2.5-1.5B. The harness confound is closed.
+Our first run scored MMLU 0-shot and produced a large gap against published values. Rerunning at 5-shot with letter scoring recovers accuracies in the range on the RedHatAI cards: our Qwen2.5-0.5B-Instruct scores 47.20<!-- claim: s2_base_qwen05 = 47.2000 --> against the Instruct card's 46.83<!-- claim: s2_pub_qwen05 = 46.8300 --> (the base-model card gives 47.57<!-- claim: s2_pub_qwen05_base = 47.5700 -->), and our Qwen2.5-1.5B-Instruct scores 59.57<!-- claim: s2_base_qwen15 = 59.5667 -->. The harness confound is closed.
 
 Closing it exposed a second, larger one:
 
-- Our **correctly-configured** w4a16 control is materially worse than production. Red Hat published w4a16 for the same two checkpoint families, so this is a matched head-to-head rather than a comparison against a pooled average:
+- Our **correctly-configured** Instruct-model w4a16 control is materially worse than the *base-model* W4A16 that Red Hat published. No Instruct W4A16 is published, so this is Instruct-vs-base and indicative rather than like-for-like; a matched Instruct-vs-Instruct control is deferred future work:
 
 
 | model | published delta | our control delta | gap |
@@ -86,9 +86,9 @@ Closing it exposed a second, larger one:
 
 Mean gap -3.78<!-- claim: ctrl_mean_gap = -3.7766 -->pp, **2.6<!-- claim: ctrl_ratio_x = 2.6015 -->x more damaging**, significant at z = 2.9<!-- claim: ctrl_min_z = 2.9276 --> and 5.3<!-- claim: ctrl_max_z = 5.2859 -->. An earlier draft of this section said 5.1x; that compared our two small models against a published mean pooled over all sizes, and published w4a16 damage is size-dependent. The matched figure is 2.6<!-- claim: ctrl_ratio_x = 2.6015 -->x.
 
-The cause is explained rather than mysterious: we calibrate on 24 texts of 256 tokens where production llm-compressor defaults to 512 samples of 2048, about **171<!-- claim: calib_ratio_x = 170.6667 -->x less calibration data**, and we omit activation reordering (documented as worth up to ~2pp), zero points, and sequential requantization. Our control is a legitimately under-calibrated recipe, not a broken one.
+The pattern is consistent with a legitimately under-calibrated recipe: we calibrate on 24 texts of 256 tokens where production llm-compressor defaults to 512 samples of 2048, about **171<!-- claim: calib_ratio_x = 170.6667 -->x less calibration data**, and we omit activation reordering (documented as worth up to ~2pp), zero points, and sequential requantization. We have not independently tested the attribution to calibration-data size specifically; the planned test needs GPU time not yet run.
 
-*Caveat on the match:* the published rows are the base checkpoints and ours are the -Instruct variants. Base MMLU accuracies agree to 0.37<!-- claim: ctrl_baseagree::Qwen2_5-0_5B = 0.3700 -->pp and 1.41<!-- claim: ctrl_baseagree::Qwen2_5-1_5B = 1.4133 -->pp, so they are comparable, but not the identical artifact.
+*Caveat on the match, restated:* the published rows are the *base* checkpoints (no Instruct W4A16 is published) and ours are the -Instruct variants. Base MMLU accuracies agree to 0.37<!-- claim: ctrl_baseagree::Qwen2_5-0_5B = 0.3700 -->pp and 1.41<!-- claim: ctrl_baseagree::Qwen2_5-1_5B = 1.4133 -->pp, so they are comparable, but not the identical artifact.
 - SmolLM-135M had to be dropped from this analysis: at 25.57<!-- claim: s2_smollm_base = 25.5667 --> on MMLU it is statistically at chance (4-way, so 25.0), so its deltas are noise. Including it diluted the control estimate and made the gap look half as large as it is.
 
 So the anchors measure **excess damage of a bad recipe relative to a mediocre one**, not relative to a production one. The remaining anchor set is 6<!-- claim: s2_excess_n = 6.0000 --> rows from 2 models (mean -10.07<!-- claim: s2_excess_mean = -10.0667 -->pp, worst -30.37<!-- claim: s2_excess_worst = -30.3667 -->pp) - thin, and stated as thin.

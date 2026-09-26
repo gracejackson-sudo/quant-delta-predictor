@@ -31,6 +31,8 @@ M = {
     "CtrlZmin": ("ctrl_min_z", "{:.1f}"), "CtrlZmax": ("ctrl_max_z", "{:.1f}"),
     "BaseQwenSmall": ("s2_base_qwen05", "{:.2f}"),
     "PubQwenSmall": ("s2_pub_qwen05", "{:.2f}"),
+    "PubQwenSmallBase": ("s2_pub_qwen05_base", "{:.2f}"),
+    "NvfpMarginal": ("nvfp_marginal_coverage_pct", "{:.0f}"),
     "BaseQwenMid": ("s2_base_qwen15", "{:.2f}"),
     "PubQwenMid": ("s2_pub_qwen15", "{:.2f}"),
     "ProtoSens": ("s2_protocol_sensitivity", "{:.2f}"),

@@ -32,7 +32,9 @@ AXIS = {"0", "5", "10", "15", "20", "30"}
 # citation is the provenance. Listed explicitly so they cannot grow silently.
 EXTERNAL = {"16", "14", "0.08", "0.35", "0.49", "85.6", "69.2", "83.6",
             "27.01", "1.83", "23.3", "84", "133",
-            "2522", "1638", "1123"}          # GitHub issue numbers
+            "2522", "1638", "1123",          # GitHub issue numbers
+            # BenchPress-author reply quoted verbatim in EXTERNAL_FEEDBACK.md
+            "56", "88", "99", "0.58", "0.74"}
 # Digits that are part of a model NAME, not a measurement.
 NAMEPART = {"135", "3", "4", "2", "5", "0.5", "1.5", "8", "70", "405"}
 # Structural text, not data: markdown section numbers and calendar years.

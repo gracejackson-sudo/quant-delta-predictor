@@ -6,8 +6,12 @@
     "SmolLM-135M-Instruct": 25.5667
   },
   "published_mmlu_targets": {
-    "Qwen2.5-0.5B-Instruct": 47.42,
+    "Qwen2.5-0.5B-Instruct": 46.83,
     "Qwen2.5-1.5B-Instruct": 60.98
+  },
+  "published_mmlu_targets_note": "0.5B-Instruct: value read live from the RedHatAI/Qwen2.5-0.5B-Instruct-quantized.w8a8 card (46.83, 5-shot). 1.5B-Instruct: no RedHat card value could be re-fetched today; 60.98 is the base-model card value carried over, kept for reference and marked as such in the paper.",
+  "published_mmlu_targets_base_card": {
+    "Qwen2.5-0.5B": 47.57
   },
   "at_chance_excluded": [
     "SmolLM-135M-Instruct"
