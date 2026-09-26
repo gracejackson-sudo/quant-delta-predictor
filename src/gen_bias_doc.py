@@ -121,18 +121,21 @@ def bias_doc():
       "this tool does not describe, which is what the bias correction is "
       "for -- not evidence that the interval shape is wrong.\n")
     A("### Session 2: matching the published harness, and what it exposed\n")
-    A(f"Our first run scored MMLU 0-shot and got "
-      f"{n('s2_pub_qwen05','{:.2f}')} published versus a much lower measured "
-      f"value. Rerunning at 5-shot with letter scoring reproduces published "
-      f"base accuracy closely: {n('s2_base_qwen05','{:.2f}')} against "
-      f"{n('s2_pub_qwen05','{:.2f}')} for Qwen2.5-0.5B, and "
-      f"{n('s2_base_qwen15','{:.2f}')} against {n('s2_pub_qwen15','{:.2f}')} "
-      f"for Qwen2.5-1.5B. The harness confound is closed.\n")
+    A(f"Our first run scored MMLU 0-shot and produced a large gap against "
+      f"published values. Rerunning at 5-shot with letter scoring recovers "
+      f"accuracies in the range on the RedHatAI cards: our "
+      f"Qwen2.5-0.5B-Instruct scores "
+      f"{n('s2_base_qwen05','{:.2f}')} against the Instruct card's "
+      f"{n('s2_pub_qwen05','{:.2f}')} (the base-model card gives "
+      f"{n('s2_pub_qwen05_base','{:.2f}')}), and our "
+      f"Qwen2.5-1.5B-Instruct scores "
+      f"{n('s2_base_qwen15','{:.2f}')}. The harness confound is closed.\n")
     A("Closing it exposed a second, larger one:\n")
-    A("- Our **correctly-configured** w4a16 control is materially worse than "
-      "production. Red Hat published w4a16 for the same two checkpoint "
-      "families, so this is a matched head-to-head rather than a comparison "
-      "against a pooled average:\n")
+    A("- Our **correctly-configured** Instruct-model w4a16 control is "
+      "materially worse than the *base-model* W4A16 that Red Hat published. "
+      "No Instruct W4A16 is published, so this is Instruct-vs-base and "
+      "indicative rather than like-for-like; a matched Instruct-vs-Instruct "
+      "control is deferred future work:\n")
     A("")
     A("| model | published delta | our control delta | gap |")
     A("|---|---|---|---|")
@@ -150,15 +153,17 @@ def bias_doc():
       f"models against a published mean pooled over all sizes, and published "
       f"w4a16 damage is size-dependent. The matched figure is "
       f"{n('ctrl_ratio_x','{:.1f}')}x.\n")
-    A(f"The cause is explained rather than mysterious: we calibrate on 24 "
-      f"texts of 256 tokens where production llm-compressor defaults to 512 "
-      f"samples of 2048, about **{n('calib_ratio_x','{:.0f}')}x less "
-      f"calibration data**, and we omit activation reordering (documented as "
-      f"worth up to ~2pp), zero points, and sequential requantization. Our "
-      f"control is a legitimately under-calibrated recipe, not a broken "
-      f"one.\n")
-    A("*Caveat on the match:* the published rows are the base checkpoints "
-      "and ours are the -Instruct variants. Base MMLU accuracies agree to "
+    A(f"The pattern is consistent with a legitimately under-calibrated "
+      f"recipe: we calibrate on 24 texts of 256 tokens where production "
+      f"llm-compressor defaults to 512 samples of 2048, about "
+      f"**{n('calib_ratio_x','{:.0f}')}x less calibration data**, and we "
+      f"omit activation reordering (documented as worth up to ~2pp), zero "
+      f"points, and sequential requantization. We have not independently "
+      f"tested the attribution to calibration-data size specifically; the "
+      f"planned test needs GPU time not yet run.\n")
+    A("*Caveat on the match, restated:* the published rows are the *base* "
+      "checkpoints (no Instruct W4A16 is published) and ours are the "
+      "-Instruct variants. Base MMLU accuracies agree to "
       f"{n('ctrl_baseagree::Qwen2_5-0_5B','{:.2f}')}pp and "
       f"{n('ctrl_baseagree::Qwen2_5-1_5B','{:.2f}')}pp, so they are "
       f"comparable, but not the identical artifact.\n"
@@ -414,10 +419,11 @@ def tool_doc():
       f"{n('adv_bad_over_3pp')} of {n('adv_bad_rows')} faulted rows losing "
       f"3pp. This does not depend on any baseline.\n"
       f"- *Harness alignment.* Re-running MMLU at 5-shot with letter scoring "
-      f"reproduces published base accuracy to "
-      f"{n('s2_base_qwen05','{:.2f}')} against "
-      f"{n('s2_pub_qwen05','{:.2f}')}, and {n('s2_base_qwen15','{:.2f}')} "
-      f"against {n('s2_pub_qwen15','{:.2f}')}. Our measurements are on the "
+      f"recovers accuracies in the range on the RedHatAI cards: our "
+      f"Qwen2.5-0.5B-Instruct scores {n('s2_base_qwen05','{:.2f}')} against "
+      f"the Instruct card's {n('s2_pub_qwen05','{:.2f}')} (base card "
+      f"{n('s2_pub_qwen05_base','{:.2f}')}), and our Qwen2.5-1.5B-Instruct "
+      f"scores {n('s2_base_qwen15','{:.2f}')}. Our measurements are on the "
       f"same footing as the published corpus.\n")
     A("**Caveated, and not to be quoted as a bound:**\n")
     A(f"- *Excess over control.* Our own correctly-configured control is "

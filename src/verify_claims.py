@@ -92,6 +92,23 @@ def registry():
     for b, v in cc.get("bands", {}).items():
         add(f"band_coverage_pct::{b}", v["coverage"] * 100, 0.05,
             f"strict coverage for band {b}")
+    # Marginal (no-Mondrian) LOFO coverage for the NVFP4 scheme, live from
+    # the stored final_marginal_C_leave_family_out.csv. This is what the paper
+    # cites when it says a marginal 90% interval undercovered NVFP4 users.
+    import csv as _csv
+    _mcsv = os.path.join(HERE, "..", "out",
+                         "final_marginal_C_leave_family_out.csv")
+    if os.path.exists(_mcsv):
+        _c = {"covered": 0, "n": 0}
+        for _r in _csv.DictReader(open(_mcsv)):
+            if _r["scheme"] != "nvfp4":
+                continue
+            _c["n"] += 1
+            _c["covered"] += 1 if _r["covered"] == "True" else 0
+        if _c["n"]:
+            add("nvfp_marginal_coverage_pct",
+                100 * _c["covered"] / _c["n"], 0.05,
+                "marginal (no-Mondrian) LOFO coverage on the NVFP4 slice")
 
     for key, sup in cc.get("support", {}).items():
         add(f"cell_train_rows2::{key}", sup["train_rows"], 0,
@@ -555,7 +572,11 @@ def registry():
         add("s2_base_qwen05", q["base_mmlu"]["Qwen2.5-0.5B-Instruct"], 0.01,
             "our 5-shot MMLU base, Qwen2.5-0.5B")
         add("s2_pub_qwen05", q["published_mmlu_targets"][
-            "Qwen2.5-0.5B-Instruct"], 0.01, "published MMLU, Qwen2.5-0.5B")
+            "Qwen2.5-0.5B-Instruct"], 0.01,
+            "published MMLU, Qwen2.5-0.5B-Instruct card (5-shot)")
+        add("s2_pub_qwen05_base", q["published_mmlu_targets_base_card"][
+            "Qwen2.5-0.5B"], 0.01,
+            "published MMLU, Qwen2.5-0.5B base card (5-shot), for context")
         add("s2_base_qwen15", q["base_mmlu"]["Qwen2.5-1.5B-Instruct"], 0.01,
             "our 5-shot MMLU base, Qwen2.5-1.5B")
         add("s2_pub_qwen15", q["published_mmlu_targets"][

@@ -3,6 +3,10 @@
 A record of the external feedback received and what was done about each point.
 Figures come from the registry; commit hashes are checked against git history
 by tests/test_all.py. Status words are ours: DONE, PARTIAL, NOT DONE.
+
+Every source in this record is kept anonymized. Real names sit only in the
+private Day-5 audit folder; anyone who wrote in a form or an email did so
+without a public byline in mind, and we do not add one on our own initiative.
 """
 from __future__ import annotations
 import os, sys
@@ -27,43 +31,138 @@ def main():
       "by `src/verify_claims.py`. Commit hashes are checked against git history "
       "by the test suite.** Statuses are ours and are conservative: DONE means "
       "the fix is on the public `main` branch; PARTIAL and NOT DONE are listed "
-      "as plainly as DONE.\n")
-    A("Two external conversations this week produced concrete feedback. Both "
-      "were transcribed by speech-to-text, and both transcripts "
-      "are garbled in places. Where a point could be read more than one way, "
-      "this document says so instead of choosing the reading that flatters "
-      "us. The transcripts themselves are not published here.\n")
+      "as plainly as DONE. Every source below is anonymized. Where the source "
+      "is the author of a published paper we cite, we say so as \"an author of "
+      "[paper]\" rather than by name -- a private reply to an email is not "
+      "public consent to appear here.\n")
+    A("Six external conversations produced concrete feedback. Two came from "
+      "structured written channels (a Reddit exchange with a maintainer, a "
+      "form submission from an ML engineer who cloned the repo). Two came from "
+      "email replies from authors of papers cited in the related work. Two came "
+      "from voice calls with an ML engineer at a large company and a data "
+      "scientist, transcribed by speech-to-text; those transcripts are garbled "
+      "in places, and where a point could be read more than one way, this "
+      "document says so instead of choosing the reading that flatters us. "
+      "None of the transcripts or replies is published here.\n")
 
     A("## Summary\n")
     A("| # | Source | Point | Status |")
     A("|---|---|---|---|")
     rows = [
-        ("M1", "ML engineer", "An IP address or log left in a markdown file",
-         "PARTIAL: removed from current files; still in git history"),
-        ("M2", "ML engineer", "Inconsistent verdicts across repeated identical runs",
-         "PARTIAL: not reproduced; one real seed-dependence found and fixed"),
-        ("M3", "ML engineer", "Refusal line stated as 85%, measured near 95.1%",
-         "PARTIAL: reconciled in the docs; the 85% threshold itself is unchanged"),
-        ("M4", "ML engineer", "Try Qwen3.5",
-         "PARTIAL: published-card ingestion done; GPU testing not run"),
-        ("M5", "ML engineer", "Distillation, enterprise nuance, other remarks",
+        ("R1", "Reddit collaborator", "One-sided coverage vs the verdict line; refusal-message wording",
+         "DONE (`fd682b2`, `a31a1f7`) and led to the deeper coverage refactor"),
+        ("R2", "Reddit collaborator", "Judge cells and schemes with the same classifier; wrap the one-sided figure",
+         "DONE in this cycle's coverage refactor"),
+        ("B1", "A BenchPress author", "Rank-2 result of 56% is contaminated by mean-fill",
+         "PARTIAL: their released code re-run on our data (Track 2b); their preferred protocol not run"),
+        ("B2", "A BenchPress author", "Some benchmarks have no near neighbour; 3 known scores may not be predictive ones",
          "NOT DONE"),
-        ("C1", "Collaborator", "README is overwhelming as an entry point", "DONE"),
-        ("C2", "Collaborator", "Another metric or benchmark would help", "NOT DONE"),
-        ("C3", "Collaborator", "Too small to sell alone; fits inside a suite",
+        ("M1", "External ML engineer (voice call)", "An IP address or log left in a markdown file",
+         "PARTIAL: removed from current files; still in git history"),
+        ("M2", "External ML engineer (voice call)", "Inconsistent verdicts across repeated identical runs",
+         "PARTIAL: not reproduced; one real seed-dependence found and fixed"),
+        ("M3", "External ML engineer (voice call)", "Refusal line stated as 85%, measured near 95.1%",
+         "PARTIAL: reconciled in the docs; the 85% threshold itself is unchanged"),
+        ("M4", "External ML engineer (voice call)", "Try Qwen3.5",
+         "PARTIAL: published-card ingestion done; GPU testing not run"),
+        ("M5", "External ML engineer (voice call)", "Distillation, enterprise nuance, other remarks",
+         "NOT DONE; a size-range correction to that engineer is drafted and unsent"),
+        ("C1", "External technical collaborator (voice call)", "README is overwhelming as an entry point", "DONE"),
+        ("C2", "External technical collaborator (voice call)", "Another metric or benchmark would help", "NOT DONE"),
+        ("C3", "External technical collaborator (voice call)", "Too small to sell alone; fits inside a suite",
          "PARTIAL: two integration paths scoped, nothing built"),
-        ("C4", "Collaborator", "Fastest willingness-to-pay signal",
+        ("C4", "External technical collaborator (voice call)", "Fastest willingness-to-pay signal",
          "NOT DONE (form field drafted, then declined)"),
+        ("H1", "External ML engineer (form submission)", "Paper called the shipped intervals split-conformal; the code fits centre and half-width on the same rows",
+         "FIXED (paper wording; the split-conformal citation stays for the theory paragraph)"),
+        ("H2", "External ML engineer (form submission)", "Pair counting: 5719 was reported as if it were rows, when 817 rows were each scored under 7 calibration families",
+         "FIXED in the coverage refactor at 32e056f; distinct_rows and scored_pairs are now separate and labelled"),
+        ("H3", "External ML engineer (form submission)", "Drift across schemes and bands; nine cells at insufficient evidence, task-1 attribution untested",
+         "VERIFIED and reflected in the shipped tool; task-1 attribution is a GPU run not yet approved"),
+        ("H4", "External ML engineer (form submission)", "LoRA-not-in-product; zero cells refused; product-strategy read",
+         "TRUE, recorded as strategic input; no product changes made on the strength of a single review"),
+        ("T1", "An author of Tong et al.", "Whether \"forecast vs measure\" is a fair characterization of their work",
+         "DONE: paper Related-Work paragraph trimmed to what she confirmed; not named in the paper"),
     ]
     for r in rows:
         A("| " + " | ".join(r) + " |")
     A("")
 
-    A("## External ML engineer\n")
-    A("The external ML engineer tested the tool against internal models of "
-      "their own organization and gave feedback on a call. We do not have those "
-      "models or inputs, so everything the ML engineer ran remains unreproduced on our "
-      "side.\n")
+    A("## Reddit collaborator (anonymized)\n")
+    A("A maintainer of another open-source language-model project reviewed the "
+      "coverage documentation and raised two points on Reddit.\n")
+
+    A("### R1. Symmetric 90% interval has a one-sided nominal level near 95%\n")
+    A("**What was said:** the tool advertised a 90% interval and cited its "
+      "coverage against 90%, but the risk being bounded is one-sided (accuracy "
+      "loss), and a symmetric interval splits the 10% miss across two tails. "
+      "The refusal message compared the wrong statistic to the wrong line.\n")
+    A(f"**What was done:** the one-sided derivation was written up in "
+      f"`ONE_SIDED_COVERAGE.md` (`fd682b2`); stale wording of the refusal "
+      f"behaviour was swept across docs, paper and messages (`a31a1f7`). The "
+      f"refusal message now cites the refusal threshold "
+      f"({n('refuse_below_pct')}%) and the one-sided level "
+      f"({n('pooled_one_sided_pct', '{:.1f}')}% pooled) rather than the 90% "
+      f"the two-sided interval advertises.\n")
+    A("**What is open:** whether 85% is the right refusal threshold is a "
+      "design choice we have not re-derived; the collaborator's point may be "
+      "an argument for revisiting it.\n")
+
+    A("### R2. Judge cells and schemes the same way; wrap the one-sided figure\n")
+    A("**What was said:** the coverage audit's checkpoint bootstrap wrapped "
+      "the two-sided indicator while the verdict was judged on the one-sided "
+      "statistic, and the classifiers at the cell and scheme levels were "
+      "different.\n")
+    A(f"**What was done:** the coverage refactor in this cycle centralises the "
+      f"measurement in `src/cell_coverage.py`, wraps the one-sided figure at "
+      f"both levels, and uses one classifier (`rank.classify_cell`) for cells "
+      f"and schemes. The independent verifier (`verify/independent_rank.py`) "
+      f"re-runs the whole thing in stdlib and reports full agreement. Current "
+      f"state: {n('n_cells_total')} cells, {n('n_cells_refused')} refused, "
+      f"{n('n_cells_insufficient_evidence')} at insufficient evidence.\n")
+
+    A("## A BenchPress author (anonymized: an author of BenchPress, arXiv:2606.24020)\n")
+    A("An author of BenchPress replied to an email asking whether their "
+      "low-rank claim held on our corpus. The reply gave three points and "
+      "said the check was preliminary.\n")
+
+    A("### B1. Rank-2 variance on our matrix is contaminated by mean-fill\n")
+    A("**What was said:** rank-2 explaining 56% of variance on our score "
+      "matrix was measured after filling about half the matrix with a global "
+      "mean, which weakens the low-rank structure. On the largest fully "
+      "observed submatrices with column mean-centering, rank-2 explains "
+      "88--99% of the variance on our data. For prediction, plain soft-impute "
+      "on raw scores lacks the logit transform, bias terms and regularization "
+      "of BenchPress's released method, so running their released code would "
+      "be a fairer test.\n")
+    A(f"**What was done:** Track 2b (`229c902`) reran the imputation using "
+      f"BenchPress's own soft-impute construction on our full matrix. On the "
+      f"primary condition, BenchPress's method had MAE "
+      f"{n('t2b_mae::bp', '{:.2f}')}pp against our original imputer's "
+      f"{n('t2b_mae::orig', '{:.2f}')}pp -- a ratio-vs-scheme-mean of "
+      f"{n('t2b_ratio_vs_scheme_mean::bp', '{:.1f}')}x for BenchPress against "
+      f"{n('t2b_ratio_vs_scheme_mean::orig', '{:.1f}')}x for our original. "
+      f"The earlier `~10x` framing was retracted; the paper now describes "
+      f"BenchPress on the core mechanism only.\n")
+    A("**What is not done:** point 1 in full. The results above are with the "
+      "released code on our full matrix, not with the author's preferred data "
+      "preparation (fully observed submatrices, column mean-centered). A "
+      "matched rerun is deferred.\n")
+
+    A("### B2. Benchmark similarity and choice of known scores\n")
+    A("**What was said:** our matrix has 16 benchmarks and some have no "
+      "strongly correlated neighbour (strongest correlations 0.58 for GPQA "
+      "and 0.74 for MuSR); when a benchmark has no similar benchmark in the "
+      "matrix, it is hard to predict. And each quantized model has only three "
+      "known scores chosen at random; picking the most predictive scores as "
+      "the known ones may improve results.\n")
+    A("**What was done:** nothing yet. Both are sensitivity experiments that "
+      "would need the matched protocol from B1 to be worth interpreting.\n")
+
+    A("## External ML engineer, voice call (anonymized)\n")
+    A("This engineer tested the tool against their organization's internal "
+      "models on a call. We do not have those models or inputs, so everything "
+      "they ran remains unreproduced on our side.\n")
 
     A("### M1. An IP address or log in a markdown file\n")
     A("**What was said:** \"one of her IP logs is on the [markdown] file, so "
@@ -72,7 +171,7 @@ def main():
     A("**What we found:** one address, belonging to a cloud GPU instance that "
       "has since been terminated, in `KURTOSIS_LORA_FINDINGS.md`. It was "
       "removed from that file in `cef5eff`. We do not know whether it is the "
-      "item the ML engineer meant, since the transcript does not name the file.\n")
+      "item the engineer meant, since the transcript does not name the file.\n")
     A("**What is not fixed:** the address is still present in three earlier "
       "commits on `main` (`077da61`, `99f1ca5`, `37364d2`) and in one "
       "orphaned commit that is no longer on any branch but can still be "
@@ -93,8 +192,8 @@ def main():
       "cell's verdict. The verdict logic now uses an exact enumeration for "
       "small cluster counts (`16693a2`), with a test that the bounds do not "
       "depend on the random stream.\n")
-    A("**What is open:** we do not know that this is what the ML engineer saw. Their "
-      "runs used internal models that are not in our data, and we never "
+    A("**What is open:** we do not know that this is what the engineer saw. "
+      "Their runs used internal models that are not in our data, and we never "
       "obtained the inputs. The fix removes a real nondeterminism; it does "
       "not close the report. Reproduction needs the exact command, the input "
       "files and the library versions.\n")
@@ -108,9 +207,9 @@ def main():
       f"interval is {n('pooled_one_sided_pct', '{:.1f}')}%, which is the "
       "interval's real one-sided nominal level, since a symmetric interval "
       "advertised at 90% splits its 10% across two tails. That matches the "
-      "number the ML engineer gave, but we cannot confirm it is the same quantity. "
-      "That the nominal one-sided level is about 95% was already stated "
-      "in the docs (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) "
+      "number the engineer gave, but we cannot confirm it is the same "
+      "quantity. That the nominal one-sided level is about 95% was already "
+      "stated in the docs (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) "
       "before this feedback arrived, so that part is not a response to it. "
       "What was done afterwards is a sweep for stale statements of the "
       "refusal behaviour in the docs, paper and messages (`a31a1f7`), which "
@@ -118,8 +217,8 @@ def main():
       "the 90% the interval claims, and now cites the refusal threshold and "
       "the one-sided level.\n")
     A("**What is open:** whether 85% is the right refusal line has not been "
-      "revisited. It is a design choice we have not re-derived, and the engineer's "
-      "comment may be an argument for moving it.\n")
+      "revisited. It is a design choice we have not re-derived, and the "
+      "engineer's comment may be an argument for moving it.\n")
 
     A("### M4. Try it on Qwen3.5\n")
     A("**What was said:** Qwen3.5 is a good architecture to stress, because "
@@ -140,15 +239,16 @@ def main():
       f"existing sweep covers {n('adv_models')} base models, all Qwen2.5, "
       f"at {n('adv_min_params_b', '{:.3f}')}B, {n('adv_mid_params_b', '{:.1f}')}B and "
       f"{n('adv_max_params_b', '{:.1f}')}B parameters.\n")
-    A("**Owed:** a correction to the ML engineer. The sweep was described on the call "
-      "as covering roughly 0.5B to 8B parameters; it covers only the three "
-      "sizes above. That correction has not been sent.\n")
+    A("**Owed:** a correction to the engineer. The sweep was described on "
+      "the call as covering roughly 0.5B to 8B parameters; it covers only the "
+      "three sizes above. That correction has been drafted and not yet "
+      "sent.\n")
 
     A("### M5. Other remarks\n")
     A("- **Enterprise nuance:** asked whether built-in refusal matters to "
       "enterprises, the answer was that it is \"a lot more nuanced.\" No "
       "specifics were given, so there is nothing to act on yet.\n")
-    A("- **Distillation:** the ML engineer said they saw less of a difference on "
+    A("- **Distillation:** the engineer said they saw less of a difference on "
       "distilled local models. The corpus contains no distilled-model data, "
       "and what difference was meant is unclear. Not addressed.\n")
     A("- **Follow-ups we owe:** ask how the internal models were run and on "
@@ -158,10 +258,9 @@ def main():
       "request for this document; it does not appear in the transcript we "
       "have, so we cannot say whether it was missed.\n")
 
-    A("## External technical collaborator\n")
-    A("The external technical collaborator gave feedback on a call as a reviewer who "
-      "works on document-processing workflows and does consulting, by their "
-      "own account.\n")
+    A("## External technical collaborator, voice call (anonymized)\n")
+    A("This collaborator gave feedback on a call as a reviewer who works on "
+      "data workflows in industry.\n")
 
     A("### C1. The README is overwhelming as an entry point\n")
     A("**What was said:** the README is well written, but \"links to a lot "
@@ -178,8 +277,8 @@ def main():
 
     A("### C2. Another metric or benchmark\n")
     A("**What was said:** the methodology looked sound, but it \"would be "
-      "nice to have another metric.\" The collaborator also dated BenchPress ten years "
-      "earlier than our citation does.\n")
+      "nice to have another metric.\" The collaborator also dated BenchPress "
+      "ten years earlier than our citation does.\n")
     A("**What we did:** nothing on the metric; no second benchmark was "
       "added. On the date: the citation gives 2026 and arXiv identifier "
       "2606.24020, whose prefix encodes June 2026, so we think the "
@@ -203,13 +302,102 @@ def main():
       "pushed. It was **not** added: the decision was not to ask. The live "
       "form has no such field. No academic-outreach plan has been made.\n")
 
+    A("## External ML engineer, form submission (anonymized)\n")
+    A("This engineer cloned the repo and filed a form submission with "
+      "detailed technical points. The framing here is neutral: our own "
+      "pair-counting error (H2) was ours, and the review's cited figures "
+      "accurately reflected what the tool was outputting at the time. Both "
+      "are true.\n")
+
+    A("### H1. \"Split-conformal\" was too strong for the shipped intervals\n")
+    A("**What was said:** the paper called the shipped intervals "
+      "split-conformal while the code fits centre and half-width on the same "
+      "rows, so only the explicit calibration-set variant carries the "
+      "split-conformal guarantee.\n")
+    A("**What was done:** paper wording corrected. The abstract now says "
+      "\"per-scheme conformal-style intervals\". The Method paragraph keeps "
+      "the split-conformal theory citation, names the shipped construction as "
+      "an in-sample residual-quantile band, and points at the empirical "
+      "prospective figure as what the shipped intervals actually carry.\n")
+
+    A("### H2. Pair counting\n")
+    A(f"**What was said:** the coverage numbers were described as if "
+      f"{n('pooled_scored_pairs')} were the row count. With eight families "
+      f"and leave-one-family-out, each row is scored under seven calibration "
+      f"families, so the real row count is {n('pooled_distinct_rows')} and "
+      f"the {n('pooled_scored_pairs')} figure is the (row, "
+      f"calibration-family) evaluation count. Independence claims on the "
+      f"evaluation count are wrong.\n")
+    A(f"**What was done:** the coverage refactor at commit `32e056f` "
+      f"centralises measurement in `src/cell_coverage.py`, exposes "
+      f"`distinct_rows` and `scored_pairs` as separate fields, and labels "
+      f"`scored_pairs` explicitly as not-independent evaluations. Tests "
+      f"enforce that `scored_pairs = 7 * distinct_rows` and that the row "
+      f"counts equal the raw-data counts per cell. The paper's audit section "
+      f"records the bug. Pooled figures now read: "
+      f"{n('pooled_scored_pairs')} evaluations across "
+      f"{n('pooled_distinct_rows')} distinct rows, each scored under "
+      f"{n('pooled_pairs_per_row')} calibration families.\n")
+
+    A("### H3. Drift across schemes and bands; task-1 attribution\n")
+    A(f"**What was said:** several cells looked undercovered; the tool "
+      f"should refuse where evidence is thin; and the "
+      f"{n('calib_ratio_x')}x calibration-data ratio in task 1 was presented "
+      f"as causing the gap without an independent test.\n")
+    A(f"**What was done:** the two-level classifier in the refactor at "
+      f"`32e056f` demotes cells and schemes with too few checkpoints or "
+      f"straddling bootstrap intervals. Current state: "
+      f"{n('n_cells_total')} cells, {n('n_cells_refused')} refused, "
+      f"{n('n_cells_insufficient_evidence')} at insufficient evidence. "
+      f"The paper now describes the {n('calib_ratio_x')}x figure as "
+      f"\"consistent with ... though the attribution is not independently "
+      f"tested\"; the GPU test that would settle it (`task1_real_gptq.py`) "
+      f"has not been run.\n")
+
+    A("### H4. LoRA-not-in-product; zero cells refused; product-strategy read\n")
+    A("**What was said:** LoRA-forgetting is a corpus finding and should not "
+      "read as a product feature; zero cells currently reach trusted; and the "
+      "product story would benefit from a recipe linter or a paired "
+      "diagnostic.\n")
+    A("**What was done:** LoRA framing is unchanged in the docs and paper "
+      "(a corpus finding, not a product); zero-refused / all-insufficient is "
+      "the honest current state and is stated as such; the product-strategy "
+      "notes are recorded as strategic input, no product changes made on the "
+      "strength of a single review.\n")
+
+    A("## An author of Tong et al. (anonymized; not named in the paper)\n")
+    A("### T1. Whether \"forecast vs measure\" is a fair characterization\n")
+    A("**What was said** (paraphrased with the author's permission-neutral "
+      "wording preserved): the author confirmed that our \"forecast vs "
+      "measure\" characterization is fair. Their work evaluates predictive "
+      "uncertainty -- coverage and prediction-set size -- after running the "
+      "compressed model; ours forecasts the accuracy change before running "
+      "anything; the two are complementary perspectives on the same "
+      "phenomenon.\n")
+    A("**What was done:** the Related Work paragraph in the paper was "
+      "trimmed to what the author confirmed. Removed: our earlier reading "
+      "\"over label space, constructed from a compressed model's own output "
+      "probabilities\", which the author did not confirm; and the ambiguous "
+      "\"but measures it\" clause. Kept: \"they evaluate predictive "
+      "uncertainty (coverage and set size) after running the compressed "
+      "model\", which matches the author's wording. The author is not named "
+      "in the paper. A private email reply is not consent to appear in a "
+      "public paper.\n")
+    A(f"**What is open:** the author offered to hear more about the scale-"
+      f"related adversarial pattern; a matched follow-up describing the tail "
+      f"and the {n('adv_worst_delta', '{:.1f}')}pp adversarial worst has been "
+      f"drafted and not yet sent.\n")
+
     A("## Not addressed\n")
     A("- The history copies of the address (M1).\n")
-    A("- The ML-engineer reproduction, pending their inputs (M2).\n")
-    A("- Whether the 85% refusal line should move (M3).\n")
-    A("- The Qwen3.5 GPU sweep (M4) and the correction owed to the ML engineer.\n")
+    A("- The voice-call engineer's reproduction, pending their inputs (M2).\n")
+    A("- Whether the 85% refusal line should move (R1 / M3).\n")
+    A("- The Qwen3.5 GPU sweep (M4) and the correction owed to the engineer.\n")
     A("- Distillation and the other remarks (M5).\n")
     A("- A second metric (C2), and any willingness-to-pay measurement (C4).\n")
+    A("- The matched BenchPress protocol (B1 in full) and the "
+      "benchmark-similarity / known-scores sensitivity (B2).\n")
+    A("- The task-1 GPU run that would test the 171x attribution (H3).\n")
     A(f"- Current tool state, for reference: {n('n_cells_total')} cells, "
       f"{n('n_cells_refused')} refused, "
       f"{n('n_cells_insufficient_evidence')} at insufficient evidence "

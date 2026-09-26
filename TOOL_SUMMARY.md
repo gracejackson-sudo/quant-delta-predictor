@@ -80,7 +80,7 @@ The clearest gap is that accuracy is not the whole of deployment risk. Tong et a
 **Clean, and safe to rely on:**
 
 - *Existence proof.* Deliberately-bad configs produce catastrophic damage: worst measured -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp raw, 16<!-- claim: adv_bad_over_3pp = 16.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows losing 3pp. This does not depend on any baseline.
-- *Harness alignment.* Re-running MMLU at 5-shot with letter scoring reproduces published base accuracy to 47.20<!-- claim: s2_base_qwen05 = 47.2000 --> against 47.42<!-- claim: s2_pub_qwen05 = 47.4200 -->, and 59.57<!-- claim: s2_base_qwen15 = 59.5667 --> against 60.98<!-- claim: s2_pub_qwen15 = 60.9800 -->. Our measurements are on the same footing as the published corpus.
+- *Harness alignment.* Re-running MMLU at 5-shot with letter scoring recovers accuracies in the range on the RedHatAI cards: our Qwen2.5-0.5B-Instruct scores 47.20<!-- claim: s2_base_qwen05 = 47.2000 --> against the Instruct card's 46.83<!-- claim: s2_pub_qwen05 = 46.8300 --> (base card 47.57<!-- claim: s2_pub_qwen05_base = 47.5700 -->), and our Qwen2.5-1.5B-Instruct scores 59.57<!-- claim: s2_base_qwen15 = 59.5667 -->. Our measurements are on the same footing as the published corpus.
 
 **Caveated, and not to be quoted as a bound:**
 
