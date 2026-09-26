@@ -1130,3 +1130,46 @@ def test_ranking_doc_labels_each_cell_with_the_tools_own_verdict():
             assert ("*insufficient evidence*" in line) == (state == "insufficient_evidence"), cell
             checked += 1
     assert checked == len(cc)
+
+
+# ---------------------------------------------------------------------------
+# day-6 hostile-reviewer defenses: classify_cell must not silently return
+# "trusted" on a coverage record that is missing any required field, and both
+# .tex variants must pass audit_paper.py cleanly.
+# ---------------------------------------------------------------------------
+
+def test_classify_cell_defaults_to_insufficient_when_a_field_is_missing():
+    """A malformed record has no business being called 'trusted'."""
+    # missing checkpoint count
+    assert R.classify_cell({"coverage_one_sided": 0.99,
+                            "boot90_lo": 90.0, "boot90_hi": 99.0}) \
+        == "insufficient_evidence"
+    # missing coverage figure
+    assert R.classify_cell({"distinct_checkpoints": 5,
+                            "boot90_lo": 90.0, "boot90_hi": 99.0}) \
+        == "insufficient_evidence"
+    # missing bootstrap bounds
+    assert R.classify_cell({"distinct_checkpoints": 5,
+                            "coverage_one_sided": 0.99}) \
+        == "insufficient_evidence"
+    # a well-populated healthy record still lands as trusted
+    assert R.classify_cell({"distinct_checkpoints": 5,
+                            "coverage_one_sided": 0.98,
+                            "boot90_lo": 90.0, "boot90_hi": 100.0}) \
+        == "trusted"
+
+
+def test_both_paper_variants_pass_audit_paper_cleanly():
+    """The Step-2 fixes have to be in the long-form .tex as well as the
+    neurips one; running audit_paper.py against either variant must report
+    0 failures and 0 warnings."""
+    import subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for name in ("main.tex", "neurips_main.tex"):
+        r = subprocess.run(
+            [sys.executable, os.path.join("paper", "audit_paper.py"), name],
+            cwd=root, capture_output=True, text=True)
+        tail = r.stdout.splitlines()[-6:]
+        joined = "\n".join(tail)
+        assert "0 failure(s)" in joined and "0 warning(s)" in joined, \
+            f"{name} audit is not clean:\n{joined}"

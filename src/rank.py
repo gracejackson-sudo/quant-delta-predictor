@@ -67,19 +67,26 @@ def classify_cell(v):
 
     Order matters: the checkpoint floor comes first. A record with fewer than
     MIN_CELL_CHECKPOINTS distinct checkpoints cannot be judged whatever its row
-    count or point estimate, so nothing may return 'trusted' ahead of it."""
+    count or point estimate, so nothing may return 'trusted' ahead of it.
+
+    The default when a required field is missing is 'insufficient_evidence',
+    not 'trusted': a coverage record that has no checkpoint count, no
+    one-sided or two-sided coverage figure, or no bootstrap bounds is a
+    record we cannot judge, and silently promoting such a record to
+    'trusted' would be the exact silent-failure mode this classifier is
+    supposed to prevent (see day-6 hostile-reviewer audit)."""
     ckpts = v.get("distinct_checkpoints")
-    if ckpts is not None and ckpts < MIN_CELL_CHECKPOINTS:
+    if ckpts is None or ckpts < MIN_CELL_CHECKPOINTS:
         return "insufficient_evidence"
     judged = v.get("coverage_one_sided")
     if judged is None:
         judged = v.get("coverage")
     if judged is None:
-        return "trusted"  # nothing measured; nothing to judge
+        return "insufficient_evidence"  # nothing measured; not judgeable
     boot_lo, boot_hi = v.get("boot90_lo"), v.get("boot90_hi")
-    straddles = (boot_lo is not None and boot_hi is not None and
-                 boot_lo < REFUSE_BELOW * 100 < boot_hi)
-    if straddles:
+    if boot_lo is None or boot_hi is None:
+        return "insufficient_evidence"  # no interval; not judgeable
+    if boot_lo < REFUSE_BELOW * 100 < boot_hi:
         return "insufficient_evidence"
     if judged < REFUSE_BELOW:
         return "refused"

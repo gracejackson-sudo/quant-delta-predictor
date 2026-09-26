@@ -26,7 +26,7 @@ best predictor, a per-scheme mean, beats a global mean by \(\MaeGain\)pp of MAE 
 regression and gradient boosting are \emph{worse} than guessing the average,
 because evaluation noise accounts for at least a third of the variance on \NoiseNThird{} of \NoiseNBench{} benchmarks.
 Second, a positive one: conditioning only on the quantization scheme yields
-split-conformal intervals with \(\ProspCov\%\) empirical coverage
+per-scheme conformal-style intervals with \(\ProspCov\%\) empirical coverage
 (\(\ProspInside/\ProspN\), 95\% CI \([\ProspCILo,\ProspCIHi]\)) on checkpoints never used in
 construction. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes, and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of three verdicts: trusted; insufficient evidence, where the interval is still
@@ -91,10 +91,10 @@ and its compressed self, and quantized checkpoints do not appear in their paper.
 \paragraph{Conformal prediction on compressed models.}
 \citet{tong2026compression} apply conformal prediction directly to
 quantized and sparse LLMs, which is a closer domain than BenchPress. The
-estimand differs: their conformal sets are over label space, constructed from a
-compressed model's own output probabilities, so the method measures uncertainty
-\emph{after} running the model. Ours is constructed over historical accuracy
-deltas to give an interval \emph{before} running anything. Their Figure~2 plots
+estimand differs: they evaluate predictive uncertainty (coverage and set
+size) \emph{after} running the compressed model. Ours is constructed over
+historical accuracy deltas to give an interval \emph{before} running anything.
+Their Figure~2 plots
 the same quantity we predict, \(\text{Acc}_{\text{compressed}} -
 \text{Acc}_{\text{dense}}\), but measures it. Their finding that compression
 decouples accuracy from uncertainty bounds what an accuracy-only estimate like
@@ -145,15 +145,23 @@ this distinction matters.
 
 \section{Method}\label{sec:method}
 
-\paragraph{Split conformal.} Following split conformal regression~\cite{lei2018distribution}, given calibration residuals
-\(\{s_i\}_{i=1}^{n}\) and level \(\alpha\), the interval half-width is the
-\(\lceil (n+1)(1-\alpha) \rceil\)-th smallest score, which gives exact
-finite-sample coverage under exchangeability. Where \(n\) is too small for that
-index to exist, we return \(\infty\) rather than a misleadingly finite band.
+\paragraph{Conformal-style intervals.} We use the residual-quantile
+construction of split conformal regression~\cite{lei2018distribution}: given
+residuals \(\{s_i\}_{i=1}^{n}\) and level \(\alpha\), the interval half-width
+is the \(\lceil (n+1)(1-\alpha) \rceil\)-th smallest score, which under a
+proper calibration/test split gives exact finite-sample coverage under
+exchangeability. Where \(n\) is too small for that index to exist, we return
+\(\infty\) rather than a misleadingly finite band. The shipped per-scheme
+interval fits its centre and its half-width on the \emph{same} rows (an
+in-sample residual-quantile band), so the split-conformal guarantee holds only
+for the explicit calibration-set variant used inside the leave-one-family-out
+audit; the empirical prospective figure below is what carries the shipped
+intervals.
 
 \paragraph{Mondrian (group-conditional) calibration.} Calibrating separately within categories is the Mondrian construction of \citet{vovk2005algorithmic}, applied to regression by \citet{bostrom2020mondrian}. A single marginal
-interval advertised at 90\% was in fact a 68\% interval for NVFP4 users---the
-users who most need it. We therefore calibrate per scheme.
+interval advertised at 90\% covers only \NvfpMarginal\% of NVFP4 rows
+under leave-one-family-out (recomputed live)---the users who most need it.
+We therefore calibrate per scheme.
 
 \paragraph{A three-state verdict.} For each (scheme, size-band) cell we
 measure coverage directly, and the tool returns one of three verdicts. A cell
@@ -315,16 +323,25 @@ instead of per-group.
 \AdvMaxB{}B and below. It establishes that catastrophic damage is reachable; it
 is not a measured bound for larger models.
 
-\paragraph{A confound we found and did not resolve.} Re-running MMLU under the
-published protocol reproduces published base accuracy (\BaseQwenSmall{} against
-\PubQwenSmall{}; \BaseQwenMid{} against \PubQwenMid{}), closing the harness
-question. It exposed a larger one: our own \emph{correctly-configured} control
-is \CtrlRatio\(\times\) more damaging than published W4A16 on closely comparable
-checkpoints (mean gap \CtrlGap{}pp, \(z = \CtrlZmin\) and \(\CtrlZmax\)). We
-attribute this to approximately \CalibRatio\(\times\) less calibration data than
-production defaults; we found no bug. Consequently, excess-over-control measures
-\emph{bad recipe versus mediocre recipe}, not versus production. It is a
-conservative anchor, not a bound, and we decline to publish a corrected point
+\paragraph{A confound we found and did not resolve.} Re-running MMLU under
+the published protocol (5-shot, letter-scored) recovers accuracies in the
+range published on the cards: our Qwen2.5-0.5B-Instruct scores
+\BaseQwenSmall{} against the Instruct card's \PubQwenSmall{} (the base-model
+card gives \PubQwenSmallBase{}), and our Qwen2.5-1.5B-Instruct scores
+\BaseQwenMid{}. The harness question closed. Our control run then compared
+Instruct-model checkpoints against Red Hat's \emph{base-model} W4A16
+publications, because no Instruct W4A16 checkpoints are published: our
+correctly-configured Instruct control is \CtrlRatio\(\times\) more damaging
+than the base-model published W4A16 (mean gap \CtrlGap{}pp,
+\(z = \CtrlZmin\) and \(\CtrlZmax\)). This is not like-for-like---Instruct
+models could plausibly be more fragile under 4-bit quantization than their
+base counterparts---so the ratio is indicative rather than a clean estimate.
+A matched Instruct-vs-Instruct control is deferred future work. The pattern
+we observed is consistent with approximately \CalibRatio\(\times\) less
+calibration data than production defaults, though the attribution is not
+independently tested. Consequently, excess-over-control measures
+\emph{bad recipe versus mediocre recipe}, not versus production. It is an
+indicative anchor, not a bound, and we decline to publish a corrected point
 estimate: the correction moves by \ProtoSens{}pp depending on the anchor set,
 and we have only \ExcessN{} rows from two models.
 
@@ -406,6 +423,18 @@ survived---would misrepresent how the result was obtained.
     verdict was judged on the one-sided statistic. An external commenter asked
     for it to wrap the one-sided figure, which exposed the mismatch
     (\S\ref{sec:method}).
+  \item \emph{Inflated pair counts.} An earlier version of the tool reported
+    the number of (test row, calibration family) evaluations as if it were the
+    number of rows: with 8 families each row is scored 7 times, so
+    \PooledPairs{} evaluations came from only \PooledRows{} rows. Every
+    row-count claim was recomputed on \texttt{distinct\_rows}.
+  \item \emph{Two levels judged differently.} Cells were judged on the
+    one-sided coverage statistic and refused when the point estimate fell
+    below the threshold, but schemes had been judged on the two-sided
+    statistic and refused only when the entire bootstrap interval fell below
+    it. A single classifier now judges both levels the same way, and the
+    envelope's refused list is a computed copy of the ranking tool's, checked
+    by a test.
 \end{itemize}
 
 \paragraph{A regression we nearly shipped.} An audit indicated that a raw
@@ -434,8 +463,8 @@ results are macros generated from a claims registry that recomputes each value
 from source artifacts, and the accompanying code fails a test if an
 outward-facing document contains an untraced numeric literal. The exceptions
 are historical figures in the error list above (row counts and the
-\(-68\)pp delta) and the 90\% marginal-interval figure in \S\ref{sec:method},
-which are quoted from the provenance record rather than recomputed.
+\(-68\)pp delta), which are quoted from the provenance record rather than
+recomputed.
 
 \section{Conclusion}
 
