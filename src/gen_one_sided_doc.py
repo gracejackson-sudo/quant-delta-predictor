@@ -69,17 +69,17 @@ def main():
 
     A("## What they claimed, and what we measured\n")
     A("Every figure below was recomputed from `data/dataset.csv` by "
-      "`src/one_sided_audit.py`, which rebuilds the leave-family-out scored "
-      "rows and retains the interval bounds the committed artifact does not "
+      "`src/one_sided_audit.py`, which rebuilds the leave-family-out "
+      "evaluations (each row scored once per calibration family) and retains the interval bounds the committed artifact does not "
       "store. Nothing was taken from their summary.\n")
     A("| check | they claimed | we computed | verdict |")
     A("|---|---|---|---|")
-    A(f"| pooled coverage | 91.0% / 5719 | {n('os_pooled_pct','{:.1f}')}% / "
-      f"{n('os_pooled_rows')} | matches |")
-    A(f"| `{esc(W8)}` two-sided | 73.7% / 217 | {n('os_two_sided_pct::'+W8,'{:.1f}')}% "
-      f"/ {n('os_scored_rows::'+W8)} | matches |")
-    A(f"| `{esc(W4)}` two-sided | 68.8% / 77 | {n('os_two_sided_pct::'+W4,'{:.1f}')}% "
-      f"/ {n('os_scored_rows::'+W4)} | matches |")
+    A(f"| pooled coverage | 91.0% / 5719 evaluations | {n('os_pooled_pct','{:.1f}')}% / "
+      f"{n('os_pooled_pairs')} evaluations (= {n('os_pooled_rows')} rows x 7 calibration families) | matches |")
+    A(f"| `{esc(W8)}` two-sided | 73.7% / 217 evaluations | {n('os_two_sided_pct::'+W8,'{:.1f}')}% "
+      f"/ {n('os_scored_pairs::'+W8)} evaluations ({n('os_distinct_rows::'+W8)} rows) | matches |")
+    A(f"| `{esc(W4)}` two-sided | 68.8% / 77 evaluations | {n('os_two_sided_pct::'+W4,'{:.1f}')}% "
+      f"/ {n('os_scored_pairs::'+W4)} evaluations ({n('os_distinct_rows::'+W4)} rows) | matches |")
     A(f"| `{esc(W8)}` checkpoints | 5 | {n('os_distinct_checkpoints::'+W8)} | matches |")
     A(f"| `{esc(W8)}` distinct (model, benchmark) | 31 | "
       f"{n('os_distinct_model_benchmark::'+W8)} | matches |")
@@ -124,7 +124,8 @@ def main():
       f"classified `insufficient_evidence`, not `refused`, because it rests "
       f"on only {n('os_distinct_checkpoints::'+W4)} checkpoints.\n")
     A(f"But the evidence is narrower than the label. Those "
-      f"{n('os_scored_rows::'+W4)} rows are "
+      f"{n('os_scored_pairs::'+W4)} evaluations are only {n('os_distinct_rows::'+W4)} rows, "
+      f"and those rows are "
       f"{n('os_distinct_model_benchmark::'+W4)} distinct (model, benchmark) "
       f"results from {n('os_distinct_checkpoints::'+W4)} checkpoints in "
       f"{n('os_distinct_families::'+W4)} family. **The claim the data supports "
@@ -154,7 +155,8 @@ def main():
     A(f"The interval is symmetric -- a mean plus or minus one conformal "
       f"half-width on the absolute residual -- so the 10% permitted to miss is "
       f"split across two tails. Pooled across all "
-      f"{n('pooled_scored_rows')} scored rows that split is "
+      f"{n('pooled_distinct_rows')} rows, each scored under "
+      f"{n('pooled_pairs_per_row')} calibration families, that split is "
       f"{n('pooled_below_lo_pct','{:.1f}')}% below the lower bound and "
       f"{n('pooled_above_hi_pct','{:.1f}')}% above it, giving a pooled "
       f"one-sided coverage of {n('pooled_one_sided_pct','{:.1f}')}%. **The "

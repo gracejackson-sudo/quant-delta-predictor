@@ -322,9 +322,9 @@ def tool_doc():
     A(f"The two cells that first raised the question both fall below even the "
       f"lenient 90% bar: `w4a16|<2B`, where losses stayed above the lower "
       f"bound {n('cell_one_sided_pct::w4a16|<2B','{:.1f}')}% of the time over "
-      f"{n('cell_rows::w4a16|<2B')} scored rows, and `w8a16|>10B` at "
+      f"{n('cell_rows::w4a16|<2B')} rows, and `w8a16|>10B` at "
       f"{n('cell_one_sided_pct::w8a16|>10B','{:.1f}')}% over "
-      f"{n('cell_rows::w8a16|>10B')}. Both are insufficient evidence: the "
+      f"{n('cell_rows::w8a16|>10B')} rows. Both are insufficient evidence: the "
       f"first rests on only {n('cell_ckpts::w4a16|<2B')} checkpoints, the "
       f"second's bootstrap interval straddles the line. A further "
       f"{n('n_cells_blocked_from_tier_a')} cells are barred from the top tier "
@@ -363,7 +363,7 @@ def tool_doc():
         A(f"- `{key}` - losses above the lower bound "
           f"{n('cell_one_sided_pct::'+key,'{:.1f}')}% of the time "
           f"(two-sided containment {n('cell_coverage_pct::'+key,'{:.1f}')}%), "
-          f"over {n('cell_rows::'+key)} scored rows from "
+          f"over {n('cell_rows::'+key)} rows from "
           f"{n('cell_ckpts::'+key)} distinct checkpoints; "
           f"verdict: insufficient evidence")
     A("")

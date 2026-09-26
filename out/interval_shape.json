@@ -1,5 +1,6 @@
 {
-  "n_scored": 4068,
+  "n_scored_pairs": 4068,
+  "n_distinct_rows": 817,
   "conformal": {
     "coverage": 0.8955260570304818,
     "mean_width": 4.125836461154937,

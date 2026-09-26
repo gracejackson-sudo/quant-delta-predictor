@@ -108,4 +108,4 @@ The external technical collaborator gave feedback on a call as a reviewer who wo
 
 - A second metric (C2), and any willingness-to-pay measurement (C4).
 
-- Current tool state, for reference: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 8<!-- claim: n_cells_insufficient_evidence = 8.0000 --> at insufficient evidence (fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> checkpoints or an inconclusive bootstrap).
+- Current tool state, for reference: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 9<!-- claim: n_cells_insufficient_evidence = 9.0000 --> at insufficient evidence (fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> checkpoints or an inconclusive bootstrap).

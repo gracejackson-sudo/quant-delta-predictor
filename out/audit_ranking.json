@@ -41,7 +41,7 @@
   },
   {
     "tag": "OK",
-    "finding": "0 undercovered cells refuse to emit a number, 8 more lack enough evidence (too few checkpoints or a straddling bootstrap interval) to be judged either way: refused=[] insufficient_evidence=['fp8|2-10B', 'fp8|>10B', 'nvfp4|2-10B', 'nvfp4|>10B', 'w4a16|<2B', 'w8a16|<2B', 'w8a16|>10B', 'w8a8_int|<2B']"
+    "finding": "0 undercovered cells refuse to emit a number, 9 more lack enough evidence (too few checkpoints or a straddling bootstrap interval) to be judged either way: refused=[] insufficient_evidence=['fp8|2-10B', 'fp8|<2B', 'fp8|>10B', 'nvfp4|2-10B', 'nvfp4|>10B', 'w4a16|<2B', 'w8a16|<2B', 'w8a16|>10B', 'w8a8_int|<2B']"
   },
   {
     "tag": "FINDING",
@@ -52,16 +52,16 @@
     "finding": "4 cells are blocked from Tier A on support, and 3 of them have measured coverage at or above 90%: fp8|<2B (100.0%), nvfp4|2-10B (95.6%), w8a16|<2B (98.8%). Coverage alone would have called these safe."
   },
   {
-    "tag": "OK",
-    "finding": "the floor demotes 1 cell(s) that would otherwise rank higher: fp8|<2B A->B"
+    "tag": "FINDING",
+    "finding": "the floor changes no verdict, so it is decorative"
   },
   {
     "tag": "FINDING",
     "finding": "3 is a judgement call, not a derived quantity. It is the smallest number at which a cell is not one or two models, and it happens to split this data 4/17. A different corpus would want it re-examined; it is exposed as a constant and recorded in the claims registry rather than buried."
   },
   {
-    "tag": "OK",
-    "finding": "a from-scratch stdlib-only reimplementation reproduces the rank order and every displayed number exactly"
+    "tag": "FINDING",
+    "finding": "the independent reimplementation DISAGREES with src/rank.py"
   },
   {
     "tag": "FINDING",

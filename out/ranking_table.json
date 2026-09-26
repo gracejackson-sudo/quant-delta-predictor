@@ -17,19 +17,26 @@
     "n": 80,
     "n_checkpoints": 13,
     "n_families": 4,
-    "validated_coverage": 0.9053571428571429,
+    "coverage_one_sided": 0.9303571428571429,
+    "coverage_two_sided": 0.9053571428571429,
+    "coverage_rows": 80,
+    "coverage_ckpts": 13,
+    "coverage_scored_pairs": 560,
+    "coverage_boot90": [
+      87.8,
+      97.7
+    ],
+    "coverage_state": "trusted",
     "coverage_worst_family": 0.8650793650793651,
     "coverage_worst_family_name": "mistral",
     "coverage_n_families": 4,
     "coverage_by_family": {
-      "gemma-2": 0.8961038961038961,
-      "llama-3.1": 0.8947368421052632,
+      "gemma-2": 1.0,
+      "llama-3.1": 0.9172932330827067,
       "llama-3.2": 1.0,
       "mistral": 0.8650793650793651
     },
-    "coverage_n_scored": 560,
     "coverage_spread": 0.13492063492063489,
-    "coverage_lower95": 0.878034057477719,
     "size_gradient": {
       "<2B": {
         "n": 6,
@@ -73,22 +80,29 @@
     "n": 200,
     "n_checkpoints": 22,
     "n_families": 7,
-    "validated_coverage": 0.9192857142857143,
-    "coverage_worst_family": 0.7678571428571429,
-    "coverage_worst_family_name": "qwen3",
+    "coverage_one_sided": 0.9735714285714285,
+    "coverage_two_sided": 0.9192857142857143,
+    "coverage_rows": 200,
+    "coverage_ckpts": 22,
+    "coverage_scored_pairs": 1400,
+    "coverage_boot90": [
+      95.8,
+      98.7
+    ],
+    "coverage_state": "trusted",
+    "coverage_worst_family": 0.8872180451127819,
+    "coverage_worst_family_name": "mistral",
     "coverage_n_families": 7,
     "coverage_by_family": {
-      "granite": 0.9172932330827067,
-      "llama-3.1": 0.9721254355400697,
+      "granite": 0.9624060150375939,
+      "llama-3.1": 1.0,
       "llama-3.2": 0.9795918367346939,
-      "llama-3.3": 0.9285714285714286,
+      "llama-3.3": 1.0,
       "mistral": 0.8872180451127819,
       "qwen2.5": 0.9761904761904762,
-      "qwen3": 0.7678571428571429
+      "qwen3": 0.9866071428571429
     },
-    "coverage_n_scored": 1400,
-    "coverage_spread": 0.21173469387755095,
-    "coverage_lower95": 0.9037630492700818,
+    "coverage_spread": 0.1127819548872181,
     "size_gradient": {
       "<2B": {
         "n": 19,
@@ -131,18 +145,25 @@
     "n": 64,
     "n_checkpoints": 5,
     "n_families": 3,
-    "validated_coverage": 0.9330357142857143,
-    "coverage_worst_family": 0.7023809523809523,
+    "coverage_one_sided": 0.9575892857142857,
+    "coverage_two_sided": 0.9330357142857143,
+    "coverage_rows": 64,
+    "coverage_ckpts": 5,
+    "coverage_scored_pairs": 448,
+    "coverage_boot90": [
+      87.6,
+      100.0
+    ],
+    "coverage_state": "trusted",
+    "coverage_worst_family": 0.7857142857142857,
     "coverage_worst_family_name": "llama-3.3",
     "coverage_n_families": 3,
     "coverage_by_family": {
-      "llama-3.3": 0.7023809523809523,
+      "llama-3.3": 0.7857142857142857,
       "mistral": 1.0,
-      "qwen3": 0.9816849816849816
+      "qwen3": 0.9963369963369964
     },
-    "coverage_n_scored": 448,
-    "coverage_spread": 0.29761904761904767,
-    "coverage_lower95": 0.9057819320438494,
+    "coverage_spread": 0.2142857142857143,
     "size_gradient": {
       "2-10B": {
         "n": 13,
@@ -177,22 +198,29 @@
     "n": 193,
     "n_checkpoints": 23,
     "n_families": 7,
-    "validated_coverage": 0.8948926720947447,
-    "coverage_worst_family": 0.7761904761904762,
-    "coverage_worst_family_name": "qwen3",
+    "coverage_one_sided": 0.9422649888971133,
+    "coverage_two_sided": 0.8948926720947447,
+    "coverage_rows": 193,
+    "coverage_ckpts": 23,
+    "coverage_scored_pairs": 1351,
+    "coverage_boot90": [
+      91.1,
+      96.8
+    ],
+    "coverage_state": "trusted",
+    "coverage_worst_family": 0.8775510204081632,
+    "coverage_worst_family_name": "qwen2.5",
     "coverage_n_families": 7,
     "coverage_by_family": {
-      "gemma-2": 0.8928571428571429,
-      "granite": 0.8834586466165414,
-      "llama-3.1": 0.9816849816849816,
+      "gemma-2": 0.9642857142857143,
+      "granite": 0.9172932330827067,
+      "llama-3.1": 0.9963369963369964,
       "llama-3.3": 1.0,
-      "mistral": 0.9073359073359073,
-      "qwen2.5": 0.8673469387755102,
-      "qwen3": 0.7761904761904762
+      "mistral": 0.9691119691119691,
+      "qwen2.5": 0.8775510204081632,
+      "qwen3": 0.9047619047619048
     },
-    "coverage_n_scored": 1351,
-    "coverage_spread": 0.2238095238095238,
-    "coverage_lower95": 0.8773009451436842,
+    "coverage_spread": 0.12244897959183676,
     "size_gradient": {
       "<2B": {
         "n": 11,
@@ -235,19 +263,26 @@
     "n": 86,
     "n_checkpoints": 15,
     "n_families": 4,
-    "validated_coverage": 0.8687707641196013,
-    "coverage_worst_family": 0.5909090909090909,
+    "coverage_one_sided": 0.9186046511627907,
+    "coverage_two_sided": 0.8687707641196013,
+    "coverage_rows": 86,
+    "coverage_ckpts": 15,
+    "coverage_scored_pairs": 602,
+    "coverage_boot90": [
+      79.6,
+      99.8
+    ],
+    "coverage_state": "insufficient_evidence",
+    "coverage_worst_family": 0.6818181818181818,
     "coverage_worst_family_name": "llama-3.1",
     "coverage_n_families": 4,
     "coverage_by_family": {
       "gemma-2": 1.0,
-      "llama-3.1": 0.5909090909090909,
-      "mistral": 0.8571428571428571,
-      "qwen2.5": 0.957983193277311
+      "llama-3.1": 0.6818181818181818,
+      "mistral": 1.0,
+      "qwen2.5": 1.0
     },
-    "coverage_n_scored": 602,
-    "coverage_spread": 0.40909090909090906,
-    "coverage_lower95": 0.8391519032124363,
+    "coverage_spread": 0.31818181818181823,
     "size_gradient": {
       "<2B": {
         "n": 12,
@@ -290,22 +325,29 @@
     "n": 194,
     "n_checkpoints": 24,
     "n_families": 7,
-    "validated_coverage": 0.9263622974963182,
-    "coverage_worst_family": 0.7428571428571429,
+    "coverage_one_sided": 0.9587628865979382,
+    "coverage_two_sided": 0.9263622974963182,
+    "coverage_rows": 194,
+    "coverage_ckpts": 24,
+    "coverage_scored_pairs": 1358,
+    "coverage_boot90": [
+      93.5,
+      98.1
+    ],
+    "coverage_state": "trusted",
+    "coverage_worst_family": 0.8380952380952381,
     "coverage_worst_family_name": "mistral",
     "coverage_n_families": 7,
     "coverage_by_family": {
       "gemma-2": 0.9523809523809523,
-      "granite": 0.9511278195488722,
-      "llama-3.1": 0.906832298136646,
-      "llama-3.2": 0.8351648351648352,
+      "granite": 0.9887218045112782,
+      "llama-3.1": 0.9440993788819876,
+      "llama-3.2": 0.8681318681318682,
       "llama-3.3": 1.0,
-      "mistral": 0.7428571428571429,
-      "qwen2.5": 0.9729064039408867
+      "mistral": 0.8380952380952381,
+      "qwen2.5": 0.9950738916256158
     },
-    "coverage_n_scored": 1358,
-    "coverage_spread": 0.2571428571428571,
-    "coverage_lower95": 0.9111592976700531,
+    "coverage_spread": 0.16190476190476188,
     "size_gradient": {
       "<2B": {
         "n": 29,
@@ -342,10 +384,13 @@
     "n_checkpoints": 38,
     "n_families": 8,
     "pooled_cell_coverage": 0.9095995803462144,
-    "pooled_scored_rows": 5719,
+    "pooled_distinct_rows": 817,
+    "pooled_scored_pairs": 5719,
+    "pooled_pairs_per_row": 7.0,
     "refused_cells": [],
     "insufficient_evidence_cells": [
       "fp8|2-10B",
+      "fp8|<2B",
       "fp8|>10B",
       "nvfp4|2-10B",
       "nvfp4|>10B",

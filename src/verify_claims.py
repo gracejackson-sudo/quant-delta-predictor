@@ -64,8 +64,12 @@ def registry():
         "of those, delta below their scheme's interval floor")
     add("pooled_cell_coverage_pct", cc["pooled"]["coverage"] * 100, 0.05,
         "src/cell_coverage.py pooled")
-    add("pooled_scored_rows", cc["pooled"]["scored_rows"], 0,
-        "src/cell_coverage.py pooled")
+    add("pooled_scored_pairs", cc["pooled"]["scored_pairs"], 0,
+        "row-by-calibration-family evaluations (NOT independent rows)")
+    add("pooled_distinct_rows", cc["pooled"]["distinct_rows"], 0,
+        "distinct rows behind the pooled coverage")
+    add("pooled_pairs_per_row", cc["pooled"]["pairs_per_row"], 0.001,
+        "calibration families each row is scored under")
     add("n_rows", meta["n_rows"], 0, "rows after acc_before>=20")
     import pandas as _pdr
     from model import MIN_ACC_BEFORE as _MAB
@@ -80,7 +84,11 @@ def registry():
     for key, cell in cc["cells"].items():
         add(f"cell_coverage_pct::{key}", cell["coverage"] * 100, 0.05,
             f"strict held-out coverage for {key}")
-        add(f"cell_rows::{key}", cell["scored_rows"], 0, f"scored rows {key}")
+        add(f"cell_rows::{key}", cell["distinct_rows"], 0, f"distinct rows {key}")
+        add(f"cell_pairs::{key}", cell["scored_pairs"], 0,
+            f"row-by-calibration-family evaluations {key}")
+        add(f"cell_boot_lo::{key}", cell["boot90_lo"], 1.0, f"bootstrap 5th percentile, {key}")
+        add(f"cell_boot_hi::{key}", cell["boot90_hi"], 1.0, f"bootstrap 95th percentile, {key}")
     for b, v in cc.get("bands", {}).items():
         add(f"band_coverage_pct::{b}", v["coverage"] * 100, 0.05,
             f"strict coverage for band {b}")
@@ -108,7 +116,23 @@ def registry():
         "bootstrap floor")
 
     add("widening_share_pct", cc["widening"]["share"] * 100, 0.5,
-        "share of scored rows where a widened cell applied")
+        "share of evaluations where a widened cell applied")
+    # scheme-level coverage: same measurement, same classifier, as the cells
+    _sch = cc.get("schemes", {})
+    for s_, v_ in _sch.items():
+        add(f"scheme_rows::{s_}", v_["distinct_rows"], 0, f"distinct rows behind {s_} coverage")
+        add(f"scheme_pairs::{s_}", v_["scored_pairs"], 0, f"evaluations behind {s_} coverage")
+        add(f"scheme_ckpts::{s_}", v_["distinct_checkpoints"], 0, f"checkpoints behind {s_} coverage")
+        add(f"scheme_cov_one::{s_}", v_["coverage_one_sided"] * 100, 0.05, f"one-sided coverage, {s_}")
+        add(f"scheme_cov_two::{s_}", v_["coverage"] * 100, 0.05, f"two-sided coverage, {s_}")
+        add(f"scheme_boot_lo::{s_}", v_["boot90_lo"], 0.3, f"bootstrap 5th percentile, one-sided, {s_}")
+        add(f"scheme_boot_hi::{s_}", v_["boot90_hi"], 0.3, f"bootstrap 95th percentile, one-sided, {s_}")
+    add("n_schemes_insufficient_evidence",
+        sum(1 for v_ in _sch.values() if R.classify_cell(v_) == "insufficient_evidence"), 0,
+        "schemes whose all-sizes coverage is insufficient evidence")
+    add("n_schemes_refused",
+        sum(1 for v_ in _sch.values() if R.classify_cell(v_) == "refused"), 0,
+        "schemes whose all-sizes coverage is refused")
     add("widening_coverage_pct", cc["widening"]["coverage_where_applied"] * 100,
         0.05, "coverage on rows where widening applied")
 
@@ -123,8 +147,8 @@ def registry():
         add(f"checkpoints::{s}", e["n_checkpoints"], 0, f"checkpoints for {s}")
         add(f"lo::{s}", e["lo"], 0.005, f"interval floor for {s}")
         add(f"hi::{s}", e["hi"], 0.005, f"interval ceiling for {s}")
-        add(f"coverage_pct::{s}", e["validated_coverage"] * 100, 0.5,
-            f"strict LOFO coverage for {s}")
+        add(f"coverage_pct::{s}", e["coverage_one_sided"] * 100, 0.5,
+            f"strict LOFO one-sided coverage for {s}")
 
     # size gradient numbers quoted in Part 1
     for b in ("<2B", "2-10B", ">10B"):
@@ -442,15 +466,18 @@ def registry():
         o = json.load(open(osa))
         add("os_pooled_pct", o["pooled_coverage_pct"], 0.1,
             "pooled coverage recomputed in the one-sided audit")
-        add("os_pooled_rows", o["pooled_scored_rows"], 0,
-            "pooled scored rows recomputed in the one-sided audit")
+        add("os_pooled_pairs", o["pooled_scored_pairs"], 0,
+            "pooled evaluations recomputed in the one-sided audit")
+        add("os_pooled_rows", o["pooled_distinct_rows"], 0,
+            "pooled distinct rows recomputed in the one-sided audit")
         for cell, v in o["cells"].items():
             for bm, mm in (v.get("miss_mean_by_checkpoint") or {}).items():
                 add(f"os_missmean::{cell}::{bm}", mm, 0.01,
                     f"mean delta of misses for {bm} in {cell}")
             for key, tol in (("two_sided_pct", 0.1), ("one_sided_pct", 0.1),
                              ("below_lo_pct", 0.1), ("above_hi_pct", 0.1),
-                             ("scored_rows", 0), ("distinct_checkpoints", 0),
+                             ("scored_pairs", 0), ("distinct_rows", 0),
+                             ("distinct_checkpoints", 0),
                              ("distinct_families", 0),
                              ("distinct_model_benchmark", 0),
                              ("boot90_lo", 1.0), ("boot90_hi", 1.0)):
@@ -484,8 +511,10 @@ def registry():
     isp = os.path.join(HERE, "..", "out", "interval_shape.json")
     if os.path.exists(isp):
         i_ = json.load(open(isp))
-        add("band_n_scored", i_["n_scored"], 0,
-            "rows scored in the band comparison")
+        add("band_n_pairs", i_["n_scored_pairs"], 0,
+            "evaluations in the band comparison")
+        add("band_n_rows", i_["n_distinct_rows"], 0,
+            "distinct rows in the band comparison")
         add("band_emp_coverage_pct", i_["empirical"]["coverage"] * 100, 0.05,
             "empirical band coverage INCLUDING infinite intervals")
         add("band_hybrid_coverage_pct", i_["hybrid"]["coverage"] * 100, 0.05,

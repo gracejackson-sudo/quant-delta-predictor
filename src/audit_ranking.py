@@ -226,7 +226,7 @@ def r3_cannot_warn(d, table):
         c = cc["cells"][key]
         print(f"   {key:<22} one-sided {_judged(c)*100:.1f}% "
               f"(two-sided {c['coverage']*100:.1f}%) over "
-              f"{c['scored_rows']} rows -> INSUFFICIENT CALIBRATION")
+              f"{c['distinct_rows']} rows -> INSUFFICIENT CALIBRATION")
     for key in insuff:
         c = cc["cells"][key]
         print(f"   {key:<22} one-sided {_judged(c)*100:.1f}% "

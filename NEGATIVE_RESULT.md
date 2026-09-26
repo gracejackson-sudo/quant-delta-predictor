@@ -113,7 +113,7 @@ So the excess-over-control figures measure **bad recipe against mediocre recipe*
 
 Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (93.4<!-- claim: band_emp_coverage_pct = 93.3628 -->% vs 89.6<!-- claim: band_conf_coverage_pct = 89.5526 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
 
-Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 1762<!-- claim: inf_rows = 1762.0000 --> of 4068<!-- claim: band_n_scored = 4068.0000 --> rows (43<!-- claim: inf_share_pct = 43.3137 -->%), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
+Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 43<!-- claim: inf_share_pct = 43.3137 -->% of evaluations (1762<!-- claim: inf_rows = 1762.0000 --> of 4068<!-- claim: band_n_pairs = 4068.0000 -->; the 817<!-- claim: band_n_rows = 817.0000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
 
 On the rows where both bands are actually defined:
 

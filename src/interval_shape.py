@@ -90,6 +90,7 @@ def main():
                 hlo, hhi, hsrc = hybrid_band(cg.delta.to_numpy(), centre)
                 rows.append(pd.DataFrame({
                     "scheme": s, "test_family": tf, "y": y,
+                    "row_id": g.index.to_numpy(),
                     "conf_ok": (y >= clo) & (y <= chi),
                     "emp_ok": (y >= elo) & (y <= ehi),
                     "hyb_ok": (y >= hlo) & (y <= hhi),
@@ -102,7 +103,8 @@ def main():
     print("=" * 74)
     print("SYMMETRIC CONFORMAL vs ASYMMETRIC EMPIRICAL BAND")
     print("=" * 74)
-    print(f"\nscored rows: {len(r)}  (strict held-out calibration)")
+    print(f"\nscored evaluations: {len(r)} = {r.row_id.nunique()} rows, each scored "
+          f"under several calibration families (strict held-out calibration)")
     print(f"   {'band':<28}{'coverage':>10}{'mean width':>13}"
           f"{'lower-side misses':>20}")
     for nm, ok, w, lo in (("symmetric conformal (shipped)", r.conf_ok,
@@ -144,7 +146,8 @@ def main():
           f"{sum(1 for x in gem if e[0] <= x <= e[1])}/6 inside")
 
     res = {
-        "n_scored": int(len(r)),
+        "n_scored_pairs": int(len(r)),
+        "n_distinct_rows": int(r.row_id.nunique()),
         "conformal": {"coverage": float(r.conf_ok.mean()),
                       "mean_width": float(r.conf_w.mean()),
                       "lower_miss_rate": float((r.y < r.conf_lo).mean())},

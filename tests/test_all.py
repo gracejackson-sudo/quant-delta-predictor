@@ -430,7 +430,7 @@ def test_small_model_queries_state_measured_cell_coverage(table):
             assert "INSUFFICIENT_EVIDENCE" in flags
             assert R.tier_of(flags) == "C"
         else:
-            assert any("measured to contain the true result" in n
+            assert any("results stayed at or above this scheme" in n
                        or "no coverage has been measured" in n
                        for n in notes), s
 
@@ -447,7 +447,7 @@ def test_every_scheme_reports_support_and_coverage(table):
         if s == "_meta":
             continue
         assert e["n"] > 0 and e["n_checkpoints"] > 0 and e["n_families"] > 0
-        assert 0.0 <= e["validated_coverage"] <= 1.0
+        assert 0.0 <= e["coverage_one_sided"] <= 1.0
         assert e["worst_observed"] <= e["mean"]
 
 
@@ -538,13 +538,15 @@ def test_thin_cell_support_blocks_tier_a():
 
 
 def test_fp8_small_is_blocked_despite_perfect_coverage():
-    """Regression for the specific case: fp8|<2B covers 100% on 1 checkpoint."""
+    """fp8|<2B covers 100% on ONE checkpoint. It used to come back 'trusted'
+    (Tier B) because an old 50-row floor was checked before the checkpoint
+    floor; one checkpoint cannot be judged, so it is insufficient evidence."""
     cc = R.load_cell_coverage()
     sup = cc["support"]["fp8|<2B"]
     assert sup["train_checkpoints"] < R.MIN_CELL_CHECKPOINTS
     assert cc["cells"]["fp8|<2B"]["coverage"] >= 0.99
     ranked, _ = R.rank(["fp8"], R.build_table(), band="<2B", cell_cov=cc)
-    assert ranked[0]["tier"] == "B"
+    assert ranked[0]["tier"] == "C" and "INSUFFICIENT_EVIDENCE" in ranked[0]["flags"]
     assert "THIN_CELL_SUPPORT" in ranked[0]["flags"]
 
 
@@ -959,3 +961,172 @@ def test_paper_describes_the_three_verdicts_not_the_old_two_state_rule():
         assert "insufficient evidence" in head, f"{name}: abstract lacks the middle verdict"
         tail = s.split("\\section{Conclusion}")[1]
         assert "insufficient evidence" in tail and "refused" in tail, name
+
+
+# ------------------------------------------------------------------------
+# Coverage verdicts: real counts, one classifier for cells AND schemes.
+# (External review found: scheme-level n was 7x the real rows because each row
+# is scored once per calibration family; and classify_cell returned "trusted"
+# for small cells before it checked the checkpoint floor.)
+# ------------------------------------------------------------------------
+def _cells_and_schemes():
+    cc = R.load_cell_coverage()
+    return cc, cc["schemes"], load(DATA)
+
+
+def test_the_checkpoint_floor_is_checked_before_anything_else():
+    """One checkpoint can never be 'trusted', however few rows or how perfect the coverage."""
+    for rows in (1, 6, 49, 50, 91, 5000):
+        for cov in (0.0, 0.5, 1.0):
+            v = {"distinct_checkpoints": 1, "distinct_rows": rows,
+                 "scored_pairs": rows * 7, "coverage_one_sided": cov,
+                 "boot90_lo": cov * 100, "boot90_hi": cov * 100}
+            assert R.classify_cell(v) == "insufficient_evidence", (rows, cov)
+    two = {"distinct_checkpoints": R.MIN_CELL_CHECKPOINTS - 1, "coverage_one_sided": 1.0,
+           "boot90_lo": 100.0, "boot90_hi": 100.0}
+    assert R.classify_cell(two) == "insufficient_evidence"
+
+
+def test_the_two_reported_cells_are_classified_alike():
+    """fp8|<2B (1 checkpoint, few rows) and nvfp4|2-10B (1 checkpoint, more rows) have the same
+    evidence problem and must get the same verdict; they used to differ."""
+    cells = R.load_cell_coverage()["cells"]
+    a, b = cells["fp8|<2B"], cells["nvfp4|2-10B"]
+    assert a["distinct_checkpoints"] == b["distinct_checkpoints"] == 1
+    assert a["distinct_rows"] != b["distinct_rows"]
+    assert R.classify_cell(a) == R.classify_cell(b) == "insufficient_evidence"
+
+
+def test_there_is_no_row_floor_any_more():
+    assert not hasattr(R, "REFUSE_MIN_ROWS")
+
+
+def test_scored_pairs_are_seven_per_row_and_distinct_rows_are_the_real_count():
+    cc, schemes, d = _cells_and_schemes()
+    per_row = cc["pooled"]["pairs_per_row"]
+    assert per_row == d.family.nunique() - 1                    # each row under every other family
+    assert cc["pooled"]["distinct_rows"] == len(d)
+    assert cc["pooled"]["scored_pairs"] == len(d) * per_row
+    for s, v in schemes.items():
+        assert v["distinct_rows"] == int((d.scheme == s).sum()), s      # not 7x
+        assert v["scored_pairs"] == v["distinct_rows"] * per_row, s
+
+
+def test_cell_row_counts_are_real_dataset_counts():
+    cc, _, d = _cells_and_schemes()
+    from strata import annotate
+    da = annotate(d)
+    for key, c in cc["cells"].items():
+        s, b = key.split("|")
+        assert c["distinct_rows"] == int(((da.scheme == s) & (da.band == b)).sum()), key
+        assert c["scored_pairs"] == c["distinct_rows"] * cc["pooled"]["pairs_per_row"], key
+    assert cc["cells"]["w4a16|<2B"]["distinct_rows"] == 11 and cc["cells"]["w8a16|>10B"]["distinct_rows"] == 31
+
+
+def test_a_scheme_and_a_cell_are_judged_by_the_same_classifier():
+    cc, schemes, _ = _cells_and_schemes()
+    table = R.build_table()
+    for s, rec in schemes.items():
+        assert table[s]["coverage_state"] == R.classify_cell(rec)
+    assert table["_meta"]["refused_cells"] == sorted(
+        k for k, v in cc["cells"].items() if R.classify_cell(v) == "refused")
+
+
+def test_scheme_coverage_uses_the_checkpoint_bootstrap_not_a_row_count():
+    """The scheme bound must equal the checkpoint-cluster bootstrap recomputed here, and it must
+    be looser than a binomial bound that treats every row as independent."""
+    import cell_coverage as CC
+    import cluster_boot
+    from scipy.stats import beta
+    _, schemes, d = _cells_and_schemes()
+    r = CC.scored_pairs(d)
+    g = r[r.scheme == "fp8"]
+    grp = [x.ok_one.to_numpy(float) for _, x in g.groupby("base_model")]
+    lo, hi = cluster_boot.bounds([x.sum() for x in grp], [len(x) for x in grp],
+                                 rng=np.random.default_rng(0), draws=CC.SCHEME_DRAWS)
+    assert abs(schemes["fp8"]["boot90_lo"] - lo) < 0.06 and abs(schemes["fp8"]["boot90_hi"] - hi) < 0.06
+    k, n = int(round(g.ok_one.mean() * len(g))), len(g)
+    binom_lo = 100 * beta.ppf(0.05, k, n - k + 1)            # what 7x-inflated n would have given
+    assert schemes["fp8"]["boot90_lo"] < binom_lo
+
+
+def test_scheme_verdicts_after_the_fix():
+    table = R.build_table()
+    assert table["fp8"]["coverage_state"] == "trusted"          # narrowly, on its own evidence
+    assert table["w8a16"]["coverage_state"] == "insufficient_evidence"
+    assert table["_meta"]["refused_cells"] == []
+
+
+def test_tier_grid_after_the_fix():
+    table, cc = R.build_table(), R.load_cell_coverage()
+
+    def tier(s, band=None):
+        return R.rank([s], table, band=band, cell_cov=cc)[0][0]["tier"]
+    assert tier("fp8") == "A"                                   # all sizes pooled
+    assert tier("fp8", "<2B") == "C" and tier("fp8", ">10B") == "C"
+    assert tier("fp8_dynamic", ">10B") == "A" and tier("w8a8_int", "2-10B") == "A"
+    assert tier("w8a16") == "C" and tier("w4a16") == "C" and tier("nvfp4") == "C"
+
+
+def test_a_no_size_tier_discloses_every_size_band(capsys):
+    """FP8's all-sizes Tier A must not read as a statement about bands it cannot support."""
+    table, cc = R.build_table(), R.load_cell_coverage()
+    ranked, unknown = R.rank(["fp8"], table, cell_cov=cc)
+    assert ranked[0]["tier"] == "A"
+    assert {b: v["state"] for b, v in ranked[0]["band_verdicts"].items()} == {
+        "<2B": "insufficient_evidence", "2-10B": "insufficient_evidence", ">10B": "insufficient_evidence"}
+    R.report(ranked, unknown, R.DEFAULT_RISK_PP, None, False, table["_meta"])
+    out = capsys.readouterr().out
+    assert "by size band" in out and "3 of 3 size bands" in out and "enter --size" in out
+    ranked, unknown = R.rank(["fp8"], table, band=">10B", cell_cov=cc)
+    R.report(ranked, unknown, R.DEFAULT_RISK_PP, ">10B", False, table["_meta"])
+    assert "by size band" not in capsys.readouterr().out       # a size was given: that band's verdict is shown instead
+
+
+def test_the_envelope_names_exactly_the_cells_rank_names():
+    import build_envelope as BE
+    art = BE.build_artifact()
+    table = R.build_table()
+    assert art["cells_refused"] == table["_meta"]["refused_cells"]
+    assert art["cells_insufficient_evidence"] == table["_meta"]["insufficient_evidence_cells"]
+    text = " ".join(art["known_limitations"])
+    assert "w4a16|<2B" in text and "0 size cells refused" in text      # named as insufficient, not refused
+    assert "Cells refused for insufficient measured calibration" not in text
+    for s, v in art["schemes"].items():
+        assert v["coverage"]["state"] == table[s]["coverage_state"]
+        assert v["coverage"]["rows"] == table[s]["coverage_rows"]
+
+
+def test_the_shipped_envelope_matches_a_fresh_build():
+    """The committed out/scheme_envelope.json must not go stale again (it once kept naming two
+    cells refused by a rule that had been replaced)."""
+    import json
+    import build_envelope as BE
+    shipped = json.load(open(os.path.join(os.path.dirname(__file__), "..", "out", "scheme_envelope.json")))
+    fresh = BE.build_artifact()
+    for k in ("cells_refused", "cells_insufficient_evidence", "schemes_refused", "schemes_insufficient_evidence"):
+        assert shipped[k] == fresh[k], k
+    assert shipped["known_limitations"] == fresh["known_limitations"]
+    assert shipped["validation"] == fresh["validation"]
+
+
+def test_ranking_doc_labels_each_cell_with_the_tools_own_verdict():
+    """RANKING.md once marked any cell under 85% as 'refused' while the tool called it
+    insufficient evidence. The label must come from classify_cell."""
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    text = open(os.path.join(root, "RANKING.md")).read()
+    cc = R.load_cell_coverage()["cells"]
+    text = re.sub(r"<!--.*?-->", "", text)
+    rows = {}
+    # the per-cell COVERAGE table: cell | rows | checkpoints | one-sided (verdict) | two-sided
+    for m in re.finditer(r"^\| `([^`]+)` \| \d+ \| \d+ \| [\d.]+%[^|]*\| [\d.]+% \|$", text, re.M):
+        rows[m.group(1).replace("\\|", "|")] = m.group(0)
+    checked = 0
+    for cell, line in rows.items():
+        if cell in cc:
+            state = R.classify_cell(cc[cell])
+            assert ("**refused**" in line) == (state == "refused"), cell
+            assert ("*insufficient evidence*" in line) == (state == "insufficient_evidence"), cell
+            checked += 1
+    assert checked == len(cc)

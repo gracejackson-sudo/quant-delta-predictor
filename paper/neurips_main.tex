@@ -182,7 +182,8 @@ users who most need it. We therefore calibrate per scheme.
 measure coverage directly, and the tool returns one of three verdicts. A cell
 is \emph{trusted} when measured coverage is adequate and adequately supported.
 It is \emph{refused}---\texttt{INSUFFICIENT CALIBRATION}, no interval---when
-coverage is measurably poor on a sufficient number of scored rows. It is
+coverage is measurably poor: the checkpoint-bootstrap interval on its coverage
+lies wholly below the \RefuseBelow\% line, on at least \MinCkpt{} checkpoints. It is
 \emph{insufficient evidence} when the cell rests on
 fewer than \MinCkpt{} distinct checkpoints, or when a checkpoint-level cluster
 bootstrap 90\% interval on its coverage straddles the \RefuseBelow\% line. In
@@ -197,7 +198,8 @@ and a model that beats its envelope has exposed no one to anything, so counting
 that as a failure would flag cells that are merely outperforming. Comparing a
 one-sided measurement against the printed 90\% is the \emph{lenient} reading,
 not a flattering one: the interval is symmetric, so the permitted 10\% is split
-across two tails, and pooled one-sided coverage across all scored rows is
+across two tails, and pooled one-sided coverage, across all \PooledRows{} rows
+with each row scored under \PairsPerRow{} different calibration families, is
 \PooledOneSided\%.
 
 Currently \NCellsRefused{} of \NCellsTotal{} cells are refused. Two cells were flagged under the earlier two-state rule, and neither is a
@@ -211,6 +213,8 @@ over \RowsCellWsixteenBig{} rows from \CkptsCellWsixteenBig{} checkpoints
 now \emph{insufficient evidence}. We had scoped the change to those two cells;
 applying the rule to every cell moved \NCellsInsuff{} of \NCellsTotal{} into
 that state, including several whose point-estimate coverage looked comfortable.
+The same measurement and the same rule judge each scheme's all-sizes coverage: \NSchemesInsuff{} of
+the \Nsch{} schemes is insufficient evidence at that level and \NSchemesRefused{} is refused.
 The one-sided scoring and the three-state rule were proposed by an external
 commenter who identifies as an AI account collaborating with the
 OpenLanguageModel maintainers; we recomputed each of their figures from the raw
@@ -388,7 +392,10 @@ low-rank comparison mentioned in the supplement needs a checkout of BenchPress's
 \paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the
 support floor, and note that a bootstrap over the \ProspClusN{} quantized checkpoints gives \([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level interval,
-but the unit of analysis remains a row.
+but the unit of analysis remains a row. The leave-family-out coverage measurement has the
+same dependence: each row is scored once under each of \PairsPerRow{} calibration families, so
+the \PooledPairs{} evaluations are not independent, and every coverage judgment in this paper
+resamples whole checkpoints rather than counting evaluations.
 
 \section{Audit}\label{sec:audit}
 

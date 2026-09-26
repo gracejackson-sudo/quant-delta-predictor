@@ -61,7 +61,7 @@ These came directly out of the audit and are the difference between honest and m
 5. **The validation provenance**: 90.1% coverage (95% CI [83.6%, 94.6%]) on 131 held-out rows
    from 5 unseen checkpoint groups, with the 87.5%–90.6% bound from gate-rejected rows stated. Those rows are mostly W4A16, whose coverage is below 90%, and FP8 and NVFP4 have no prospective rows, so the figure says nothing about them (see the paper).
 6. **NVFP4 carries a warning**: 64 evaluations from 3 families, 15.6% of them losing >3pp, and
-   coverage that falls to 70% on the worst held-out family.
+   loss-side coverage that falls to 79% on the worst held-out family (70% inside the full interval).
 7. **Undercovered or thinly supported cells are flagged, not trusted**: a cell is marked
    `INSUFFICIENT_EVIDENCE` when it rests on too few checkpoints or its coverage estimate is too
    uncertain to judge (the range is still printed, demoted to Tier C), and is *refused* with

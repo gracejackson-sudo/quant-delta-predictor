@@ -251,8 +251,10 @@ def main():
       "about to switch the product over.\n")
     A(f"Measuring it properly first killed the change. The empirical band "
       f"returns an INFINITE interval on "
-      f"{n('inf_rows')} of {n('band_n_scored')} rows "
-      f"({n('inf_share_pct','{:.0f}')}%), because a two-sided empirical "
+      f"{n('inf_share_pct','{:.0f}')}% of evaluations "
+      f"({n('inf_rows')} of {n('band_n_pairs')}; the {n('band_n_rows')} "
+      f"distinct rows are each scored under several calibration families), "
+      f"because a two-sided empirical "
       f"index needs n >= 2/alpha - 1 = 19 calibration points and often has "
       f"fewer. An infinite interval covers 100% of the time by construction. "
       f"That was the entire source of its apparent advantage.\n")

@@ -1,13 +1,26 @@
 """
-Measure strict per-(scheme, size band) coverage and write out/cell_coverage.json.
+Measure strict coverage per (scheme, size band) AND per scheme, and write
+out/cell_coverage.json.
 
 This is the evidence file the ranking consults before it is willing to show an
-interval for a given cell. Protocol: the test family is unseen AND the
+interval, at both levels. Protocol: the test family is unseen AND the
 calibration family is a different unseen family, averaged over every ordered
 family pair.
 
-Cells whose measured coverage is materially below nominal are recorded here and
-the ranking REFUSES to print an interval for them (see rank.py REFUSE_BELOW).
+A note on counting, because it was wrong before. Under that protocol every test
+row is scored once for each calibration family, so with 8 families each row
+appears 7 times. Those are `scored_pairs`. They are NOT independent rows and
+must never be shown or tested as if they were: `distinct_rows` is the real
+number of rows and `distinct_checkpoints` is the real unit of evidence. The
+rate itself (covered / scored_pairs) is a fine average over calibration
+choices; only the count and any independence assumption were wrong.
+
+Both levels are judged the same way, by the same code (rank.classify_cell):
+  * the statistic is ONE-SIDED coverage -- does the true delta stay at or above
+    the interval's lower bound? The risk being bounded is accuracy loss;
+  * uncertainty comes from a bootstrap that resamples whole CHECKPOINTS;
+  * a level with fewer than MIN_CELL_CHECKPOINTS checkpoints, or whose 90%
+    bootstrap interval straddles the refusal line, is "insufficient evidence".
 """
 from __future__ import annotations
 
@@ -27,11 +40,15 @@ HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 OUT = os.path.join(HERE, "..", "out", "cell_coverage.json")
 NOMINAL = 0.90
+# Cells keep the original 20000 draws (their published bounds must not move).
+# Schemes have more checkpoints, hence a Monte-Carlo (not exact) bootstrap, so
+# they use more draws to make the bound stable to about 0.1pp across seeds.
+CELL_DRAWS = 20_000
+SCHEME_DRAWS = 200_000
 
 
-def measure(d=None):
-    if d is None:
-        d = load(DATA)
+def scored_pairs(d):
+    """One row per (test row, calibration family) evaluation."""
     fams = sorted(d.family.unique())
     rows = []
     for tf in fams:
@@ -45,70 +62,85 @@ def measure(d=None):
             m = ConservativeStratified().fit_calibrated(tr, ca)
             _, lo, hi, lv = m.predict_interval(te)
             t = annotate(te).copy()
+            t["row_id"] = te.index.to_numpy()
             t["ok"] = (t.delta >= lo) & (t.delta <= hi)
-            t["lo_"], t["hi_"] = lo, hi
-            t["lv"] = lv
+            t["ok_one"] = t.delta >= lo
+            t["lo_"], t["hi_"], t["lv"] = lo, hi, lv
             rows.append(t)
-    r = pd.concat(rows, ignore_index=True)
+    return pd.concat(rows, ignore_index=True)
+
+
+def _boot(g, col, draws, seed=0):
+    """Checkpoint-cluster bootstrap 90% interval (5th, 95th percentile, in %)."""
+    grp = [x[col].to_numpy(float) for _, x in g.groupby("base_model")]
+    lo, hi = cluster_boot.bounds([x.sum() for x in grp], [len(x) for x in grp],
+                                 rng=np.random.default_rng(seed), draws=draws)
+    return round(float(lo), 1), round(float(hi), 1)
+
+
+def scheme_records(r):
+    """Per-scheme coverage, judged exactly like a cell (see module docstring)."""
+    out = {}
+    for s, g in r.groupby("scheme"):
+        byfam = g.groupby("family").ok_one.mean()
+        lo1, hi1 = _boot(g, "ok_one", SCHEME_DRAWS)
+        lo2, hi2 = _boot(g, "ok", SCHEME_DRAWS)
+        out[s] = {
+            "scheme": s,
+            "scored_pairs": int(len(g)),
+            "distinct_rows": int(g.row_id.nunique()),
+            "distinct_checkpoints": int(g.base_model.nunique()),
+            "distinct_families": int(g.family.nunique()),
+            "coverage_one_sided": float(g.ok_one.mean()),
+            "coverage": float(g.ok.mean()),                 # two-sided, for the 90% interval
+            "boot90_lo": lo1, "boot90_hi": hi1,             # one-sided; what is judged
+            "boot90_two_sided_lo": lo2, "boot90_two_sided_hi": hi2,
+            "by_family_one_sided": {k: float(v) for k, v in byfam.items()},
+            "worst_family_one_sided": float(byfam.min()),
+            "worst_family_name": str(byfam.idxmin()),
+            "spread_one_sided": float(byfam.max() - byfam.min()),
+            "n_families_tested": int(byfam.size),
+        }
+    return out
+
+
+def measure(d=None):
+    if d is None:
+        d = load(DATA)
+    r = scored_pairs(d)
 
     out = {"nominal": NOMINAL, "pooled": {
         "coverage": float(r.ok.mean()),
         # Pooled one-sided coverage. The interval is mean +/- q on |delta-mu|,
         # a symmetric construction, so its nominal ONE-sided level is not 90%
         # but roughly 95%: the 10% that may miss is split across two tails.
-        # Reporting this stops a one-sided measurement being compared against
-        # a two-sided nominal, which would flatter every cell.
-        "coverage_one_sided": float((r.delta >= r.lo_).mean())
-        if "lo_" in r else None,
-        "below_lo": float((r.delta < r.lo_).mean()) if "lo_" in r else None,
-        "above_hi": float((r.delta > r.hi_).mean()) if "hi_" in r else None,
-        "scored_rows": int(len(r))}, "cells": {}}
-    rng = np.random.default_rng(0)
+        "coverage_one_sided": float(r.ok_one.mean()),
+        "below_lo": float((r.delta < r.lo_).mean()),
+        "above_hi": float((r.delta > r.hi_).mean()),
+        "scored_pairs": int(len(r)),
+        "distinct_rows": int(r.row_id.nunique()),
+        "pairs_per_row": float(len(r) / r.row_id.nunique())}, "cells": {}}
     for (s, b), g in r.groupby(["scheme", "band"]):
-        n_ckpts = int(g.base_model.nunique())
-        # Cluster (whole-checkpoint) bootstrap of the ONE-SIDED statistic --
-        # the one the refusal decision is actually judged on. Resampling rows
-        # would treat correlated per-checkpoint rows as independent evidence;
-        # resampling checkpoints does not. With few checkpoints this interval
-        # is coarse (few achievable resample compositions) rather than smooth,
-        # which is exactly why a checkpoint-count floor is also needed below,
-        # not a substitute for one. (External finding, see ONE_SIDED_COVERAGE.md)
-        if "lo_" in g:
-            _g = g.assign(_ok1=(g.delta >= g.lo_))
-            _grp = [gg._ok1.to_numpy() for _, gg in _g.groupby("base_model")]
-            _lo, _hi = cluster_boot.bounds([x.sum() for x in _grp],
-                                           [len(x) for x in _grp], rng=rng)
-            boot90_lo, boot90_hi = round(float(_lo), 1), round(float(_hi), 1)
-        else:
-            boot90_lo = boot90_hi = None
+        lo, hi = _boot(g, "ok_one", CELL_DRAWS)
         out["cells"][f"{s}|{b}"] = {
             "scheme": s, "band": b,
             "coverage": float(g.ok.mean()),
-            # One-sided coverage. A downside envelope has not failed when the
-            # model BEATS it, but two-sided containment counts that as a miss.
-            # Reported alongside so the two kinds of miss stay distinguishable.
-            # (External finding, see ONE_SIDED_COVERAGE.md)
-            "coverage_one_sided": float((g.delta >= g.lo_).mean())
-            if "lo_" in g else None,
-            "scored_rows": int(len(g)),
-            # The honest unit of evidence is the checkpoint, not the row: rows
-            # from one checkpoint across many benchmarks are correlated views
-            # of a single quantization run. This is already enforced on train
-            # support; reporting it here makes it visible for coverage too.
-            "distinct_checkpoints": n_ckpts,
+            "coverage_one_sided": float(g.ok_one.mean()),
+            "scored_pairs": int(len(g)),
+            "distinct_rows": int(g.row_id.nunique()),
+            "distinct_checkpoints": int(g.base_model.nunique()),
             "distinct_families": int(g.family.nunique()),
             "pct_widened": float((g.lv == "stratum-widened").mean()),
-            "boot90_lo": boot90_lo,
-            "boot90_hi": boot90_hi,
+            "boot90_lo": lo, "boot90_hi": hi,
         }
+    out["schemes"] = scheme_records(r)
     for b, g in r.groupby("band"):
         out.setdefault("bands", {})[b] = {
-            "coverage": float(g.ok.mean()), "scored_rows": int(len(g))}
-    dm = annotate(d if d is not None else load(DATA))
+            "coverage": float(g.ok.mean()), "scored_pairs": int(len(g)),
+            "distinct_rows": int(g.row_id.nunique())}
+    dm = annotate(d)
     # TRAINING support per cell -- distinct checkpoints is the honest measure
-    # of how much independent evidence a cell rests on. Scored rows can be
-    # large while the underlying evidence is one checkpoint repeated across
-    # benchmarks, which is not independent evidence at all.
+    # of how much independent evidence a cell rests on.
     out["support"] = {}
     for (s_, b_), g in dm.groupby(["scheme", "band"]):
         out["support"][f"{s_}|{b_}"] = {
@@ -120,7 +152,7 @@ def measure(d=None):
                   "checkpoints": int(dm[dm.moe].base_model.nunique())}
     w = r[r.lv == "stratum-widened"]
     out["widening"] = {
-        "rows_widened": int(len(w)), "rows_total": int(len(r)),
+        "pairs_widened": int(len(w)), "pairs_total": int(len(r)),
         "share": float(len(w) / len(r)),
         "coverage_where_applied": float(w.ok.mean()) if len(w) else None,
     }
@@ -132,15 +164,22 @@ def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w") as f:
         json.dump(res, f, indent=2)
-    print(f"pooled {res['pooled']['coverage']*100:.1f}% over "
-          f"{res['pooled']['scored_rows']} scored rows\n")
-    print(f"{'cell':<24}{'scored':>8}{'coverage':>10}{'widened':>9}")
-    for k, v in sorted(res["cells"].items(), key=lambda kv: kv[1]["coverage"]):
-        one = v.get("coverage_one_sided")
-        mark = ("  <-- one-sided below 85%"
-                if (one if one is not None else v["coverage"]) < 0.85 else "")
-        print(f"{k:<24}{v['scored_rows']:>8}{v['coverage']*100:>9.1f}%"
-              f"{v['pct_widened']*100:>8.0f}%{mark}")
+    p = res["pooled"]
+    print(f"{p['distinct_rows']} rows, each scored under "
+          f"{p['pairs_per_row']:.0f} calibration families "
+          f"({p['scored_pairs']} evaluations); pooled coverage "
+          f"{p['coverage']*100:.1f}% two-sided, "
+          f"{p['coverage_one_sided']*100:.1f}% at or above the lower bound\n")
+    print(f"{'level':<22}{'rows':>6}{'ckpts':>6}{'one-sided':>10}"
+          f"{'boot 90% interval':>22}")
+    for k, v in sorted(res["schemes"].items()):
+        print(f"{k + ' (all sizes)':<22}{v['distinct_rows']:>6}"
+              f"{v['distinct_checkpoints']:>6}{v['coverage_one_sided']*100:>9.1f}%"
+              f"{'[' + str(v['boot90_lo']) + ', ' + str(v['boot90_hi']) + ']':>22}")
+    for k, v in sorted(res["cells"].items()):
+        print(f"{k:<22}{v['distinct_rows']:>6}{v['distinct_checkpoints']:>6}"
+              f"{v['coverage_one_sided']*100:>9.1f}%"
+              f"{'[' + str(v['boot90_lo']) + ', ' + str(v['boot90_hi']) + ']':>22}")
     print(f"\nwrote {OUT}")
     return 0
 

@@ -1,6 +1,7 @@
 {
   "pooled_coverage_pct": 90.96,
-  "pooled_scored_rows": 5719,
+  "pooled_scored_pairs": 5719,
+  "pooled_distinct_rows": 817,
   "cells": {
     "w8a16|>10B": {
       "mean_delta_of_misses": -1.1281,
@@ -8,7 +9,8 @@
       "one_sided_pct": 81.106,
       "below_lo_pct": 18.894,
       "above_hi_pct": 7.3733,
-      "scored_rows": 217,
+      "scored_pairs": 217,
+      "distinct_rows": 31,
       "distinct_checkpoints": 5,
       "distinct_families": 3,
       "distinct_model_benchmark": 31,
@@ -35,7 +37,8 @@
       "one_sided_pct": 70.1299,
       "below_lo_pct": 29.8701,
       "above_hi_pct": 1.2987,
-      "scored_rows": 77,
+      "scored_pairs": 77,
+      "distinct_rows": 11,
       "distinct_checkpoints": 2,
       "distinct_families": 1,
       "distinct_model_benchmark": 11,

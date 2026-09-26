@@ -16,6 +16,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from verify_claims import registry  # noqa: E402
+import rank as R  # noqa: E402
 
 HERE = os.path.dirname(__file__)
 DOC = os.path.join(HERE, "..", "RANKING.md")
@@ -94,7 +95,7 @@ def main():
       "part of this registry. What shipped instead is one-sided: a size cell "
       "may only *widen* the scheme interval, never narrow it.\n")
     A(f"Under strict held-out calibration the widening applies to "
-      f"{n('widening_share_pct', '{:.0f}')}% of scored rows, and where it "
+      f"{n('widening_share_pct', '{:.0f}')}% of evaluations (row-by-calibration-family), and where it "
       f"applies coverage is {n('widening_coverage_pct', '{:.1f}')}%. It is "
       f"a safety margin on a minority of queries, not a reshaping of the "
       f"envelope.\n")
@@ -126,7 +127,7 @@ def main():
 
     A("### Per-scheme figures\n")
     A("| scheme | interval | worst observed | % losing >3pp | evals | ckpts | "
-      "families | strict coverage |")
+      "families | held-out coverage at or above the lower bound (checkpoint-bootstrap 90%) |")
     A("|---|---|---|---|---|---|---|---|")
     order = sorted((k for k in REG if k.startswith("lo::")),
                    key=lambda k: v(k.replace("lo::", "hi::")) - v(k))
@@ -137,7 +138,9 @@ def main():
           f"{n('worst::' + s, '{:+.2f}')}pp | "
           f"{n('severe_pct::' + s, '{:.1f}')}% | {n('n::' + s)} | "
           f"{n('checkpoints::' + s)} | {n('families::' + s)} | "
-          f"{n('coverage_pct::' + s, '{:.0f}')}% |")
+          f"{n('scheme_cov_one::' + s, '{:.1f}')}% "
+          f"[{n('scheme_boot_lo::' + s, '{:.1f}')}, "
+          f"{n('scheme_boot_hi::' + s, '{:.1f}')}] |")
     A("")
 
     A("### Tiers\n")
@@ -146,8 +149,10 @@ def main():
     A(f"| A | no flag triggered |")
     A(f"| B | one or more non-severe flags |")
     A(f"| C | severe-loss rate above "
-      f"{n('severe_rate_threshold_pct')}%, or coverage lower bound below "
-      f"{n('poor_coverage_threshold_pct')}%, or insufficient calibration |\n")
+      f"{n('severe_rate_threshold_pct')}%, or coverage not established at "
+      f"{n('poor_coverage_threshold_pct')}% (fewer than "
+      f"{n('min_cell_checkpoints')} checkpoints, or the checkpoint-bootstrap "
+      f"interval reaches below the line), or insufficient calibration |\n")
     A("Tier labels state the rule that produced them. They are not safety "
       "judgements: the worst observed loss is printed for every scheme at "
       "every tier and rank.\n")
@@ -155,14 +160,24 @@ def main():
     A("### Measured coverage per cell\n")
     A("Strict protocol: the test family is unseen and the calibration family "
       "is a different unseen family.\n")
-    A(f"Pooled: {n('pooled_cell_coverage_pct', '{:.1f}')}% over "
-      f"{n('pooled_scored_rows')} scored rows, against 90% claimed.\n")
+    A(f"Pooled: {n('pooled_cell_coverage_pct', '{:.1f}')}% across all "
+      f"{n('pooled_distinct_rows')} rows, each scored under "
+      f"{n('pooled_pairs_per_row')} different calibration families "
+      f"({n('pooled_scored_pairs')} evaluations, which are not independent "
+      f"rows), against 90% claimed.\n")
+    A(f"Every scheme, and every size cell, is judged the same way: one-sided "
+      f"coverage, uncertainty from a bootstrap that resamples whole "
+      f"checkpoints, and a state of insufficient evidence when there are "
+      f"fewer than {n('min_cell_checkpoints')} checkpoints or the "
+      f"bootstrap 90% interval straddles the {n('refuse_below_pct')}% line. "
+      f"Across all sizes, {n('n_schemes_insufficient_evidence')} of 6 schemes "
+      f"are in that state and {n('n_schemes_refused')} are refused.\n")
     A("Two coverage figures are given. **One-sided** is how often the true "
       "result stayed at or above the interval's lower bound, and it is what "
       "the verdict is scored on: the risk being bounded is accuracy loss, so "
       "a model that beats its envelope has not failed anyone. **Two-sided** "
       "is plain containment, shown for context. See `ONE_SIDED_COVERAGE.md`.\n")
-    A("| cell | scored rows | checkpoints | one-sided | two-sided |")
+    A("| cell | rows | checkpoints | one-sided (verdict) | two-sided |")
     A("|---|---|---|---|---|")
     cells = sorted((k for k in REG if k.startswith("cell_coverage_pct::")),
                    key=v)
@@ -170,9 +185,15 @@ def main():
         cell = key.split("::", 1)[1]
         osk = f"cell_one_sided_pct::{cell}"
         judged = v(osk) if osk in REG else v(key)
-        mark = " **refused**" if judged < v("refuse_below_pct") else ""
-        one = n(osk, "{:.1f}") + "%" if osk in REG else "n/a"
         ckk = f"cell_ckpts::{cell}"
+        # the verdict is the tool's own (rank.classify_cell), never re-derived here
+        state = R.classify_cell({
+            "distinct_checkpoints": v(ckk) if ckk in REG else None,
+            "coverage_one_sided": judged / 100,
+            "boot90_lo": v(f"cell_boot_lo::{cell}"), "boot90_hi": v(f"cell_boot_hi::{cell}")})
+        mark = {"trusted": "", "insufficient_evidence": " *insufficient evidence*",
+                "refused": " **refused**"}[state]
+        one = n(osk, "{:.1f}") + "%" if osk in REG else "n/a"
         A(f"| `{esc(cell)}` | {n('cell_rows::' + cell)} | "
           f"{n(ckk) if ckk in REG else '?'} | {one}{mark} | "
           f"{n(key, '{:.1f}')}% |")
@@ -191,6 +212,10 @@ def main():
       f"all-sizes interval, but demotes the scheme to Tier C and says the "
       f"cell cannot be judged; only a `refused` cell has its interval "
       f"withheld (`INSUFFICIENT CALIBRATION`), and none currently is. "
+      f"The checkpoint floor is checked before anything else, so a cell "
+      f"with one checkpoint (such as `fp8\\|<2B`, "
+      f"{n('cell_rows::fp8|<2B')} rows) is insufficient evidence whatever its "
+      f"row count; an earlier ordering let it through as trusted. "
       f"Neither flagged cell can be fixed with current data: "
       f"`w4a16\\|<2B` has {n('cell_train_rows::w4a16|<2B')} training rows from "
       f"{n('cell_train_ckpt::w4a16|<2B')} checkpoints, and the widening that "

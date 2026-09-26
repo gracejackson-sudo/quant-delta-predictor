@@ -23,15 +23,16 @@ OUT = os.path.join(HERE, "..", "out")
 ALPHA = 0.10
 
 def _evidence():
-    """Per-scheme strict coverage + footer facts, recomputed (never hardcoded)."""
+    """Per-scheme coverage records and the footer facts, recomputed by rank.py
+    (never hardcoded here). The coverage VERDICTS, including which cells are
+    refused, come from rank.classify_cell: this file used to apply its own,
+    older rule, and kept naming two refused cells after the tool had stopped."""
     sys.path.insert(0, os.path.dirname(__file__))
     import rank as _r
     t = _r.build_table()
     meta = t.pop("_meta")
-    cov = {s: e["validated_coverage"] for s, e in t.items()}
-    worst_fam = {s: (e["coverage_worst_family"],
-                     e["coverage_worst_family_name"]) for s, e in t.items()}
-    return cov, worst_fam, meta
+    return t, meta, _r
+
 
 SCHEME_LABEL = {
     "w4a16": "W4A16 (4-bit weights, 16-bit activations, GPTQ)",
@@ -43,16 +44,43 @@ SCHEME_LABEL = {
 }
 
 
-def main():
-    os.makedirs(OUT, exist_ok=True)
+def _prospective():
+    """Strict and all-rows prospective coverage, recomputed from
+    out/independent_check.csv (the same filter and interval as verify_claims)."""
+    import re
+    import pandas as pd
+    from scipy.stats import beta
+    p = os.path.join(OUT, "independent_check.csv")
+    if not os.path.exists(p):
+        return None
+    ic = pd.read_csv(p)
+
+    def cp(k, n):
+        return [round(float(beta.ppf(0.025, k, n - k + 1)), 3),
+                round(float(beta.ppf(0.975, k + 1, n - k)), 3)]
+    strict = ic[~ic.model.map(lambda m: bool(
+        re.search(r"Llama-3\.1", m.split("/")[-1], re.I)
+        or re.search(r"(^|[-_])Qwen3(?![.\d])", m.split("/")[-1], re.I)
+        or re.search(r"Llama-4", m.split("/")[-1], re.I)))]
+    out = {}
+    for name, g in (("prospective_all_rows", ic), ("prospective_strict", strict)):
+        k, n = int(g.inside.sum()), int(len(g))
+        out[name] = {"n": n, "inside": k, "coverage": round(k / n, 3), "ci95": cp(k, n)}
+    return out
+
+
+def build_artifact():
     d = load(DATA)
-    LOFO_COVERAGE, WORST_FAM, META = _evidence()
+    TABLE, META, R = _evidence()
     try:
         CELLS = json.load(open(os.path.join(OUT, "cell_coverage.json")))
     except (OSError, ValueError):
         CELLS = {"cells": {}}
-    refused = sorted(k for k, v in CELLS.get("cells", {}).items()
-                     if v["coverage"] < 0.85 and v["scored_rows"] >= 50)
+    refused = list(META["refused_cells"])
+    insufficient = list(META["insufficient_evidence_cells"])
+    sch_states = {k: e["coverage_state"] for k, e in TABLE.items()}
+    sch_insufficient = sorted(k for k, v in sch_states.items() if v == "insufficient_evidence")
+    sch_refused = sorted(k for k, v in sch_states.items() if v == "refused")
 
     schemes = {}
     for s, g in d.groupby("scheme"):
@@ -75,17 +103,27 @@ def main():
             "empirical_band_90_pp": [round(float(v[klo]), 2),
                                      round(float(v[khi]), 2)],
             "worst_observed_delta_pp": round(float(v[0]), 2),
-            "validated_coverage_leave_family_out": LOFO_COVERAGE.get(s),
+            # One-sided (does the true delta stay at or above the lower bound),
+            # judged by the same classifier as every size cell.
+            "coverage": {
+                "state": TABLE[s]["coverage_state"],
+                "one_sided": round(TABLE[s]["coverage_one_sided"], 4),
+                "two_sided": round(TABLE[s]["coverage_two_sided"], 4),
+                "bootstrap_90_pct": TABLE[s]["coverage_boot90"],
+                "rows": TABLE[s]["coverage_rows"],
+                "checkpoints": TABLE[s]["coverage_ckpts"],
+                "scored_pairs": TABLE[s]["coverage_scored_pairs"],
+                "worst_family": TABLE[s]["coverage_worst_family_name"],
+                "worst_family_one_sided": round(TABLE[s]["coverage_worst_family"], 4),
+                "by_size_band": TABLE[s]["band_verdicts"] if "band_verdicts" in TABLE[s] else R.band_verdicts(s, CELLS),
+            },
             "excludes_zero": bool(not (mu - q <= 0 <= mu + q)),
-            "coverage_worst_family_pct": (
-                round(100 * WORST_FAM[s][0], 1) if s in WORST_FAM else None),
-            "coverage_worst_family": (
-                WORST_FAM[s][1] if s in WORST_FAM else None),
             "warning": ("measured coverage falls to %.0f%% on held-out family "
                         "'%s', over %d families of evidence"
-                        % (100 * WORST_FAM[s][0], WORST_FAM[s][1],
+                        % (100 * TABLE[s]["coverage_worst_family"],
+                           TABLE[s]["coverage_worst_family_name"],
                            g.family.nunique()))
-            if s in WORST_FAM and WORST_FAM[s][0] < 0.85 else None,
+            if TABLE[s]["coverage_worst_family"] < R.REFUSE_BELOW else None,
         }
 
     art = {
@@ -106,24 +144,31 @@ def main():
             "benchmarks": int(d.benchmark.nunique()),
         },
         "validation": {
-            "leave_one_family_out_coverage": 0.892,
-            "prospective_all_rows": {"n": 186, "inside": 168,
-                                     "coverage": 0.903,
-                                     "ci95": [0.851, 0.942]},
-            "prospective_strict": {"n": 131, "inside": 118,
-                                   "coverage": 0.901,
-                                   "ci95": [0.836, 0.946],
-                                   "note": "excludes rows whose family is in "
-                                           "training, and Llama-4 (parser was "
-                                           "adapted to that card family)"},
-            "coverage_bound_accounting_for_rejected_rows": [0.875, 0.906],
-            "independent_reimplementation": {
-                "script": "verify/independent_check.py",
-                "shares_no_code_with_pipeline": True,
-                "strict_coverage": 0.901,
-                "delta_disagreements": 0,
-                "verdict_disagreements": 0,
-                "rows_compared": 186,
+            "leave_one_family_out": {
+                "rows": CELLS.get("pooled", {}).get("distinct_rows"),
+                "calibration_families_per_row": CELLS.get("pooled", {}).get("pairs_per_row"),
+                "evaluations": CELLS.get("pooled", {}).get("scored_pairs"),
+                "coverage_two_sided": round(CELLS.get("pooled", {}).get("coverage", float("nan")), 4),
+                "coverage_one_sided": round(CELLS.get("pooled", {}).get("coverage_one_sided", float("nan")), 4),
+                "note": "each row is scored once per calibration family, so "
+                        "evaluations are not independent rows",
+            },
+            **(_prospective() or {}),
+            "prospective_strict_note": "excludes rows whose family is in "
+                                       "training, and Llama-4 (parser was "
+                                       "adapted to that card family)",
+            "typed_not_recomputed": {
+                "provenance": "these come from FINDINGS.md and the last run "
+                              "of verify/independent_check.py, which needs "
+                              "the raw model cards; they are not recomputed here",
+                "coverage_bound_accounting_for_rejected_rows": [0.875, 0.906],
+                "independent_reimplementation": {
+                    "script": "verify/independent_check.py",
+                    "shares_no_code_with_pipeline": True,
+                    "delta_disagreements": 0,
+                    "verdict_disagreements": 0,
+                    "rows_compared": 186,
+                },
             },
         },
         "known_limitations": [
@@ -139,28 +184,44 @@ def main():
             f"Reads exactly 2 inputs: quantization scheme, and size band via "
             f"{META['n_size_dependent_widths']} size-dependent widths. It "
             f"reads no family, benchmark or base accuracy.",
-            f"Cells refused for insufficient measured calibration: "
-            f"{', '.join(refused) if refused else 'none'}. For these the tool "
-            f"emits no interval.",
+            f"Coverage verdicts (rank.classify_cell): "
+            f"{len(refused)} size cells refused ({', '.join(refused) or 'none'}); "
+            f"{len(insufficient)} size cells and {len(sch_insufficient)} schemes "
+            f"({', '.join(sch_insufficient) or 'none'}) have insufficient evidence "
+            f"(fewer than {R.MIN_CELL_CHECKPOINTS} checkpoints or a "
+            f"checkpoint-bootstrap interval straddling {R.REFUSE_BELOW*100:.0f}%): "
+            f"{', '.join(insufficient) or 'none'}. An interval is still shown for "
+            f"an insufficient-evidence cell but flagged; only a refused cell has "
+            f"its interval withheld.",
             f"MoE and reasoning-distilled models are not separately "
             f"validated.",
         ],
         "schemes": schemes,
+        "cells_refused": refused,
+        "cells_insufficient_evidence": insufficient,
+        "schemes_refused": sch_refused,
+        "schemes_insufficient_evidence": sch_insufficient,
     }
+    return art
 
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    art = build_artifact()
+    schemes = art["schemes"]
     path = os.path.join(OUT, "scheme_envelope.json")
     with open(path, "w") as f:
         json.dump(art, f, indent=2)
     print(f"wrote {path}")
     print(f"\n{'scheme':<14}{'n':>5}{'fam':>5}{'mean':>8}{'90% interval':>20}"
-          f"{'LOFO cov':>10}")
+          f"{'loss-side':>10}")
     for s in sorted(schemes):
         v = schemes[s]
-        cov = v["validated_coverage_leave_family_out"]
+        cov = v["coverage"]["one_sided"]
         print(f"{s:<14}{v['n_observations']:>5}{v['n_families']:>5}"
               f"{v['mean_delta_pp']:>+8.2f}"
               f"{str(v['interval_90_pp']):>20}"
-              f"{(f'{100*cov:.0f}%' if cov else '-'):>10}")
+              f"{f'{100*cov:.0f}%':>10}")
     return 0
 
 

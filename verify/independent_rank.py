@@ -13,9 +13,11 @@ Then diffs its rank order and every number against `src/rank.py --json`.
 Usage:  python3 verify/independent_rank.py
 """
 import csv
+import itertools
 import json
 import math
 import os
+import random
 import subprocess
 import sys
 
@@ -28,6 +30,9 @@ SEVERE_RATE = 0.02
 THIN_ROWS = 80
 THIN_FAMILIES = 4
 POOR_COVERAGE = 0.85
+MIN_CKPTS = 3            # checkpoints needed before coverage can be judged
+BOOT_EXACT_MAX = 8       # up to this many clusters the bootstrap is enumerated exactly
+BOOT_DRAWS = 200_000
 AGGRESSIVE = {"w4a16", "nvfp4"}
 
 
@@ -51,29 +56,41 @@ def percentile(vals, p):
     return v[lo] * (hi - idx) + v[hi] * (idx - lo)
 
 
-def beta_ppf_lower(k, n, alpha=0.025):
-    """
-    Clopper-Pearson lower bound without scipy: invert the binomial tail by
-    bisection on  P(X >= k | p) = alpha.
-    """
-    if k <= 0:
-        return 0.0
+def boot_bounds(oks, ns, lo=0.05, hi=0.95, seed=20260925):
+    """Checkpoint-cluster bootstrap 90% interval of a coverage rate, in %.
 
-    def tail(p):
-        # P(X >= k) for X ~ Bin(n, p)
-        total = 0.0
-        for i in range(k, n + 1):
-            total += math.comb(n, i) * (p ** i) * ((1 - p) ** (n - i))
-        return total
+    Resamples WHOLE checkpoints (clusters), because rows from one checkpoint
+    are correlated views of a single quantization run. With few clusters the
+    distribution is discrete, so it is enumerated exactly (each multiset of
+    clusters with its multinomial probability); otherwise Monte Carlo."""
+    k = len(oks)
+    if k <= BOOT_EXACT_MAX:
+        vals = []
+        for comp in itertools.combinations_with_replacement(range(k), k):
+            cnt = [comp.count(i) for i in range(k)]
+            prob = math.factorial(k) / math.prod(math.factorial(c) for c in cnt) / k ** k
+            vals.append((sum(c * o for c, o in zip(cnt, oks)) / sum(c * n for c, n in zip(cnt, ns)), prob))
+        vals.sort()
+        cum, acc = [], 0.0
+        for _, pr in vals:
+            acc += pr
+            cum.append(acc)
 
-    lo, hi = 0.0, 1.0
-    for _ in range(200):
-        mid = (lo + hi) / 2
-        if tail(mid) < alpha:
-            lo = mid
-        else:
-            hi = mid
-    return (lo + hi) / 2
+        def q(a):
+            for (v, _), c in zip(vals, cum):
+                if c >= a - 1e-12:
+                    return v
+            return vals[-1][0]
+        return 100 * q(lo), 100 * q(hi)
+    rng = random.Random(seed)
+    idx = range(k)
+    draws = []
+    for _ in range(BOOT_DRAWS):
+        pick = rng.choices(idx, k=k)
+        draws.append(sum(oks[i] for i in pick) / sum(ns[i] for i in pick))
+    draws.sort()
+    n = len(draws)
+    return (100 * draws[math.floor((n - 1) * lo)], 100 * draws[math.ceil((n - 1) * hi)])
 
 
 def size_band(p):
@@ -98,6 +115,7 @@ def read_rows():
             except (ValueError, KeyError, TypeError):
                 pb = None
             out.append({
+                "rid": len(out),
                 "scheme": r["scheme"], "family": r["family"],
                 "base_model": r["base_model"], "delta": float(r["delta"]),
                 "band": size_band(pb),
@@ -171,10 +189,11 @@ def interval(bs, st, scheme, band):
 
 
 def coverage_by_scheme(rows):
-    """Strict: unseen test family AND a different unseen calibration family."""
+    """Strict: unseen test family AND a different unseen calibration family.
+    Every test row is scored once per calibration family (7 with 8 families),
+    so `scored_pairs` is 7x the real row count; `rows` is the real count."""
     fams = sorted({r["family"] for r in rows})
-    hits, tot = {}, {}
-    byfam = {}
+    recs = {}
     for tf in fams:
         for cf in fams:
             if cf == tf:
@@ -190,25 +209,49 @@ def coverage_by_scheme(rows):
                 iv = interval(bs, st, r["scheme"], r["band"])
                 if iv is None:
                     continue
-                ok = iv[0] <= r["delta"] <= iv[1]
-                hits[r["scheme"]] = hits.get(r["scheme"], 0) + int(ok)
-                tot[r["scheme"]] = tot.get(r["scheme"], 0) + 1
-                k = (r["scheme"], tf)
-                a, b = byfam.get(k, (0, 0))
-                byfam[k] = (a + int(ok), b + 1)
+                recs.setdefault(r["scheme"], []).append((
+                    r["rid"], r["base_model"], tf,
+                    int(iv[0] <= r["delta"] <= iv[1]),      # two-sided
+                    int(r["delta"] >= iv[0])))               # one-sided: loss side
     out = {}
-    for s in tot:
-        per = {f: h / n for (sc, f), (h, n) in byfam.items()
-               if sc == s and n > 0}
+    for s, L in recs.items():
+        pairs = len(L)
+        by_ck = {}
+        for _, ck, _, two, one in L:
+            a, b, c = by_ck.get(ck, (0, 0, 0))
+            by_ck[ck] = (a + one, b + 1, c + two)
+        lo, hi = boot_bounds([v[0] for v in by_ck.values()], [v[1] for v in by_ck.values()])
+        per = {}
+        for _, _, fam, _, one in L:
+            a, b = per.get(fam, (0, 0))
+            per[fam] = (a + one, b + 1)
+        per = {f: a / b for f, (a, b) in per.items()}
         out[s] = {
-            "mean": hits[s] / tot[s],
-            "n_scored": tot[s],
+            "one_sided": sum(x[4] for x in L) / pairs,
+            "two_sided": sum(x[3] for x in L) / pairs,
+            "scored_pairs": pairs,
+            "rows": len({x[0] for x in L}),
+            "ckpts": len(by_ck),
+            "boot_lo": lo, "boot_hi": hi,
             "worst_family": min(per.values()),
             "worst_family_name": min(per, key=per.get),
             "spread": max(per.values()) - min(per.values()),
-            "lower95": beta_ppf_lower(hits[s], tot[s]),
         }
     return out
+
+
+def coverage_state(cv):
+    """The three-state rule, re-derived from RANKING.md's definition rather
+    than from rank.py: too few checkpoints, or a bootstrap interval that
+    straddles the line, is 'insufficient_evidence'; an interval wholly below
+    it is 'refused'; otherwise 'trusted'. The checkpoint floor is checked first."""
+    if cv["ckpts"] < MIN_CKPTS:
+        return "insufficient_evidence"
+    if cv["boot_lo"] < POOR_COVERAGE * 100 < cv["boot_hi"]:
+        return "insufficient_evidence"
+    if cv["one_sided"] < POOR_COVERAGE:
+        return "refused"
+    return "trusted"
 
 
 # ---------------------------------------------------------------- flags
@@ -218,7 +261,10 @@ def flags_for(e, cov, band=None, moe=False):
         f.append("TAIL_RISK")
     if e["n"] < THIN_ROWS or e["n_families"] < THIN_FAMILIES:
         f.append("THIN_DATA")
-    if cov and cov["lower95"] < POOR_COVERAGE:
+    st = coverage_state(cov) if cov else "trusted"
+    if st == "insufficient_evidence":
+        f.append("INSUFFICIENT_EVIDENCE")
+    elif st == "refused":
         f.append("UNDERCOVERED")
     if band == "<2B" and e["scheme"] in AGGRESSIVE:
         f.append("SIZE_RISK")
@@ -230,7 +276,7 @@ def flags_for(e, cov, band=None, moe=False):
 
 
 def tier(f):
-    if {"TAIL_RISK", "UNDERCOVERED"} & set(f):
+    if {"TAIL_RISK", "UNDERCOVERED", "INSUFFICIENT_EVIDENCE"} & set(f):
         return "C"
     return "B" if f else "A"
 
@@ -256,9 +302,14 @@ def main():
             "worst_observed": c["worst"], "p05": c["p05"], "n": c["n"],
             "n_checkpoints": c["n_checkpoints"], "n_families": c["n_families"],
             "severe_rate": c["severe_rate"],
-            "validated_coverage": cv["mean"] if cv else float("nan"),
+            "coverage_one_sided": cv["one_sided"] if cv else float("nan"),
+            "coverage_two_sided": cv["two_sided"] if cv else float("nan"),
+            "coverage_rows": cv["rows"] if cv else 0,
+            "coverage_ckpts": cv["ckpts"] if cv else 0,
+            "coverage_scored_pairs": cv["scored_pairs"] if cv else 0,
             "coverage_worst_family": cv["worst_family"] if cv else float("nan"),
-            "coverage_lower95": cv["lower95"] if cv else float("nan"),
+            "coverage_boot90": [cv["boot_lo"], cv["boot_hi"]] if cv else [None, None],
+            "coverage_state": coverage_state(cv) if cv else "trusted",
             "flags": f, "tier": tier(f),
         }
 
@@ -266,13 +317,13 @@ def main():
                    key=lambda e: (e["tier"], e["half_width"],
                                   -e["worst_observed"]))
     print(f"\n  {'#':<3}{'scheme':<13}{'tier':<6}{'half_w':>8}{'worst':>8}"
-          f"{'sev%':>7}{'n':>6}{'fam':>5}{'cov':>7}{'lo95':>7}  flags")
+          f"{'sev%':>7}{'n':>6}{'fam':>5}{'loss-side':>10}{'boot 90%':>14}  flags")
     for i, e in enumerate(order, 1):
         print(f"  {i:<3}{e['scheme']:<13}{e['tier']:<6}{e['half_width']:>8.3f}"
               f"{e['worst_observed']:>8.2f}{e['severe_rate']*100:>6.1f}%"
               f"{e['n']:>6}{e['n_families']:>5}"
-              f"{e['validated_coverage']*100:>6.0f}%"
-              f"{e['coverage_lower95']*100:>6.0f}%  {','.join(e['flags'])}")
+              f"{e['coverage_one_sided']*100:>9.1f}%"
+              f"{'[%.1f, %.1f]' % tuple(e['coverage_boot90']):>14}  {','.join(e['flags'])}")
 
     # ---------------------------------------------------------------- compare
     print("\n" + "=" * 74)
@@ -296,8 +347,9 @@ def main():
     fields = [("mean", 1e-9), ("half_width", 1e-9), ("lo", 1e-9),
               ("hi", 1e-9), ("worst_observed", 1e-9), ("p05", 1e-6),
               ("n", 0), ("n_checkpoints", 0), ("n_families", 0),
-              ("validated_coverage", 1e-9), ("coverage_worst_family", 1e-9),
-              ("coverage_lower95", 5e-3)]
+              ("coverage_one_sided", 1e-9), ("coverage_two_sided", 1e-9),
+              ("coverage_rows", 0), ("coverage_ckpts", 0),
+              ("coverage_scored_pairs", 0), ("coverage_worst_family", 1e-9)]
     bad = []
     for s, e in mine.items():
         t = theirs.get(s)
@@ -310,6 +362,12 @@ def main():
                 continue
             if abs(float(a) - float(b)) > tol:
                 bad.append((s, fname, a, b))
+        # the bootstrap bounds: exact where enumerated, Monte Carlo (0.4pp) otherwise
+        for i, nm in enumerate(("lower", "upper")):
+            if abs(e["coverage_boot90"][i] - t["coverage_boot90"][i]) > 0.4:
+                bad.append((s, "boot90_" + nm, e["coverage_boot90"][i], t["coverage_boot90"][i]))
+        if e["coverage_state"] != t["coverage_state"]:
+            bad.append((s, "coverage_state", e["coverage_state"], t["coverage_state"]))
         if set(e["flags"]) != set(t["flags"]):
             bad.append((s, "flags", e["flags"], t["flags"]))
         if e["tier"] != t["tier"]:

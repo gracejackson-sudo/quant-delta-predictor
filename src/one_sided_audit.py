@@ -23,8 +23,9 @@ OUT = os.path.join(HERE, "..", "out", "one_sided_audit.json")
 CELLS = [("w8a16", ">10B"), ("w4a16", "<2B")]
 
 
-def scored_rows():
-    """Rebuild the leave-family-out scored rows, retaining lo/hi."""
+def scored_pairs():
+    """Rebuild the leave-family-out evaluations (one per test row per calibration
+    family, so 7 per row with 8 families), retaining lo/hi."""
     d = load(DATA)
     fams = sorted(d.family.unique())
     out = []
@@ -39,6 +40,7 @@ def scored_rows():
             m = ConservativeStratified().fit_calibrated(tr, ca)
             _, lo, hi, lv = m.predict_interval(te)
             t = annotate(te).copy()
+            t["row_id"] = te.index.to_numpy()
             t["lo"], t["hi"] = lo, hi
             t["ok"] = (t.delta >= lo) & (t.delta <= hi)
             out.append(t)
@@ -46,9 +48,10 @@ def scored_rows():
 
 
 def main():
-    r = scored_rows()
+    r = scored_pairs()
     res = {"pooled_coverage_pct": round(100 * r.ok.mean(), 4),
-           "pooled_scored_rows": int(len(r)), "cells": {}}
+           "pooled_scored_pairs": int(len(r)),
+           "pooled_distinct_rows": int(r.row_id.nunique()), "cells": {}}
     rng = np.random.default_rng(0)
     for s, b in CELLS:
         g = r[(r.scheme == s) & (r.band == b)]
@@ -72,7 +75,8 @@ def main():
             "one_sided_pct": round(100 * (g.delta >= g.lo).mean(), 4),
             "below_lo_pct": round(100 * below.mean(), 4),
             "above_hi_pct": round(100 * above.mean(), 4),
-            "scored_rows": int(len(g)),
+            "scored_pairs": int(len(g)),
+            "distinct_rows": int(g.row_id.nunique()),
             "distinct_checkpoints": int(g.base_model.nunique()),
             "distinct_families": int(g.family.nunique()),
             "distinct_model_benchmark": int(g.groupby(
