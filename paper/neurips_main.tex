@@ -384,12 +384,25 @@ nvfp4       & [\LoNvfp, \HiNvfp]                 & \WorstNvfp{}pp         & \Sev
 \end{center}
 
 \paragraph{Prospective validation.} After freezing the method we harvested
-new checkpoints not used during development. Under a strict protocol that
-excludes any card whose format informed a parser fix (families Llama-3.1,
-Llama-4 and Qwen3), two-sided coverage is
-\(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI
-\([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level. The \ProspN{} strict rows come from \ProspClusN{} distinct checkpoints,
-which we hand-classify against the training-family list. Under the
+new checkpoints not used during development. The strict protocol
+(\texttt{verify/independent\_check.py}) excludes a prospective card on
+one of two grounds: any card whose family label overlaps a training
+family (Llama-3.1 and Qwen-3), or any card whose format informed a
+parser fix (Llama-4). The two grounds are separate; only Llama-4 is
+excluded for the parser reason. Under this protocol two-sided coverage
+is \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI
+\([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level.
+Note the layering: this filter runs by name-pattern regex and does not
+implement the mechanistic family definition of \S\ref{sec:data}. Under
+that definition, \ProspInFamCkpts{} of the \ProspClusN{} strict
+checkpoints (all DeepSeek-R1-Distill of a Llama-3.1, Llama-3.3, or
+Qwen-2.5 base) are in-family derivatives that the name-pattern filter
+let through. The pooled figure therefore mixes ``passed the strict
+filter'' with ``is in-family under \S\ref{sec:data}''. The
+family-split reporting below applies \S\ref{sec:data} to what survives
+the filter and states both sides separately. The \ProspN{} strict rows
+come from \ProspClusN{} distinct checkpoints, which we hand-classify
+against the training-family list. Under the
 definition of \S\ref{sec:data}: \ProspInFamCkpts{} in-family checkpoints
 (all DeepSeek-R1-Distill of a Llama-3.1, Llama-3.3, or Qwen-2.5 base in
 training) contribute \ProspInFamRows{} rows at \ProspInFamCov\% two-sided

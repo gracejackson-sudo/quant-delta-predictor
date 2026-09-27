@@ -109,3 +109,35 @@ coverage estimate should not be read as representative of all RedHatAI models.
   SmolLM, SmolLM3, NVIDIA-Nemotron-Nano — none of which motivated any parser change.
 - Confirmed by an independent stdlib-only reimplementation: **118/131 = 90.1%**, with **0 delta
   disagreements and 0 verdict disagreements** against the pipeline across all 186 shared rows.
+
+---
+
+## 2026-09-27, A4 fix: independent_check.csv was patched, not regenerated
+
+On 2026-09-27 the day-7 external audit flagged a float-boundary miss: one strict
+prospective row (`RedHatAI/gemma-3-1b-it-quantized.w4a16` on TruthfulQA) had
+`delta == +1.40` exactly and a scheme upper bound of `+1.40` exactly, but the
+floating-point computation of the upper bound produced `+1.3999999999999997`,
+so the closed-interval comparison returned `False`. Every comparison site in
+the pipeline used the same strict comparison, so three "independent"
+reimplementations agreed on the same 118/131 wrong answer.
+
+The fix patched twelve comparison sites to use a `1e-9` tolerance on each
+bound (see the shared-assumption bullet in the paper's `\section{Audit}`).
+
+Because `data/cards/` and `data/prospective_cards/` are not shipped in this
+repository, `verify/independent_check.py` could not be re-run against the raw
+card corpus at fix time. Instead, `out/independent_check.csv` was updated by
+recomputing the `inside` column from the existing `lo`, `hi`, and `delta`
+columns with the same `1e-9` tolerance the code now applies. Exactly one row
+changed (`gemma-3-1b-it-quantized.w4a16` on TruthfulQA, `False -> True`).
+
+**A patched artifact is not the same as a regenerated one.** If you fetch the
+raw cards and run `python verify/independent_check.py`, the resulting
+`out/independent_check.csv` should be byte-comparable to the committed version
+on the `inside` column. The test
+`tests/test_all.py::test_independent_check_csv_matches_tolerance_recomputation`
+enforces that the committed CSV agrees with a from-scratch tolerance-based
+recomputation of `inside` from its own `lo`, `hi`, and `delta` -- so a future
+regeneration that produces a different `inside` value will fail the local gate
+rather than silently overwriting the audited result.

@@ -1173,3 +1173,99 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
         joined = "\n".join(tail)
         assert "0 failure(s)" in joined and "0 warning(s)" in joined, \
             f"{name} audit is not clean:\n{joined}"
+
+
+# ---------------------------------------------------------------------------
+# A4 loose end: out/independent_check.csv was patched (not regenerated) with
+# a 1e-9 tolerance for the float-boundary case. If someone later regenerates
+# the CSV from data/cards/ and the tolerance is not applied, this test fails.
+# PROVENANCE.md documents the patch.
+# ---------------------------------------------------------------------------
+
+def test_independent_check_csv_matches_tolerance_recomputation():
+    import csv
+    path = os.path.join(os.path.dirname(__file__), "..", "out",
+                        "independent_check.csv")
+    _EPS = 1e-9  # matches the comparison-site tolerance
+    rows = list(csv.DictReader(open(path)))
+    disagreements = []
+    for r in rows:
+        if not (r["lo"] and r["hi"] and r["delta"]):
+            continue
+        lo, hi, d = float(r["lo"]), float(r["hi"]), float(r["delta"])
+        expected = "True" if (lo - _EPS <= d <= hi + _EPS) else "False"
+        if r["inside"] != expected:
+            disagreements.append(
+                f"{r['model'].split('/')[-1]} on {r['benchmark']}: "
+                f"CSV says {r['inside']} but tolerance recomputation "
+                f"gives {expected} (delta={d}, lo={lo}, hi={hi})")
+    assert not disagreements, (
+        "out/independent_check.csv is stale relative to the tolerance-based "
+        "comparison used in the rest of the pipeline. PROVENANCE.md's "
+        "'2026-09-27, A4 fix' section explains what to do:\n"
+        + "\n".join(disagreements[:10]))
+
+
+# ---------------------------------------------------------------------------
+# A2 loose end: the paper's protocol sentence names three excluded family
+# patterns and two reasons. This test locks the strict-filter code path to
+# the exact three patterns, so a future edit that adds or removes an
+# exclusion has to update the paper and this test together.
+# ---------------------------------------------------------------------------
+
+def test_strict_filter_excludes_exactly_the_three_documented_patterns():
+    """The paper's Section 6 protocol sentence claims the strict filter
+    excludes on two grounds: family overlap with training (Llama-3.1,
+    Qwen-3) and parser fix (Llama-4). Lock that in code so drift breaks
+    the gate."""
+    import inspect, re, sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    sys.path.insert(0, os.path.join(root, "verify"))
+    import independent_check as _ic
+    src = inspect.getsource(_ic.is_strict)
+    # each of the three regex needles must appear once (and only these)
+    assert re.search(r'r"Llama-3\\.1"', src), (
+        "Llama-3.1 exclusion regex missing from is_strict")
+    assert "Qwen3" in src and "[-_]" in src, (
+        "Qwen3 exclusion regex missing from is_strict")
+    assert re.search(r'r"Llama-4"', src), (
+        "Llama-4 exclusion regex missing from is_strict")
+    # comment above the function must state both grounds and both
+    # families for the "family overlap" ground
+    comment = src[:src.index("def is_strict")]
+    # find the comment block just above is_strict
+    file_src = open(os.path.join(root, "verify",
+                                 "independent_check.py")).read()
+    j = file_src.index("def is_strict")
+    excerpt = file_src[max(0, j - 400):j]
+    assert "llama-3.1" in excerpt.lower(), (
+        "code comment must name Llama-3.1 as a family-overlap exclusion")
+    assert "qwen3" in excerpt.lower(), (
+        "code comment must name Qwen3 as a family-overlap exclusion")
+    assert "llama-4" in excerpt.lower(), (
+        "code comment must name Llama-4 as a parser-fix exclusion")
+    assert "parser" in excerpt.lower(), (
+        "code comment must call out the parser-fix rationale for Llama-4")
+
+
+def test_paper_section6_protocol_sentence_states_both_grounds():
+    """The Section 6 protocol sentence must state both exclusion grounds
+    (family overlap AND parser fix) and must state them as separate."""
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for name in ("main.tex", "neurips_main.tex"):
+        text = open(os.path.join(root, "paper", name)).read()
+        # locate the Section 6 protocol paragraph
+        assert "Prospective validation" in text, f"{name}: paragraph missing"
+        # find a window around the paragraph
+        i = text.index("Prospective validation")
+        para = text[i:i + 1500]
+        assert "family label overlaps a training" in para, (
+            f"{name}: paragraph does not name family-overlap ground")
+        assert "parser fix" in para, (
+            f"{name}: paragraph does not name parser-fix ground")
+        assert "The two grounds are separate" in para, (
+            f"{name}: paragraph does not state that the two grounds are separate")
+        assert "Llama-3.1" in para and "Qwen-3" in para, (
+            f"{name}: paragraph does not name Llama-3.1 and Qwen-3")
+        assert "Llama-4" in para, (
+            f"{name}: paragraph does not name Llama-4")
