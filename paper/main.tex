@@ -277,6 +277,17 @@ baseline}, not a predictor.
 
 \section{Results}\label{sec:results}
 
+\paragraph{What this tool is for.} The scenario it answers is: a
+practitioner is considering a scheme on a checkpoint from a family already
+represented in the published record, and wants a calibrated range for the
+accuracy delta with an honest verdict on whether the record supports that
+range for that cell. Within that scope, each cell returns an interval and
+one of three tier labels; outside it, the tool declines to speak. It is
+not a scheme-safety certificate, it does not bound a scheme's worst case,
+and it does not extrapolate to recipes or families the corpus has not
+already seen -- \S\ref{sec:tail} and \S\ref{sec:limits} state each of
+those out-of-scope cases directly.
+
 \begin{center}
 \begin{tabular}{lcccc}
 \toprule
@@ -320,7 +331,14 @@ w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeig
 
 W4A16, the most common scheme, dominates the pooled figure and sits below the nominal 90\%; the other schemes rest on few
 checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
-did not manufacture the headline.
+did not manufacture the headline. That said, the pooled \ProspCov\% is
+pulled up by \ProspRowsFpdyn{} FP8-dynamic rows from \ProspCkptsFpdyn{}
+checkpoints and \ProspRowsWeightsixteen{} W8A16 rows from \ProspCkptsWeightsixteen{}
+checkpoint, both at \ProspCovFpdyn\% coverage: W4A16, at \ProspRowsWfour{}
+of the \ProspN{} strict rows (\ProspRowsWfourShare\%), comes in at
+\ProspCovWfour\%, which is below the nominal 90\%. The pooled number
+should be read as an average across schemes with very different sample
+sizes, not as a coverage claim uniform across schemes.
 
 \paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
 intervals exclude zero: the tool can never state that a scheme \emph{will} cost

@@ -81,6 +81,7 @@ M = {
     "ProspRowsWfour": ("prosp_scheme_rows::w4a16", "{:.0f}"),
     "ProspCkptsWfour": ("prosp_scheme_ckpts::w4a16", "{:.0f}"),
     "ProspCovWfour": ("prosp_scheme_cov_pct::w4a16", "{:.1f}"),
+    "ProspRowsWfourShare": ("prosp_wfour_share_pct", "{:.0f}"),
     "ProspRowsWeightint": ("prosp_scheme_rows::w8a8_int", "{:.0f}"),
     "ProspCkptsWeightint": ("prosp_scheme_ckpts::w8a8_int", "{:.0f}"),
     "ProspCovWeightint": ("prosp_scheme_cov_pct::w8a8_int", "{:.1f}"),

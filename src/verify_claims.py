@@ -477,6 +477,11 @@ def registry():
                 f"quantized checkpoints behind those rows, {_s}")
             add(f"prosp_scheme_cov_pct::{_s}", 100 * _g.inside.mean(), 0.05,
                 f"strict prospective coverage, {_s}")
+        # W4A16 share of the strict prospective rows, for the Simpson-effect
+        # disclosure on the pooled coverage figure in the Results section.
+        _wfour = _st[_st.scheme == "w4a16"]
+        add("prosp_wfour_share_pct", 100 * len(_wfour) / max(len(_st), 1), 0.5,
+            "W4A16 share of the strict prospective set")
         _cl = [_x.inside.to_numpy(float) for _, _x in _st.groupby("model")]
         _S = _np.array([_c.sum() for _c in _cl]); _N = _np.array([len(_c) for _c in _cl])
         _rng = _np.random.default_rng(0)
