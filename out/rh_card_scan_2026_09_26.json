@@ -1,0 +1,29 @@
+{
+ "scan_date": "2026_09_26",
+ "cards_scanned": {
+  "n": 439,
+  "lib_named": 423,
+  "lib_version": 12,
+  "calib_dataset": 157,
+  "num_calib": 239,
+  "max_seq": 202,
+  "act_order": 33,
+  "damp": 17,
+  "group_size": 65,
+  "no_recipe": 198,
+  "no_anything": 158
+ },
+ "harvested_subset": {
+  "n": 102,
+  "lib_named": 102,
+  "lib_version": 0,
+  "calib_dataset": 53,
+  "num_calib": 63,
+  "max_seq": 53,
+  "act_order": 5,
+  "damp": 3,
+  "group_size": 17,
+  "no_recipe": 39,
+  "no_anything": 33
+ }
+}

@@ -143,6 +143,28 @@ transfer across \emph{models}; nothing in this design tests transfer across
 \emph{quantization practitioners}. \S\ref{sec:tail} gives direct evidence that
 this distinction matters.
 
+\paragraph{The pathway is only sparsely documented.} A live scan on
+2026-09-26 across the \NRhCardsListed{} RedHatAI quantized-model cards
+currently published on Hugging Face (of which \NRhCardsHarvested{}
+contribute rows to our harvested dataset) shows how sparsely the pathway
+that produced these outcomes is documented: \NRhCardsWithLibVersion{} of
+\NRhCardsListed{} cards pin a quantization-library version,
+\NRhCardsWithActOrder{} mention activation reordering,
+\NRhCardsWithDamp{} mention dampening, and \NRhCardsNoRecipe{} of
+\NRhCardsListed{} report none of \texttt{num\_calibration\_samples},
+\texttt{max\_sequence\_length}, activation reordering or dampening. On the
+\NRhCardsHarvested{}-card subset that our dataset draws rows from,
+\NRhHarvestedWithLibVersion{} pin a library version and
+\NRhHarvestedNoRecipe{} of \NRhCardsHarvested{} report none of those four
+parameters. (This RedHatAI-only scan is distinct from the \PubChecked{}-publisher,
+\PubCards{}-card publisher census reported in \S\ref{sec:audit}, which is an
+earlier stable snapshot spanning multiple publishers and asks a different
+question.) The published record we calibrate against is therefore a record
+of outcomes with the pathway that produced them substantially undocumented
+on the publisher whose cards contribute the largest single share of our
+corpus, which is one of the reasons an outcome-truncation argument
+(\S\ref{sec:tail}) cannot be closed from the corpus alone.
+
 \section{Method}\label{sec:method}
 
 \paragraph{Conformal-style intervals.} We use the residual-quantile
@@ -382,6 +404,17 @@ published in a self-verifying form.
 re-run the faulted-configuration experiments (they need a GPU; the recorded results are included), the harvest from raw model
 cards (the cards are not redistributed), or the prospective-card checks (those files are not included), and re-running the
 low-rank comparison mentioned in the supplement needs a checkout of BenchPress's released code.
+
+\paragraph{An attempt at re-running the calibration-data test.} We
+attempted to reproduce Red Hat's published W4A16 checkpoints for two of
+the corpus's most-measured base models, Qwen2.5-0.5B and Qwen2.5-1.5B,
+using the \texttt{llm-compressor} recipe at its documented defaults, in
+order to test whether the roughly \CalibRatio\(\times\) calibration-data
+ratio between our own control and production defaults accounts for the
+observed excess damage. Neither of these two cards pins a library version
+or names a calibration dataset; both record only the resulting weight
+representation (symmetric per-group INT4, group size 128 on 1.5B and
+group size 64 on 0.5B).
 
 \paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the

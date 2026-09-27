@@ -1,0 +1,808 @@
+---
+language:
+- en
+- de
+- fr
+- it
+- pt
+- hi
+- es
+- th
+base_model:
+- meta-llama/Llama-3.1-8B-Instruct
+pipeline_tag: text-generation
+hardware_tag:
+- Intel Xeon
+tags:
+- llama
+- facebook
+- meta
+- llama-3
+- int4
+- vllm
+- chat
+- neuralmagic
+- llmcompressor
+- conversational
+- 4-bit precision
+- gptq
+- compressed-tensors
+license: llama3.1
+license_name: llama3.1
+name: RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16
+description: This model was obtained by quantizing the weights of Meta-Llama-3.1-8B-Instruct to INT4 data type.
+readme: https://huggingface.co/RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16/main/README.md
+tasks:
+- text-to-text
+provider: Meta
+license_link: https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/LICENSE
+validated_on:
+  - RHOAI 2.20
+  - RHAIIS 3.0
+  - RHELAI 1.5
+  - vLLM 0.8.4
+---
+<h1 style="display: flex; align-items: center; gap: 10px; margin: 0;">
+  Meta-Llama-3.1-8B-Instruct-quantized.w4a16
+  <img src="https://www.redhat.com/rhdc/managed-files/Catalog-Validated_model_0.png" alt="Model Icon" width="40" style="margin: 0; padding: 0;" />
+</h1>
+  
+<a href="https://www.redhat.com/en/products/ai/validated-models" target="_blank" style="margin: 0; padding: 0;">
+<img src="https://www.redhat.com/rhdc/managed-files/Validated_badge-Dark.png" alt="Validated Badge" width="250" style="margin: 0; padding: 0;" />
+</a>
+
+## Model Overview
+- **Model Architecture:** LlamaForCausalLM
+  - **Input:** Text
+  - **Output:** Text
+- **Model Optimizations:**
+  - **Weight quantization:** INT4
+- **Intended Use Cases:** Intended for commercial and research use in English. Similarly to [Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct), this models is intended for assistant-like chat.
+- **Out-of-scope:** Use in any manner that violates applicable laws or regulations (including trade compliance laws). Use in languages other than English.
+- **Release Date:** 7/26/2024
+- **Version:** 1.0
+- **Validated on:** RHOAI 2.20, RHAIIS 3.0, RHELAI 1.5
+- **License(s):** Llama3.1
+- **Model Developers:** Neural Magic
+
+This model is a quantized version of [Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct).
+It was evaluated on a several tasks to assess the its quality in comparison to the unquatized model, including multiple-choice, math reasoning, and open-ended text generation.
+Meta-Llama-3.1-8B-Instruct-quantized.w4a16 achieves 93.0% recovery for the Arena-Hard evaluation, 98.9% for OpenLLM v1 (using Meta's prompting when available), 96.1% for OpenLLM v2, 99.7% for HumanEval pass@1, and 97.4% for HumanEval+ pass@1.
+
+### Model Optimizations
+
+This model was obtained by quantizing the weights of [Meta-Llama-3.1-8B-Instruct](https://huggingface.co/meta-llama/Meta-Llama-3.1-8B-Instruct) to INT4 data type.
+This optimization reduces the number of bits per parameter from 16 to 4, reducing the disk size and GPU memory requirements by approximately 75%.
+
+Only the weights of the linear operators within transformers blocks are quantized.
+Symmetric per-group quantization is applied, in which a linear scaling per group of 128 parameters maps the INT4 and floating point representations of the quantized weights.
+[AutoGPTQ](https://github.com/AutoGPTQ/AutoGPTQ) is used for quantization with 10% damping factor and 768 sequences taken from Neural Magic's [LLM compression calibration dataset](https://huggingface.co/datasets/neuralmagic/LLM_compression_calibration).
+
+
+## Deployment
+
+This model can be deployed efficiently using the [vLLM](https://docs.vllm.ai/en/latest/) backend, as shown in the example below.
+
+```python
+from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
+
+model_id = "RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16"
+number_gpus = 1
+max_model_len = 8192
+
+sampling_params = SamplingParams(temperature=0.6, top_p=0.9, max_tokens=256)
+
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+messages = [
+    {"role": "system", "content": "You are a pirate chatbot who always responds in pirate speak!"},
+    {"role": "user", "content": "Who are you?"},
+]
+
+prompts = tokenizer.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
+
+llm = LLM(model=model_id, tensor_parallel_size=number_gpus, max_model_len=max_model_len)
+
+outputs = llm.generate(prompts, sampling_params)
+
+generated_text = outputs[0].outputs[0].text
+print(generated_text)
+```
+
+vLLM also supports OpenAI-compatible serving. See the [documentation](https://docs.vllm.ai/en/latest/) for more details.
+
+<details>
+  <summary>Deploy on <strong>Red Hat AI Inference Server</strong></summary>
+  
+```bash
+podman run --rm -it --device nvidia.com/gpu=all -p 8000:8000 \
+ --ipc=host \
+--env "HUGGING_FACE_HUB_TOKEN=$HF_TOKEN" \
+--env "HF_HUB_OFFLINE=0" -v ~/.cache/vllm:/home/vllm/.cache \
+--name=vllm \
+registry.access.redhat.com/rhaiis/rh-vllm-cuda \
+vllm serve \
+--tensor-parallel-size 8 \
+--max-model-len 32768  \
+--enforce-eager --model RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16
+```
+​​See [Red Hat AI Inference Server documentation](https://docs.redhat.com/en/documentation/red_hat_ai_inference_server/) for more details.
+</details>
+
+<details>
+  <summary>Deploy on <strong>Red Hat Enterprise Linux AI</strong></summary>
+  
+```bash
+# Download model from Red Hat Registry via docker
+# Note: This downloads the model to ~/.cache/instructlab/models unless --model-dir is specified.
+ilab model download --repository docker://registry.redhat.io/rhelai1/llama-3-1-8b-instruct-quantized-w4a16:1.5
+```
+
+```bash
+# Serve model via ilab
+ilab model serve --model-path ~/.cache/instructlab/models/llama-3-1-8b-instruct-quantized-w4a16
+  
+# Chat with model
+ilab model chat --model ~/.cache/instructlab/models/llama-3-1-8b-instruct-quantized-w4a16
+```
+See [Red Hat Enterprise Linux AI documentation](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux_ai/1.4) for more details.
+</details>
+
+<details>
+  <summary>Deploy on <strong>Red Hat Openshift AI</strong></summary>
+  
+```python
+# Setting up vllm server with ServingRuntime
+# Save as: vllm-servingruntime.yaml
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+metadata:
+ name: vllm-cuda-runtime # OPTIONAL CHANGE: set a unique name
+ annotations:
+   openshift.io/display-name: vLLM NVIDIA GPU ServingRuntime for KServe
+   opendatahub.io/recommended-accelerators: '["nvidia.com/gpu"]'
+ labels:
+   opendatahub.io/dashboard: 'true'
+spec:
+ annotations:
+   prometheus.io/port: '8080'
+   prometheus.io/path: '/metrics'
+ multiModel: false
+ supportedModelFormats:
+   - autoSelect: true
+     name: vLLM
+ containers:
+   - name: kserve-container
+     image: quay.io/modh/vllm:rhoai-2.20-cuda # CHANGE if needed. If AMD: quay.io/modh/vllm:rhoai-2.20-rocm
+     command:
+       - python
+       - -m
+       - vllm.entrypoints.openai.api_server
+     args:
+       - "--port=8080"
+       - "--model=/mnt/models"
+       - "--served-model-name={{.Name}}"
+     env:
+       - name: HF_HOME
+         value: /tmp/hf_home
+     ports:
+       - containerPort: 8080
+         protocol: TCP
+```
+
+```python
+# Attach model to vllm server. This is an NVIDIA template
+# Save as: inferenceservice.yaml
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  annotations:
+    openshift.io/display-name: llama-3-1-8b-instruct-quantized-w4a16 # OPTIONAL CHANGE
+    serving.kserve.io/deploymentMode: RawDeployment
+  name: llama-3-1-8b-instruct-quantized-w4a16          # specify model name. This value will be used to invoke the model in the payload
+  labels:
+    opendatahub.io/dashboard: 'true'
+spec:
+  predictor:
+    maxReplicas: 1
+    minReplicas: 1
+    model:
+      modelFormat:
+        name: vLLM
+      name: ''
+      resources:
+        limits:
+          cpu: '2'			# this is model specific
+          memory: 8Gi		# this is model specific
+          nvidia.com/gpu: '1'	# this is accelerator specific
+        requests:			# same comment for this block
+          cpu: '1'
+          memory: 4Gi
+          nvidia.com/gpu: '1'
+      runtime: vllm-cuda-runtime	# must match the ServingRuntime name above
+      storageUri: oci://registry.redhat.io/rhelai1/modelcar-llama-3-1-8b-instruct-quantized-w4a16:1.5
+    tolerations:
+    - effect: NoSchedule
+      key: nvidia.com/gpu
+      operator: Exists
+```
+
+```bash
+# make sure first to be in the project where you want to deploy the model
+# oc project <project-name>
+
+# apply both resources to run model
+
+# Apply the ServingRuntime
+oc apply -f vllm-servingruntime.yaml
+
+# Apply the InferenceService
+oc apply -f qwen-inferenceservice.yaml
+```
+
+```python
+# Replace <inference-service-name> and <cluster-ingress-domain> below:
+# - Run `oc get inferenceservice` to find your URL if unsure.
+
+# Call the server using curl:
+curl https://<inference-service-name>-predictor-default.<domain>/v1/chat/completions
+        -H "Content-Type: application/json" \
+        -d '{
+    "model": "llama-3-1-8b-instruct-quantized-w4a16",
+    "stream": true,
+    "stream_options": {
+        "include_usage": true
+    },
+    "max_tokens": 1,
+    "messages": [
+        {
+            "role": "user",
+            "content": "How can a bee fly when its wings are so small?"
+        }
+    ]
+}'
+
+```
+
+See [Red Hat Openshift AI documentation](https://docs.redhat.com/en/documentation/red_hat_openshift_ai/2025) for more details.
+</details>
+
+
+## Creation
+
+This model was created by applying the [AutoGPTQ](https://github.com/AutoGPTQ/AutoGPTQ) library as presented in the code snipet below.
+Although AutoGPTQ was used for this particular model, Neural Magic is transitioning to using [llm-compressor](https://github.com/vllm-project/llm-compressor) which supports several quantization schemes and models not supported by AutoGPTQ.
+
+```python
+from transformers import AutoTokenizer
+from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig
+from datasets import load_dataset
+
+model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+
+num_samples = 756
+max_seq_len = 4064
+
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+def preprocess_fn(example):
+  return {"text": tokenizer.apply_chat_template(example["messages"], add_generation_prompt=False, tokenize=False)}
+
+ds = load_dataset("neuralmagic/LLM_compression_calibration", split="train")
+ds = ds.shuffle().select(range(num_samples))
+ds = ds.map(preprocess_fn)
+
+examples = [tokenizer(example["text"], padding=False, max_length=max_seq_len, truncation=True) for example in ds]
+    
+quantize_config = BaseQuantizeConfig(
+  bits=4,
+  group_size=128,
+  desc_act=True,
+  model_file_base_name="model",
+  damp_percent=0.1,
+)
+
+model = AutoGPTQForCausalLM.from_pretrained(
+  model_id,
+  quantize_config,
+  device_map="auto",
+)
+
+model.quantize(examples)
+model.save_pretrained("Meta-Llama-3.1-8B-Instruct-quantized.w4a16")
+```
+
+## Evaluation
+
+This model was evaluated on the well-known Arena-Hard, OpenLLM v1, OpenLLM v2, HumanEval, and HumanEval+ benchmarks.
+In all cases, model outputs were generated with the [vLLM](https://docs.vllm.ai/en/stable/) engine.
+
+Arena-Hard evaluations were conducted using the [Arena-Hard-Auto](https://github.com/lmarena/arena-hard-auto) repository.
+The model generated a single answer for each prompt form Arena-Hard, and each answer was judged twice by GPT-4.
+We report below the scores obtained in each judgement and the average.
+
+OpenLLM v1 and v2 evaluations were conducted using Neural Magic's fork of [lm-evaluation-harness](https://github.com/neuralmagic/lm-evaluation-harness/tree/llama_3.1_instruct) (branch llama_3.1_instruct).
+This version of the lm-evaluation-harness includes versions of MMLU, ARC-Challenge and GSM-8K that match the prompting style of [Meta-Llama-3.1-Instruct-evals](https://huggingface.co/datasets/meta-llama/Meta-Llama-3.1-8B-Instruct-evals) and a few fixes to OpenLLM v2 tasks.
+
+HumanEval and HumanEval+ evaluations were conducted using Neural Magic's fork of the [EvalPlus](https://github.com/neuralmagic/evalplus) repository.
+
+Detailed model outputs are available as HuggingFace datasets for [Arena-Hard](https://huggingface.co/datasets/neuralmagic/quantized-llama-3.1-arena-hard-evals), [OpenLLM v2](https://huggingface.co/datasets/neuralmagic/quantized-llama-3.1-leaderboard-v2-evals), and [HumanEval](https://huggingface.co/datasets/neuralmagic/quantized-llama-3.1-humaneval-evals).
+
+**Note:** Results have been updated after Meta modified the chat template.
+
+### Accuracy
+
+<table>
+  <tr>
+   <td><strong>Category</strong>
+   </td>
+   <td><strong>Benchmark</strong>
+   </td>
+   <td><strong>Meta-Llama-3.1-8B-Instruct </strong>
+   </td>
+   <td><strong>Meta-Llama-3.1-8B-Instruct-quantized.w4a16 (this model)</strong>
+   </td>
+   <td><strong>Recovery</strong>
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="1" ><strong>LLM as a judge</strong>
+   </td>    
+   <td>Arena Hard
+   </td>
+   <td>25.8 (25.1 / 26.5)
+   </td>
+   <td>27.2 (27.6 / 26.7)
+   </td>
+   <td>105.4%
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="8" ><strong>OpenLLM v1</strong>
+   </td>
+   <td>MMLU (5-shot)
+   </td>
+   <td>68.3
+   </td>
+   <td>66.9
+   </td>
+   <td>97.9%
+   </td>
+  </tr>
+  <tr>
+   <td>MMLU (CoT, 0-shot)
+   </td>
+   <td>72.8
+   </td>
+   <td>71.1
+   </td>
+   <td>97.6%
+   </td>
+  </tr>
+  <tr>
+   <td>ARC Challenge (0-shot)
+   </td>
+   <td>81.4
+   </td>
+   <td>80.2
+   </td>
+   <td>98.0%
+   </td>
+  </tr>
+  <tr>
+   <td>GSM-8K (CoT, 8-shot, strict-match)
+   </td>
+   <td>82.8
+   </td>
+   <td>82.9
+   </td>
+   <td>100.2%
+   </td>
+  </tr>
+  <tr>
+   <td>Hellaswag (10-shot)
+   </td>
+   <td>80.5
+   </td>
+   <td>79.9
+   </td>
+   <td>99.3%
+   </td>
+  </tr>
+  <tr>
+   <td>Winogrande (5-shot)
+   </td>
+   <td>78.1
+   </td>
+   <td>78.0
+   </td>
+   <td>99.9%
+   </td>
+  </tr>
+  <tr>
+   <td>TruthfulQA (0-shot, mc2)
+   </td>
+   <td>54.5
+   </td>
+   <td>52.8
+   </td>
+   <td>96.9%
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Average</strong>
+   </td>
+   <td><strong>74.3</strong>
+   </td>
+   <td><strong>73.5</strong>
+   </td>
+   <td><strong>98.9%</strong>
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="7" ><strong>OpenLLM v2</strong>
+   </td>
+   <td>MMLU-Pro (5-shot)
+   </td>
+   <td>30.8
+   </td>
+   <td>28.8
+   </td>
+   <td>93.6%
+   </td>
+  </tr>
+  <tr>
+   <td>IFEval (0-shot)
+   </td>
+   <td>77.9
+   </td>
+   <td>76.3
+   </td>
+   <td>98.0%
+   </td>
+  </tr>
+  <tr>
+   <td>BBH (3-shot)
+   </td>
+   <td>30.1
+   </td>
+   <td>28.9
+   </td>
+   <td>96.1%
+   </td>
+  </tr>
+  <tr>
+   <td>Math-lvl-5 (4-shot)
+   </td>
+   <td>15.7
+   </td>
+   <td>14.8
+   </td>
+   <td>94.4%
+   </td>
+  </tr>
+  <tr>
+   <td>GPQA (0-shot)
+   </td>
+   <td>3.7
+   </td>
+   <td>4.0
+   </td>
+   <td>109.8%
+   </td>
+  </tr>
+  <tr>
+   <td>MuSR (0-shot)
+   </td>
+   <td>7.6
+   </td>
+   <td>6.3
+   </td>
+   <td>83.2%
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Average</strong>
+   </td>
+   <td><strong>27.6</strong>
+   </td>
+   <td><strong>26.5</strong>
+   </td>
+   <td><strong>96.1%</strong>
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="2" ><strong>Coding</strong>
+   </td>
+   <td>HumanEval pass@1
+   </td>
+   <td>67.3
+   </td>
+   <td>67.1
+   </td>
+   <td>99.7%
+   </td>
+  </tr>
+  <tr>
+   <td>HumanEval+ pass@1
+   </td>
+   <td>60.7
+   </td>
+   <td>59.1
+   </td>
+   <td>97.4%
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="9" ><strong>Multilingual</strong>
+   </td>
+   <td>Portuguese MMLU (5-shot)
+   </td>
+   <td>59.96
+   </td>
+   <td>58.69
+   </td>
+   <td>97.9%
+   </td>
+  </tr>
+  <tr>
+   <td>Spanish MMLU (5-shot)
+   </td>
+   <td>60.25
+   </td>
+   <td>58.39
+   </td>
+   <td>96.9%
+   </td>
+  </tr>
+  <tr>
+   <td>Italian MMLU (5-shot)
+   </td>
+   <td>59.23
+   </td>
+   <td>57.82
+   </td>
+   <td>97.6%
+   </td>
+  </tr>
+  <tr>
+   <td>German MMLU (5-shot)
+   </td>
+   <td>58.63
+   </td>
+   <td>56.22
+   </td>
+   <td>95.9%
+   </td>
+  </tr>
+  <tr>
+   <td>French MMLU (5-shot)
+   </td>
+   <td>59.65
+   </td>
+   <td>57.58
+   </td>
+   <td>96.5%
+   </td>
+  </tr>
+  <tr>
+   <td>Hindi MMLU (5-shot)
+   </td>
+   <td>50.10
+   </td>
+   <td>47.14
+   </td>
+   <td>94.1%
+   </td>
+  </tr>
+  <tr>
+   <td>Thai MMLU (5-shot)
+   </td>
+   <td>49.12
+   </td>
+   <td>46.72
+   </td>
+   <td>95.1%
+   </td>
+  </tr>
+</table>
+
+
+### Reproduction
+
+The results were obtained using the following commands:
+
+#### MMLU
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU-CoT
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=4064,max_gen_toks=1024,tensor_parallel_size=1 \
+  --tasks mmlu_cot_0shot_llama_3.1_instruct \
+  --apply_chat_template \
+  --num_fewshot 0 \
+  --batch_size auto
+```
+
+#### ARC-Challenge
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3940,max_gen_toks=100,tensor_parallel_size=1 \
+  --tasks arc_challenge_llama_3.1_instruct \
+  --apply_chat_template \
+  --num_fewshot 0 \
+  --batch_size auto
+```
+
+#### GSM-8K
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=4096,max_gen_toks=1024,tensor_parallel_size=1 \
+  --tasks gsm8k_cot_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 8 \
+  --batch_size auto
+```
+
+#### Hellaswag
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,add_bos_token=True,max_model_len=4096,tensor_parallel_size=1 \
+  --tasks hellaswag \
+  --num_fewshot 10 \
+  --batch_size auto
+```
+
+#### Winogrande
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,add_bos_token=True,max_model_len=4096,tensor_parallel_size=1 \
+  --tasks winogrande \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### TruthfulQA
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,add_bos_token=True,max_model_len=4096,tensor_parallel_size=1 \
+  --tasks truthfulqa \
+  --num_fewshot 0 \
+  --batch_size auto
+```
+
+#### OpenLLM v2
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=4096,tensor_parallel_size=1,enable_chunked_prefill=True \
+  --apply_chat_template \
+  --fewshot_as_multiturn \
+  --tasks leaderboard \
+  --batch_size auto
+```
+
+#### MMLU Portuguese
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_pt_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU Spanish
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_es_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU Italian
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_it_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU German
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_de_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU French
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_fr_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU Hindi
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_hi_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### MMLU Thai
+```
+lm_eval \
+  --model vllm \
+  --model_args pretrained="RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16",dtype=auto,max_model_len=3850,max_gen_toks=10,tensor_parallel_size=1 \
+  --tasks mmlu_th_llama_3.1_instruct \
+  --fewshot_as_multiturn \
+  --apply_chat_template \
+  --num_fewshot 5 \
+  --batch_size auto
+```
+
+#### HumanEval and HumanEval+
+##### Generation
+```
+python3 codegen/generate.py \
+  --model RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16 \
+  --bs 16 \
+  --temperature 0.2 \
+  --n_samples 50 \
+  --root "." \
+  --dataset humaneval
+```
+##### Sanitization
+```
+python3 evalplus/sanitize.py \
+  humaneval/neuralmagic--Meta-Llama-3.1-8B-Instruct-quantized.w4a16_vllm_temp_0.2
+```
+##### Evaluation
+```
+evalplus.evaluate \
+  --dataset humaneval \
+  --samples humaneval/neuralmagic--Meta-Llama-3.1-8B-Instruct-quantized.w4a16_vllm_temp_0.2-sanitized
+```

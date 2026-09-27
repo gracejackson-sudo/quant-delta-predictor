@@ -110,6 +110,31 @@ def registry():
                 100 * _c["covered"] / _c["n"], 0.05,
                 "marginal (no-Mondrian) LOFO coverage on the NVFP4 slice")
 
+    # RedHatAI-card recipe-documentation scan (see src/rh_card_recipe_scan.py).
+    # Keys carry the scan date because the underlying count of published
+    # cards will drift; a future re-scan should mint a new set of keys
+    # instead of silently overwriting the number the paper committed to.
+    _rh = os.path.join(HERE, "..", "out", "rh_card_scan_2026_09_26.json")
+    if os.path.exists(_rh):
+        _r = json.load(open(_rh))
+        _a, _h = _r["cards_scanned"], _r["harvested_subset"]
+        add("n_rh_cards_listed_2026_09_26", _a["n"], 0,
+            "RedHatAI quantized cards with a non-empty README on 2026-09-26")
+        add("n_rh_cards_harvested", _h["n"], 0,
+            "of those, cards contributing rows to data/dataset.csv")
+        add("n_rh_cards_with_lib_version_2026_09_26", _a["lib_version"], 0,
+            "cards pinning a quantization-library version (all 439)")
+        add("n_rh_cards_with_act_order_2026_09_26", _a["act_order"], 0,
+            "cards mentioning activation reordering (all 439)")
+        add("n_rh_cards_with_damp_2026_09_26", _a["damp"], 0,
+            "cards mentioning dampening / damp_frac (all 439)")
+        add("n_rh_cards_no_recipe_2026_09_26", _a["no_recipe"], 0,
+            "cards documenting NONE of {num_calib, max_seq, act_order, damp}")
+        add("n_rh_harvested_with_lib_version_2026_09_26", _h["lib_version"], 0,
+            "harvested subset: cards pinning a library version")
+        add("n_rh_harvested_no_recipe_2026_09_26", _h["no_recipe"], 0,
+            "harvested subset: cards with none of the four recipe fields")
+
     for key, sup in cc.get("support", {}).items():
         add(f"cell_train_rows2::{key}", sup["train_rows"], 0,
             f"training rows in {key}")

@@ -33,6 +33,19 @@ M = {
     "PubQwenSmall": ("s2_pub_qwen05", "{:.2f}"),
     "PubQwenSmallBase": ("s2_pub_qwen05_base", "{:.2f}"),
     "NvfpMarginal": ("nvfp_marginal_coverage_pct", "{:.0f}"),
+    # RedHatAI card recipe-documentation scan (date-suffixed).
+    "NRhCardsListed": ("n_rh_cards_listed_2026_09_26", "{:.0f}"),
+    "NRhCardsHarvested": ("n_rh_cards_harvested", "{:.0f}"),
+    "NRhCardsWithLibVersion": (
+        "n_rh_cards_with_lib_version_2026_09_26", "{:.0f}"),
+    "NRhCardsWithActOrder": (
+        "n_rh_cards_with_act_order_2026_09_26", "{:.0f}"),
+    "NRhCardsWithDamp": ("n_rh_cards_with_damp_2026_09_26", "{:.0f}"),
+    "NRhCardsNoRecipe": ("n_rh_cards_no_recipe_2026_09_26", "{:.0f}"),
+    "NRhHarvestedWithLibVersion": (
+        "n_rh_harvested_with_lib_version_2026_09_26", "{:.0f}"),
+    "NRhHarvestedNoRecipe": (
+        "n_rh_harvested_no_recipe_2026_09_26", "{:.0f}"),
     "BaseQwenMid": ("s2_base_qwen15", "{:.2f}"),
     "PubQwenMid": ("s2_pub_qwen15", "{:.2f}"),
     "ProtoSens": ("s2_protocol_sensitivity", "{:.2f}"),
