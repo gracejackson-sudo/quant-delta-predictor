@@ -62,7 +62,12 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "80",    # 80 GB VRAM (the hardware that would make the 3B extension fit)
           "0.85",  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression
           "0.4",   # llmcompressor 0.4.1 in the pinned-retry disclosure
-          "4.44"}  # transformers 4.44.2 in the pinned-retry disclosure
+          "4.44",  # transformers 4.44.2 in the pinned-retry disclosure
+          # Ridge and HistGradientBoosting hyperparameters, documented for
+          # reproducibility of the negative-result predictors (see
+          # src/predictor.py:63 and src/diagnose.py:61). Fixed code constants,
+          # not measured figures.
+          "3.0", "300", "0.05", "15", "1.0"}
 hand = sorted({n for n in NUM.findall(body) if n not in EXEMPT})
 if hand:
     warn.append(f"hand-typed numerals in prose (verify each): {hand}")
