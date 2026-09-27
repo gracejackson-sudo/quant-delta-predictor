@@ -302,12 +302,12 @@ baseline}, not a predictor.
 
 \paragraph{What this tool is for.} The scenario it answers is: a
 practitioner is considering a scheme on a checkpoint from a family already
-represented in the published record, and wants a calibrated range for the
+represented in the published record and wants a calibrated range for the
 accuracy delta with an honest verdict on whether the record supports that
 range for that cell. Within that scope, each cell returns an interval and
 one of three tier labels; outside it, the tool declines to speak. It is
-not a scheme-safety certificate, it does not bound a scheme's worst case,
-and it does not extrapolate to recipes or families the corpus has not
+not a scheme-safety certificate, does not bound a scheme's worst case,
+and does not extrapolate to recipes or families the corpus has not
 already seen -- \S\ref{sec:tail} and \S\ref{sec:limits} state each of
 those out-of-scope cases directly.
 
@@ -580,8 +580,8 @@ recomputed.
 
 Per-model prediction of quantization accuracy damage does not work on published
 data, and the reason is largely measurement noise rather than model capacity. What does
-work is narrower: a per-scheme calibrated envelope, validated at
-\(\ProspCov\%\) coverage on unseen checkpoints for \ProspSchemes{} of the \Nsch{} schemes, and that says which
+work is narrower: a per-scheme calibrated envelope that is validated at
+\(\ProspCov\%\) coverage on unseen checkpoints for \ProspSchemes{} of the \Nsch{} schemes and that says which
 of its own cells it cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
 shown but flagged and the scheme demoted; or refused, in which case the interval is withheld. Today \NCellsInsuff{} of
 \NCellsTotal{} cells are insufficient evidence and \NCellsRefused{} are refused. The more useful contribution may be the limitation
