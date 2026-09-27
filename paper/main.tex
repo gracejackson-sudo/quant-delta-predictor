@@ -31,11 +31,20 @@ statistics or activation-outlier metrics.
 Second, a positive one: conditioning only on the quantization scheme yields
 per-scheme conformal-style intervals with \(\ProspCov\%\) two-sided empirical
 coverage (\(\ProspInside/\ProspN\), 95\% CI \([\ProspCILo,\ProspCIHi]\)) on
-unseen checkpoints of families that are themselves present in training.
-Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes, and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
+unseen checkpoints. Under the family definition of \S\ref{sec:data}, the
+strict prospective set is a mix: \ProspInFamCkpts{} derivative checkpoints
+of training families cover at \ProspInFamCov\% (\ProspInFamInside/\ProspInFamRows),
+and \ProspOutFamCkpts{} checkpoints from genuinely new pretraining runs
+cover at \ProspOutFamCov\% (\ProspOutFamInside/\ProspOutFamRows); both
+sides land at nominal, so the envelope generalises to derivative checkpoints
+and new pretraining runs, not just one or the other. Those checkpoints
+cover \ProspSchemes{} of the \Nsch{} schemes, and W4A16 supplies
+\ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of three verdicts: trusted; insufficient evidence, where the interval is still
 shown but the scheme is demoted and flagged; or refused, where the interval is withheld. Currently \NCellsInsuff{} of \NCellsTotal{}
-cells are insufficient evidence and \NCellsRefused{} are refused. Third, and most consequential for practice: the published corpus
+cells are insufficient evidence; on this corpus the third state, as defined
+in \S\ref{sec:method}, does not fire. Third, and most consequential for
+practice: the published corpus
 is outcome-truncated. Every configuration in it is one that someone chose to
 release. We rented an A100 and measured deliberately-faulted configurations,
 observing losses to \(\AdvWorst{}\)pp against a published worst case of
@@ -68,12 +77,14 @@ Our contributions:
     metrics) were not tested. We report this as the primary finding rather
     than burying it.
   \item \textbf{A calibrated envelope that does work} (\S\ref{sec:results}),
-    conditioned on scheme alone, with measured coverage on held-out families
+    conditioned on scheme alone, with measured coverage on held-out checkpoints
     and a three-state verdict for each (scheme, size-band) cell: \emph{trusted};
     \emph{insufficient evidence}, where the interval is still shown but the
     scheme is demoted and the cell flagged as one the tool cannot judge; or
     \emph{refused}, where the interval is withheld. Currently \NCellsInsuff{} of
-    \NCellsTotal{} cells are insufficient evidence and \NCellsRefused{} are refused.
+    \NCellsTotal{} cells are insufficient evidence; on this corpus the third
+    state, as defined in \S\ref{sec:method}, does not fire (see \S\ref{sec:method}
+    for why).
   \item \textbf{An existence proof that the corpus omits severe outcomes}
     (\S\ref{sec:tail}), via GPU experiments on deliberately-faulted
     configurations---data the published record structurally cannot contain.
@@ -148,6 +159,22 @@ single publisher using a single toolchain. Holding out a model family tests
 transfer across \emph{models}; nothing in this design tests transfer across
 \emph{quantization practitioners}. \S\ref{sec:tail} gives direct evidence that
 this distinction matters.
+
+\paragraph{What we mean by family.} Throughout, two checkpoints share
+a family when one is derived from the other's pretraining weights (via
+distillation, continued pretraining, quantization, or fine-tuning), or when
+they share a common pretraining base checkpoint. A distillation is a member
+of its teacher's family; a new pretraining run is a new family, regardless
+of shared name. This is the mechanistic definition: quantization damage
+depends on the weight distribution and activation-outlier structure the
+checkpoint inherits, and derivative products inherit them, while new
+pretraining runs produce different weight distributions and different
+quantization behaviour. In particular, under this definition Gemma-3 and
+Gemma-2 are separate families (independent pretraining runs), Llama-3.1
+and Llama-3.2 are separate families, and DeepSeek-R1-Distill-Llama-8B is
+a member of the Llama-3.1 family (it uses Llama-3.1-8B weights as
+initialization). The \Nfam{} training families are Gemma-2, Granite,
+Llama-3.1, Llama-3.2, Llama-3.3, Mistral, Qwen-2.5 and Qwen-3.
 
 \paragraph{The pathway is only sparsely documented.} A live scan on
 2026-09-26 across the \NRhCardsListed{} RedHatAI quantized-model cards
@@ -301,9 +328,7 @@ variance, which we attribute to sampling error rather than treat as a finding.
 \paragraph{Implication.} From card-level features, the entire fitted
 artifact is \NpredNums{} numbers.
 A raw per-scheme historical quantile band, with no model and no conformal
-machinery, is a serious competitor: it looked better covered in-sample, though under the strict protocol that advantage disappears (\S\ref{sec:audit}). What conformal contributes is a
-finite-sample guarantee and a principled rule for small-\(n\) schemes, not
-accuracy. We therefore describe the result as a \emph{calibrated historical
+machinery, is a serious competitor: it looked better covered in-sample, though under the strict protocol that advantage disappears (\S\ref{sec:audit}). What conformal contributes on the calibration-set variant used inside the leave-one-family-out audit is a finite-sample guarantee under exchangeability; the shipped intervals fit their centre and half-width on the same rows and do not carry that guarantee (\S\ref{sec:method}). What the machinery contributes to the shipped artifact is a principled rule for small-\(n\) schemes, not accuracy. We therefore describe the result as a \emph{calibrated historical
 baseline}, not a predictor.
 
 \section{Results}\label{sec:results}
@@ -339,13 +364,21 @@ new checkpoints not used during development. Under a strict protocol that
 excludes any card whose format informed a parser fix (families Llama-3.1,
 Llama-4 and Qwen3), two-sided coverage is
 \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI
-\([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level. This
-is in-family transfer: every strict prospective family is also present in
-the training corpus. It measures whether the envelope generalises to
-unseen \emph{checkpoints} of families it has already seen, not to unseen
-families. A from-scratch, standard-library-only reimplementation
-sharing no code with the pipeline reproduces this figure with zero
-disagreements. That checks the computation, not the validity of the design.
+\([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level. The \ProspN{} strict rows come from \ProspClusN{} distinct checkpoints,
+which split under the family definition of \S\ref{sec:data} as follows:
+\ProspInFamCkpts{} in-family checkpoints (all DeepSeek-R1-Distill
+checkpoints whose bases are Llama-3.1, Llama-3.3 or Qwen-2.5 members of
+the training corpus) contribute \ProspInFamRows{} rows at
+\ProspInFamCov\% two-sided coverage; \ProspOutFamCkpts{} out-of-family
+checkpoints (Gemma-3, SmolLM and SmolLM3, and NVIDIA-Nemotron-Nano-9B)
+contribute \ProspOutFamRows{} rows at \ProspOutFamCov\% coverage. Both
+sides land at the nominal 90\%: the envelope generalises to derivative
+checkpoints of a training family and to genuinely new pretraining runs,
+not only to one of the two. We do not claim this as proof of transfer to
+any specific unseen family; we do claim it as a robustness check that the
+headline number is not carried by one side of the split. A from-scratch, standard-library-only reimplementation sharing no
+code with the pipeline reproduces this figure with zero disagreements.
+That checks the computation, not the validity of the design.
 
 \paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
 not \ProspN{} independent observations: a bootstrap that resamples checkpoints gives a 95\% interval of
@@ -377,13 +410,13 @@ should be read as an average across schemes with very different sample
 sizes, not as a coverage claim uniform across schemes.
 
 \paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
-intervals exclude zero: for most schemes the true effect is small enough
-that a calibrated interval built on this record cannot rule out zero
-damage. And \BigLossBelow{} of \BigLoss{} observed losses worse than 3pp
-fell \emph{below} their interval floor: a symmetric band fit to a
-left-skewed damage distribution systematically under-covers the tail, and
-an asymmetric construction that does not degenerate to infinite intervals
-(\S\ref{sec:audit}) is the obvious next step.
+intervals exclude zero: the tool can never state that a scheme \emph{will}
+cost accuracy. And \BigLossBelow{} of \BigLoss{} observed losses worse
+than 3pp fell \emph{below} their interval floor---when real damage occurs,
+the interval usually misses it. This is the single most important caveat
+in the paper. The obvious mitigation, an asymmetric band, was tried and
+lost on both coverage and width where it was finite (\S\ref{sec:audit}),
+so there is no drop-in fix on offer.
 
 \section{The measured left tail}\label{sec:tail}
 
@@ -504,9 +537,15 @@ survived---would misrepresent how the result was obtained.
 
 \paragraph{Errors that changed a published number.}
 \begin{itemize}
-  \item \emph{A retracted headline.} An early claim that held-out models came
-    from families never used in construction was wrong; they were new
-    checkpoints of families already present. The strict figure is \(\ProspInside/\ProspN\).
+  \item \emph{A retracted headline, then re-partitioned.} An early claim
+    that all \ProspClusN{} held-out checkpoints came from families never
+    used in construction was wrong under any definition. Under the
+    definition adopted in \S\ref{sec:data}, \ProspInFamCkpts{} of the
+    \ProspClusN{} strict checkpoints are derivatives of a training family
+    and \ProspOutFamCkpts{} are from new pretraining runs. The strict
+    figure of \(\ProspInside/\ProspN\) resolves to \ProspInFamInside/\ProspInFamRows{}
+    in-family and \ProspOutFamInside/\ProspOutFamRows{} out-of-family, both
+    at nominal (\S\ref{sec:results}).
   \item \emph{Two parser bugs.} A benchmark label typo cost 11 training rows;
     separately, \texttt{MATH-500} was matched as \texttt{Math-Lvl-5},
     contaminating 7 test rows with scores from a different benchmark.
@@ -599,11 +638,15 @@ features does not work on published data, and the reason is largely
 measurement noise rather than model capacity; predictors that use
 checkpoint-level statistics were not tested and remain open. What does
 work is narrower: a per-scheme calibrated envelope that is validated at
-\(\ProspCov\%\) two-sided coverage on unseen checkpoints, of families
-already present in training, for \ProspSchemes{} of the \Nsch{} schemes,
-and that says which of its own cells it cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
+\(\ProspCov\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{} of
+the \Nsch{} schemes, with essentially the same coverage on derivative
+checkpoints of training families (\ProspInFamCov\%, \ProspInFamCkpts{}
+checkpoints) and on new pretraining runs (\ProspOutFamCov\%,
+\ProspOutFamCkpts{} checkpoints), and that says which of its own cells it
+cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
 shown but flagged and the scheme demoted; or refused, in which case the interval is withheld. Today \NCellsInsuff{} of
-\NCellsTotal{} cells are insufficient evidence and \NCellsRefused{} are refused. The more useful contribution may be the limitation
+\NCellsTotal{} cells are insufficient evidence; on this corpus the refusal
+state does not fire (\S\ref{sec:method}). The more useful contribution may be the limitation
 itself---the published record of quantized models is outcome-truncated, and we
 measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
 estimate built on that record is a floor on risk, not a ceiling, and should say

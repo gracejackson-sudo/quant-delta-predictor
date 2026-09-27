@@ -495,6 +495,36 @@ def registry():
         _wfour = _st[_st.scheme == "w4a16"]
         add("prosp_wfour_share_pct", 100 * len(_wfour) / max(len(_st), 1), 0.5,
             "W4A16 share of the strict prospective set")
+        # Family split under the mechanistic definition (Section 3): a
+        # checkpoint is in-family if its pretraining weights are inherited
+        # from a training family (distillation, continued pretraining,
+        # quantization, fine-tuning). On this corpus the in-family label
+        # applies exactly to the seven DeepSeek-R1-Distill checkpoints, whose
+        # bases are Llama-3.1/3.3 and Qwen-2.5 checkpoints in the training
+        # data. Every other strict checkpoint (Gemma-3, SmolLM, SmolLM3,
+        # Nemotron-Nano) is a new pretraining run relative to the training
+        # families and is treated as out-of-family.
+        _in_mask = _st.model.map(lambda m_: bool(
+            _re.search(r"DeepSeek-R1-Distill-(?:Llama|Qwen)",
+                       m_.split("/")[-1], _re.I)))
+        _in = _st[_in_mask]; _out = _st[~_in_mask]
+        add("prosp_in_family_rows", len(_in), 0,
+            "rows in the strict prospective set that are in-family under the "
+            "Section 3 definition")
+        add("prosp_in_family_inside", int(_in.inside.sum()), 0,
+            "of those rows, how many the shipped interval covered")
+        add("prosp_in_family_cov_pct", 100 * _in.inside.mean(), 0.05,
+            "in-family two-sided coverage on the strict prospective set")
+        add("prosp_in_family_ckpts", _in.model.nunique(), 0,
+            "in-family checkpoints in the strict prospective set")
+        add("prosp_out_family_rows", len(_out), 0,
+            "rows in the strict prospective set that are out-of-family")
+        add("prosp_out_family_inside", int(_out.inside.sum()), 0,
+            "of those rows, how many the shipped interval covered")
+        add("prosp_out_family_cov_pct", 100 * _out.inside.mean(), 0.05,
+            "out-of-family two-sided coverage on the strict prospective set")
+        add("prosp_out_family_ckpts", _out.model.nunique(), 0,
+            "out-of-family checkpoints in the strict prospective set")
         _cl = [_x.inside.to_numpy(float) for _, _x in _st.groupby("model")]
         _S = _np.array([_c.sum() for _c in _cl]); _N = _np.array([len(_c) for _c in _cl])
         _rng = _np.random.default_rng(0)
