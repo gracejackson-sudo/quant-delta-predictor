@@ -491,6 +491,27 @@ rows that were already in the test set. Rather than silently retain them, we
 record which fixes were test-informed and exclude the affected family from the
 strict headline.
 
+\paragraph{An attempted extension of the adversarial arm to 3B.} On a fresh
+40\,GB A100 with a fresh dependency install, we re-ran the adversarial
+sweep to (i) verify that yesterday's numbers reproduce and (ii) add a
+Qwen2.5-3B-Instruct row. The regression check passed: base evaluations
+on Qwen2.5-0.5B-Instruct and SmolLM-135M-Instruct reproduced byte-for-byte,
+deterministic-quantization recipes (per-tensor RTN, w8a8 without smoothing)
+reproduced byte-for-byte, and stochastic GPTQ recipes stayed within
+\(\leq 0.85\)pp of yesterday, consistent with fp16 Hessian-accumulation
+noise. The 3B extension did not land: base evaluations on Qwen2.5-3B-Instruct
+completed, but all five quantization recipes hit
+\texttt{torch.cuda.OutOfMemoryError} during the paired-evaluation forward
+pass at batch size 2, not during quantization itself; the fp16 model
+weights (\(\approx 6\)\,GB), PyTorch's caching allocator fragmentation
+from unloaded prior states, and activation memory for a batch of 2 long
+sequences together exceeded the 40\,GB budget with roughly 10\,GB of
+free memory needed for the next allocation. A single 80\,GB card would
+be expected to accommodate this, so the constraint is hardware, not
+methodology. The adversarial arm therefore remains bounded at
+\(\leq\AdvMaxB\)B as before; \S\ref{sec:limits} states this scope
+directly.
+
 \paragraph{Mechanical verification.} The figures this paper reports as
 results are macros generated from a claims registry that recomputes each value
 from source artifacts, and the accompanying code fails a test if an

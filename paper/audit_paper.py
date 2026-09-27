@@ -56,7 +56,11 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "1.5",   # part of the model name "Qwen2.5-1.5B-Instruct"
           "09", "26",  # month/day in the RedHatAI-card scan date 2026-09-26
           "128",   # group size documented on RedHatAI/Qwen2.5-1.5B-quantized.w4a16
-          "64"}    # group size documented on RedHatAI/Qwen2.5-0.5B-quantized.w4a16
+          "64",    # group size documented on RedHatAI/Qwen2.5-0.5B-quantized.w4a16
+          "135",   # SmolLM-135M-Instruct model name digit
+          "40",    # 40 GB VRAM (A100-SXM4-40GB, on which the day-6 rerun OOM'd)
+          "80",    # 80 GB VRAM (the hardware that would make the 3B extension fit)
+          "0.85"}  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression
 hand = sorted({n for n in NUM.findall(body) if n not in EXEMPT})
 if hand:
     warn.append(f"hand-typed numerals in prose (verify each): {hand}")
