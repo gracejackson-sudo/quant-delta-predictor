@@ -88,12 +88,13 @@ def main():
                 elo, ehi = empirical_band(cg.delta.to_numpy())
                 y = g.delta.to_numpy(float)
                 hlo, hhi, hsrc = hybrid_band(cg.delta.to_numpy(), centre)
+                _EPS = 1e-9  # boundary points are inside (A4 audit note)
                 rows.append(pd.DataFrame({
                     "scheme": s, "test_family": tf, "y": y,
                     "row_id": g.index.to_numpy(),
-                    "conf_ok": (y >= clo) & (y <= chi),
-                    "emp_ok": (y >= elo) & (y <= ehi),
-                    "hyb_ok": (y >= hlo) & (y <= hhi),
+                    "conf_ok": (y >= clo - _EPS) & (y <= chi + _EPS),
+                    "emp_ok": (y >= elo - _EPS) & (y <= ehi + _EPS),
+                    "hyb_ok": (y >= hlo - _EPS) & (y <= hhi + _EPS),
                     "conf_w": chi - clo, "emp_w": ehi - elo,
                     "hyb_w": hhi - hlo, "hyb_src": hsrc,
                     "conf_lo": clo, "emp_lo": elo, "hyb_lo": hlo,

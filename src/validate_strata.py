@@ -104,7 +104,7 @@ def main():
             t = annotate(p).copy()
             t["lo"], t["hi"], t["level"] = lo, hi, lvl
             _EPS = 1e-9
-        t["covered"] = (t.delta >= t.lo - _EPS) & (t.delta <= t.hi + _EPS)
+            t["covered"] = (t.delta >= t.lo - _EPS) & (t.delta <= t.hi + _EPS)
             t["width"] = t.hi - t.lo
             print(f"\n  {name}: {int(t.covered.sum())}/{len(t)} = "
                   f"{t.covered.mean()*100:.1f}%  width={t.width.mean():.2f}pp")

@@ -149,9 +149,13 @@ def interval(model: Predictor, dte: pd.DataFrame, qhat: float,
 
 def evaluate(dte: pd.DataFrame, yhat, lo, hi):
     y = dte.delta.to_numpy(float)
+    # a value on the interval boundary counts as inside; matches the
+    # tolerance in verify/independent_check.py, src/cell_coverage.py, and the
+    # A4 audit note in the paper (§9)
+    _EPS = 1e-9
     return {
         "n": int(len(y)),
-        "coverage": float(np.mean((y >= lo) & (y <= hi))),
+        "coverage": float(np.mean((y >= lo - _EPS) & (y <= hi + _EPS))),
         "mean_half_width": float(np.mean((hi - lo) / 2.0)),
         "median_half_width": float(np.median((hi - lo) / 2.0)),
         "mae": float(np.mean(np.abs(y - yhat))),

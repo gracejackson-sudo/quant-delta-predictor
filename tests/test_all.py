@@ -1206,6 +1206,34 @@ def test_independent_check_csv_matches_tolerance_recomputation():
         + "\n".join(disagreements[:10]))
 
 
+def test_real_use_case_csv_matches_tolerance_recomputation():
+    """Same guard on out/real_use_case.csv. Before the day-7 audit this CSV
+    still said 118/131 while the paper said 119/131, because the A4 fix was
+    only applied to out/independent_check.csv. Locking it here so a
+    regeneration that drops the tolerance breaks the local gate."""
+    import csv
+    path = os.path.join(os.path.dirname(__file__), "..", "out",
+                        "real_use_case.csv")
+    _EPS = 1e-9  # matches the comparison-site tolerance
+    rows = list(csv.DictReader(open(path)))
+    disagreements = []
+    for r in rows:
+        if not (r["lo"] and r["hi"] and r["delta"] and r["inside_90"]):
+            continue
+        lo, hi, d = float(r["lo"]), float(r["hi"]), float(r["delta"])
+        expected = "True" if (lo - _EPS <= d <= hi + _EPS) else "False"
+        if r["inside_90"] != expected:
+            disagreements.append(
+                f"{r['model'].split('/')[-1]} on {r['benchmark']}: "
+                f"CSV says {r['inside_90']} but tolerance recomputation "
+                f"gives {expected} (delta={d}, lo={lo}, hi={hi})")
+    assert not disagreements, (
+        "out/real_use_case.csv is stale relative to the tolerance-based "
+        "comparison used in the rest of the pipeline. PROVENANCE.md's "
+        "'2026-09-27, A4 fix' section explains what to do:\n"
+        + "\n".join(disagreements[:10]))
+
+
 # ---------------------------------------------------------------------------
 # A2 loose end: the paper's protocol sentence names three excluded family
 # patterns and two reasons. This test locks the strict-filter code path to
@@ -1269,3 +1297,54 @@ def test_paper_section6_protocol_sentence_states_both_grounds():
             f"{name}: paragraph does not name Llama-3.1 and Qwen-3")
         assert "Llama-4" in para, (
             f"{name}: paragraph does not name Llama-4")
+
+
+# ---------------------------------------------------------------------------
+# Item 3 (external audit, 2026-09-27): validate_strata.py's IndentationError
+# after the A4 patch escaped the gate because no test imports it. This closes
+# the hole: every .py file under src/ and verify/ must at least parse.
+# Import-fails-loudly, not silently.
+# ---------------------------------------------------------------------------
+
+def test_paper_audit_reads_the_live_registry_not_hard_coded_literals():
+    """The day-7 external audit found paper/audit_paper.py section 4 was
+    verifying against hard-coded literals (90.1, 118, 131, 83.6, 94.6) while
+    the paper itself had moved to 90.8 / 119 after the A4 fix, so the audit
+    was passing while the paper disagreed with it. Guard against that by
+    grepping the source for the pre-A4 literals inside section 4 and by
+    requiring the section to import from src.verify_claims."""
+    root = os.path.join(os.path.dirname(__file__), "..")
+    src = open(os.path.join(root, "paper", "audit_paper.py")).read()
+    # anchor: only care about what happens after the section-4 heading
+    marker = 'head("4. INDEPENDENT RE-DERIVATION'
+    i = src.index(marker)
+    section = src[i:]
+    for literal in ("90.1", "118.0", "83.6", "94.6"):
+        assert literal not in section, (
+            f"paper/audit_paper.py section 4 still contains the pre-A4 "
+            f"hard-coded literal {literal!r}. The audit must read the live "
+            f"registry (see PROVENANCE.md 2026-09-27 A4 fix, item 2).")
+    assert "from verify_claims import registry" in src, (
+        "paper/audit_paper.py must import the live registry from "
+        "src.verify_claims to compare recomputed values against the same "
+        "source paper/numbers.tex is generated from.")
+
+
+def test_every_src_and_verify_module_parses_and_compiles():
+    import ast
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for sub in ("src", "verify"):
+        d = os.path.join(root, sub)
+        for name in sorted(os.listdir(d)):
+            if not name.endswith(".py"):
+                continue
+            path = os.path.join(d, name)
+            src = open(path).read()
+            try:
+                ast.parse(src, filename=path)
+                compile(src, path, "exec")
+            except SyntaxError as e:
+                raise AssertionError(
+                    f"{sub}/{name} does not parse: {e.__class__.__name__} "
+                    f"at line {e.lineno}: {e.msg}"
+                )

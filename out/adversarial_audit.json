@@ -13,7 +13,7 @@
   },
   {
     "tag": "OK",
-    "finding": "strict subset (131 rows, groups ['deepseek-r1-distill', 'gemma-3', 'nemotron', 'smollm', 'smollm3']): 90.1% coverage, 95% CI [83.6%, 94.6%] still contains nominal 90%"
+    "finding": "strict subset (131 rows, groups ['deepseek-r1-distill', 'gemma-3', 'nemotron', 'smollm', 'smollm3']): 90.8% coverage, 95% CI [84.5%, 95.2%] still contains nominal 90% (values updated 2026-09-27 to match the A4 float-boundary fix; see PROVENANCE.md)"
   },
   {
     "tag": "FINDING",

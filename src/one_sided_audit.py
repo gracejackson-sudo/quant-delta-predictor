@@ -54,12 +54,13 @@ def main():
            "pooled_scored_pairs": int(len(r)),
            "pooled_distinct_rows": int(r.row_id.nunique()), "cells": {}}
     rng = np.random.default_rng(0)
+    _EPS = 1e-9  # boundary points count as inside (A4 audit note, paper §9)
     for s, b in CELLS:
         g = r[(r.scheme == s) & (r.band == b)]
-        below = g.delta < g.lo
-        above = g.delta > g.hi
+        below = g.delta < g.lo - _EPS
+        above = g.delta > g.hi + _EPS
         g = g.copy()
-        g["ok_one_sided"] = g.delta >= g.lo
+        g["ok_one_sided"] = g.delta >= g.lo - _EPS
         groups = [x for _, x in g.groupby("base_model")]
         n_groups = len(groups)
         # cluster (whole-checkpoint) bootstrap of the ONE-SIDED statistic; exact
@@ -73,7 +74,7 @@ def main():
             "mean_delta_of_misses": round(float(miss.delta.mean()), 4)
             if len(miss) else None,
             "two_sided_pct": round(100 * g.ok.mean(), 4),
-            "one_sided_pct": round(100 * (g.delta >= g.lo).mean(), 4),
+            "one_sided_pct": round(100 * (g.delta >= g.lo - _EPS).mean(), 4),
             "below_lo_pct": round(100 * below.mean(), 4),
             "above_hi_pct": round(100 * above.mean(), 4),
             "scored_pairs": int(len(g)),

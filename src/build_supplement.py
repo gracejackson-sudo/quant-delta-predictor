@@ -60,7 +60,10 @@ DROP_FILES: list[str] = [
     "feedback_form.html",   # feedback form, if present
     "feedback_config.json", # Formspree endpoint config, if present
     "index.html",           # GitHub Pages landing page; posts to Formspree
-    "requests.log",         # per-machine request log
+    "out/requests.log",     # per-machine request log (the actual path is
+                            # under out/; keep the bare name too in case a
+                            # future build moves it back)
+    "requests.log",
 ]
 # Whole directories to skip.
 DROP_DIRS: list[str] = [
@@ -97,19 +100,46 @@ TEXT_REPLACEMENTS: list[tuple[str, list[tuple[str, str]]]] = [
 
 # ---------------------------------------------------------------- 3. check
 # Identity strings the build check refuses to ship. Each is (regex, label).
+# Every entry uses re.IGNORECASE at check time (see check_no_identity_strings
+# below), so lowercased, mixed-case, name-reversed and bare-handle forms all
+# match a single pattern instead of needing separate ones. Adding a case-only
+# variant here is a red flag: the search is already case-insensitive.
 IDENT_STRINGS: list[tuple[str, str]] = [
-    (r"\bGrace Jackson\b", "author name"),
-    (r"gracejackson-sudo", "GitHub handle"),
-    (r"gracejackson@berkeley\.edu", "personal email"),
+    # Full name in either order and with either separator.
+    (r"\bGrace[ ._-]+Jackson\b", "author name"),
+    (r"\bJackson[ ._,]+Grace\b", "author name (reversed)"),
+    # Bare GitHub handle, with or without the `-sudo` suffix, in URL and body.
+    (r"\bgracejackson(?:-sudo)?\b", "GitHub handle"),
+    # Email in any host, including bare @berkeley.
     (r"gracejackson@[A-Za-z0-9.-]+", "personal email"),
-    (r"gracejackson@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", "personal email"),
-    (r"gracejackson\.github\.io", "personal github page"),
-    (r"gracejackson-sudo\.github\.io", "personal github page"),
-    (r"formspree\.io/f/[A-Za-z0-9]+", "Formspree endpoint id"),
-    (r"/Users/grace/", "author's local home directory"),
-    (r"/home/grace/", "author's local home directory"),
+    (r"[A-Za-z0-9._-]+@berkeley\.edu", "berkeley email"),
+    # Personal pages (author's own; not the paper's ANONYMISED URL).
+    (r"gracejackson(?:-sudo)?\.github\.io", "personal github page"),
+    # Formspree: full URL AND the 8-hex-char bare id our form uses.
+    (r"formspree\.io/f/[A-Za-z0-9]+", "Formspree endpoint URL"),
+    (r"\bmkjgbwyl\b", "Formspree endpoint id (bare)"),
+    # Absolute paths that leak the home directory.
+    (r"/Users/grace/", "author's local home directory (macOS)"),
+    (r"/home/grace/", "author's local home directory (linux)"),
     (r"\bPhantomEFStartProduct\b", "author's project directory"),
-    (r"Berkeley (?:student|sophomore|undergraduate)", "author's affiliation"),
+    # Affiliation. "Berkeley" alone matches benign benchmark names
+    # (Berkeley Function-Calling Leaderboard is on RedHat model cards), so
+    # we anchor on phrases that name Berkeley as an author affiliation.
+    (r"\b(?:UC\s+)?Berkeley\s+(?:student|sophomore|junior|senior|freshman"
+     r"|undergrad(?:uate)?|graduate|master(?:s)?|MS|MIDS|Haas|EECS|CS|BA)\b",
+     "Berkeley affiliation"),
+    (r"\b(?:researcher|student|engineer|scientist|develop(?:er)?|analyst"
+     r"|founder|CEO)\s+at\s+(?:UC\s+)?Berkeley\b",
+     "'at Berkeley' affiliation"),
+    (r"\bat\s+UC\s+Berkeley\b", "'at UC Berkeley' affiliation"),
+    (r"\bEntrepreneur[\s\-]?First\b",
+     "Entrepreneur First (program affiliation)"),
+    (r"\bEF[- ]Day-?\d+\b", "EF-Day-N project folder name"),
+    # Git commit trailers that carry a real identity: these are what a
+    # co-authored-by trailer or DCO sign-off would look like in an anonymised
+    # supplement, so they must not survive.
+    (r"^\s*Co-Authored-By:\s*Grace[^<\n]*<[^>]+>", "git Co-Authored-By trailer"),
+    (r"^\s*Signed-off-by:\s*Grace[^<\n]*<[^>]+>", "git Signed-off-by trailer"),
 ]
 
 # Files that a build check MAY skip because they are historical (e.g. a
@@ -164,7 +194,10 @@ def scan(dst: str) -> list[tuple[str, int, str, str]]:
     """Return every (path, line_number, matched_string, label) surviving the
     redaction."""
     hits: list[tuple[str, int, str, str]] = []
-    patterns = [(re.compile(p), lbl) for p, lbl in IDENT_STRINGS]
+    # IGNORECASE catches lowercase / camelcase variants without needing a
+    # second pattern. MULTILINE lets the ^ anchors on git trailers work.
+    patterns = [(re.compile(p, re.IGNORECASE | re.MULTILINE), lbl)
+                for p, lbl in IDENT_STRINGS]
     for base, dirs, files in os.walk(dst):
         dirs[:] = [d for d in dirs if d not in DROP_DIRS]
         for f in files:

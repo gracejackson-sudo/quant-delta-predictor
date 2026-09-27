@@ -130,9 +130,13 @@ def build_artifact():
         "artifact": "per-scheme quantization accuracy-delta envelope",
         "what_it_is": ("the observed distribution of (quantized - original) "
                        "accuracy in percentage points on OpenLLM-style "
-                       "benchmarks, per quantization scheme, with a split-"
-                       "conformal 90% interval. It is a calibrated historical "
-                       "baseline, NOT a per-model predictor."),
+                       "benchmarks, per quantization scheme, with a "
+                       "conformal-style 90% interval (an in-sample "
+                       "residual-quantile band; the split-conformal "
+                       "guarantee applies only to the explicit "
+                       "calibration-set variant used inside the LOFO audit). "
+                       "It is a calibrated historical baseline, NOT a "
+                       "per-model predictor."),
         "built": str(date.today()),
         "alpha": ALPHA,
         "target": "acc_after - acc_before, percentage points",

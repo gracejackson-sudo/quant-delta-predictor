@@ -201,7 +201,8 @@ def audit2():
         c = Conformal(alpha=0.10, mondrian_by="scheme").fit(m, ca)
         _, lo, hi, _ = c.predict_interval(te)
         y = te.delta.to_numpy()
-        covs.append(np.mean((y >= lo) & (y <= hi)))
+        _EPS = 1e-9  # boundary points are inside (A4 audit note, paper §9)
+        covs.append(np.mean((y >= lo - _EPS) & (y <= hi + _EPS)))
     mc = float(np.mean(covs))
     check(0.885 <= mc <= 0.915,
           f"synthetic exchangeable check: coverage {mc*100:.2f}% "
@@ -276,8 +277,11 @@ def audit3():
                 c = Conformal(alpha=alpha, mondrian_by="scheme").fit(m, ca)
                 _, lo, hi, _ = c.predict_interval(te)
                 y = te.delta.to_numpy(float)
-                rows.append(pd.DataFrame({"covered": (y >= lo) & (y <= hi),
-                                          "hw": (hi - lo) / 2}))
+                _EPS = 1e-9  # boundary points are inside (A4 audit note)
+                rows.append(pd.DataFrame({
+                    "covered": (y >= lo - _EPS) & (y <= hi + _EPS),
+                    "hw": (hi - lo) / 2,
+                }))
         a = pd.concat(rows)
         gap = a.covered.mean() - (1 - alpha)
         print(f"       nominal {100*(1-alpha):>4.0f}%  ->  observed "
@@ -334,8 +338,10 @@ def audit3():
                 c = Conformal(alpha=0.10, mondrian_by="scheme").fit(m, ca)
                 yh, lo_, hi_, _ = c.predict_interval(te)
                 y = te.delta.to_numpy(float)
+                _EPS = 1e-9  # boundary points are inside (A4 audit note)
                 rows.append(pd.DataFrame({
-                    "covered": (y >= lo_) & (y <= hi_), "hw": (hi_ - lo_) / 2,
+                    "covered": (y >= lo_ - _EPS) & (y <= hi_ + _EPS),
+                    "hw": (hi_ - lo_) / 2,
                     "ae": np.abs(y - yh)}))
         a = pd.concat(rows)
         print(f"       {label:<30} n={len(a):>5}  cov="

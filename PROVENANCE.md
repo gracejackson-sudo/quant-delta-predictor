@@ -87,7 +87,9 @@ declared:
   improved.
 
 **Effect on the headline**: the strict set drops from 138 rows to 131, and coverage moves from
-89.9% to **90.1%**. Both contain nominal 90%.
+89.9% to **90.1%** at the time of that audit; the 2026-09-27 A4 float-boundary
+fix subsequently moved it again to **119/131 = 90.8%** (see the "2026-09-27
+A4 fix" section below). All three figures contain nominal 90%.
 
 ---
 
@@ -124,6 +126,15 @@ reimplementations agreed on the same 118/131 wrong answer.
 
 The fix patched twelve comparison sites to use a `1e-9` tolerance on each
 bound (see the shared-assumption bullet in the paper's `\section{Audit}`).
+A subsequent audit on the same day found six more sites that had also kept
+the strict comparison (`src/model.py::evaluate`, three sites in `src/audit.py`,
+three in `src/interval_shape.py`, two in `src/adversarial_audit.py`, the
+`one_sided_pct` line and the `below`/`above` counters in `src/one_sided_audit.py`,
+and the two-sided line in `verify/independent_rank.py`); those were patched at
+the same time. `tests/test_all.py::test_every_src_and_verify_module_parses_and_compiles`
+was added so a syntax break in any src/ or verify/ module (as happened with
+`src/validate_strata.py` after the first A4 patch) cannot slip past the gate
+because no test happens to import that module.
 
 Because `data/cards/` and `data/prospective_cards/` are not shipped in this
 repository, `verify/independent_check.py` could not be re-run against the raw
@@ -131,6 +142,13 @@ card corpus at fix time. Instead, `out/independent_check.csv` was updated by
 recomputing the `inside` column from the existing `lo`, `hi`, and `delta`
 columns with the same `1e-9` tolerance the code now applies. Exactly one row
 changed (`gemma-3-1b-it-quantized.w4a16` on TruthfulQA, `False -> True`).
+`out/real_use_case.csv` -- the CSV that `paper/audit_paper.py` re-derives from --
+was patched in the same way on the same row (its `inside_90` column also
+flipped from `False` to `True` for exactly one row), so both CSVs and the
+paper now agree on 119/131 = 90.8%. Before this second patch,
+`paper/audit_paper.py` was reading the pre-fix 118 from `out/real_use_case.csv`
+and printing OK against a hard-coded 90.1 literal, which the day-7 audit
+identified as a vacuous re-derivation (see item 2 in the same audit).
 
 **A patched artifact is not the same as a regenerated one.** If you fetch the
 raw cards and run `python verify/independent_check.py`, the resulting

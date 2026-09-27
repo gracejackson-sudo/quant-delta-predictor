@@ -35,9 +35,9 @@ to trust a number. That flag is the tool declining to vouch for its own output.
 
 ## Where to go next
 
-1. [TOOL_SUMMARY.md](TOOL_SUMMARY.md): one page, what it does, what it flags, what it cannot do
-2. [FINDINGS.md](FINDINGS.md): the research result, with corrections applied in place
-3. [`paper/`](paper/): the write-up
+1. [`paper/main.tex`](paper/main.tex) / [`paper/neurips_main.tex`](paper/neurips_main.tex): the current write-up. **This is the source of truth for every figure** — it is regenerated from the claims registry (`src/verify_claims.py`) on every build and audited by `paper/audit_paper.py`.
+2. [TOOL_SUMMARY.md](TOOL_SUMMARY.md): one page, what it does, what it flags, what it cannot do
+3. [FINDINGS.md](FINDINGS.md): the original 2026-09-21 narrative; kept for the record, but its figures are frozen at that date and sit outside every gate (see AUDIT_DISCIPLINE.md). Where it differs from the paper, the paper is correct.
 
 Everything else is in the table below.
 
@@ -47,14 +47,15 @@ Everything else is in the table below.
 Feasibility spike: given `(base model, quantization config)`, predict the accuracy delta on
 OpenLLM-style benchmarks with a calibrated prediction interval.
 
-**Result: the calibration works (90.1% empirical coverage on unseen checkpoints at a nominal 90%);
-the point prediction carries almost no signal beyond the quantization scheme, and the fitted
-artifact is a small number table — a calibrated historical baseline, not a predictor.**
+**Result (current, from the paper): the calibration works — 90.8% two-sided empirical coverage on
+unseen checkpoints at a nominal 90% (119/131, 95% CI [84.5, 95.2]); the point prediction carries
+almost no signal beyond the quantization scheme, and the fitted artifact is a small number table
+— a calibrated historical baseline, not a predictor.**
 
 | document | what it holds |
 |---|---|
 | [TOOL_SUMMARY.md](TOOL_SUMMARY.md) | one page: what it does, what it flags, what it cannot do (the best next read after the first screen) |
-| [FINDINGS.md](FINDINGS.md) | the result, with corrections applied in place |
+| [FINDINGS.md](FINDINGS.md) | the original 2026-09-21 narrative (historical; outside the gate — see the preamble in that file) |
 | [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md) | per-model prediction has no signal beyond the scheme average |
 | [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias: what is identified, what is not, and why there is no corrected point estimate |
 | [AUDIT_DISCIPLINE.md](AUDIT_DISCIPLINE.md) | the standing audit rule and what it has caught |
@@ -117,7 +118,7 @@ The research scripts need two more packages than the tool does:
 ./.venv/bin/python src/harvest.py          # rebuild dataset.csv from cards (needs the cards; see data/README.md)
 ./.venv/bin/python src/run_final.py        # all three split regimes and calibration variants
 ./.venv/bin/python src/demo_holdout.py     # train on 2 families, predict unseen models
-./.venv/bin/python src/real_use_case.py    # prospective test on never-seen families (needs network)
+./.venv/bin/python src/real_use_case.py    # prospective test on unseen checkpoints (needs network)
 ./.venv/bin/python src/diagnose.py         # which failure mode this is
 ./.venv/bin/python src/validate_strata.py  # does size stratification help? mostly not - see RANKING.md
 ./.venv/bin/python src/build_envelope.py && ./.venv/bin/python src/cli.py --list

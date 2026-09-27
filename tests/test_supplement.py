@@ -89,3 +89,51 @@ def test_supplement_scrub_fails_loudly_when_an_identity_string_is_planted(
         "check is running after the zip write.")
     assert "SUPPLEMENT SCRUB FAILED" in r.stdout, (
         "plant test failed but not for the right reason:\n" + r.stdout)
+
+
+# ---------------------------------------------------------------------------
+# Unit-level plant test for every regex category in IDENT_STRINGS. The
+# process-level plant (above) plants ONE canary; this exercises every kind
+# the day-7 audit asked for -- lowercase, name-reversed, bare handle, bare
+# Formspree id, Berkeley affiliation, Entrepreneur First, co-author trailer
+# -- so silently narrowing a regex breaks the gate.
+# ---------------------------------------------------------------------------
+
+PLANT_VARIANTS = [
+    # (label the reviewer would use, string to plant)
+    ("lowercase name",       "signed by grace jackson"),
+    ("dotted name",          "grace.jackson filed the PR"),
+    ("name-reversed",        "Jackson, Grace (author)"),
+    ("bare handle",          "see @gracejackson for details"),
+    ("handle with -sudo",    "@gracejackson-sudo has the fork"),
+    ("bare Formspree id",    "endpoint mkjgbwyl is live"),
+    ("Formspree URL",        "posts to https://formspree.io/f/xxx11111"),
+    ("Berkeley affiliation", "she is a Berkeley MIDS student"),
+    ("at Berkeley phrase",   "a researcher at Berkeley wrote this"),
+    ("at UC Berkeley",       "a talk given at UC Berkeley last spring"),
+    ("Entrepreneur First",   "in the Entrepreneur First cohort"),
+    ("EF-Day-N folder",      "see /path/EF-Day-5 for the pack"),
+    ("Co-Authored-By trailer",
+     "Co-Authored-By: Grace Jackson <gj@example.com>"),
+    ("Signed-off-by trailer",
+     "Signed-off-by: Grace Jackson <gj@example.com>"),
+    ("home dir macOS",       "output written to /Users/grace/notes.txt"),
+    ("home dir linux",       "output written to /home/grace/notes.txt"),
+    ("berkeley email",       "reach me at anon@berkeley.edu"),
+    ("PhantomEFStartProduct", "cd PhantomEFStartProduct/impl"),
+]
+
+
+def test_scan_catches_every_ident_variant_the_audit_named(tmp_path):
+    """Direct unit test of the scan(): plant one variant per file and
+    check every one is caught. A future edit that drops a regex would
+    make one of these silently pass, and this test breaks."""
+    from build_supplement import scan
+    for i, (label, planted) in enumerate(PLANT_VARIANTS):
+        d = tmp_path / f"case_{i:02d}"
+        d.mkdir()
+        (d / "planted.txt").write_text(planted, encoding="utf-8")
+        hits = scan(str(d))
+        assert hits, (
+            f"variant {label!r} planted the string {planted!r} but the "
+            f"scan returned no hits. Add coverage in IDENT_STRINGS.")

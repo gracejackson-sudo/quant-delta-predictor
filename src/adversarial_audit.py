@@ -424,9 +424,10 @@ def a4_bad_config(d, p, sm, qh):
     worst["interval"] = worst.scheme.map(
         lambda s: f"[{sm[s]-qh[s]:+.2f}, {sm[s]+qh[s]:+.2f}]")
     worst["flagged"] = worst.scheme.map(lambda s: excl[s])
+    _EPS = 1e-9  # boundary points count as inside (A4 audit note)
     worst["covered"] = worst.apply(
-        lambda r: sm[r.scheme] - qh[r.scheme] <= r.delta
-        <= sm[r.scheme] + qh[r.scheme], axis=1)
+        lambda r: sm[r.scheme] - qh[r.scheme] - _EPS <= r.delta
+        <= sm[r.scheme] + qh[r.scheme] + _EPS, axis=1)
     worst["model"] = worst.model.map(lambda s: s.split("/")[-1][:44])
     print(worst.to_string(index=False))
 
@@ -479,9 +480,10 @@ def a4_bad_config(d, p, sm, qh):
              f"example to publish.")
 
     print("\n[A4.5] how often is a >3pp loss missed by the interval?")
+    _EPS = 1e-9  # boundary points count as inside (A4 audit note)
     big = allrows[allrows.delta < -3.0].copy()
     big["covered"] = big.apply(
-        lambda r: sm[r.scheme] - qh[r.scheme] <= r.delta, axis=1)
+        lambda r: sm[r.scheme] - qh[r.scheme] - _EPS <= r.delta, axis=1)
     print(f"   rows with delta < -3pp : {len(big)}")
     print(f"   of those, inside the 90% interval's lower bound: "
           f"{int(big.covered.sum())} ({100*big.covered.mean():.0f}%)")

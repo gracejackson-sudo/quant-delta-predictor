@@ -8,11 +8,16 @@ The corrected headline is **124/138 = 89.9%** (95% CI [83.6%, 94.3%]) on a stric
 set, and the thing being validated should be called a **calibrated historical baseline**, not a
 predictor.
 
-> *Superseded figure, kept deliberately.* Two parser bugs found after this audit (the
-> `Math-|v|-5` and `MATH-500` cases in [PROVENANCE.md](PROVENANCE.md)) changed the row counts,
-> and the current headline is **118/131 = 90.1%**, 95% CI [83.6%, 94.6%], as reported in
-> [FINDINGS.md](FINDINGS.md). The 89.9% above is left in place because this document is a dated
-> record of what that audit concluded, not a live figure.
+> *Superseded figure, kept deliberately.* Two parser bugs found after this
+> audit (the `Math-|v|-5` and `MATH-500` cases in [PROVENANCE.md](PROVENANCE.md))
+> changed the row counts, and after the 2026-09-27 A4 float-boundary fix
+> the current headline is **119/131 = 90.8%**, 95% CI [84.5%, 95.2%], as
+> reported in the paper and re-verified by `paper/audit_paper.py` against
+> the live claims registry. (An intermediate value of 118/131 = 90.1%
+> circulated between the parser fixes and A4; see PROVENANCE.md's
+> "2026-09-27 A4 fix" section.) The 89.9% above is left in place because
+> this document is a dated record of what that audit concluded, not a
+> live figure.
 
 ---
 

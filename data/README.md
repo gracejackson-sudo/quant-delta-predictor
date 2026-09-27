@@ -36,9 +36,13 @@ Without the raw cards, three scripts cannot run:
 
 That last one matters and we are not going to paper over it.
 `verify/independent_check.py` is the from-scratch reimplementation cited in
-FINDINGS.md as independent verification of the headline coverage figure. You
-cannot re-run it against source without the cards, so that particular check is
-one you have to take on trust or reproduce yourself.
+the paper (§9 Audit) as independent verification of the headline coverage figure.
+You cannot re-run it against source without the cards, so that particular check
+is one you have to take on trust or reproduce yourself. The committed
+`out/independent_check.csv` records the last run's output; `PROVENANCE.md`
+(entry for 2026-09-27) documents the A4 float-boundary fix and the
+regen-consistency test in `tests/test_all.py` that will catch a future
+regeneration that drops the 1e-9 tolerance.
 
 ## Fetching the cards yourself
 

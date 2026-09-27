@@ -211,8 +211,8 @@ def coverage_by_scheme(rows):
                     continue
                 recs.setdefault(r["scheme"], []).append((
                     r["rid"], r["base_model"], tf,
-                    int(iv[0] <= r["delta"] <= iv[1]),      # two-sided
-                    int(r["delta"] >= iv[0] - 1e-9)))          # one-sided: loss side, 1e-9 tolerance
+                    int(iv[0] - 1e-9 <= r["delta"] <= iv[1] + 1e-9),  # two-sided, boundary inside
+                    int(r["delta"] >= iv[0] - 1e-9)))                 # one-sided: loss side, 1e-9 tolerance
     out = {}
     for s, L in recs.items():
         pairs = len(L)

@@ -168,18 +168,46 @@ for pat, why in BANNED:
 print(f"   banned patterns matched: {hits}")
 
 # ---------------------------------------------------------------- 4
-head("4. INDEPENDENT RE-DERIVATION (from raw source, not the registry)")
-import pandas as pd
-from scipy.stats import beta
+head("4. INDEPENDENT RE-DERIVATION (from raw source, versus the LIVE registry)")
+# What this section verifies, and what it does not:
+#   * "recomputed" comes from raw source files (data/*.csv and out/*.csv),
+#     using the same tolerance the code uses.
+#   * "paper" comes from the LIVE claims registry (src/verify_claims.registry()),
+#     which is the same source that drives paper/numbers.tex. A hard-coded
+#     literal here would let the audit pass while the paper says something
+#     different -- that was the pre-2026-09-27 failure mode this rewrite fixes.
+#   * Tolerances are tight (rounding-scale) so a real drift is caught.
+#   * If the registry does not export a key, we fail rather than silently
+#     skip -- otherwise a rename in verify_claims would make the audit vacuous.
+import pandas as pd  # noqa: E402
+from scipy.stats import beta  # noqa: E402
 
-reg = json.load(open(os.path.join(HERE, "claims.json")))
+sys.path.insert(0, os.path.join(ROOT, "src"))
+from verify_claims import registry as _reg_fn  # noqa: E402
+REG = {k: v[0] for k, v in _reg_fn().items()}
 
 
-def chk(label, recomputed, claimed, tol):
-    ok = abs(recomputed - claimed) <= tol
-    print(f"   {label:<34} recomputed {recomputed:<12.4f} paper {claimed:<12.4f} {'OK' if ok else 'MISMATCH'}")
+def _claim(key):
+    if key not in REG:
+        fail.append(f"audit references a claim key that the registry does "
+                    f"not export: {key!r}. Either the registry lost the key "
+                    f"or the audit is out of date.")
+        return float("nan")
+    return REG[key]
+
+
+def chk(label, recomputed, key, tol):
+    """Compare a from-source recomputation against the LIVE registry value
+    for the given key. Fails on absent-key, NaN, or drift."""
+    claimed = _claim(key)
+    ok = (not (recomputed != recomputed))  # not NaN
+    ok = ok and (not (claimed != claimed))
+    ok = ok and abs(recomputed - claimed) <= tol
+    print(f"   {label:<34} recomputed {recomputed:<12.4f} paper "
+          f"{claimed:<12.4f} (key {key})  {'OK' if ok else 'MISMATCH'}")
     if not ok:
-        fail.append(f"re-derivation mismatch: {label}")
+        fail.append(f"re-derivation mismatch on {label} vs claim {key}: "
+                    f"recomputed {recomputed} paper {claimed} tol {tol}")
 
 
 # (a) strict prospective coverage, straight from the per-row predictions
@@ -187,30 +215,40 @@ r = pd.read_csv(os.path.join(ROOT, "out", "real_use_case.csv"))
 TRAIN = {"llama-3.1", "qwen2.5", "granite", "mistral", "qwen3", "gemma-2",
          "llama-3.3", "llama-3.2"}
 s = r[(~r.family.isin(TRAIN)) & (r.group != "llama-4")]
-chk("strict coverage %", 100 * s.inside_90.mean(), 90.1, 0.1)
-chk("strict covered rows", float(s.inside_90.sum()), 118.0, 0)
-chk("strict total rows", float(len(s)), 131.0, 0)
+# recomputation inside audit_paper.py is intentionally a SEPARATE
+# implementation from the CSV's own inside_90 column; boundary points
+# count as inside, matching the tolerance used elsewhere.
+_EPS = 1e-9
+_inside = ((s.delta >= s.lo - _EPS) & (s.delta <= s.hi + _EPS))
+chk("strict coverage %", 100 * _inside.mean(), "prosp_cov_pct", 0.05)
+chk("strict covered rows", float(_inside.sum()), "prosp_inside", 0)
+chk("strict total rows", float(len(s)), "prosp_n", 0)
 
 # (b) the Clopper-Pearson CI quoted in the abstract
-k, n = int(s.inside_90.sum()), len(s)
-chk("CP lower bound", 100 * beta.ppf(0.025, k, n - k + 1), 83.6, 0.05)
-chk("CP upper bound", 100 * beta.ppf(0.975, k + 1, n - k), 94.6, 0.05)
+k, n = int(_inside.sum()), len(s)
+chk("CP lower bound", 100 * beta.ppf(0.025, k, n - k + 1),
+    "prosp_ci_lo", 0.05)
+chk("CP upper bound", 100 * beta.ppf(0.975, k + 1, n - k),
+    "prosp_ci_hi", 0.05)
 
 # (c) adversarial tail, from the raw GPU run file
 a = pd.read_csv(os.path.join(ROOT, "data", "adversarial", "adversarial_runs.csv"))
 a["delta"] = a.acc_after - a.acc_before
 bad = a[a.is_control == 0]
 ctl = a[a.is_control == 1]
-chk("worst adversarial delta", a.delta.min(), -39.5, 0.01)
-chk("faulted rows <= -3pp", float((bad.delta <= -3).sum()), 16.0, 0)
-chk("faulted rows total", float(len(bad)), 36.0, 0)
-chk("control rows <= -3pp", float((ctl.delta <= -3).sum()), 2.0, 0)
+chk("worst adversarial delta", a.delta.min(), "adv_worst_delta", 0.01)
+chk("faulted rows <= -3pp", float((bad.delta <= -3).sum()),
+    "adv_bad_over_3pp", 0)
+chk("faulted rows total", float(len(bad)), "adv_bad_rows", 0)
+chk("control rows <= -3pp", float((ctl.delta <= -3).sum()),
+    "adv_control_over_3pp", 0)
 
 # (d) per-scheme severe rate, from the dataset
 d = pd.read_csv(os.path.join(ROOT, "data", "dataset.csv"))
 d = d[d.acc_before >= 20]
 nv = d[d.scheme == "nvfp4"]
-chk("nvfp4 severe-loss %", 100 * (nv.delta <= -3).mean(), 15.6, 0.05)
+chk("nvfp4 severe-loss %", 100 * (nv.delta <= -3).mean(),
+    "severe_pct::nvfp4", 0.05)
 
 # ---------------------------------------------------------------- report
 head("RESULT")

@@ -1,4 +1,16 @@
-# Feasibility result: predicting quantization accuracy delta with calibrated intervals
+# Feasibility narrative (historical, 2026-09-21): predicting quantization accuracy delta with calibrated intervals
+
+> **This document is a dated narrative and is NOT the source of truth.**
+> It sits outside the claim registry that governs the paper: every figure below is
+> hand-typed, its value is fixed at the date shown, and none of it is re-checked when
+> the pipeline changes. Where a figure here differs from a value in the paper, in
+> `paper/numbers.tex`, or in `out/*.json`, **those are correct and this file is stale**.
+> The current headline coverage (post-A4 float-boundary fix) is **119/131 = 90.8%**,
+> 95% CI [84.5, 95.2] — the figures below still show the pre-fix values (118/131 = 90.1%,
+> [83.6, 94.6]) and are preserved as a dated record. For the current result, read the
+> paper (`paper/main.tex` or `paper/neurips_main.tex`) and the registry
+> (`src/verify_claims.py`). See `AUDIT_DISCIPLINE.md` for why this doc is outside the
+> gate, and B4 in `EXTERNAL_FEEDBACK.md` for the audit finding that flagged it.
 
 Built and validated 2026-09-21. Data: 102 RedHatAI model cards → 850 rows.
 Research + pre-registered predictions: [RESEARCH.md](RESEARCH.md).
@@ -52,9 +64,12 @@ Research + pre-registered predictions: [RESEARCH.md](RESEARCH.md).
 **The calibration works. The prediction doesn't — and "predictor" is the wrong word for what
 survived.**
 
-A 90% interval built by split conformal prediction contains the true measured delta
+A 90% conformal-style interval (an in-sample residual-quantile band; see the paper's
+Method section for the caveat) contains the true measured delta
 **118/131 = 90.1%** of the time on checkpoints the system had never seen (95% CI
-[83.6%, 94.6%], nominal 90%) — a figure reproduced exactly by a from-scratch,
+[83.6%, 94.6%], nominal 90%) — this is the 2026-09-21 figure; the post-2026-09-27
+A4 float-boundary fix moves it to **119/131 = 90.8%**, 95% CI [84.5%, 95.2%], and
+that is what the paper reports. A figure reproduced exactly by a from-scratch,
 stdlib-only reimplementation that shares no code with the pipeline
 (`verify/independent_check.py`: 0 delta disagreements, 0 verdict disagreements
 across all 186 shared rows). But the point estimate carries almost no information beyond
@@ -72,7 +87,7 @@ Our calibration set is the set of configs Red Hat chose to publish, which is a s
 and selection is known to break exchangeability: conditional on having been selected, calibration
 points are no longer exchangeable with an arbitrary test point, and the coverage guarantee does
 not transfer (Barber, Candes, Ramdas & Tibshirani, *Conformal Prediction Beyond Exchangeability*,
-Ann. Statist. 51(2), 2023; Jin & Candes, arXiv:2403.03868). So the guarantee holds for a new
+Ann. Statist. 51(2), 2023; Jin & Ren, arXiv:2403.03868). So the guarantee holds for a new
 checkpoint drawn from the same publication process, and is **void** for a recipe you tuned
 yourself and that no one would have published. That is the formal statement of the same warning
 the tool prints in plain language.
@@ -131,7 +146,7 @@ intervals excluding zero : 0%
 |---|---|---|---|---|
 | all prospective rows | 186 | 90.3% | [85.1%, 94.2%] | yes |
 | − rows whose family is in training | 154 | 91.6% | [86.0%, 95.4%] | yes |
-| − those **and** Llama-4 (**strict**) | 131 | **90.1%** | **[83.6%, 94.6%]** | **yes** |
+| − those **and** Llama-4 (**strict**) | 131 | **90.1%** (post-A4: **90.8%**) | **[83.6%, 94.6%]** (post-A4: **[84.5%, 95.2%]**) | **yes** |
 
 Llama-4 is excluded from the strict figure because the recovery-first column-order fix in
 `harvest.py` was written *after* seeing a bad Llama-4 row — so the parser was adapted to that
@@ -143,7 +158,7 @@ Manual inspection shows those 6 are card errors, not extreme-but-valid data — 
 `DeepSeek-R1-Distill-Qwen-32B-W4A16` prints IFEval as `42.87 → 72.48` with `99.1%` recovery,
 which is arithmetically impossible in either direction.
 
-The strict subset (**118/131 = 90.1%**) is the number I would publish.
+The strict subset (**118/131 = 90.1%**; post-A4 fix: **119/131 = 90.8%**) is the number I would publish.
 
 Per unfamiliar group:
 
@@ -353,7 +368,8 @@ The narrower claim, which the numbers actually carry:
 
 > For the six quantization schemes Red Hat publishes, here is a conformal-calibrated envelope on
 > the OpenLLM accuracy delta, validated at **118/131 = 90.1%** empirical coverage (95% CI
-> [83.6%, 94.6%]) on checkpoints never used to build it, under the strict protocol of §1c. It does
+> [83.6%, 94.6%]) on checkpoints never used to build it, under the strict protocol of §1c
+> — post-2026-09-27 A4 fix: **119/131 = 90.8%**, 95% CI [84.5%, 95.2%]. It does
 > not predict per-model damage, and it should not be trusted for sub-2B models, MoE models, or
 > untuned recipes. It is calibrated only on recipes that were published, i.e. that worked: for
 > measured behaviour of deliberately-bad recipes see [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md).
