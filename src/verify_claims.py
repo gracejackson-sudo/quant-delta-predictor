@@ -537,6 +537,9 @@ def registry():
             "Gemma-3 two-sided coverage on the strict prospective set")
         add("prosp_gemma3_ckpts", _gm3.model.nunique(), 0,
             "Gemma-3 checkpoints in the strict prospective set")
+        add("prosp_gemma3_gap_pp", 90.0 - 100 * _gm3.inside.mean(), 0.05,
+            "how many pp below the nominal 90% Gemma-3 lands (paper: "
+            "the largest out-of-family sub-group)")
         # The remaining tiny out-of-family sub-groups (SmolLM* and Nemotron)
         # contribute rows at 100% on small samples. Report jointly.
         _small = _out[~_out.index.isin(_gm3.index)]

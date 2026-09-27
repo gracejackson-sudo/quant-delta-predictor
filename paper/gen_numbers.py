@@ -97,6 +97,7 @@ M = {
     "ProspGemThreeInside": ("prosp_gemma3_inside", "{:.0f}"),
     "ProspGemThreeCov": ("prosp_gemma3_cov_pct", "{:.1f}"),
     "ProspGemThreeCkpts": ("prosp_gemma3_ckpts", "{:.0f}"),
+    "ProspGemThreeGap": ("prosp_gemma3_gap_pp", "{:.1f}"),
     "ProspOutSmallRows": ("prosp_outfam_small_rows", "{:.0f}"),
     "ProspOutSmallCkpts": ("prosp_outfam_small_ckpts", "{:.0f}"),
     "ProspOutSmallPullup": ("prosp_outfam_small_pullup_pp", "{:.1f}"),

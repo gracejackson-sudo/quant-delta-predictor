@@ -156,7 +156,7 @@ RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,arc_challenge,36.86,33.96,-2.9,-2.8
 RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,gsm8k,25.17,22.14,-3.03,-2.8698445595854922,1.3999999999999997,False
 RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,hellaswag,56.03,53.62,-2.41,-2.8698445595854922,1.3999999999999997,True
 RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,mmlu,39.99,37.0,-2.99,-2.8698445595854922,1.3999999999999997,False
-RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,truthfulqa,38.54,39.94,1.4,-2.8698445595854922,1.3999999999999997,False
+RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,truthfulqa,38.54,39.94,1.4,-2.8698445595854922,1.3999999999999997,True
 RedHatAI/gemma-3-1b-it-quantized.w4a16,w4a16,winogrande,58.88,57.54,-1.34,-2.8698445595854922,1.3999999999999997,True
 RedHatAI/gemma-3-27b-it-FP8-dynamic,fp8_dynamic,arc_challenge,72.53,72.7,0.17,-1.44,1.3445999999999998,True
 RedHatAI/gemma-3-27b-it-FP8-dynamic,fp8_dynamic,gsm8k,92.12,91.51,-0.61,-1.44,1.3445999999999998,True

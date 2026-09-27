@@ -66,6 +66,10 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "0.85",  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression
           "0.4",   # llmcompressor 0.4.1 in the pinned-retry disclosure
           "4.44",  # transformers 4.44.2 in the pinned-retry disclosure
+          # Float-boundary example in the audit note on shared-assumption
+          # reimplementation. These are exact float values from the bug and
+          # documenting them precisely is the point of the paragraph.
+          "1.40", "1.3999999999999997",
           # Ridge and HistGradientBoosting hyperparameters, documented for
           # reproducibility of the negative-result predictors (see
           # src/predictor.py:63 and src/diagnose.py:61). Fixed code constants,

@@ -63,8 +63,10 @@ def scored_pairs(d):
             _, lo, hi, lv = m.predict_interval(te)
             t = annotate(te).copy()
             t["row_id"] = te.index.to_numpy()
-            t["ok"] = (t.delta >= lo) & (t.delta <= hi)
-            t["ok_one"] = t.delta >= lo
+            # 1e-9 float tolerance; see audit note on shared assumption
+            _EPS = 1e-9
+            t["ok"] = (t.delta >= lo - _EPS) & (t.delta <= hi + _EPS)
+            t["ok_one"] = t.delta >= lo - _EPS
             t["lo_"], t["hi_"], t["lv"] = lo, hi, lv
             rows.append(t)
     return pd.concat(rows, ignore_index=True)

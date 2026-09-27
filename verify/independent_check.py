@@ -321,7 +321,10 @@ def main():
             r["inside"] = None
             continue
         r["lo"], r["hi"] = mu - q, mu + q
-        r["inside"] = (r["lo"] <= r["delta"] <= r["hi"])
+        # closed-interval hit with a 1e-9 float tolerance; see the
+        # audit-section note on shared-assumption reimplementation
+        COVER_EPS = 1e-9
+        r["inside"] = (r["lo"] - COVER_EPS <= r["delta"] <= r["hi"] + COVER_EPS)
 
     strict = [r for r in test if is_strict(r["model"]) and r["inside"]
               is not None]

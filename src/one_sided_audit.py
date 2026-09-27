@@ -42,7 +42,8 @@ def scored_pairs():
             t = annotate(te).copy()
             t["row_id"] = te.index.to_numpy()
             t["lo"], t["hi"] = lo, hi
-            t["ok"] = (t.delta >= lo) & (t.delta <= hi)
+            _EPS = 1e-9
+            t["ok"] = (t.delta >= lo - _EPS) & (t.delta <= hi + _EPS)
             out.append(t)
     return pd.concat(out, ignore_index=True)
 

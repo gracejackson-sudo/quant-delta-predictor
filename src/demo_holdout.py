@@ -76,7 +76,8 @@ def main():
             "true_delta": te.delta.to_numpy(float),
             "pred": yhat, "lo": lo, "hi": hi,
         })
-        t["inside_90"] = (t.true_delta >= t.lo) & (t.true_delta <= t.hi)
+        _EPS = 1e-9
+        t["inside_90"] = (t.true_delta >= t.lo - _EPS) & (t.true_delta <= t.hi + _EPS)
         t.insert(0, "model", mid)
         all_rows.append(t)
 

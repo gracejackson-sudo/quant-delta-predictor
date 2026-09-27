@@ -210,7 +210,8 @@ def score(p, conf):
     yhat, lo, hi, _ = conf.predict_interval(p)
     p = p.copy()
     p["pred"], p["lo"], p["hi"] = yhat, lo, hi
-    p["inside_90"] = (p.delta >= p.lo) & (p.delta <= p.hi)
+    _EPS = 1e-9  # tolerance; see audit note on shared assumption
+    p["inside_90"] = (p.delta >= p.lo - _EPS) & (p.delta <= p.hi + _EPS)
     return p
 
 
@@ -248,8 +249,9 @@ def a2_recompute(d, p):
     ind_pred = p.scheme.map(sm).to_numpy(float)
     ind_q = p.scheme.map(qh).to_numpy(float)
     ind_lo, ind_hi = ind_pred - ind_q, ind_pred + ind_q
-    ind_inside = (p.delta.to_numpy(float) >= ind_lo) & \
-                 (p.delta.to_numpy(float) <= ind_hi)
+    _EPS = 1e-9  # tolerance; see audit note on shared assumption
+    ind_inside = (p.delta.to_numpy(float) >= ind_lo - _EPS) & \
+                 (p.delta.to_numpy(float) <= ind_hi + _EPS)
 
     agree_lo = np.allclose(ind_lo, p.lo.to_numpy(float))
     agree_hi = np.allclose(ind_hi, p.hi.to_numpy(float))
@@ -290,7 +292,8 @@ def a2_recompute(d, p):
         in_card = (any(abs(r.acc_before - v) < 1e-9 for v in nums)
                    and any(abs(r.acc_after - v) < 1e-9 for v in nums))
         d_ok = abs((r.acc_after - r.acc_before) - r.delta) < 1e-9
-        i_ok = ((r.delta >= r.lo) and (r.delta <= r.hi)) == r.inside_90
+        _EPS = 1e-9
+        i_ok = ((r.delta >= r.lo - _EPS) and (r.delta <= r.hi + _EPS)) == r.inside_90
         q_ok = abs((r.hi - r.lo) / 2 - qh[r.scheme]) < 1e-9
         m_ok = abs(r.pred - sm[r.scheme]) < 1e-9
         ok = in_card and d_ok and i_ok and q_ok and m_ok
@@ -353,7 +356,8 @@ def a3_is_it_just_a_lookup(d, p, sm, qh):
     q = p.copy()
     q["elo"] = q.scheme.map(emp.emp_lo)
     q["ehi"] = q.scheme.map(emp.emp_hi)
-    q["inside_emp"] = (q.delta >= q.elo) & (q.delta <= q.ehi)
+    _EPS = 1e-9
+    q["inside_emp"] = (q.delta >= q.elo - _EPS) & (q.delta <= q.ehi + _EPS)
     kc, ke, n = int(q.inside_90.sum()), int(q.inside_emp.sum()), len(q)
     print(f"\n   {'scheme':<14}{'conformal interval':>24}"
           f"{'raw empirical band':>24}")
@@ -466,7 +470,7 @@ def a4_bad_config(d, p, sm, qh):
               f"[{lo_:+.2f}, {hi_:+.2f}]")
         print(f"     flagged as harmful? NO (interval contains 0)")
         print(f"     truth inside interval? "
-              f"{'YES' if lo_ <= r.delta <= hi_ else 'NO'}")
+              f"{'YES' if lo_ - 1e-9 <= r.delta <= hi_ + 1e-9 else 'NO'}")
         note("CONFIRMED",
              f"Qwen3-8B W4A16 on MMLU-Pro loses {-r.delta:.2f}pp. The tool "
              f"neither flags it nor covers it: a user would be told to expect "

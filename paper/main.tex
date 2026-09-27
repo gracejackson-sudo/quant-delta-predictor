@@ -38,7 +38,7 @@ strict set splits into \ProspInFamCkpts{} in-family checkpoints
 checkpoint-cluster 95\% CI on the difference is [\ProspDiffLo, \ProspDiffHi]pp
 and does not resolve whether the two are equivalent. Within out-of-family,
 Gemma-3 alone (the only sub-group with more than 10 rows) covers at
-\ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows), 3.3pp below
+\ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows), \ProspGemThreeGap{}pp below
 nominal. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
 and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of three verdicts: trusted; insufficient evidence, where the interval is still
@@ -380,7 +380,7 @@ equivalent, and the paper does not claim they are. The aggregate
 out-of-family figure carries the same Simpson caveat as the pooled
 headline: Gemma-3 alone (the only sub-group with more than 10 rows)
 covers at \ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows
-rows from \ProspGemThreeCkpts{} checkpoints), 3.3pp below nominal, and
+rows from \ProspGemThreeCkpts{} checkpoints), \ProspGemThreeGap{}pp below nominal, and
 SmolLM/SmolLM3 and Nemotron-Nano contribute \ProspOutSmallRows{} rows at
 100\% from \ProspOutSmallCkpts{} small-sample checkpoints, which pull the
 out-of-family aggregate up by \ProspOutSmallPullup{}pp above Gemma-3
@@ -554,6 +554,7 @@ survived---would misrepresent how the result was obtained.
     pretraining runs; the point estimates on both sides land near nominal
     but the difference between them is not resolvable at this sample size
     (\S\ref{sec:results}).
+  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, and the strict figure is now \ProspInside/\ProspN. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about.
   \item \emph{The family classifier is enumerated.} The in-family /
     out-of-family split of the \ProspClusN{} strict prospective checkpoints
     was decided by inspecting each card and matching against the
@@ -660,7 +661,7 @@ work is narrower: a per-scheme calibrated envelope that is validated at
 of the \Nsch{} schemes. In-family and out-of-family point estimates both
 land near nominal (\ProspInFamCov\% and \ProspOutFamCov\% respectively),
 but the sample size does not distinguish them, and Gemma-3, the largest
-out-of-family sub-group, covers at \ProspGemThreeCov\%, 3.3pp below
+out-of-family sub-group, covers at \ProspGemThreeCov\%, \ProspGemThreeGap{}pp below
 nominal. The envelope also says which of its own cells it cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
 shown but flagged and the scheme demoted; or refused, in which case the interval is withheld. Today \NCellsInsuff{} of
 \NCellsTotal{} cells are insufficient evidence; on this corpus the refusal

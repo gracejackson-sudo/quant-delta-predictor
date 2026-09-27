@@ -51,7 +51,8 @@ def strict_cell_coverage(d, cls=ConservativeStratified):
             cells_kept.append(len(m.by_stratum))
             _, lo, hi, lv = m.predict_interval(te)
             t = annotate(te).copy()
-            t["ok"] = (t.delta >= lo) & (t.delta <= hi)
+            _EPS = 1e-9
+            t["ok"] = (t.delta >= lo - _EPS) & (t.delta <= hi + _EPS)
             t["lv"] = lv
             t["cell"] = t.scheme + " | " + t.band
             rows.append(t)

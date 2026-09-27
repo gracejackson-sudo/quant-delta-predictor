@@ -143,7 +143,8 @@ def main():
 
     yhat, lo, hi, fb = conf.predict_interval(p)
     p["pred"], p["lo"], p["hi"] = yhat, lo, hi
-    p["inside_90"] = (p.delta >= p.lo) & (p.delta <= p.hi)
+    _EPS = 1e-9
+    p["inside_90"] = (p.delta >= p.lo - _EPS) & (p.delta <= p.hi + _EPS)
     p["ae"] = np.abs(p.delta - p.pred)
     p["ae_baseline"] = np.abs(p.delta - gm.predict(p))
 

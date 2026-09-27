@@ -36,7 +36,8 @@ def lofo(d, cls):
         yhat, lo, hi, lvl = m.predict_interval(te)
         t = annotate(te).copy()
         t["yhat"], t["lo"], t["hi"], t["level"] = yhat, lo, hi, lvl
-        t["covered"] = (t.delta >= t.lo) & (t.delta <= t.hi)
+        _EPS = 1e-9
+        t["covered"] = (t.delta >= t.lo - _EPS) & (t.delta <= t.hi + _EPS)
         t["width"] = t.hi - t.lo
         t["ae"] = np.abs(t.delta - t.yhat)
         t["fold"] = fam
@@ -102,7 +103,8 @@ def main():
             yhat, lo, hi, lvl = m.predict_interval(p)
             t = annotate(p).copy()
             t["lo"], t["hi"], t["level"] = lo, hi, lvl
-            t["covered"] = (t.delta >= t.lo) & (t.delta <= t.hi)
+            _EPS = 1e-9
+        t["covered"] = (t.delta >= t.lo - _EPS) & (t.delta <= t.hi + _EPS)
             t["width"] = t.hi - t.lo
             print(f"\n  {name}: {int(t.covered.sum())}/{len(t)} = "
                   f"{t.covered.mean()*100:.1f}%  width={t.width.mean():.2f}pp")
