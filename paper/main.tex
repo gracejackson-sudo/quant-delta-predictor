@@ -31,15 +31,16 @@ statistics or activation-outlier metrics.
 Second, a positive one: conditioning only on the quantization scheme yields
 per-scheme conformal-style intervals with \(\ProspCov\%\) two-sided empirical
 coverage (\(\ProspInside/\ProspN\), 95\% CI \([\ProspCILo,\ProspCIHi]\)) on
-unseen checkpoints. Under the family definition of \S\ref{sec:data}, the
-strict prospective set is a mix: \ProspInFamCkpts{} derivative checkpoints
-of training families cover at \ProspInFamCov\% (\ProspInFamInside/\ProspInFamRows),
-and \ProspOutFamCkpts{} checkpoints from genuinely new pretraining runs
-cover at \ProspOutFamCov\% (\ProspOutFamInside/\ProspOutFamRows); both
-sides land at nominal, so the envelope generalises to derivative checkpoints
-and new pretraining runs, not just one or the other. Those checkpoints
-cover \ProspSchemes{} of the \Nsch{} schemes, and W4A16 supplies
-\ProspRowsWfour{} of the \ProspN{} rows.
+unseen checkpoints. Under the family definition of \S\ref{sec:data} the
+strict set splits into \ProspInFamCkpts{} in-family checkpoints
+(DeepSeek-R1-Distill of Llama or Qwen bases) at \ProspInFamCov\% and
+\ProspOutFamCkpts{} out-of-family at \ProspOutFamCov\%; the
+checkpoint-cluster 95\% CI on the difference is [\ProspDiffLo, \ProspDiffHi]pp
+and does not resolve whether the two are equivalent. Within out-of-family,
+Gemma-3 alone (the only sub-group with more than 10 rows) covers at
+\ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows), 3.3pp below
+nominal. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
+and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of three verdicts: trusted; insufficient evidence, where the interval is still
 shown but the scheme is demoted and flagged; or refused, where the interval is withheld. Currently \NCellsInsuff{} of \NCellsTotal{}
 cells are insufficient evidence; on this corpus the third state, as defined
@@ -365,18 +366,26 @@ excludes any card whose format informed a parser fix (families Llama-3.1,
 Llama-4 and Qwen3), two-sided coverage is
 \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI
 \([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level. The \ProspN{} strict rows come from \ProspClusN{} distinct checkpoints,
-which split under the family definition of \S\ref{sec:data} as follows:
-\ProspInFamCkpts{} in-family checkpoints (all DeepSeek-R1-Distill
-checkpoints whose bases are Llama-3.1, Llama-3.3 or Qwen-2.5 members of
-the training corpus) contribute \ProspInFamRows{} rows at
-\ProspInFamCov\% two-sided coverage; \ProspOutFamCkpts{} out-of-family
-checkpoints (Gemma-3, SmolLM and SmolLM3, and NVIDIA-Nemotron-Nano-9B)
-contribute \ProspOutFamRows{} rows at \ProspOutFamCov\% coverage. Both
-sides land at the nominal 90\%: the envelope generalises to derivative
-checkpoints of a training family and to genuinely new pretraining runs,
-not only to one of the two. We do not claim this as proof of transfer to
-any specific unseen family; we do claim it as a robustness check that the
-headline number is not carried by one side of the split. A from-scratch, standard-library-only reimplementation sharing no
+which we hand-classify against the training-family list. Under the
+definition of \S\ref{sec:data}: \ProspInFamCkpts{} in-family checkpoints
+(all DeepSeek-R1-Distill of a Llama-3.1, Llama-3.3, or Qwen-2.5 base in
+training) contribute \ProspInFamRows{} rows at \ProspInFamCov\% two-sided
+coverage; \ProspOutFamCkpts{} out-of-family checkpoints (Gemma-3, SmolLM
+and SmolLM3, NVIDIA-Nemotron-Nano-9B) contribute \ProspOutFamRows{} rows
+at \ProspOutFamCov\%. Both point estimates land near the nominal 90\%
+two-sided level, but the checkpoint-cluster 95\% CI on the in-minus-out
+difference is [\ProspDiffLo, \ProspDiffHi]pp: at this sample size we
+cannot resolve whether in-family and out-of-family coverage are
+equivalent, and the paper does not claim they are. The aggregate
+out-of-family figure carries the same Simpson caveat as the pooled
+headline: Gemma-3 alone (the only sub-group with more than 10 rows)
+covers at \ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows
+rows from \ProspGemThreeCkpts{} checkpoints), 3.3pp below nominal, and
+SmolLM/SmolLM3 and Nemotron-Nano contribute \ProspOutSmallRows{} rows at
+100\% from \ProspOutSmallCkpts{} small-sample checkpoints, which pull the
+out-of-family aggregate up by \ProspOutSmallPullup{}pp above Gemma-3
+alone. The classification is enumerated for these \ProspClusN{}
+checkpoints, not a general algorithm (\S\ref{sec:audit}). A from-scratch, standard-library-only reimplementation sharing no
 code with the pipeline reproduces this figure with zero disagreements.
 That checks the computation, not the validity of the design.
 
@@ -539,13 +548,22 @@ survived---would misrepresent how the result was obtained.
 \begin{itemize}
   \item \emph{A retracted headline, then re-partitioned.} An early claim
     that all \ProspClusN{} held-out checkpoints came from families never
-    used in construction was wrong under any definition. Under the
-    definition adopted in \S\ref{sec:data}, \ProspInFamCkpts{} of the
-    \ProspClusN{} strict checkpoints are derivatives of a training family
-    and \ProspOutFamCkpts{} are from new pretraining runs. The strict
-    figure of \(\ProspInside/\ProspN\) resolves to \ProspInFamInside/\ProspInFamRows{}
-    in-family and \ProspOutFamInside/\ProspOutFamRows{} out-of-family, both
-    at nominal (\S\ref{sec:results}).
+    used in construction was wrong. Under the definition adopted in
+    \S\ref{sec:data}, \ProspInFamCkpts{} of the \ProspClusN{} are
+    derivatives of a training family and \ProspOutFamCkpts{} are new
+    pretraining runs; the point estimates on both sides land near nominal
+    but the difference between them is not resolvable at this sample size
+    (\S\ref{sec:results}).
+  \item \emph{The family classifier is enumerated.} The in-family /
+    out-of-family split of the \ProspClusN{} strict prospective checkpoints
+    was decided by inspecting each card and matching against the
+    training-family list; the code that emits the split is a regex specific
+    to this set (\texttt{DeepSeek-R1-Distill-(Llama|Qwen)}). It is not a
+    general implementation of the \S\ref{sec:data} definition. A
+    prospective checkpoint outside this pattern (e.g. a distillation from
+    another base, a fine-tune with an idiosyncratic name) would need a
+    manual re-classification. The definition itself is fixed; the code
+    path applies it to this set only.
   \item \emph{Two parser bugs.} A benchmark label typo cost 11 training rows;
     separately, \texttt{MATH-500} was matched as \texttt{Math-Lvl-5},
     contaminating 7 test rows with scores from a different benchmark.
@@ -638,12 +656,12 @@ features does not work on published data, and the reason is largely
 measurement noise rather than model capacity; predictors that use
 checkpoint-level statistics were not tested and remain open. What does
 work is narrower: a per-scheme calibrated envelope that is validated at
-\(\ProspCov\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{} of
-the \Nsch{} schemes, with essentially the same coverage on derivative
-checkpoints of training families (\ProspInFamCov\%, \ProspInFamCkpts{}
-checkpoints) and on new pretraining runs (\ProspOutFamCov\%,
-\ProspOutFamCkpts{} checkpoints), and that says which of its own cells it
-cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
+\(\ProspCov\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{}
+of the \Nsch{} schemes. In-family and out-of-family point estimates both
+land near nominal (\ProspInFamCov\% and \ProspOutFamCov\% respectively),
+but the sample size does not distinguish them, and Gemma-3, the largest
+out-of-family sub-group, covers at \ProspGemThreeCov\%, 3.3pp below
+nominal. The envelope also says which of its own cells it cannot judge. Each cell is trusted; or insufficient evidence, in which case the interval is still
 shown but flagged and the scheme demoted; or refused, in which case the interval is withheld. Today \NCellsInsuff{} of
 \NCellsTotal{} cells are insufficient evidence; on this corpus the refusal
 state does not fire (\S\ref{sec:method}). The more useful contribution may be the limitation

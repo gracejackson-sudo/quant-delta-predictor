@@ -525,6 +525,55 @@ def registry():
             "out-of-family two-sided coverage on the strict prospective set")
         add("prosp_out_family_ckpts", _out.model.nunique(), 0,
             "out-of-family checkpoints in the strict prospective set")
+        # Gemma-3 as its own sub-group of the out-of-family split, because
+        # SmolLM/SmolLM3 and Nemotron-Nano contribute only 10 and 1 rows
+        # respectively and pull the aggregate up. Report Gemma-3 on its own.
+        _gm3 = _out[_out.model.map(lambda m_: bool(
+            _re.search(r"gemma-3", m_.split("/")[-1], _re.I)))]
+        add("prosp_gemma3_rows", len(_gm3), 0, "strict prospective Gemma-3 rows")
+        add("prosp_gemma3_inside", int(_gm3.inside.sum()), 0,
+            "of those Gemma-3 rows, how many the shipped interval covered")
+        add("prosp_gemma3_cov_pct", 100 * _gm3.inside.mean(), 0.05,
+            "Gemma-3 two-sided coverage on the strict prospective set")
+        add("prosp_gemma3_ckpts", _gm3.model.nunique(), 0,
+            "Gemma-3 checkpoints in the strict prospective set")
+        # The remaining tiny out-of-family sub-groups (SmolLM* and Nemotron)
+        # contribute rows at 100% on small samples. Report jointly.
+        _small = _out[~_out.index.isin(_gm3.index)]
+        add("prosp_outfam_small_rows", len(_small), 0,
+            "out-of-family rows outside Gemma-3 (SmolLM/SmolLM3 + Nemotron-Nano)")
+        add("prosp_outfam_small_ckpts", _small.model.nunique(), 0,
+            "corresponding checkpoint count")
+        add("prosp_outfam_small_pullup_pp",
+            100 * _out.inside.mean() - 100 * _gm3.inside.mean(), 0.05,
+            "how many pp the small-sample groups raise the out-of-family "
+            "aggregate above Gemma-3 alone")
+        # Cluster-bootstrap 95% CI on the in-family minus out-of-family
+        # difference. Resamples whole checkpoints separately from each side.
+        import numpy as _npf
+        _rng2 = _npf.random.default_rng(0)
+        _in_ks = _in.model.unique().tolist()
+        _out_ks = _out.model.unique().tolist()
+        _in_g = {m: _in[_in.model == m].inside.to_numpy(float) for m in _in_ks}
+        _out_g = {m: _out[_out.model == m].inside.to_numpy(float) for m in _out_ks}
+        _diffs = []
+        for _ in range(20000):
+            _si = _rng2.choice(len(_in_ks), size=len(_in_ks), replace=True)
+            _so = _rng2.choice(len(_out_ks), size=len(_out_ks), replace=True)
+            _ki = sum(_in_g[_in_ks[_i]].sum() for _i in _si)
+            _ni = sum(len(_in_g[_in_ks[_i]]) for _i in _si)
+            _ko = sum(_out_g[_out_ks[_i]].sum() for _i in _so)
+            _no = sum(len(_out_g[_out_ks[_i]]) for _i in _so)
+            if _ni and _no:
+                _diffs.append(_ki / _ni - _ko / _no)
+        _diffs = _npf.array(_diffs)
+        add("prosp_infam_outfam_diff_lo",
+            100 * _npf.percentile(_diffs, 2.5), 0.5,
+            "cluster-bootstrap 95% lower bound on the in-family minus "
+            "out-of-family coverage difference")
+        add("prosp_infam_outfam_diff_hi",
+            100 * _npf.percentile(_diffs, 97.5), 0.5,
+            "cluster-bootstrap 95% upper bound on that difference")
         _cl = [_x.inside.to_numpy(float) for _, _x in _st.groupby("model")]
         _S = _np.array([_c.sum() for _c in _cl]); _N = _np.array([len(_c) for _c in _cl])
         _rng = _np.random.default_rng(0)
