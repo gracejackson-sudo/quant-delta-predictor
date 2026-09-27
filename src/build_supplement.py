@@ -57,6 +57,9 @@ DROP_FILES: list[str] = [
                                 # author name and would tip a reviewer off
                                 # to what was being scrubbed
     "tests/test_supplement.py", # tests for THIS script; same reason as above
+    "tests/test_pack.py",       # tests the TMLR-submission-pack path; the
+                                # EF-Day-N path literal inside it would trip
+                                # the affiliation check if it shipped.
     "feedback_form.html",   # feedback form, if present
     "feedback_config.json", # Formspree endpoint config, if present
     "index.html",           # GitHub Pages landing page; posts to Formspree
