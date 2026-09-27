@@ -411,6 +411,33 @@ checkpoints, not a general algorithm (\S\ref{sec:audit}). A from-scratch, standa
 code with the pipeline reproduces this figure with zero disagreements.
 That checks the computation, not the validity of the design.
 
+\paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
+Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3
+into one Llama-3 fold. The merged mean can conceal that Llama-3.3
+alone consistently sits several points below its cousins under every
+calibration family, so we break out the held-out Llama-3 fold by
+subgroup. Rows are the calibration family; columns are the three
+subgroups the merged fold contains.
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+calibration & Llama-3.1 & Llama-3.2 & Llama-3.3 & merged \\
+\midrule
+gemma-2  & \LThreeSubOneGem\% & \LThreeSubTwoGem\% & \LThreeSubThreeGem\% & \LThreeMergedGem\% \\
+granite  & \LThreeSubOneGra\% & \LThreeSubTwoGra\% & \LThreeSubThreeGra\% & \LThreeMergedGra\% \\
+mistral  & \LThreeSubOneMis\% & \LThreeSubTwoMis\% & \LThreeSubThreeMis\% & \LThreeMergedMis\% \\
+qwen2.5  & \LThreeSubOneQtf\% & \LThreeSubTwoQtf\% & \LThreeSubThreeQtf\% & \LThreeMergedQtf\% \\
+qwen3    & \LThreeSubOneQth\% & \LThreeSubTwoQth\% & \LThreeSubThreeQth\% & \LThreeMergedQth\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+Under every calibration family Llama-3.3 sits below both Llama-3.1 and
+Llama-3.2, and the merged mean is pulled up by the two better-covered
+subgroups. Under an 8-family reporting this weakness would show as
+Llama-3.3's own held-out fold at 85.1\% (the worst held-out family).
+Under Definition B it is folded into 92.2\% on the merged Llama-3 mean;
+we report the breakdown here so the merge does not hide it.
+
 \paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
 not \ProspN{} independent observations: a bootstrap that resamples checkpoints gives a 95\% interval of
 \([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level one. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4

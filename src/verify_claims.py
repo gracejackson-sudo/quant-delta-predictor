@@ -788,6 +788,52 @@ def registry():
         add("mae_gain_pp",
             reg["pred_mae::global_mean"][0] - reg["pred_mae::scheme_mean"][0],
             0.0005, "LOFO MAE gain of the per-scheme mean over the global mean")
+
+    # --- Tier 0.1 disclosure: per-subgroup coverage of the held-out
+    #     llama-3 fold. Definition B collapses Llama-3.1/3.2/3.3 into a
+    #     single family (§3). Under 6-fold LOFO the merged fold hides
+    #     that Llama-3.3 alone runs 5-10pp below Llama-3.1 and Llama-3.2
+    #     under every calibration family, so we expose the breakdown.
+    from predictor import SchemeMean as _SM_l3, Conformal as _Co_l3  # noqa: E402
+    import re as _re_l3
+    _tag = {"3.1": _re_l3.compile(r"Llama-3\.1", _re_l3.I),
+            "3.2": _re_l3.compile(r"Llama-3\.2", _re_l3.I),
+            "3.3": _re_l3.compile(r"Llama-3\.3", _re_l3.I)}
+
+    def _sub_l3(_m):
+        for _k, _p in _tag.items():
+            if _p.search(_m):
+                return _k
+        return "other"
+
+    _d_l3 = d.copy()
+    _d_l3["_l3sub"] = _d_l3.base_model.map(_sub_l3)
+    _te_l3 = _d_l3[_d_l3.family == "llama-3"].copy()
+    _tr_pool = _d_l3[_d_l3.family != "llama-3"]
+    _cal_fams = sorted(_tr_pool.family.unique())
+    _EPS_l3 = 1e-9
+    for _cf in _cal_fams:
+        _ca_l3 = _tr_pool[_tr_pool.family == _cf]
+        _tr_l3 = _tr_pool[_tr_pool.family != _cf]
+        if len(_ca_l3) < 19 or len(_tr_l3) < 50:
+            continue
+        _m_l3 = _SM_l3().fit(_tr_l3)
+        _c_l3 = _Co_l3(alpha=0.10, mondrian_by="scheme").fit(_m_l3, _ca_l3)
+        _, _lo_l3, _hi_l3, _ = _c_l3.predict_interval(_te_l3)
+        _y_l3 = _te_l3.delta.to_numpy(float)
+        _in_l3 = (_y_l3 >= _lo_l3 - _EPS_l3) & (_y_l3 <= _hi_l3 + _EPS_l3)
+        for _s in ("3.1", "3.2", "3.3"):
+            _mask = (_te_l3["_l3sub"].to_numpy() == _s)
+            if _mask.any():
+                add(f"lofo_l3sub_cov::{_s}::{_cf}",
+                    100 * float(_in_l3[_mask].mean()), 0.05,
+                    f"held-out llama-3 sub-{_s} coverage under {_cf} "
+                    f"calibration (Def B breakdown; §6 subgroup table)")
+        # merged (all-3.x) fold coverage under this cal family, for the
+        # table's rightmost column
+        add(f"lofo_l3merged_cov::{_cf}",
+            100 * float(_in_l3.mean()), 0.05,
+            f"held-out llama-3 merged coverage under {_cf} calibration")
     return reg
 
 
