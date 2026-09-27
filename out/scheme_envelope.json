@@ -8,16 +8,16 @@
     "source": "RedHatAI model cards on Hugging Face",
     "rows": 817,
     "checkpoints": 38,
-    "families": 8,
+    "families": 6,
     "benchmarks": 16
   },
   "validation": {
     "leave_one_family_out": {
       "rows": 817,
-      "calibration_families_per_row": 7.0,
-      "evaluations": 5719,
-      "coverage_two_sided": 0.9096,
-      "coverage_one_sided": 0.9514,
+      "calibration_families_per_row": 5.0,
+      "evaluations": 4085,
+      "coverage_two_sided": 0.9207,
+      "coverage_one_sided": 0.9581,
       "note": "each row is scored once per calibration family, so evaluations are not independent rows"
     },
     "prospective_all_rows": {
@@ -59,7 +59,7 @@
     "19 of 25 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
     "Trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from an untuned recipe (outcome-truncated training data).",
     "Reads exactly 2 inputs: quantization scheme, and size band via 6 size-dependent widths. It reads no family, benchmark or base accuracy.",
-    "Coverage verdicts (rank.classify_cell): 0 size cells refused (none); 9 size cells and 1 schemes (w8a16) have insufficient evidence (fewer than 3 checkpoints or a checkpoint-bootstrap interval straddling 85%): fp8|2-10B, fp8|<2B, fp8|>10B, nvfp4|2-10B, nvfp4|>10B, w4a16|<2B, w8a16|<2B, w8a16|>10B, w8a8_int|<2B. An interval is still shown for an insufficient-evidence cell but flagged; only a refused cell has its interval withheld.",
+    "Coverage verdicts (rank.classify_cell): 0 size cells refused (none); 6 size cells and 1 schemes (w8a16) have insufficient evidence (fewer than 3 checkpoints or a checkpoint-bootstrap interval straddling 85%): fp8|<2B, nvfp4|2-10B, w4a16|<2B, w8a16|<2B, w8a16|>10B, w8a8_int|<2B. An interval is still shown for an insufficient-evidence cell but flagged; only a refused cell has its interval withheld.",
     "MoE and reasoning-distilled models are not separately validated."
   ],
   "schemes": {
@@ -67,7 +67,7 @@
       "label": "FP8 (8-bit float weights + activations, static scales)",
       "n_observations": 80,
       "n_checkpoints": 13,
-      "n_families": 4,
+      "n_families": 3,
       "mean_delta_pp": -0.317,
       "median_delta_pp": -0.22,
       "conformal_half_width_pp": 0.793,
@@ -82,17 +82,17 @@
       "worst_observed_delta_pp": -1.9,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9304,
-        "two_sided": 0.9054,
+        "one_sided": 0.9475,
+        "two_sided": 0.925,
         "bootstrap_90_pct": [
-          87.8,
-          97.7
+          90.9,
+          98.1
         ],
         "rows": 80,
         "checkpoints": 13,
-        "scored_pairs": 560,
+        "scored_pairs": 400,
         "worst_family": "mistral",
-        "worst_family_one_sided": 0.8651,
+        "worst_family_one_sided": 0.8556,
         "by_size_band": {
           "<2B": {
             "state": "insufficient_evidence",
@@ -105,22 +105,22 @@
             ]
           },
           "2-10B": {
-            "state": "insufficient_evidence",
+            "state": "trusted",
             "checkpoints": 7,
             "rows": 43,
-            "one_sided": 0.9102990033222591,
+            "one_sided": 0.9255813953488372,
             "boot90": [
-              84.0,
-              97.6
+              86.5,
+              98.0
             ]
           },
           ">10B": {
-            "state": "insufficient_evidence",
+            "state": "trusted",
             "checkpoints": 5,
             "rows": 31,
-            "one_sided": 0.9447004608294931,
+            "one_sided": 0.967741935483871,
             "boot90": [
-              83.7,
+              91.7,
               100.0
             ]
           }
@@ -133,7 +133,7 @@
       "label": "FP8-dynamic (8-bit float, dynamic activation scales)",
       "n_observations": 200,
       "n_checkpoints": 22,
-      "n_families": 7,
+      "n_families": 5,
       "mean_delta_pp": -0.048,
       "median_delta_pp": -0.085,
       "conformal_half_width_pp": 1.392,
@@ -148,46 +148,46 @@
       "worst_observed_delta_pp": -8.72,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9736,
-        "two_sided": 0.9193,
+        "one_sided": 0.972,
+        "two_sided": 0.913,
         "bootstrap_90_pct": [
-          95.8,
-          98.7
+          95.5,
+          98.6
         ],
         "rows": 200,
         "checkpoints": 22,
-        "scored_pairs": 1400,
+        "scored_pairs": 1000,
         "worst_family": "mistral",
-        "worst_family_one_sided": 0.8872,
+        "worst_family_one_sided": 0.8737,
         "by_size_band": {
           "<2B": {
             "state": "trusted",
             "checkpoints": 3,
             "rows": 19,
-            "one_sided": 0.9774436090225563,
+            "one_sided": 0.9789473684210527,
             "boot90": [
-              96.4,
-              99.2
+              96.8,
+              98.9
             ]
           },
           "2-10B": {
             "state": "trusted",
             "checkpoints": 10,
             "rows": 87,
-            "one_sided": 0.9737274220032841,
+            "one_sided": 0.9724137931034482,
             "boot90": [
-              95.0,
-              99.1
+              94.9,
+              99.0
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 9,
             "rows": 94,
-            "one_sided": 0.9726443768996961,
+            "one_sided": 0.9702127659574468,
             "boot90": [
-              94.5,
-              99.5
+              93.9,
+              99.6
             ]
           }
         }
@@ -214,17 +214,17 @@
       "worst_observed_delta_pp": -8.12,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9576,
-        "two_sided": 0.933,
+        "one_sided": 0.9594,
+        "two_sided": 0.9313,
         "bootstrap_90_pct": [
-          87.6,
+          88.4,
           100.0
         ],
         "rows": 64,
         "checkpoints": 5,
-        "scored_pairs": 448,
-        "worst_family": "llama-3.3",
-        "worst_family_one_sided": 0.7857,
+        "scored_pairs": 320,
+        "worst_family": "llama-3",
+        "worst_family_one_sided": 0.8,
         "by_size_band": {
           "<2B": {
             "state": "not_measured"
@@ -233,32 +233,32 @@
             "state": "insufficient_evidence",
             "checkpoints": 1,
             "rows": 13,
-            "one_sided": 0.989010989010989,
+            "one_sided": 0.9846153846153847,
             "boot90": [
-              98.9,
-              98.9
+              98.5,
+              98.5
             ]
           },
           ">10B": {
-            "state": "insufficient_evidence",
+            "state": "trusted",
             "checkpoints": 4,
             "rows": 51,
-            "one_sided": 0.9495798319327731,
+            "one_sided": 0.9529411764705882,
             "boot90": [
-              84.3,
+              85.3,
               100.0
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": "measured coverage falls to 79% on held-out family 'llama-3.3', over 3 families of evidence"
+      "warning": "measured coverage falls to 80% on held-out family 'llama-3', over 3 families of evidence"
     },
     "w4a16": {
       "label": "W4A16 (4-bit weights, 16-bit activations, GPTQ)",
       "n_observations": 193,
       "n_checkpoints": 23,
-      "n_families": 7,
+      "n_families": 6,
       "mean_delta_pp": -0.735,
       "median_delta_pp": -0.6,
       "conformal_half_width_pp": 2.135,
@@ -273,46 +273,46 @@
       "worst_observed_delta_pp": -8.86,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9423,
-        "two_sided": 0.8949,
+        "one_sided": 0.9617,
+        "two_sided": 0.9347,
         "bootstrap_90_pct": [
-          91.1,
-          96.8
+          93.7,
+          98.2
         ],
         "rows": 193,
         "checkpoints": 23,
-        "scored_pairs": 1351,
+        "scored_pairs": 965,
         "worst_family": "qwen2.5",
-        "worst_family_one_sided": 0.8776,
+        "worst_family_one_sided": 0.9071,
         "by_size_band": {
           "<2B": {
             "state": "insufficient_evidence",
             "checkpoints": 2,
             "rows": 11,
-            "one_sided": 0.7012987012987013,
+            "one_sided": 0.7636363636363637,
             "boot90": [
-              62.9,
-              76.2
+              68.0,
+              83.3
             ]
           },
           "2-10B": {
             "state": "trusted",
             "checkpoints": 13,
             "rows": 102,
-            "one_sided": 0.9327731092436975,
+            "one_sided": 0.9588235294117647,
             "boot90": [
-              89.4,
-              96.8
+              92.8,
+              98.6
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 8,
             "rows": 80,
-            "one_sided": 0.9875,
+            "one_sided": 0.9925,
             "boot90": [
-              97.5,
-              99.8
+              98.3,
+              100.0
             ]
           }
         }
@@ -340,15 +340,15 @@
       "coverage": {
         "state": "insufficient_evidence",
         "one_sided": 0.9186,
-        "two_sided": 0.8688,
+        "two_sided": 0.8674,
         "bootstrap_90_pct": [
-          79.6,
+          79.8,
           99.8
         ],
         "rows": 86,
         "checkpoints": 15,
-        "scored_pairs": 602,
-        "worst_family": "llama-3.1",
+        "scored_pairs": 430,
+        "worst_family": "llama-3",
         "worst_family_one_sided": 0.6818,
         "by_size_band": {
           "<2B": {
@@ -365,9 +365,9 @@
             "state": "trusted",
             "checkpoints": 8,
             "rows": 43,
-            "one_sided": 0.973421926910299,
+            "one_sided": 0.9720930232558139,
             "boot90": [
-              93.5,
+              93.3,
               100.0
             ]
           },
@@ -375,22 +375,22 @@
             "state": "insufficient_evidence",
             "checkpoints": 5,
             "rows": 31,
-            "one_sided": 0.8110599078341014,
+            "one_sided": 0.8129032258064516,
             "boot90": [
-              46.8,
+              47.3,
               100.0
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": "measured coverage falls to 68% on held-out family 'llama-3.1', over 4 families of evidence"
+      "warning": "measured coverage falls to 68% on held-out family 'llama-3', over 4 families of evidence"
     },
     "w8a8_int": {
       "label": "W8A8-INT (8-bit int weights + activations, SmoothQuant)",
       "n_observations": 194,
       "n_checkpoints": 24,
-      "n_families": 7,
+      "n_families": 5,
       "mean_delta_pp": -0.32,
       "median_delta_pp": -0.29,
       "conformal_half_width_pp": 1.39,
@@ -405,25 +405,25 @@
       "worst_observed_delta_pp": -3.32,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9588,
-        "two_sided": 0.9264,
+        "one_sided": 0.9619,
+        "two_sided": 0.933,
         "bootstrap_90_pct": [
-          93.5,
-          98.1
+          93.9,
+          98.2
         ],
         "rows": 194,
         "checkpoints": 24,
-        "scored_pairs": 1358,
+        "scored_pairs": 970,
         "worst_family": "mistral",
-        "worst_family_one_sided": 0.8381,
+        "worst_family_one_sided": 0.8667,
         "by_size_band": {
           "<2B": {
             "state": "insufficient_evidence",
             "checkpoints": 4,
             "rows": 29,
-            "one_sided": 0.9408866995073891,
+            "one_sided": 0.9448275862068966,
             "boot90": [
-              83.4,
+              84.5,
               100.0
             ]
           },
@@ -431,35 +431,32 @@
             "state": "trusted",
             "checkpoints": 12,
             "rows": 93,
-            "one_sided": 0.9861751152073732,
+            "one_sided": 0.9870967741935484,
             "boot90": [
-              97.4,
-              99.6
+              97.0,
+              99.8
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 8,
             "rows": 72,
-            "one_sided": 0.9305555555555556,
+            "one_sided": 0.9361111111111111,
             "boot90": [
-              89.0,
-              97.2
+              90.0,
+              97.3
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": "measured coverage falls to 84% on held-out family 'mistral', over 7 families of evidence"
+      "warning": null
     }
   },
   "cells_refused": [],
   "cells_insufficient_evidence": [
-    "fp8|2-10B",
     "fp8|<2B",
-    "fp8|>10B",
     "nvfp4|2-10B",
-    "nvfp4|>10B",
     "w4a16|<2B",
     "w8a16|<2B",
     "w8a16|>10B",

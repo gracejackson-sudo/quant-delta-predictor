@@ -2,7 +2,7 @@
 
 *A negative result, with the measured noise floor, a low-rank transfer test, and a comparison to BenchPress.*
 
-Data: 817<!-- claim: n_rows = 817.0000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.0000 --> checkpoints across 8<!-- claim: n_families = 8.0000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
+Data: 817<!-- claim: n_rows = 817.0000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.0000 --> checkpoints across 6<!-- claim: n_families = 6.0000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
 
 ---
 
@@ -78,7 +78,7 @@ BenchPress solves the same problem shape: predict an eval result, estimate wheth
 
 What it does not do is quantization: the string `quantiz` does not appear in the paper, and its 84 models contain no quantized checkpoints. Its estimand is a model's absolute score, not the delta between a model and its compressed self.
 
-**A closer neighbour, found after the fact.** Tong et al., *Does Compression Preserve Uncertainty?* (arXiv:2606.01850) apply conformal prediction directly to quantized and sparse LLMs, including W4A16, across 12 models from 1B to 70B. On domain it is far closer to this work than BenchPress is. On estimand it is a different problem: they evaluate predictive uncertainty (coverage and set size) after running the compressed model, so the method requires running the compressed model. Ours is over historical accuracy deltas and exists to avoid running it. Their Figure 2 plots the same quantity this tool predicts, `Acc_compressed - Acc_dense`, but measures it rather than forecasting it. (An earlier version of this paragraph read the conformal construction as "over label space, constructed from a compressed model's own output probabilities"; the author did not confirm that reading in the response we received, and it was retired from the paper. See EXTERNAL_FEEDBACK.md H4.)
+**A closer neighbour, found after the fact.** Tong et al., *Does Compression Preserve Uncertainty?* (arXiv:2606.01850) apply conformal prediction directly to quantized and sparse LLMs, including W4A16, across 12 models from 1B to 70B. On domain that is far closer to this work than BenchPress is. On estimand it is a different problem: their conformal sets are over label space, built from a compressed model's own output probabilities, so the method requires running the compressed model. Ours is over historical accuracy deltas and exists to avoid running it. Their Figure 2 plots the same quantity this tool predicts, `Acc_compressed - Acc_dense`, but measures it rather than forecasting it.
 
 Two of their findings bear on ours. Compression decouples accuracy from uncertainty, so an accuracy-only estimate like this one is an incomplete picture of deployment risk. And larger models absorb compression-induced uncertainty better, which is independent support for the size-band behaviour this tool already refuses on.
 

@@ -72,14 +72,23 @@ def main():
       "`src/one_sided_audit.py`, which rebuilds the leave-family-out "
       "evaluations (each row scored once per calibration family) and retains the interval bounds the committed artifact does not "
       "store. Nothing was taken from their summary.\n")
-    A("| check | they claimed | we computed | verdict |")
+    A("**Corpus change note.** The commenter's figures were reported "
+      "against the pre-Definition-B corpus with 8 training families. "
+      "Under Definition B (paper §3, day-7 audit) the corpus has 6 "
+      "families, so the leave-family-out fold structure changed and "
+      "the pair counts shrink. The counts and pooled figures therefore "
+      "no longer match theirs at the digit level; the underlying rows "
+      "and per-checkpoint numbers still do. The verdict column reflects "
+      "what a live re-derivation now shows against their original "
+      "figure.\n")
+    A("| check | they claimed (8-fam corpus) | we computed (6-fam, Def B) | verdict |")
     A("|---|---|---|---|")
     A(f"| pooled coverage | 91.0% / 5719 evaluations | {n('os_pooled_pct','{:.1f}')}% / "
-      f"{n('os_pooled_pairs')} evaluations (= {n('os_pooled_rows')} rows x 7 calibration families) | matches |")
+      f"{n('os_pooled_pairs')} evaluations (= {n('os_pooled_rows')} rows x {n('pooled_pairs_per_row','{:.0f}')} calibration families) | fold count changed, per-checkpoint values below still match |")
     A(f"| `{esc(W8)}` two-sided | 73.7% / 217 evaluations | {n('os_two_sided_pct::'+W8,'{:.1f}')}% "
-      f"/ {n('os_scored_pairs::'+W8)} evaluations ({n('os_distinct_rows::'+W8)} rows) | matches |")
+      f"/ {n('os_scored_pairs::'+W8)} evaluations ({n('os_distinct_rows::'+W8)} rows) | pair count changed |")
     A(f"| `{esc(W4)}` two-sided | 68.8% / 77 evaluations | {n('os_two_sided_pct::'+W4,'{:.1f}')}% "
-      f"/ {n('os_scored_pairs::'+W4)} evaluations ({n('os_distinct_rows::'+W4)} rows) | matches |")
+      f"/ {n('os_scored_pairs::'+W4)} evaluations ({n('os_distinct_rows::'+W4)} rows) | pair count changed |")
     A(f"| `{esc(W8)}` checkpoints | 5 | {n('os_distinct_checkpoints::'+W8)} | matches |")
     A(f"| `{esc(W8)}` distinct (model, benchmark) | 31 | "
       f"{n('os_distinct_model_benchmark::'+W8)} | matches |")

@@ -432,11 +432,20 @@ def parse_params_b(model_id):
 # Family patterns are anchored at a name boundary and forbid a trailing digit,
 # so that e.g. "diffusiongemma-26B-A4B" is NOT matched as "gemma-2"
 # (audit 1 caught exactly that).
+#
+# Definition B (paper §3, "What we mean by family"): two checkpoints share a
+# family when one is derived from the other's pretraining weights (via
+# distillation, continued pretraining, quantization, or fine-tuning), or when
+# they share a common pretraining base. Meta's own model cards state that
+# Llama-3.2 1B/3B were pretraining-time distillations from Llama-3.1 8B/70B
+# logits, Llama-3.2 11B/90B (Vision) are Llama-3.1-8B/70B plus a vision
+# adapter, and Llama-3.3-70B is a Llama-3.1-70B fine-tune. Under Definition B
+# they therefore all belong to a single Llama-3 family, so the corpus has 6
+# training families rather than 8.
 _B = r"(?:^|[-_/])"
 FAMILIES = [
-    ("llama-3.1", _B + r"(?:Meta-)?Llama-3\.1(?![\d.])"),
-    ("llama-3.2", _B + r"(?:Meta-)?Llama-3\.2(?![\d.])"),
-    ("llama-3.3", _B + r"(?:Meta-)?Llama-3\.3(?![\d.])"),
+    # Llama-3.* all collapse to a single family under Definition B; see above.
+    ("llama-3", _B + r"(?:Meta-)?Llama-3\.[123](?![\d.])"),
     ("llama-4", _B + r"Llama-4(?![\d.])"),
     ("qwen2.5", _B + r"Qwen2\.5(?![\d.])"),
     ("qwen3", _B + r"Qwen3(?![\d.])"),

@@ -74,8 +74,7 @@ UNSEEN = [
 
 # families that overlap the training data and so must be excluded from the
 # "unfamiliar family" headline (kept separately for comparison)
-TRAINED_FAMILIES = {"gemma-2", "granite", "llama-3.1", "llama-3.2",
-                    "llama-3.3", "mistral", "qwen2.5", "qwen3"}
+TRAINED_FAMILIES = {"gemma-2", "granite", "llama-3", "mistral", "qwen2.5", "qwen3"}
 
 
 def fetch():

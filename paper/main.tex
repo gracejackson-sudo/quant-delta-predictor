@@ -171,11 +171,20 @@ depends on the weight distribution and activation-outlier structure the
 checkpoint inherits, and derivative products inherit them, while new
 pretraining runs produce different weight distributions and different
 quantization behaviour. In particular, under this definition Gemma-3 and
-Gemma-2 are separate families (independent pretraining runs), Llama-3.1
-and Llama-3.2 are separate families, and DeepSeek-R1-Distill-Llama-8B is
-a member of the Llama-3.1 family (it uses Llama-3.1-8B weights as
+Gemma-2 are separate families (independent pretraining runs), Llama-3.1,
+Llama-3.2 and Llama-3.3 all belong to the same Llama-3 family
+(Llama-3.2 1B/3B are pretraining-time distillations from Llama-3.1
+8B/70B logits; Llama-3.2 11B/90B are Llama-3.1 plus a vision adapter;
+Llama-3.3-70B is a Llama-3.1-70B fine-tune -- Meta's own model cards
+state each of these lineages), and DeepSeek-R1-Distill-Llama-8B is a
+member of that Llama-3 family (it uses Llama-3.1-8B weights as
 initialization). The \Nfam{} training families are Gemma-2, Granite,
-Llama-3.1, Llama-3.2, Llama-3.3, Mistral, Qwen-2.5 and Qwen-3.
+Llama-3, Mistral, Qwen-2.5 and Qwen-3. An earlier version of this paper
+counted Llama-3.1, Llama-3.2 and Llama-3.3 as three separate families, so
+the corpus was reported as having 8 training families rather than 6, and
+leave-one-family-out was run over 8 folds rather than 6; the audit note
+in \S\ref{sec:audit} records the change and its effect on the aggregate
+LOFO figure.
 
 \paragraph{The pathway is only sparsely documented.} A live scan on
 2026-09-26 across the \NRhCardsListed{} RedHatAI quantized-model cards
@@ -364,24 +373,24 @@ nvfp4       & [\LoNvfp, \HiNvfp]                 & \WorstNvfp{}pp         & \Sev
 new checkpoints not used during development. The strict protocol
 (\texttt{verify/independent\_check.py}) excludes a prospective card on
 one of two grounds: any card whose family label overlaps a training
-family (Llama-3.1 and Qwen-3), or any card whose format informed a
-parser fix (Llama-4). The two grounds are separate; only Llama-4 is
-excluded for the parser reason. Under this protocol two-sided coverage
+family (Llama-3.* as one family under Definition B, and Qwen-3), or
+any card whose format informed a parser fix (Llama-4). The two grounds
+are separate; only Llama-4 is excluded for the parser reason. Under
+this protocol two-sided coverage
 is \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI
 \([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level.
 Note the layering: this filter runs by name-pattern regex and does not
 implement the mechanistic family definition of \S\ref{sec:data}. Under
 that definition, \ProspInFamCkpts{} of the \ProspClusN{} strict
-checkpoints (all DeepSeek-R1-Distill of a Llama-3.1, Llama-3.3, or
-Qwen-2.5 base) are in-family derivatives that the name-pattern filter
-let through. The pooled figure therefore mixes ``passed the strict
+checkpoints (all DeepSeek-R1-Distill of a Llama-3.* or Qwen-2.5 base)
+are in-family derivatives that the name-pattern filter let through. The pooled figure therefore mixes ``passed the strict
 filter'' with ``is in-family under \S\ref{sec:data}''. The
 family-split reporting below applies \S\ref{sec:data} to what survives
 the filter and states both sides separately. The \ProspN{} strict rows
 come from \ProspClusN{} distinct checkpoints, which we hand-classify
 against the training-family list. Under the
 definition of \S\ref{sec:data}: \ProspInFamCkpts{} in-family checkpoints
-(all DeepSeek-R1-Distill of a Llama-3.1, Llama-3.3, or Qwen-2.5 base in
+(all DeepSeek-R1-Distill of a Llama-3.* or Qwen-2.5 base in
 training) contribute \ProspInFamRows{} rows at \ProspInFamCov\% two-sided
 coverage; \ProspOutFamCkpts{} out-of-family checkpoints (Gemma-3, SmolLM
 and SmolLM3, NVIDIA-Nemotron-Nano-9B) contribute \ProspOutFamRows{} rows
@@ -559,6 +568,24 @@ survived---would misrepresent how the result was obtained.
 
 \paragraph{Errors that changed a published number.}
 \begin{itemize}
+  \item \emph{The training corpus originally counted Llama-3.1, Llama-3.2
+    and Llama-3.3 as three separate families.} Meta's own model cards
+    state that Llama-3.2 1B/3B were pretraining-time distillations from
+    Llama-3.1 8B/70B logits, that Llama-3.2 11B/90B are Llama-3.1
+    plus a vision adapter, and that Llama-3.3-70B is a Llama-3.1-70B
+    fine-tune. Under the mechanistic definition adopted in
+    \S\ref{sec:data} (a distillation is a member of its teacher's
+    family; a fine-tune inherits the base's family) they therefore
+    belong to a single Llama-3 family, and the corpus has
+    \Nfam{} training families rather than 8. Leave-one-family-out is
+    now run over \Nfam{} folds rather than 8. The prospective
+    coverage figures are unchanged (the strict subset never contained
+    a Llama-3.2 or Llama-3.3 checkpoint), but every LOFO-derived
+    figure moves: the aggregate LOFO coverage across held-out families
+    changes from 87.3\% to 88.2\%, and the previously-worst held-out
+    fold Llama-3.3 (85.1\%) folds into the merged Llama-3 fold at
+    92.2\%. Per-family LOFO on the merged fold is reported so this
+    weakness does not disappear from view.
   \item \emph{A retracted headline, then re-partitioned.} An early claim
     that all \ProspClusN{} held-out checkpoints came from families never
     used in construction was wrong. Under the definition adopted in
@@ -601,7 +628,7 @@ survived---would misrepresent how the result was obtained.
     (\S\ref{sec:method}).
   \item \emph{Inflated pair counts.} An earlier version of the tool reported
     the number of (test row, calibration family) evaluations as if it were the
-    number of rows: with 8 families each row is scored 7 times, so
+    number of rows: with \Nfam{} families each row is scored \PairsPerRow{} times, so
     \PooledPairs{} evaluations came from only \PooledRows{} rows. Every
     row-count claim was recomputed on \texttt{distinct\_rows}.
   \item \emph{Two levels judged differently.} Cells were judged on the

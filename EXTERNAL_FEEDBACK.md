@@ -35,7 +35,7 @@ A maintainer of another open-source language-model project reviewed the coverage
 
 **What was said:** the tool advertised a 90% interval and cited its coverage against 90%, but the risk being bounded is one-sided (accuracy loss), and a symmetric interval splits the 10% miss across two tails. The refusal message compared the wrong statistic to the wrong line.
 
-**What was done:** the one-sided derivation was written up in `ONE_SIDED_COVERAGE.md` (`fd682b2`); stale wording of the refusal behaviour was swept across docs, paper and messages (`a31a1f7`). The refusal message now cites the refusal threshold (85<!-- claim: refuse_below_pct = 85.0000 -->%) and the one-sided level (95.1<!-- claim: pooled_one_sided_pct = 95.1390 -->% pooled) rather than the 90% the two-sided interval advertises.
+**What was done:** the one-sided derivation was written up in `ONE_SIDED_COVERAGE.md` (`fd682b2`); stale wording of the refusal behaviour was swept across docs, paper and messages (`a31a1f7`). The refusal message now cites the refusal threshold (85<!-- claim: refuse_below_pct = 85.0000 -->%) and the one-sided level (95.8<!-- claim: pooled_one_sided_pct = 95.8140 -->% pooled) rather than the 90% the two-sided interval advertises.
 
 **What is open:** whether 85% is the right refusal threshold is a design choice we have not re-derived; the collaborator's point may be an argument for revisiting it.
 
@@ -43,7 +43,7 @@ A maintainer of another open-source language-model project reviewed the coverage
 
 **What was said:** the coverage audit's checkpoint bootstrap wrapped the two-sided indicator while the verdict was judged on the one-sided statistic, and the classifiers at the cell and scheme levels were different.
 
-**What was done:** the coverage refactor in this cycle centralises the measurement in `src/cell_coverage.py`, wraps the one-sided figure at both levels, and uses one classifier (`rank.classify_cell`) for cells and schemes. The independent verifier (`verify/independent_rank.py`) re-runs the whole thing in stdlib and reports full agreement. Current state: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 9<!-- claim: n_cells_insufficient_evidence = 9.0000 --> at insufficient evidence.
+**What was done:** the coverage refactor in this cycle centralises the measurement in `src/cell_coverage.py`, wraps the one-sided figure at both levels, and uses one classifier (`rank.classify_cell`) for cells and schemes. The independent verifier (`verify/independent_rank.py`) re-runs the whole thing in stdlib and reports full agreement. Current state: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> at insufficient evidence.
 
 ## A BenchPress author (anonymized: an author of BenchPress, arXiv:2606.24020)
 
@@ -87,7 +87,7 @@ This engineer tested the tool against their organization's internal models on a 
 
 **What was said:** the 85% refusal line "is slightly higher than that," around 95.1 in their experiments. It is unclear from the transcript what quantity that 95.1 measures.
 
-**What we found:** the refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->% and is stated as such. Separately, pooled one-sided coverage of the interval is 95.1<!-- claim: pooled_one_sided_pct = 95.1390 -->%, which is the interval's real one-sided nominal level, since a symmetric interval advertised at 90% splits its 10% across two tails. That matches the number the engineer gave, but we cannot confirm it is the same quantity. That the nominal one-sided level is about 95% was already stated in the docs (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) before this feedback arrived, so that part is not a response to it. What was done afterwards is a sweep for stale statements of the refusal behaviour in the docs, paper and messages (`a31a1f7`), which also changed the refusal message: it had compared coverage against the 90% the interval claims, and now cites the refusal threshold and the one-sided level.
+**What we found:** the refusal threshold is 85<!-- claim: refuse_below_pct = 85.0000 -->% and is stated as such. Separately, pooled one-sided coverage of the interval is 95.8<!-- claim: pooled_one_sided_pct = 95.8140 -->%, which is the interval's real one-sided nominal level, since a symmetric interval advertised at 90% splits its 10% across two tails. That matches the number the engineer gave, but we cannot confirm it is the same quantity. That the nominal one-sided level is about 95% was already stated in the docs (`fd682b2`, derivation in `ONE_SIDED_COVERAGE.md`) before this feedback arrived, so that part is not a response to it. What was done afterwards is a sweep for stale statements of the refusal behaviour in the docs, paper and messages (`a31a1f7`), which also changed the refusal message: it had compared coverage against the 90% the interval claims, and now cites the refusal threshold and the one-sided level.
 
 **What is open:** whether 85% is the right refusal line has not been revisited. It is a design choice we have not re-derived, and the engineer's comment may be an argument for moving it.
 
@@ -151,15 +151,15 @@ This engineer cloned the repo and filed a form submission with detailed technica
 
 ### H2. Pair counting
 
-**What was said:** the coverage numbers were described as if 5719<!-- claim: pooled_scored_pairs = 5719.0000 --> were the row count. With eight families and leave-one-family-out, each row is scored under seven calibration families, so the real row count is 817<!-- claim: pooled_distinct_rows = 817.0000 --> and the 5719<!-- claim: pooled_scored_pairs = 5719.0000 --> figure is the (row, calibration-family) evaluation count. Independence claims on the evaluation count are wrong.
+**What was said:** the coverage numbers were described as if 4085<!-- claim: pooled_scored_pairs = 4085.0000 --> were the row count. With eight families and leave-one-family-out, each row is scored under seven calibration families, so the real row count is 817<!-- claim: pooled_distinct_rows = 817.0000 --> and the 4085<!-- claim: pooled_scored_pairs = 4085.0000 --> figure is the (row, calibration-family) evaluation count. Independence claims on the evaluation count are wrong.
 
-**What was done:** the coverage refactor at commit `32e056f` centralises measurement in `src/cell_coverage.py`, exposes `distinct_rows` and `scored_pairs` as separate fields, and labels `scored_pairs` explicitly as not-independent evaluations. Tests enforce that `scored_pairs = 7 * distinct_rows` and that the row counts equal the raw-data counts per cell. The paper's audit section records the bug. Pooled figures now read: 5719<!-- claim: pooled_scored_pairs = 5719.0000 --> evaluations across 817<!-- claim: pooled_distinct_rows = 817.0000 --> distinct rows, each scored under 7<!-- claim: pooled_pairs_per_row = 7.0000 --> calibration families.
+**What was done:** the coverage refactor at commit `32e056f` centralises measurement in `src/cell_coverage.py`, exposes `distinct_rows` and `scored_pairs` as separate fields, and labels `scored_pairs` explicitly as not-independent evaluations. Tests enforce that `scored_pairs = 7 * distinct_rows` and that the row counts equal the raw-data counts per cell. The paper's audit section records the bug. Pooled figures now read: 4085<!-- claim: pooled_scored_pairs = 4085.0000 --> evaluations across 817<!-- claim: pooled_distinct_rows = 817.0000 --> distinct rows, each scored under 5<!-- claim: pooled_pairs_per_row = 5.0000 --> calibration families.
 
 ### H3. Drift across schemes and bands; task-1 attribution
 
 **What was said:** several cells looked undercovered; the tool should refuse where evidence is thin; and the 171<!-- claim: calib_ratio_x = 170.6667 -->x calibration-data ratio in task 1 was presented as causing the gap without an independent test.
 
-**What was done:** the two-level classifier in the refactor at `32e056f` demotes cells and schemes with too few checkpoints or straddling bootstrap intervals. Current state: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 9<!-- claim: n_cells_insufficient_evidence = 9.0000 --> at insufficient evidence. The paper now describes the 171<!-- claim: calib_ratio_x = 170.6667 -->x figure as "consistent with ... though the attribution is not independently tested"; the GPU test that would settle it (`task1_real_gptq.py`) has not been run.
+**What was done:** the two-level classifier in the refactor at `32e056f` demotes cells and schemes with too few checkpoints or straddling bootstrap intervals. Current state: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> at insufficient evidence. The paper now describes the 171<!-- claim: calib_ratio_x = 170.6667 -->x figure as "consistent with ... though the attribution is not independently tested"; the GPU test that would settle it (`task1_real_gptq.py`) has not been run.
 
 ### H4. LoRA-not-in-product; zero cells refused; product-strategy read
 
@@ -195,4 +195,4 @@ This engineer cloned the repo and filed a form submission with detailed technica
 
 - The task-1 GPU run that would test the 171x attribution (H3).
 
-- Current tool state, for reference: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 9<!-- claim: n_cells_insufficient_evidence = 9.0000 --> at insufficient evidence (fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> checkpoints or an inconclusive bootstrap).
+- Current tool state, for reference: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> at insufficient evidence (fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> checkpoints or an inconclusive bootstrap).

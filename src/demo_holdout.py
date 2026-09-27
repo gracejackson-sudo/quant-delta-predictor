@@ -23,7 +23,7 @@ DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 OUT = os.path.join(HERE, "..", "out")
 ALPHA = 0.10
 
-TRAIN_FAMILIES = ["llama-3.1", "qwen2.5"]   # the 2 biggest families
+TRAIN_FAMILIES = ["llama-3", "qwen2.5"]   # the 2 biggest families under Def B
 CAL_FAMILY = "granite"                       # held out for calibration only
 
 # real held-out (model, config) pairs from families the predictor never saw

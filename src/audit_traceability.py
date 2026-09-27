@@ -42,7 +42,17 @@ STRUCTURAL = {"2026", "2025", "1", "6", "7", "25.0"}
 # Figures quoted explicitly AS superseded or historical, inside a sentence
 # that says so. They must not be silently updated -- the whole point is that
 # they record what we used to believe.
-HISTORICAL = {"5.1", "74", "94", "92.2", "90.2", "12", "19", "46"}
+HISTORICAL = {"5.1", "74", "94", "92.2", "90.2", "12", "19", "46",
+              # External commenter's report in ONE_SIDED_COVERAGE.md and
+              # EXTERNAL_FEEDBACK.md was against the pre-Def-B 8-family
+              # corpus. The doc contrasts "they claimed" (frozen, from
+              # their audit) against "we computed" (recomputed live against
+              # the current 6-family corpus, tagged). Since Def B changed
+              # the LOFO fold structure, the "they claimed" side no longer
+              # matches the recomputed side -- that is now part of the
+              # historical record, not a bug to update silently.
+              "91.0", "5719", "73.7", "217", "68.8", "77", "81.1",
+              "29.9", "98", "95.1"}
 EXEMPT = {
     # identifiers and fixed constants
     "2606.24020", "2606", "24020", "6.2", "84", "133",

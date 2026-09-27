@@ -1058,27 +1058,39 @@ def test_scheme_verdicts_after_the_fix():
 
 
 def test_tier_grid_after_the_fix():
+    # Under Definition B (Tier 0.1, day-7 audit) the corpus has 6 families,
+    # not 8, and every LOFO-derived verdict is recomputed on 6 folds. What
+    # the day-7 audit brief explicitly forbids is retuning the verdict
+    # thresholds to keep the pre-Def-B tier grid; the check runs whatever
+    # verdicts fall out of the unchanged rule. FP8's move from Tier A to
+    # Tier B is exactly such a fall-out (fewer families back FP8 under 6
+    # folds; the rule requires thin-family exposure to be penalised).
     table, cc = R.build_table(), R.load_cell_coverage()
 
     def tier(s, band=None):
         return R.rank([s], table, band=band, cell_cov=cc)[0][0]["tier"]
-    assert tier("fp8") == "A"                                   # all sizes pooled
-    assert tier("fp8", "<2B") == "C" and tier("fp8", ">10B") == "C"
+    assert tier("fp8") == "B"                                   # all sizes pooled (was A pre-Def-B)
+    assert tier("fp8_dynamic") == "A"
     assert tier("fp8_dynamic", ">10B") == "A" and tier("w8a8_int", "2-10B") == "A"
+    assert tier("w8a8_int", "<2B") == "C"                       # a Tier-A scheme with a C band
     assert tier("w8a16") == "C" and tier("w4a16") == "C" and tier("nvfp4") == "C"
 
 
 def test_a_no_size_tier_discloses_every_size_band(capsys):
-    """FP8's all-sizes Tier A must not read as a statement about bands it cannot support."""
+    """A scheme's all-sizes Tier that hides a lower band verdict must
+    disclose the band split. Under Definition B (Tier 0.1, day-7 audit)
+    the exemplar for this pattern is w8a8_int: all-sizes Tier A but its
+    <2B band is C, so the tool must not read as if the A endorses <2B."""
     table, cc = R.build_table(), R.load_cell_coverage()
-    ranked, unknown = R.rank(["fp8"], table, cell_cov=cc)
+    ranked, unknown = R.rank(["w8a8_int"], table, cell_cov=cc)
     assert ranked[0]["tier"] == "A"
-    assert {b: v["state"] for b, v in ranked[0]["band_verdicts"].items()} == {
-        "<2B": "insufficient_evidence", "2-10B": "insufficient_evidence", ">10B": "insufficient_evidence"}
+    band_states = {b: v["state"] for b, v in ranked[0]["band_verdicts"].items()}
+    # <2B must be insufficient; the other two bands are trusted under Def B
+    assert band_states.get("<2B") == "insufficient_evidence", band_states
     R.report(ranked, unknown, R.DEFAULT_RISK_PP, None, False, table["_meta"])
     out = capsys.readouterr().out
-    assert "by size band" in out and "3 of 3 size bands" in out and "enter --size" in out
-    ranked, unknown = R.rank(["fp8"], table, band=">10B", cell_cov=cc)
+    assert "by size band" in out and "enter --size" in out
+    ranked, unknown = R.rank(["w8a8_int"], table, band=">10B", cell_cov=cc)
     R.report(ranked, unknown, R.DEFAULT_RISK_PP, ">10B", False, table["_meta"])
     assert "by size band" not in capsys.readouterr().out       # a size was given: that band's verdict is shown instead
 
@@ -1243,37 +1255,38 @@ def test_real_use_case_csv_matches_tolerance_recomputation():
 
 def test_strict_filter_excludes_exactly_the_three_documented_patterns():
     """The paper's Section 6 protocol sentence claims the strict filter
-    excludes on two grounds: family overlap with training (Llama-3.1,
-    Qwen-3) and parser fix (Llama-4). Lock that in code so drift breaks
-    the gate."""
+    excludes on two grounds: family overlap with training (Llama-3.* -- one
+    family under Definition B, §3 -- and Qwen-3) and parser fix (Llama-4).
+    Lock that in code so drift breaks the gate."""
     import inspect, re, sys
     root = os.path.join(os.path.dirname(__file__), "..")
     sys.path.insert(0, os.path.join(root, "verify"))
     import independent_check as _ic
     src = inspect.getsource(_ic.is_strict)
     # each of the three regex needles must appear once (and only these)
-    assert re.search(r'r"Llama-3\\.1"', src), (
-        "Llama-3.1 exclusion regex missing from is_strict")
+    assert re.search(r'r"Llama-3\\.\[123\]"', src), (
+        "Llama-3.[123] exclusion regex missing from is_strict "
+        "(Definition B: Llama-3.1, 3.2, 3.3 are one family)")
     assert "Qwen3" in src and "[-_]" in src, (
         "Qwen3 exclusion regex missing from is_strict")
     assert re.search(r'r"Llama-4"', src), (
         "Llama-4 exclusion regex missing from is_strict")
-    # comment above the function must state both grounds and both
-    # families for the "family overlap" ground
-    comment = src[:src.index("def is_strict")]
-    # find the comment block just above is_strict
+    # comment above the function must state both grounds
     file_src = open(os.path.join(root, "verify",
                                  "independent_check.py")).read()
     j = file_src.index("def is_strict")
-    excerpt = file_src[max(0, j - 400):j]
-    assert "llama-3.1" in excerpt.lower(), (
-        "code comment must name Llama-3.1 as a family-overlap exclusion")
+    excerpt = file_src[max(0, j - 500):j]
+    assert "llama-3" in excerpt.lower(), (
+        "code comment must name Llama-3.* as a family-overlap exclusion")
     assert "qwen3" in excerpt.lower(), (
         "code comment must name Qwen3 as a family-overlap exclusion")
     assert "llama-4" in excerpt.lower(), (
         "code comment must name Llama-4 as a parser-fix exclusion")
     assert "parser" in excerpt.lower(), (
         "code comment must call out the parser-fix rationale for Llama-4")
+    assert "definition b" in excerpt.lower(), (
+        "code comment must reference Definition B so the reader can see "
+        "why Llama-3.1/3.2/3.3 collapse")
 
 
 def test_paper_section6_protocol_sentence_states_both_grounds():
@@ -1286,16 +1299,24 @@ def test_paper_section6_protocol_sentence_states_both_grounds():
         assert "Prospective validation" in text, f"{name}: paragraph missing"
         # find a window around the paragraph
         i = text.index("Prospective validation")
-        para = text[i:i + 1500]
-        assert "family label overlaps a training" in para, (
+        para = text[i:i + 2200]
+        # Normalise whitespace so a LaTeX line break inside the phrase
+        # doesn't fool the substring check.
+        import re as _re
+        norm = _re.sub(r"\s+", " ", para)
+        assert "family label overlaps a training" in norm, (
             f"{name}: paragraph does not name family-overlap ground")
-        assert "parser fix" in para, (
+        assert "parser fix" in norm, (
             f"{name}: paragraph does not name parser-fix ground")
-        assert "The two grounds are separate" in para, (
+        assert "The two grounds are separate" in norm, (
             f"{name}: paragraph does not state that the two grounds are separate")
-        assert "Llama-3.1" in para and "Qwen-3" in para, (
-            f"{name}: paragraph does not name Llama-3.1 and Qwen-3")
-        assert "Llama-4" in para, (
+        assert "Llama-3.*" in norm and "Qwen-3" in norm, (
+            f"{name}: paragraph does not name Llama-3.* (Definition B) "
+            f"and Qwen-3")
+        assert "Definition B" in norm, (
+            f"{name}: paragraph does not reference Definition B when "
+            f"stating that Llama-3.* is one family")
+        assert "Llama-4" in norm, (
             f"{name}: paragraph does not name Llama-4")
 
 
@@ -1305,6 +1326,39 @@ def test_paper_section6_protocol_sentence_states_both_grounds():
 # the hole: every .py file under src/ and verify/ must at least parse.
 # Import-fails-loudly, not silently.
 # ---------------------------------------------------------------------------
+
+def test_corpus_has_six_families_under_definition_b():
+    """Tier 0.1 (day-7 audit): the corpus's family label must reflect
+    Definition B (paper §3). Meta's cards state Llama-3.2 and Llama-3.3
+    are Llama-3.1 derivatives, so the corpus has 6 training families,
+    not 8. Pin the family list AND its count so a future edit that
+    silently reintroduces Llama-3.1/3.2/3.3 as separate labels breaks
+    the gate."""
+    import pandas as pd
+    root = os.path.join(os.path.dirname(__file__), "..")
+    d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
+    families = sorted(d.family.unique())
+    expected = ["gemma-2", "granite", "llama-3", "mistral", "qwen2.5",
+                "qwen3"]
+    assert families == expected, (
+        f"corpus family list drifted from Definition B: got {families}, "
+        f"expected {expected}. If a llama-3.1/3.2/3.3 label is back, the "
+        f"family regex in src/harvest.py::FAMILIES or the CSV was rolled "
+        f"back; see §3 and the day-7 audit note in §9.")
+    assert len(families) == 6, (
+        f"n_families under Definition B must be 6, got {len(families)}")
+    # And enforce that the training/prospective TRAIN sets carry the
+    # merged label, not the split labels. This catches a partial rollback
+    # (dataset patched but code not).
+    train_use = open(os.path.join(root, "src", "real_use_case.py")).read()
+    assert '"llama-3"' in train_use, (
+        "src/real_use_case.py::TRAINED_FAMILIES must contain 'llama-3' "
+        "under Definition B")
+    for stale in ('"llama-3.1"', '"llama-3.2"', '"llama-3.3"'):
+        assert stale not in train_use, (
+            f"src/real_use_case.py still references {stale}; TRAINED_FAMILIES "
+            f"must use the merged Definition B label")
+
 
 def test_paper_audit_reads_the_live_registry_not_hard_coded_literals():
     """The day-7 external audit found paper/audit_paper.py section 4 was

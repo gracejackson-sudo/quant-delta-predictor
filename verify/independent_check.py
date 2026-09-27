@@ -275,11 +275,12 @@ def load_dir(d, allow_no_size):
 
 # strict-subset rule, written independently:
 # a prospective row is EXCLUDED if its checkpoint belongs to a family that
-# appears in training (llama-3.1, qwen3), or if it is Llama-4 (the parser was
-# adapted to those cards after they were seen).
+# appears in training (Llama-3.* -- one family under Definition B, see §3 --
+# or Qwen3), or if it is Llama-4 (the parser was adapted to those cards after
+# they were seen).
 def is_strict(model_id):
     n = model_id.split("/")[-1]
-    if re.search(r"Llama-3\.1", n, re.I):
+    if re.search(r"Llama-3\.[123]", n, re.I):
         return False
     if re.search(r"(^|[-_])Qwen3(?![.\d])", n, re.I):
         return False
