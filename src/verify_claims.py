@@ -110,6 +110,19 @@ def registry():
                 100 * _c["covered"] / _c["n"], 0.05,
                 "marginal (no-Mondrian) LOFO coverage on the NVFP4 slice")
 
+    # Failed task-1 calibration-data test (day-6). The two quantized-model
+    # MMLU accuracies from the anomalous first run, kept as the range the
+    # paper's Limitations paragraph cites.
+    _t1 = os.path.join(HERE, "..", "out", "task1_real_gptq.json")
+    if os.path.exists(_t1):
+        _t = json.load(open(_t1))
+        _accs = sorted(r["acc_after"] for r in _t)
+        if len(_accs) >= 2:
+            add("t1_anom_min_pct", _accs[0], 0.02,
+                "day-6 task-1 lowest quantized MMLU on the anomalous first run")
+            add("t1_anom_max_pct", _accs[-1], 0.02,
+                "day-6 task-1 highest quantized MMLU on the anomalous first run")
+
     # RedHatAI-card recipe-documentation scan (see src/rh_card_recipe_scan.py).
     # Keys carry the scan date because the underlying count of published
     # cards will drift; a future re-scan should mint a new set of keys

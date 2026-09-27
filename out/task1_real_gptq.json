@@ -1,0 +1,34 @@
+[
+ {
+  "model": "Qwen2.5-1.5B-Instruct",
+  "params_b": 1.5,
+  "benchmark": "mmlu",
+  "acc_before": 59.5667,
+  "acc_after": 27.5,
+  "delta": -32.0667,
+  "published_delta": -2.05,
+  "gap_vs_published": -30.0167,
+  "ratio_vs_published": 15.6423,
+  "flip_rate": 0.55,
+  "quantizer": "llm-compressor-GPTQ",
+  "num_calibration_samples": 512,
+  "max_seq_length": 2048,
+  "quant_seconds": 513
+ },
+ {
+  "model": "Qwen2.5-0.5B-Instruct",
+  "params_b": 0.5,
+  "benchmark": "mmlu",
+  "acc_before": 47.2333,
+  "acc_after": 23.4333,
+  "delta": -23.8,
+  "published_delta": -2.53,
+  "gap_vs_published": -21.27,
+  "ratio_vs_published": 9.4071,
+  "flip_rate": 0.4733,
+  "quantizer": "llm-compressor-GPTQ",
+  "num_calibration_samples": 512,
+  "max_seq_length": 2048,
+  "quant_seconds": 222
+ }
+]

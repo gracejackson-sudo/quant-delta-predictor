@@ -33,6 +33,8 @@ M = {
     "PubQwenSmall": ("s2_pub_qwen05", "{:.2f}"),
     "PubQwenSmallBase": ("s2_pub_qwen05_base", "{:.2f}"),
     "NvfpMarginal": ("nvfp_marginal_coverage_pct", "{:.0f}"),
+    "AnomQuantMinPct": ("t1_anom_min_pct", "{:.0f}"),
+    "AnomQuantMaxPct": ("t1_anom_max_pct", "{:.0f}"),
     # RedHatAI card recipe-documentation scan (date-suffixed).
     "NRhCardsListed": ("n_rh_cards_listed_2026_09_26", "{:.0f}"),
     "NRhCardsHarvested": ("n_rh_cards_harvested", "{:.0f}"),

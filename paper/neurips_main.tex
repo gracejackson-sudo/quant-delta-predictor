@@ -455,7 +455,22 @@ ratio between our own control and production defaults accounts for the
 observed excess damage. Neither of these two cards pins a library version
 or names a calibration dataset; both record only the resulting weight
 representation (symmetric per-group INT4, group size 128 on 1.5B and
-group size 64 on 0.5B).
+group size 64 on 0.5B). Neither attempt succeeded. A first run at the
+current \texttt{llm-compressor} + \texttt{compressed-tensors} +
+\texttt{transformers} stack produced quantized models scoring at or below
+four-way random chance on 5-shot MMLU (\AnomQuantMinPct--\AnomQuantMaxPct\% absolute), well past the
+worst outcome anywhere in the corpus or the control arm, which we treat
+as a stack-level anomaly rather than a calibration-data finding. A second
+run at an era-appropriate pin inferred from the card wording
+(\texttt{llmcompressor==0.4.1}, \texttt{transformers==4.44.2}) could not
+resolve to a working import: the pinned \texttt{llmcompressor} requires
+a class that was only added to \texttt{transformers} in a later release,
+so the pin does not exist as a working combination. The calibration-data
+hypothesis therefore remains what the Results section already calls it,
+consistent with the observation but not independently tested. That the
+recipe recorded on these two cards is not sufficient to reproduce even
+the working-stack question, let alone the answer, is directly
+consistent with the sparsity of documentation reported in \S\ref{sec:data}.
 
 \paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the
