@@ -341,10 +341,13 @@ should be read as an average across schemes with very different sample
 sizes, not as a coverage claim uniform across schemes.
 
 \paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
-intervals exclude zero: the tool can never state that a scheme \emph{will} cost
-accuracy. And \BigLossBelow{} of \BigLoss{} observed losses worse than 3pp fell
-\emph{below} their interval floor---when real damage occurs, the interval
-usually misses it. This is the single most important caveat in the paper.
+intervals exclude zero: for most schemes the true effect is small enough
+that a calibrated interval built on this record cannot rule out zero
+damage. And \BigLossBelow{} of \BigLoss{} observed losses worse than 3pp
+fell \emph{below} their interval floor: a symmetric band fit to a
+left-skewed damage distribution systematically under-covers the tail, and
+an asymmetric construction that does not degenerate to infinite intervals
+(\S\ref{sec:audit}) is the obvious next step.
 
 \section{The measured left tail}\label{sec:tail}
 
