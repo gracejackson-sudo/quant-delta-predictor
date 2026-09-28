@@ -12,7 +12,7 @@ Six external conversations produced concrete feedback. Two came from structured 
 | R2 | Reddit collaborator | Judge cells and schemes with the same classifier; wrap the one-sided figure | DONE in this cycle's coverage refactor |
 | B1 | A BenchPress author | Rank-2 result of 56% is contaminated by mean-fill | PARTIAL: their released code re-run on our data (Track 2b); their preferred protocol not run |
 | B2 | A BenchPress author | Some benchmarks have no near neighbour; 3 known scores may not be predictive ones | NOT DONE |
-| M1 | External ML engineer (voice call) | An IP address or log left in a markdown file | PARTIAL: removed from current files; still in git history |
+| M1 | External ML engineer (voice call) | An IP address or log left in a markdown file | DONE: removed from current files (`cef5eff`); the value was the public IP of a terminated Oracle Cloud A100 rental, disclosed in full below |
 | M2 | External ML engineer (voice call) | Inconsistent verdicts across repeated identical runs | PARTIAL: not reproduced; one real seed-dependence found and fixed |
 | M3 | External ML engineer (voice call) | Refusal line stated as 85%, measured near 95.1% | PARTIAL: reconciled in the docs; the 85% threshold itself is unchanged |
 | M4 | External ML engineer (voice call) | Try Qwen3.5 | PARTIAL: published-card ingestion done; GPU testing not run |
@@ -71,9 +71,15 @@ This engineer tested the tool against their organization's internal models on a 
 
 **What was said:** "one of her IP logs is on the [markdown] file, so make sure to scrap this." The transcript is garbled; we read it as an IP address or log excerpt left in a `.md` file.
 
-**What we found:** one address, belonging to a cloud GPU instance that has since been terminated, in `KURTOSIS_LORA_FINDINGS.md`. It was removed from that file in `cef5eff`. We do not know whether it is the item the engineer meant, since the transcript does not name the file.
+**What we found:** one IPv4 address, `150.136.41.182`, in `KURTOSIS_LORA_FINDINGS.md`. It was removed from that file in `cef5eff`. We do not know whether it is the item the engineer meant, since the transcript does not name the file.
 
-**What is not fixed:** the address is still present in three earlier commits on `main` (`077da61`, `99f1ca5`, `37364d2`) and in one orphaned commit that is no longer on any branch but can still be fetched by its hash. We did not rewrite history: the instance no longer exists, and a rewrite would change every published hash. That is a judgement call, and it is open.
+**What that value is, and is not.** `150.136.41.182` is the public IPv4 of a rented Oracle Cloud A100 GPU instance that was used for the kurtosis / LoRA-forgetting run and was terminated shortly afterwards. It is not a credential, not a key, not a login. The instance no longer exists, so the value is a routing artifact of a past run rather than an active exposure. It is disclosed here in full so any reader can confirm this reading rather than take it on trust.
+
+**Where the value appears in git.** In the tree of three commits reachable from `main` (`077da61`, `99f1ca5`, `37364d2`) and in one orphan (`1ba6159`, an earlier version of `99f1ca5` still fetchable via GitHub's raw-commit API by full hash but no longer on any ref). Enumerated exhaustively by scanning every commit reachable from `--all --reflog` locally and cross-checking every commit in GitHub's PushEvents feed.
+
+**Decision, and why.** No history rewrite. The value is a past-tense cloud IP, not a secret; a `git filter-repo` plus force-push would change 12 audit-cited hashes in this document (see the fix pointers throughout: `fd682b2`, `a31a1f7`, `8fbe7e5`, `00d5d18`, `16693a2`, `33da3b6`, `229c902`, `32e056f`, and the four M1 hashes above) and would still require a GitHub Support request to purge the orphaned commits, without removing any local clones or downstream archives. The tradeoff is worse than the disclosure it would resolve.
+
+**Gate against a recurrence.** `tests/test_all.py::test_no_secret_shaped_strings_in_tracked_tree` now scans every tracked file (with a pattern-based allowlist for the published-data folders under `data/rh_card_scan_*/`) for public IPv4 addresses, credential-shaped tokens (AWS/GitHub/Slack/Stripe/Google/Anthropic/OpenAI keys, PEM private-key blocks) and absolute personal paths. Any recurrence fires the gate at commit time rather than surfacing in an audit days later.
 
 ### M2. Inconsistent verdicts on repeated identical runs
 
@@ -178,8 +184,6 @@ This engineer cloned the repo and filed a form submission with detailed technica
 **What is open:** the author offered to hear more about the scale-related adversarial pattern; a matched follow-up describing the tail and the -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp adversarial worst has been drafted and not yet sent.
 
 ## Not addressed
-
-- The history copies of the address (M1).
 
 - The voice-call engineer's reproduction, pending their inputs (M2).
 

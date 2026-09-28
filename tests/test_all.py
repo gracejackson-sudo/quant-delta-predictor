@@ -912,15 +912,30 @@ def test_qwen35_ingestion_only_reads_quantized_qwen35_repos():
 def test_external_feedback_doc_cites_only_real_commits():
     """Every commit hash in EXTERNAL_FEEDBACK.md must resolve in git history,
     so the trail it claims can actually be followed. Skipped outside a git
-    checkout."""
+    checkout.
+
+    ORPHANS_ALLOWED contains hashes that the doc cites BECAUSE they are
+    known GitHub-side orphans (superseded via rebase/amend; still fetchable
+    by full hash via the GitHub raw-commit API but no longer on any ref).
+    These are disclosed on purpose and their non-local-resolvability is the
+    point of the disclosure. Any addition to this list needs a one-line
+    reason and a matching disclosure paragraph in the doc."""
     import re, subprocess
     root = os.path.join(os.path.dirname(__file__), "..")
     if not os.path.isdir(os.path.join(root, ".git")):
         return
+    ORPHANS_ALLOWED = {
+        # M1 disclosure: earlier version of 99f1ca5, same commit message,
+        # replaced by rebase/amend. Retained on GitHub side by hash;
+        # cited in the "Where the value appears in git" bullet.
+        "1ba6159",
+    }
     text = open(os.path.join(root, "EXTERNAL_FEEDBACK.md")).read()
     hashes = set(re.findall(r"`([0-9a-f]{7})`", text))
     assert hashes, "the doc should cite commits"
     for h in hashes:
+        if h in ORPHANS_ALLOWED:
+            continue
         r = subprocess.run(["git", "cat-file", "-t", h], cwd=root,
                            capture_output=True, text=True)
         assert r.stdout.strip() == "commit", f"{h} is not a commit"
@@ -1751,6 +1766,155 @@ _REGISTRY_MANIFEST = {
     "w4a16_p05::": 3,
     "worst::": 6,
 }
+
+
+# ---------------------------------------------------------------------------
+# Plant test for the recurrence of the M1 disclosure class (IP address of a
+# terminated Oracle Cloud instance in KURTOSIS_LORA_FINDINGS.md before
+# `cef5eff` removed it). That value was a routing artifact, not a credential,
+# but the discipline point stands: any public IPv4, credential-shaped token
+# or absolute personal path in the tracked working tree should fire before
+# commit, not surface in an external review five days later.
+#
+# The allowlist for `data/rh_card_scan_*/` is a GLOB, not a fixed list, so a
+# future re-scan adding cards with public IPv4s in third-party text does not
+# require a test edit (the user cannot rewrite RedHat card contents).
+#
+# Planted failure: add `150.136.41.183` (any non-private routable IPv4) to
+# any tracked file outside the allowlist and this test fires; likewise for
+# `AKIA0123456789ABCDEF`, `/Users/someone/foo`, `-----BEGIN RSA PRIVATE KEY-----`.
+# ---------------------------------------------------------------------------
+
+def test_no_secret_shaped_strings_in_tracked_tree():
+    import re
+    import subprocess
+    import fnmatch
+    root = os.path.join(os.path.dirname(__file__), "..")
+
+    # Public IPv4: not in private/link-local/loopback/broadcast/reserved
+    # ranges, and not the documented DNS placeholders. Reason for each
+    # exclusion is on its own line so a reader can audit the allow criterion.
+    IPV4 = re.compile(
+        r"(?<![\w.])"                       # not preceded by digit or dot
+        r"(?!10\.)"                         # RFC1918 10.0.0.0/8
+        r"(?!127\.)"                        # loopback
+        r"(?!169\.254\.)"                   # link-local
+        r"(?!192\.168\.)"                   # RFC1918 192.168/16
+        r"(?!172\.(?:1[6-9]|2\d|3[01])\.)"  # RFC1918 172.16/12
+        r"(?!0\.0\.0\.0(?![\d.]))"          # unspecified
+        r"(?!255\.255\.255\.255(?![\d.]))"  # broadcast
+        r"(?!8\.8\.8\.8(?![\d.]))"          # Google DNS example
+        r"(?!1\.1\.1\.1(?![\d.]))"          # Cloudflare DNS example
+        r"([1-9]\d?|1\d\d|2[0-4]\d|25[0-5])"
+        r"(\.(1?\d?\d|2[0-4]\d|25[0-5])){3}"
+        r"(?![\w.])"                        # not followed by digit or dot
+    )
+    CREDS = {
+        "AWS access key":        re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+        "GitHub PAT (ghp)":      re.compile(r"\bghp_[A-Za-z0-9]{36}\b"),
+        "GitHub PAT (gho)":      re.compile(r"\bgho_[A-Za-z0-9]{36}\b"),
+        "GitHub PAT (ghs)":      re.compile(r"\bghs_[A-Za-z0-9]{36}\b"),
+        "Slack token":           re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{10,}\b"),
+        "PEM private key":       re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+        "Google API key":        re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b"),
+        "Stripe live key":       re.compile(r"\bsk_live_[0-9a-zA-Z]{24,}\b"),
+        "Anthropic API key":     re.compile(r"\bsk-ant-[a-zA-Z0-9_-]{20,}\b"),
+        "OpenAI API key":        re.compile(r"\bsk-[A-Za-z0-9]{40,}\b"),
+    }
+    # Personal absolute paths only. Well-known cloud-default usernames
+    # (ubuntu on Ubuntu AMIs, ec2-user, admin on Debian-family images, opc
+    # on Oracle Cloud) are not personal identifiers, so /home/ubuntu/ etc.
+    # are excluded. Everything else under /Users/, /home/, C:\Users\ is
+    # treated as a leak.
+    _CLOUD_USERS = r"(?:ubuntu|ec2-user|admin|opc|centos|root)"
+    ABS_PATH = re.compile(
+        r"(?<![A-Za-z0-9_./])"
+        r"(?:/Users/(?!" + _CLOUD_USERS + r"/)[A-Za-z0-9_.-]+/"
+        r"|/home/(?!" + _CLOUD_USERS + r"/)[A-Za-z0-9_.-]+/"
+        r"|[A-Z]:\\\\Users\\\\[A-Za-z0-9_.-]+\\\\)")
+
+    # File-path allowlist. Globs (fnmatch), NOT fixed strings, so future
+    # re-scans and outputs land here without a test edit.
+    ALLOW_GLOBS = [
+        # This test's own regex definitions and messages.
+        "tests/test_all.py",
+        # Documented shared-key note (claimaudit-style; deliberate).
+        "docs/keys.md",
+        # Published data: our extracted numbers, not something we can redact.
+        "data/dataset.csv",
+        "data/rejected_rows.csv",
+        "out/*.csv",
+        "out/*.json",
+        "out/*.log",
+        # Raw RedHatAI card scans: third-party text, PATTERN-based glob so
+        # future re-scans (data/rh_card_scan_2026_10_*/, etc.) auto-inherit
+        # the exemption -- the user cannot rewrite RedHat card contents.
+        "data/rh_card_scan_*/*",
+        "data/rh_card_scan_*/**",
+        "data/qwen35/**",
+        "data/prospective_cards/**",
+        "data/cards/**",
+        # Supplement scrubber and its own tests contain the redaction
+        # patterns BY DESIGN (they define what to scrub). If they lost
+        # those strings the scrubber would stop working. Their own
+        # test_supplement.py plant test is what fires if a pattern is
+        # ever silently dropped there.
+        "src/build_supplement.py",
+        "tests/test_supplement.py",
+    ]
+    # Documented, disclosed exception: the M1 disclosure quotes the exact
+    # value it discloses. That is a citation of a past exposure, not a new
+    # one. Enumerated as a (path, exact-string) pair, not a regex bypass,
+    # so any OTHER public IPv4 in the same file still fires.
+    ALLOW_EXACT = [
+        ("EXTERNAL_FEEDBACK.md", "150.136.41.182"),
+        ("src/gen_feedback_doc.py", "150.136.41.182"),
+    ]
+
+    def _allowed(path):
+        rel = path.replace("\\", "/")
+        return any(fnmatch.fnmatch(rel, g) for g in ALLOW_GLOBS)
+
+    files = subprocess.run(
+        ["git", "ls-files"], cwd=root, capture_output=True, text=True
+    ).stdout.splitlines()
+
+    hits = []
+    for f in files:
+        if _allowed(f):
+            continue
+        p = os.path.join(root, f)
+        # Skip binaries: try text read, silent-skip anything that can't decode.
+        try:
+            text = open(p, encoding="utf-8").read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        for m in IPV4.finditer(text):
+            if (f, m.group(0)) in ALLOW_EXACT:
+                continue
+            ln = text.count("\n", 0, m.start()) + 1
+            hits.append(f"{f}:{ln}  public IPv4: {m.group(0)}")
+        for label, pat in CREDS.items():
+            for m in pat.finditer(text):
+                if (f, m.group(0)) in ALLOW_EXACT:
+                    continue
+                ln = text.count("\n", 0, m.start()) + 1
+                hits.append(f"{f}:{ln}  {label}: {m.group(0)[:12]}…")
+        for m in ABS_PATH.finditer(text):
+            if (f, m.group(0)) in ALLOW_EXACT:
+                continue
+            ln = text.count("\n", 0, m.start()) + 1
+            hits.append(f"{f}:{ln}  absolute personal path: {m.group(0)}")
+
+    assert not hits, (
+        "Secret-shaped strings found in the tracked tree. Redact before "
+        "committing (this is the discipline gate against a repeat of the "
+        "M1 IP-in-markdown case). If a hit is a legitimate documented "
+        "citation of a past disclosure (like the M1 line itself), add it "
+        "to ALLOW_EXACT with an explanation in the commit; if it is a new "
+        "class of third-party corpus, extend ALLOW_GLOBS with a "
+        "pattern-based rule so future re-scans inherit the exemption.\n\n"
+        + "\n".join(hits[:50]))
 
 
 def test_independent_noise_floor_matches_registry():
