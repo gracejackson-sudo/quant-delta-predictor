@@ -1509,6 +1509,62 @@ def test_regime_b_seed_is_stable_across_processes():
         "requires a stable seed derivation")
 
 
+def test_mae_floor_and_headroom_are_deterministic_across_calls():
+    """Tier 2.5 v4 check (day-7 audit): after four relabel passes
+    (0.5294 stale literal -> 0.5075 -> 0.5257 -> 0.5106) confirm the
+    live figures are converged, not still settling from module-level
+    caches or per-process RNG. Call registry() three times in fresh
+    module contexts and assert bit-for-bit equality on the three
+    floor / global / headroom triple."""
+    import importlib as _il
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    seen = []
+    for _ in range(3):
+        import verify_claims as _vc
+        _vc = _il.reload(_vc)
+        R = {k: v[0] for k, v in _vc.registry().items()}
+        seen.append((R["mae_floor_pp"], R["mae_global_lofo"],
+                     R["headroom_pp"]))
+    for i in range(1, len(seen)):
+        assert seen[i] == seen[0], (
+            f"registry() is not deterministic across calls:\n"
+            f"  call 1: {seen[0]}\n"
+            f"  call {i+1}: {seen[i]}")
+
+
+def test_max_benchmarks_per_run_paper_prose_matches_registry():
+    """Tier 2.5 v4 check #2 (day-7 audit): §9's 'up to N benchmark rows
+    per quantization run' used to hand-type 'sixteen'. Nothing would
+    have caught a data change that pushed the max above 16. This test
+    (a) checks the registry live value equals whatever the paper
+    displays via the \\MaxBenchmarksPerRun{} macro, and (b) enforces
+    that neither paper variant still hand-types 'sixteen'."""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    from verify_claims import registry as _reg
+    R = {k: v[0] for k, v in _reg().items()}
+    live = int(R["max_benchmarks_per_run"])
+    # Sanity floor: it has to be at least 1 and at most n_benchmarks.
+    assert 1 <= live <= int(R["n_benchmarks"]), (
+        f"max_benchmarks_per_run = {live}, n_benchmarks = "
+        f"{int(R['n_benchmarks'])}")
+    for name in ("main.tex", "neurips_main.tex"):
+        text = open(os.path.join(root, "paper", name)).read()
+        assert "\\MaxBenchmarksPerRun" in text, (
+            f"{name}: paper must reference \\MaxBenchmarksPerRun{{}} "
+            f"macro, not a hand-typed number word for the max-rows "
+            f"clause in §9")
+        # A regression that hand-types 'sixteen' or an equivalent word
+        # form would break the live linkage. Forbid the specific words
+        # that have appeared here.
+        assert "sixteen benchmark" not in text.lower(), (
+            f"{name}: 'sixteen benchmark' hand-typed clause is back; "
+            f"§9 must use the \\MaxBenchmarksPerRun{{}} macro")
+
+
 def test_gpqa_labels_match_authoritative_card_labels():
     """Tier 2.5 v4 plant test (day-7 audit): every GPQA row in the
     dataset carries the authoritative protocol label taken verbatim

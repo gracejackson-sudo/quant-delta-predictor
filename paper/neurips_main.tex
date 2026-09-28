@@ -603,7 +603,7 @@ recipe recorded on these two cards is not sufficient to reproduce even
 the working-stack question, let alone the answer, is directly
 consistent with the sparsity of documentation reported in \S\ref{sec:data}.
 
-\paragraph{Rows are not independent.} Up to sixteen benchmark rows come from a
+\paragraph{Rows are not independent.} Up to \MaxBenchmarksPerRun{} benchmark rows come from a
 single quantization run. We mitigate with group-conditional calibration and the
 support floor, and note that a bootstrap over the \ProspClusN{} quantized checkpoints gives \([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level interval,
 but the unit of analysis remains a row. The leave-family-out coverage measurement has the

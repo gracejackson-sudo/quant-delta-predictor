@@ -146,6 +146,7 @@ M = {
     "ProspWithGatedTotal":  ("prosp_with_gated_total", "{:.0f}"),
     "ProspWithGatedCov":    ("prosp_with_gated_cov_pct", "{:.1f}"),
     "GpqaOtherRows":        ("gpqa_other_rows", "{:.0f}"),
+    "MaxBenchmarksPerRun":  ("max_benchmarks_per_run", "{:.0f}"),
     "ProspRowsWeightint": ("prosp_scheme_rows::w8a8_int", "{:.0f}"),
     "ProspCkptsWeightint": ("prosp_scheme_ckpts::w8a8_int", "{:.0f}"),
     "ProspCovWeightint": ("prosp_scheme_cov_pct::w8a8_int", "{:.1f}"),

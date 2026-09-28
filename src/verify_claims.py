@@ -84,6 +84,15 @@ def registry():
         "distinct benchmarks in the modeling set (Tier 2.5 v4 split "
         "the plain 'gpqa' label into five card-verified protocol "
         "labels, so the count grew from 16 to 20)")
+    # Tier 2.5 v4 check #2 (day-7 audit): §9 says "up to N benchmark
+    # rows come from a single quantization run", where N used to be
+    # the hand-typed "sixteen". Register the max live so a future
+    # card that carries more benchmarks flows through, and pin a test
+    # that fails if the max moves without §9 being updated.
+    add("max_benchmarks_per_run",
+        int(d.groupby(["base_model", "scheme"]).benchmark.nunique().max()),
+        0, "maximum distinct benchmarks reported for a single "
+           "(base_model, scheme) quantization run")
 
     for key, cell in cc["cells"].items():
         add(f"cell_coverage_pct::{key}", cell["coverage"] * 100, 0.05,
