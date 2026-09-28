@@ -13,7 +13,7 @@ import os, re, sys
 
 HERE = os.path.dirname(__file__)
 ROOT = os.path.join(HERE, "..")
-OUTWARD = [f for f in ("TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
+OUTWARD = [f for f in ("README.md", "TOOL_SUMMARY.md", "NEGATIVE_RESULT.md",
                        "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md", "EXTERNAL_FEEDBACK.md",
                        "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md")
            if os.path.exists(os.path.join(ROOT, f))]
@@ -34,11 +34,16 @@ EXTERNAL = {"16", "14", "0.08", "0.35", "0.49", "85.6", "69.2", "83.6",
             "27.01", "1.83", "23.3", "84", "133",
             "2522", "1638", "1123",          # GitHub issue numbers
             # BenchPress-author reply quoted verbatim in EXTERNAL_FEEDBACK.md
-            "56", "88", "99", "0.58", "0.74"}
+            "56", "88", "99", "0.58", "0.74",
+            # arXiv IDs and journal-year in README References section
+            "2210.17323", "2211.10438", "2023"}
 # Digits that are part of a model NAME, not a measurement.
-NAMEPART = {"135", "3", "4", "2", "5", "0.5", "1.5", "8", "70", "405"}
+NAMEPART = {"135", "3", "4", "2", "5", "0.5", "1.5", "8", "70", "405",
+            "3.1", "3.2", "3.3"}  # Llama-3.1 / -3.2 / -3.3 in README prose
 # Structural text, not data: markdown section numbers and calendar years.
-STRUCTURAL = {"2026", "2025", "1", "6", "7", "25.0"}
+# 09, 21 = month/day of the FINDINGS.md 2026-09-21 date (README refs it twice).
+# 51 = journal volume for Ann. Statist. 51(2), 2023 in the References section.
+STRUCTURAL = {"2026", "2025", "1", "6", "7", "25.0", "09", "21", "51"}
 # Figures quoted explicitly AS superseded or historical, inside a sentence
 # that says so. They must not be silently updated -- the whole point is that
 # they record what we used to believe.
@@ -73,6 +78,11 @@ EXEMPT = {
     "90", "0.90", "95", "0.05", "10", "9", "19", "3", "2", "1", "0",
     "4", "5", "6", "8", "16", "25", "100", "50", "512", "2048", "24",
     "256", "1.5", "0.5", "4.0", "2.0", "1.0", "27.01", "1.83", "23.3",
+    # Banned-prose examples in README's "Standing rule on claims" section
+    # ("safe to adopt", "12 numbers", "26 of 29", "80%, not 90%"): these are
+    # quoted verbatim as strings the gate now blocks from reappearing, not
+    # figures we compute. Also in test_all.py's banned-prose test.
+    "26", "29", "80",
 }
 
 

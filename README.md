@@ -5,10 +5,10 @@ A small command-line tool that answers from published results.
 
 ## What it measured
 
-The shipped intervals were prospectively validated on 131 rows from 19 unseen quantized checkpoints
+The shipped intervals were prospectively validated on 131<!-- claim: prosp_n = 131.0000 --> rows from 19<!-- claim: prosp_clus_n = 19.0000 --> unseen quantized checkpoints
 (Gemma-3, DeepSeek-R1-Distill, SmolLM, SmolLM3, NVIDIA-Nemotron-Nano) — none of which were used to
-build the tool. **Two-sided empirical coverage at a nominal 90% is 90.8% (119/131, 95% Clopper–Pearson
-CI [84.5, 95.2]).** The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
+build the tool. **Two-sided empirical coverage at a nominal 90% is 90.8<!-- claim: prosp_cov_pct = 90.8397 -->% (119<!-- claim: prosp_inside = 119.0000 -->/131<!-- claim: prosp_n = 131.0000 -->, 95% Clopper–Pearson
+CI [84.5<!-- claim: prosp_ci_lo = 84.5455 -->, 95.2<!-- claim: prosp_ci_hi = 95.1767 -->]).** The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
 coverage, cluster bootstrap, tier and flag — is independently re-verified by a stdlib-only
 reimplementation (`verify/independent_rank.py`) that shares no code with the pipeline; zero field-level
 disagreements on the ranking, statistical equivalence within 1pp on the cluster-bootstrap CI, exact
@@ -17,7 +17,7 @@ agreement on the noise-floor pool behind the abstract's variance claim.
 The point prediction carries almost no signal beyond the quantization scheme; the fitted artifact is a
 per-scheme envelope with calibrated coverage and cell-level refusal flags, not a per-model predictor.
 A separate GPU adversarial arm on deliberately-bad quantization configs — outside the training corpus —
-measured losses down to **−39.5pp** (RedHatAI publishes only recipes that worked, so the corpus
+measured losses down to **−39.5<!-- claim: adv_worst_delta = -39.5000 -->pp** (RedHatAI publishes only recipes that worked, so the corpus
 understates the left tail; the adversarial arm is the direct measure of how bad it can get).
 
 ## Refusal is a feature
@@ -27,7 +27,7 @@ A quantization risk estimate is only worth having if it will tell you when not t
 historical range, marks it `INSUFFICIENT_EVIDENCE`, drops the scheme to Tier C, and tells you to run
 your own evaluation. A cell is *refused* outright, with its interval withheld
 (`INSUFFICIENT CALIBRATION`), only when measured coverage is poor on enough independent checkpoints;
-none currently is. Currently 6 of 17 cells are at insufficient evidence and 0 are refused; the cells
+none currently is. Currently 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> of 17<!-- claim: n_cells_total = 17.0000 --> cells are at insufficient evidence and 0<!-- claim: n_cells_refused = 0.0000 --> are refused; the cells
 in each state are listed in `RANKING.md`.
 
 ## Try it in about a minute
@@ -77,7 +77,7 @@ Everything else is in the table below.
 | [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias: what is identified, what is not, and why there is no corrected point estimate |
 | [AUDIT_DISCIPLINE.md](AUDIT_DISCIPLINE.md) | the standing audit rule and what it has caught |
 | [EXTERNAL_FEEDBACK.md](EXTERNAL_FEEDBACK.md) | six external reviews (Reddit maintainer, a BenchPress author, an ML engineer voice call, a technical collaborator voice call, an ML engineer form submission, a Tong et al. author), point by point, with what was done |
-| [ADVERSARIAL_AUDIT.md](ADVERSARIAL_AUDIT.md) | attempts to break the headline number, including the −39.5pp GPU adversarial worst case |
+| [ADVERSARIAL_AUDIT.md](ADVERSARIAL_AUDIT.md) | attempts to break the headline number, including the −39.5<!-- claim: adv_worst_delta = -39.5000 -->pp GPU adversarial worst case |
 | [RESEARCH.md](RESEARCH.md) | prior-art synthesis + pre-registered predictions, written first |
 | [ACCOUNTING.md](ACCOUNTING.md) | every model, tested or dropped, and why |
 | [PROVENANCE.md](PROVENANCE.md) | which parser fixes were informed by test-set rows |
@@ -167,9 +167,9 @@ python3 verify/independent_check.py
 
 ## Data
 
-850 rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102
-[RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38 base checkpoints, 6 model
-families (Definition B, which collapses Llama-3.1/3.2/3.3 into one Llama-3 family on the mechanistic-shared-pretraining-base criterion; the earlier 8-family count read each generation as separate), 6 quantization schemes and 21 benchmarks (GPQA is split across six card-verified protocol labels — gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot, gpqa_diamond, gpqa_diamond_cot_5shot, gpqa_ambiguous_46 — because the raw RedHatAI cards report as many as five different GPQA protocols and two Llama-3.3 rows carry a card string that does not uniquely name a protocol; the earlier collapsed label conflated all of them; see the §9 audit note). Every three-column row is verified against
+850<!-- claim: n_raw_dataset_rows = 850.0000 --> rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102<!-- claim: n_rh_cards_harvested = 102.0000 -->
+[RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38<!-- claim: n_checkpoints = 38.0000 --> base checkpoints, 6<!-- claim: n_families = 6.0000 --> model
+families (Definition B, which collapses Llama-3.1/3.2/3.3 into one Llama-3 family on the mechanistic-shared-pretraining-base criterion; the earlier 8-family count read each generation as separate), 6<!-- claim: n_schemes = 6.0000 --> quantization schemes and 21<!-- claim: n_benchmarks = 21.0000 --> benchmarks (GPQA is split across six<!-- claim: n_gpqa_labels = 6.0000 --> card-verified protocol labels — gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot, gpqa_diamond, gpqa_diamond_cot_5shot, gpqa_ambiguous_46 — because the raw RedHatAI cards report as many as five different GPQA protocols and two Llama-3.3 rows carry a card string that does not uniquely name a protocol; the earlier collapsed label conflated all of them; see the §9 audit note). Every three-column row is verified against
 the card's own printed Recovery percentage; internally inconsistent rows are rejected rather than
 guessed at.
 
@@ -183,7 +183,7 @@ guessed at.
   *worse*.
 - Its intervals never exclude zero, so it cannot tell you a config will definitely hurt.
 - It is trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from a
-  badly-tuned recipe. See the −39.5pp adversarial worst case in `ADVERSARIAL_AUDIT.md` for the
+  badly-tuned recipe. See the −39.5<!-- claim: adv_worst_delta = -39.5000 -->pp adversarial worst case in `ADVERSARIAL_AUDIT.md` for the
   direct measure of that gap.
 - Sub-2B, MoE and reasoning-distilled models fall outside the validated envelope.
 

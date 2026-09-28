@@ -1072,11 +1072,18 @@ def registry():
         int((d.benchmark == "gpqa").sum()), 0,
         "rows still under the plain 'gpqa' label after Tier 2.5 v4 "
         "(expected 0 -- every row now carries a card-verified label)")
-    for _lbl in ("gpqa_main", "gpqa_main_norm", "gpqa_main_cot_5shot",
-                 "gpqa_diamond", "gpqa_diamond_cot_5shot",
-                 "gpqa_ambiguous_46"):
+    _gpqa_labels = ("gpqa_main", "gpqa_main_norm", "gpqa_main_cot_5shot",
+                    "gpqa_diamond", "gpqa_diamond_cot_5shot",
+                    "gpqa_ambiguous_46")
+    for _lbl in _gpqa_labels:
         add(f"n_rows_{_lbl}", int((d.benchmark == _lbl).sum()), 0,
             f"rows carrying the card-verified {_lbl} label")
+    add("n_gpqa_labels", len(_gpqa_labels), 0,
+        "number of card-verified GPQA protocol labels in the corpus (Step 4a)")
+    add("n_raw_dataset_rows", len(pd.read_csv(
+        os.path.join(HERE, "..", "data", "dataset.csv"))), 0,
+        "raw rows in data/dataset.csv before the acc_before >= 20 modelling "
+        "filter (Step 4a)")
 
     add("gemma_1b_wfour_caught",
         int(sum(1 for _x in _gem
