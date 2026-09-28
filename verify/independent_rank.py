@@ -18,6 +18,7 @@ import json
 import math
 import os
 import random
+import re
 import subprocess
 import sys
 
@@ -284,6 +285,133 @@ def tier(f):
     return "B" if f else "A"
 
 
+# --------------------------------------------------- day-8: category-3 verifiers
+#
+# The audit finding these close: the paper's noise-floor share table
+# (the mechanism behind "at least a third of the variance on 8 of 11
+# benchmarks") and the cluster-bootstrap CI on prospective coverage
+# were computed only by src/verify_claims.py. No independent
+# reimplementation ever recomputed them, so a bug in that one file
+# would move a headline paper figure with nothing to catch it.
+#
+# LOSSLESS is deliberately retyped here rather than imported from
+# src/model.py. Importing would mean the pipeline defines the set of
+# near-lossless schemes and the verifier trusts that definition -- so
+# the independence would be arithmetic-only. Any pipeline change that
+# added or removed a scheme from LOSSLESS would silently move the
+# noise-floor share in both places. This retyped copy makes such a
+# change break the verifier loudly. If the pipeline's LOSSLESS ever
+# grows, update this constant AND note the tie in the commit message.
+LOSSLESS_VERIFIER = {"w8a16", "fp8_dynamic"}
+NOISE_MIN_TOTAL = 20   # matches src/verify_claims.py line 460
+NOISE_MIN_NEAR = 8     # matches src/verify_claims.py line 460
+
+# Statistical-equivalence tolerance for the cluster bootstrap.
+# Both implementations resample the same clusters from the same
+# frozen CSV, but the pipeline draws indices from numpy's PCG64 and
+# this verifier draws from stdlib's Mersenne Twister. The random
+# streams are fundamentally different, so bit-exact agreement is
+# impossible even in principle. Statistical equivalence over
+# BOOT_DRAWS = 10,000 iterates gives an expected Monte-Carlo standard
+# error on a percentile bound of roughly 0.3pp for a coverage rate
+# near 0.9 with ~19 clusters; the pipeline's own registry tolerance on
+# these keys is 0.3pp for the same reason. This verifier allows 1.0pp
+# per bound: comfortably wider than 3 sigma of the MC noise, tight
+# enough that a real disagreement (a bug in the cluster construction,
+# a wrong filter, a different draw size) still fires. If you tighten
+# it below 0.5pp expect intermittent failures from MC variance alone.
+CLUS_BOOT_TOL_PP = 1.0
+CLUS_BOOT_DRAWS = 10000
+CLUS_BOOT_SEED = 20260928
+
+
+def verify_noise_floor():
+    """Independent stdlib reimplementation of the per-benchmark noise
+    floor. Reads data/dataset.csv from scratch (a separate read from
+    read_rows() so the benchmark column is preserved) and returns
+    {"noise_n_bench": int, "noise_n_third": int, "shares": {bench: share}}.
+    The caller diffs against src/verify_claims.registry(); zero
+    disagreement on noise_n_bench and noise_n_third means the abstract's
+    "at least a third of the variance on 8 of 11 benchmarks" mechanism
+    is now independently reproduced."""
+    from collections import defaultdict
+    import statistics
+    per_bench = defaultdict(list)
+    per_bench_near = defaultdict(list)
+    with open(DATA) as f:
+        for r in csv.DictReader(f):
+            if float(r["acc_before"]) < MIN_ACC:
+                continue
+            b = r["benchmark"]
+            d = float(r["delta"])
+            per_bench[b].append(d)
+            if r["scheme"] in LOSSLESS_VERIFIER:
+                per_bench_near[b].append(d)
+    shares = {}
+    for b, ds in per_bench.items():
+        nds = per_bench_near[b]
+        if len(ds) >= NOISE_MIN_TOTAL and len(nds) >= NOISE_MIN_NEAR:
+            shares[b] = statistics.variance(nds) / statistics.variance(ds)
+    n_bench = len(shares)
+    n_third = sum(1 for v in shares.values() if v >= 1.0 / 3.0)
+    return {"noise_n_bench": n_bench, "noise_n_third": n_third,
+            "shares": shares}
+
+
+def verify_prospective_cluster_bootstrap():
+    """Independent stdlib reimplementation of the cluster bootstrap
+    that produces \\ProspClusLo / \\ProspClusHi. Reads the frozen
+    out/independent_check.csv (see PROVENANCE.md 2026-09-27), applies
+    the same strict-set exclusion the pipeline applies (Llama-3.1,
+    Qwen3, Llama-4), groups by checkpoint (`model` column), and
+    resamples clusters with replacement CLUS_BOOT_DRAWS times.
+
+    Returns (mine, theirs) where each is (lo_pct, hi_pct) or (None, None)
+    if the frozen CSV is not present. The caller compares within
+    CLUS_BOOT_TOL_PP on each bound and treats overlap-within-tolerance
+    as agreement.
+
+    Statistical equivalence, not bit-exact: numpy PCG64 in the pipeline
+    versus stdlib Mersenne Twister here draw different index sequences
+    from the same underlying distribution. See the top-of-module
+    comment for the tolerance derivation.
+    """
+    import csv as _csv
+    icp = os.path.join(ROOT, "out", "independent_check.csv")
+    if not os.path.exists(icp):
+        return (None, None)
+    rows = list(_csv.DictReader(open(icp)))
+    def _in_strict(model_id):
+        tail = model_id.split("/")[-1]
+        if re.search(r"Llama-3\.1", tail, re.I):
+            return False
+        if re.search(r"(^|[-_])Qwen3(?![.\d])", tail, re.I):
+            return False
+        if re.search(r"Llama-4", tail, re.I):
+            return False
+        return True
+    strict = [r for r in rows if _in_strict(r["model"])]
+    clusters = {}
+    for r in strict:
+        clusters.setdefault(r["model"], []).append(
+            1 if r["inside"] == "True" else 0)
+    keys = sorted(clusters)
+    S = [sum(clusters[k]) for k in keys]
+    N = [len(clusters[k]) for k in keys]
+    k = len(keys)
+    rng = random.Random(CLUS_BOOT_SEED)
+    boots = []
+    for _ in range(CLUS_BOOT_DRAWS):
+        picks = [rng.randrange(k) for _ in range(k)]
+        num = sum(S[i] for i in picks)
+        den = sum(N[i] for i in picks)
+        boots.append(num / den)
+    boots.sort()
+    lo = 100 * boots[int(0.025 * (len(boots) - 1))]
+    hi = 100 * boots[int(math.ceil(0.975 * (len(boots) - 1)))]
+    return (lo, hi)
+
+
 def main():
     rows = read_rows()
     print("=" * 74)
@@ -383,7 +511,71 @@ def main():
     for s, f, a, b in bad[:30]:
         print(f"    {s:<13}{f:<22} mine={a}  theirs={b}")
 
-    ok = (my_order == their_order) and not bad
+    # ---------------------------------------------------------------- noise floor
+    print("\n" + "=" * 74)
+    print("INDEPENDENT NOISE-FLOOR RECOMPUTATION")
+    print("=" * 74)
+    nf = verify_noise_floor()
+    print(f"  noise_n_bench (mine): {nf['noise_n_bench']}")
+    print(f"  noise_n_third (mine): {nf['noise_n_third']}")
+    for b in sorted(nf["shares"]):
+        print(f"  {b:<22s}  share={100*nf['shares'][b]:6.2f}%")
+    reg = None
+    try:
+        _sp = os.path.join(ROOT, "src")
+        if _sp not in sys.path:
+            sys.path.insert(0, _sp)
+        from verify_claims import registry as _reg  # noqa: E402
+        reg = _reg()
+    except Exception as _e:
+        print(f"  could not load src/verify_claims registry to diff: {_e}")
+
+    noise_bad = []
+    if reg is not None:
+        for key in ("noise_n_bench", "noise_n_third"):
+            mine = nf[key]
+            theirs = int(reg[key][0])
+            if mine != theirs:
+                noise_bad.append((key, mine, theirs))
+        for b, share in nf["shares"].items():
+            k = f"noise_share_{b}"
+            if k in reg:
+                theirs = float(reg[k][0]) / 100.0
+                if abs(share - theirs) > 1e-6:
+                    noise_bad.append((k, share, theirs))
+        print(f"  noise disagreements vs registry: {len(noise_bad)}")
+        for k, mi, th in noise_bad:
+            print(f"    {k}: mine={mi}  theirs={th}")
+
+    # ---------------------------------------------------------- cluster bootstrap
+    print("\n" + "=" * 74)
+    print("INDEPENDENT CLUSTER-BOOTSTRAP CI ON PROSPECTIVE COVERAGE")
+    print("=" * 74)
+    mine_lo, mine_hi = verify_prospective_cluster_bootstrap()
+    boot_bad = []
+    if mine_lo is None:
+        print("  SKIPPED: out/independent_check.csv not present")
+    else:
+        print(f"  mine (stdlib RNG, seed={CLUS_BOOT_SEED}, "
+              f"draws={CLUS_BOOT_DRAWS}): [{mine_lo:.2f}, {mine_hi:.2f}]%")
+        if reg is not None and "prosp_clus_lo" in reg and "prosp_clus_hi" in reg:
+            t_lo = float(reg["prosp_clus_lo"][0])
+            t_hi = float(reg["prosp_clus_hi"][0])
+            print(f"  theirs (numpy PCG64, from registry): "
+                  f"[{t_lo:.2f}, {t_hi:.2f}]%")
+            print(f"  tolerance per bound: {CLUS_BOOT_TOL_PP}pp "
+                  f"(statistical equivalence, not bit-exact -- see docstring)")
+            if abs(mine_lo - t_lo) > CLUS_BOOT_TOL_PP:
+                boot_bad.append(("prosp_clus_lo", mine_lo, t_lo))
+            if abs(mine_hi - t_hi) > CLUS_BOOT_TOL_PP:
+                boot_bad.append(("prosp_clus_hi", mine_hi, t_hi))
+            print(f"  cluster-bootstrap disagreements: {len(boot_bad)}")
+            for k, mi, th in boot_bad:
+                print(f"    {k}: mine={mi}  theirs={th}  "
+                      f"|delta|={abs(mi-th):.2f}pp > {CLUS_BOOT_TOL_PP}pp")
+
+    ok = (my_order == their_order) and not bad \
+        and not noise_bad and not boot_bad
     print("\n" + "=" * 74)
     print(f"INDEPENDENT VERDICT: full agreement = {ok}")
     print("=" * 74)

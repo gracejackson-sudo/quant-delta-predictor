@@ -1753,6 +1753,64 @@ _REGISTRY_MANIFEST = {
 }
 
 
+def test_independent_noise_floor_matches_registry():
+    """Day-8 category-3 close-out. The abstract's 'at least a third of
+    the variance on 8 of 11 benchmarks' rests on noise_n_bench and
+    noise_n_third, both computed only by src/verify_claims.py. This
+    test invokes verify/independent_rank.verify_noise_floor (stdlib
+    only, retyped LOSSLESS set) and asserts exact agreement with the
+    registry on both aggregate counts.
+
+    Planted failure: change LOSSLESS_VERIFIER in independent_rank.py
+    to include or exclude a scheme relative to src/model.py's LOSSLESS
+    and the verifier's counts move; this test fires immediately."""
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "verify"))
+    import independent_rank as _ir
+    from src.verify_claims import registry
+    nf = _ir.verify_noise_floor()
+    reg = registry()
+    assert nf["noise_n_bench"] == int(reg["noise_n_bench"][0]), (
+        f"noise_n_bench disagreement: verifier={nf['noise_n_bench']}, "
+        f"registry={int(reg['noise_n_bench'][0])}")
+    assert nf["noise_n_third"] == int(reg["noise_n_third"][0]), (
+        f"noise_n_third disagreement: verifier={nf['noise_n_third']}, "
+        f"registry={int(reg['noise_n_third'][0])}")
+
+
+def test_independent_cluster_bootstrap_within_tolerance():
+    """Day-8 category-3 close-out. The prospective 95% cluster-bootstrap
+    interval (\\ProspClusLo, \\ProspClusHi) was previously computed
+    only by src/verify_claims.py. This test invokes the stdlib
+    reimplementation in verify/independent_rank.py and asserts
+    statistical equivalence with the registry within
+    CLUS_BOOT_TOL_PP per bound.
+
+    The two implementations draw index sequences from different RNGs
+    (numpy PCG64 in the pipeline, stdlib Mersenne Twister here), so
+    bit-exact agreement is impossible; the tolerance was chosen to be
+    wider than 3 sigma of the Monte-Carlo noise at 10,000 draws (see
+    docstring in verify/independent_rank.py). Skips cleanly if the
+    frozen out/independent_check.csv is not present."""
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "verify"))
+    import independent_rank as _ir
+    from src.verify_claims import registry
+    mine_lo, mine_hi = _ir.verify_prospective_cluster_bootstrap()
+    if mine_lo is None:
+        import pytest
+        pytest.skip("out/independent_check.csv not present")
+    reg = registry()
+    t_lo = float(reg["prosp_clus_lo"][0])
+    t_hi = float(reg["prosp_clus_hi"][0])
+    assert abs(mine_lo - t_lo) <= _ir.CLUS_BOOT_TOL_PP, (
+        f"cluster-bootstrap lower bound: mine={mine_lo:.3f}pp, "
+        f"theirs={t_lo:.3f}pp, |delta|={abs(mine_lo - t_lo):.3f}pp > "
+        f"{_ir.CLUS_BOOT_TOL_PP}pp tolerance")
+    assert abs(mine_hi - t_hi) <= _ir.CLUS_BOOT_TOL_PP, (
+        f"cluster-bootstrap upper bound: mine={mine_hi:.3f}pp, "
+        f"theirs={t_hi:.3f}pp, |delta|={abs(mine_hi - t_hi):.3f}pp > "
+        f"{_ir.CLUS_BOOT_TOL_PP}pp tolerance")
+
+
 def test_build_envelope_refuses_missing_cell_coverage():
     """Tier 3.2: previously build_envelope.py silently fell back to
     {'cells': {}} on a missing or corrupt cell_coverage.json, which
