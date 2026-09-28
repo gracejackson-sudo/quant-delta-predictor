@@ -300,7 +300,7 @@ RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,hellaswag,71.22,70.87,-0.35
 RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,mmlu,74.15,73.47,-0.68,-0.5866990291262136,-2.353398058252427,1.1799999999999997,False,True,1
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,truthfulqa,43.52,43.08,-0.44,-0.2681081081081081,-1.21,0.6737837837837839,False,True,1
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,winogrande,80.19,79.87,-0.32,-0.3884536082474227,-2.13,1.3530927835051543,False,True,1
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3884536082474227,-2.13,1.3530927835051543,False,True,1
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3884536082474227,-2.13,1.3530927835051543,False,True,1
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,hellaswag,83.7,83.25,-0.45,-0.5866990291262136,-2.353398058252427,1.1799999999999997,False,True,1
 RedHatAI/gemma-2-9b-it-quantized.w8a16,gemma-2,gemma-2-9b-it,w8a16,arc_challenge,71.08,71.33,0.25,-0.1171111111111111,-0.9442222222222221,0.71,False,True,1
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,gsm8k,50.64,49.51,-1.13,-0.3884536082474227,-2.13,1.3530927835051543,False,True,1
@@ -438,7 +438,7 @@ RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2,gemma-2-27b-it,w8a16,winogrande,
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,mmlu,74.97,73.07,-1.9,-1.1082142857142858,-4.086428571428572,1.87,False,True,2
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,mistral,Mistral-Small-3.1-24B-Instruct-2503,fp8_dynamic,winogrande,83.74,82.56,-1.18,-0.05989583333333332,-2.139791666666667,2.02,False,True,2
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,truthfulqa,58.59,58.49,-0.1,-1.1082142857142858,-4.086428571428572,1.87,False,True,2
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.05989583333333332,-2.139791666666667,2.02,False,True,2
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.05989583333333332,-2.139791666666667,2.02,False,True,2
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,gsm8k,94.9,94.5,-0.4,-0.05989583333333332,-2.139791666666667,2.02,False,True,2
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,ifeval,77.9,77.2,-0.7,-0.05989583333333332,-2.139791666666667,2.02,False,True,2
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,winogrande,71.43,68.43,-3.0,-1.1082142857142858,-4.086428571428572,1.87,False,True,2
@@ -887,7 +887,7 @@ RedHatAI/Qwen2.5-0.5B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-0.5B-Instruct,w8a8
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,mistral,Mistral-Small-3.1-24B-Instruct-2503,w8a8_int,humaneval,84.7,84.2,-0.5,-0.3120833333333333,-1.6441666666666666,1.02,False,True,5
 RedHatAI/granite-3.1-8b-base-quantized.w8a8,granite,granite-3.1-8b-base,w8a8_int,truthfulqa,51.33,52.59,1.26,-0.3120833333333333,-1.6441666666666666,1.02,False,False,5
 RedHatAI/gemma-2-9b-it-quantized.w8a16,gemma-2,gemma-2-9b-it,w8a16,mmlu,72.29,72.4,0.11,-0.021395348837209307,-2.57,2.527209302325581,False,True,5
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3120833333333333,-1.6441666666666666,1.02,False,True,5
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3120833333333333,-1.6441666666666666,1.02,False,True,5
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,winogrande,65.04,65.98,0.94,-0.07075471698113207,-1.341509433962264,1.2,False,True,5
 RedHatAI/Qwen2.5-0.5B-quantized.w8a8,qwen2.5,Qwen2.5-0.5B,w8a8_int,mmlu,47.57,47.35,-0.22,-0.3120833333333333,-1.6441666666666666,1.02,False,True,5
 RedHatAI/gemma-2-9b-it-FP8,gemma-2,gemma-2-9b-it,fp8,winogrande,77.11,78.37,1.26,-0.2571428571428571,-0.88,0.36571428571428577,False,False,5
@@ -1233,7 +1233,7 @@ RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic
 RedHatAI/Qwen2.5-7B-quantized.w8a8,qwen2.5,Qwen2.5-7B,w8a8_int,gsm8k,79.76,79.83,0.07,-0.18114583333333334,-2.13,1.7677083333333332,False,True,7
 RedHatAI/Qwen2.5-0.5B-quantized.w8a8,qwen2.5,Qwen2.5-0.5B,w8a8_int,truthfulqa,39.9,40.32,0.42,-0.18114583333333334,-2.13,1.7677083333333332,False,True,7
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,ifeval,90.89,90.92,0.03,-0.11572815533980584,-1.74,1.5085436893203885,False,True,7
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.11572815533980584,-1.74,1.5085436893203885,False,True,7
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.11572815533980584,-1.74,1.5085436893203885,False,True,7
 RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct,w4a16,gsm8k,60.96,62.85,1.89,-0.7203225806451612,-2.3506451612903225,0.9100000000000001,False,False,7
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,ifeval,77.9,76.3,-1.6,-0.7203225806451612,-2.3506451612903225,0.9100000000000001,False,True,7
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-405B-Instruct,w8a16,mmlu_cot,88.26,88.19,-0.07,-0.14833333333333332,-1.0066666666666666,0.71,False,True,7
@@ -1382,7 +1382,7 @@ RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Inst
 RedHatAI/Mistral-7B-Instruct-v0.3-FP8,mistral,Mistral-7B-Instruct-v0.3,fp8,arc_challenge,63.57,63.73,0.16,-0.36,-1.21,0.49,False,True,8
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,humaneval_plus,74.8,74.2,-0.6,-0.7818279569892472,-3.03,1.4663440860215053,False,True,8
 RedHatAI/Qwen2.5-7B-Instruct-FP8-dynamic,qwen2.5,Qwen2.5-7B-Instruct,fp8_dynamic,hellaswag,81.52,81.11,-0.41,-0.22783505154639178,-3.1056701030927836,2.65,False,True,8
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.22783505154639178,-3.1056701030927836,2.65,False,True,8
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.22783505154639178,-3.1056701030927836,2.65,False,True,8
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,mmlu,47.66,47.76,0.1,-0.36,-1.21,0.49,False,True,8
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.7818279569892472,-3.03,1.4663440860215053,False,True,8
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,winogrande,71.43,68.43,-3.0,-1.4572222222222222,-5.164444444444444,2.25,False,True,8
@@ -1503,7 +1503,7 @@ RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Inst
 RedHatAI/Qwen2.5-7B-quantized.w8a16,qwen2.5,Qwen2.5-7B,w8a16,truthfulqa,56.38,56.28,-0.1,-0.045000000000000005,-2.57,2.48,False,True,9
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-70B-Instruct,w8a8_int,humaneval,79.7,78.7,-1.0,-0.381078431372549,-1.782156862745098,1.02,False,True,9
 RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w8a8,mistral,Mistral-Small-24B-Instruct-2501,w8a8_int,arc_challenge,72.18,68.86,-3.32,-0.381078431372549,-1.782156862745098,1.02,False,False,9
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.03640449438202248,-1.802808988764045,1.73,False,True,9
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.03640449438202248,-1.802808988764045,1.73,False,True,9
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,winogrande,84.77,84.53,-0.24,-0.03640449438202248,-1.802808988764045,1.73,False,True,9
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,winogrande,65.98,66.22,0.24,-0.7530693069306931,-3.3961386138613863,1.89,False,True,9
 RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w8a8,mistral,Mistral-Small-24B-Instruct-2501,w8a8_int,mmlu,80.69,80.25,-0.44,-0.381078431372549,-1.782156862745098,1.02,False,True,9
@@ -2260,7 +2260,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,winogrande,68.82,69.46,0.64,-0.1636111111111111,-1.4672222222222222,1.14,False,True,13
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,mmlu,87.4,87.1,-0.3,-0.2620481927710843,-1.7840963855421685,1.26,False,True,13
 RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8_dynamic,ifeval,67.99,66.79,-1.2,-0.15408695652173912,-2.43,2.121826086956522,False,True,13
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.15408695652173912,-2.43,2.121826086956522,False,True,13
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.15408695652173912,-2.43,2.121826086956522,False,True,13
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,humaneval_plus,80.1,81.0,0.9,-0.15408695652173912,-2.43,2.121826086956522,False,True,13
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,hellaswag,88.3,88.2,-0.1,-0.2620481927710843,-1.7840963855421685,1.26,False,True,13
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,bbh,67.0,66.7,-0.3,-0.2620481927710843,-1.7840963855421685,1.26,False,True,13
@@ -3498,7 +3498,7 @@ RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,musr,40.61,42.86,2.25,-1.0616666666666668,-3.1833333333333336,1.0600000000000003,False,False,21
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,gsm8k,24.03,23.81,-0.22,0.024500000000000004,-0.7210000000000001,0.77,False,True,21
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gpqa_main,30.12,30.29,0.17,-1.0616666666666668,-3.1833333333333336,1.0600000000000003,False,True,21
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.15206185567010308,-1.804123711340206,1.5,False,True,21
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.15206185567010308,-1.804123711340206,1.5,False,True,21
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w8a16,mistral,Mistral-7B-Instruct-v0.3,w8a16,mmlu,61.84,62.06,0.22,0.024500000000000004,-0.7210000000000001,0.77,False,True,21
 RedHatAI/Qwen2.5-7B-quantized.w8a16,qwen2.5,Qwen2.5-7B,w8a16,truthfulqa,56.38,56.28,-0.1,0.024500000000000004,-0.7210000000000001,0.77,False,True,21
 RedHatAI/Qwen2.5-0.5B-quantized.w4a16,qwen2.5,Qwen2.5-0.5B,w4a16,truthfulqa,39.9,38.89,-1.01,-0.6691666666666666,-3.11,1.771666666666667,False,True,21
@@ -3690,7 +3690,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,hellaswag,83.52,83.46,-0.06,-0.05660194174757283,-1.11,0.9967961165048543,False,True,22
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,mmlu,65.07,64.95,-0.12,-0.44189999999999996,-1.8638,0.98,False,True,22
 RedHatAI/granite-3.1-2b-base-FP8-dynamic,granite,granite-3.1-2b-base,fp8_dynamic,mmlu,52.88,52.61,-0.27,-0.05660194174757283,-1.11,0.9967961165048543,False,True,22
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.44189999999999996,-1.8638,0.98,False,True,22
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.44189999999999996,-1.8638,0.98,False,True,22
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gsm8k,94.16,94.92,0.76,-0.05660194174757283,-1.11,0.9967961165048543,False,True,22
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,humaneval,67.3,67.1,-0.2,-0.44189999999999996,-1.8638,0.98,False,True,22
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,mmlu_cot,86.58,85.92,-0.66,-0.44189999999999996,-1.8638,0.98,False,True,22
@@ -3841,7 +3841,7 @@ RedHatAI/Qwen2.5-7B-FP8-dynamic,qwen2.5,Qwen2.5-7B,fp8_dynamic,arc_challenge,59.
 RedHatAI/Qwen2.5-0.5B-quantized.w4a16,qwen2.5,Qwen2.5-0.5B,w4a16,truthfulqa,39.9,38.89,-1.01,-0.7194117647058823,-4.3,2.8611764705882354,False,True,23
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.016842105263158,-7.2036842105263155,5.17,False,True,23
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,mmlu_cot,65.4,65.2,-0.2,-0.17250000000000001,-1.11,0.7650000000000001,False,True,23
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3093548387096774,-2.118709677419355,1.5,False,True,23
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3093548387096774,-2.118709677419355,1.5,False,True,23
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,mmlu,80.67,79.74,-0.93,-0.7194117647058823,-4.3,2.8611764705882354,False,True,23
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,hellaswag,86.49,86.47,-0.02,-0.3093548387096774,-2.118709677419355,1.5,False,True,23
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-70B-Instruct,w8a8_int,arc_challenge,93.3,93.1,-0.2,-0.3093548387096774,-2.118709677419355,1.5,False,True,23
@@ -4630,7 +4630,7 @@ RedHatAI/Meta-Llama-3.1-8B-quantized.w8a16,llama-3,Meta-Llama-3.1-8B,w8a16,truth
 RedHatAI/Meta-Llama-3.1-405B-FP8,llama-3,Meta-Llama-3.1-405B,fp8,hellaswag,90.02,89.14,-0.88,-0.2008108108108108,-1.21,0.8083783783783782,False,True,28
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,winogrande,65.98,66.22,0.24,-0.10252631578947369,-1.6650526315789476,1.46,False,True,28
 RedHatAI/granite-3.1-8b-instruct-quantized.w4a16,granite,granite-3.1-8b-instruct,w4a16,mmlu_pro,35.81,34.23,-1.58,-0.7107619047619047,-4.25,2.8284761904761906,False,True,28
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3707142857142857,-2.13,1.3885714285714283,False,True,28
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3707142857142857,-2.13,1.3885714285714283,False,True,28
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.10252631578947369,-1.6650526315789476,1.46,False,False,28
 RedHatAI/Qwen2.5-7B-FP8-dynamic,qwen2.5,Qwen2.5-7B,fp8_dynamic,winogrande,75.69,75.3,-0.39,-0.10252631578947369,-1.6650526315789476,1.46,False,True,28
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.1775862068965517,-8.12,5.764827586206897,False,True,28
@@ -4920,7 +4920,7 @@ RedHatAI/gemma-2-2b-it-quantized.w8a8,gemma-2,gemma-2-2b-it,w8a8_int,arc_challen
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,musr,44.35,43.96,-0.39,-0.08084905660377359,-1.74,1.5783018867924528,False,True,29
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,mmlu_cot,71.2,71.6,0.4,-0.08084905660377359,-1.74,1.5783018867924528,False,True,29
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,bbh,55.8,55.0,-0.8,-0.6995833333333333,-2.68,1.2808333333333333,False,True,30
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.04034188034188035,-1.5806837606837605,1.5,False,True,30
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.04034188034188035,-1.5806837606837605,1.5,False,True,30
 RedHatAI/Qwen2.5-7B-Instruct-FP8-dynamic,qwen2.5,Qwen2.5-7B-Instruct,fp8_dynamic,mmlu,74.24,74.04,-0.2,-0.04034188034188035,-1.5806837606837605,1.5,False,True,30
 RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,w8a8_int,winogrande,69.67,70.8,1.13,-0.2842045454545455,-2.068409090909091,1.5,False,True,30
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,humaneval,44.1,44.8,0.7,-0.04034188034188035,-1.5806837606837605,1.5,False,True,30
@@ -5696,7 +5696,7 @@ RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,gsm8k,84.46,83.
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,llama-3,Llama-3.3-70B-Instruct,w4a16,humaneval_plus,78.4,78.6,0.2,-0.7553191489361702,-3.11,1.5993617021276596,False,True,34
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,mmlu_pro,30.8,30.9,0.1,-0.25300970873786405,-1.766019417475728,1.26,False,True,34
 RedHatAI/gemma-2-2b-it-quantized.w8a8,gemma-2,gemma-2-2b-it,w8a8_int,mmlu,56.94,56.64,-0.3,-0.25300970873786405,-1.766019417475728,1.26,False,True,34
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.25300970873786405,-1.766019417475728,1.26,False,True,34
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.25300970873786405,-1.766019417475728,1.26,False,True,34
 RedHatAI/Qwen2.5-32B-quantized.w8a16,qwen2.5,Qwen2.5-32B,w8a16,mmlu,83.25,83.19,-0.06,-0.0035849056603773598,-3.04,3.0328301886792453,False,True,34
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,ifeval,77.9,77.2,-0.7,-0.06139534883720932,-1.5500000000000003,1.4272093023255814,False,True,34
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,musr,46.01,44.3,-1.71,-0.25300970873786405,-1.766019417475728,1.26,False,True,34
@@ -6070,7 +6070,7 @@ RedHatAI/Qwen2.5-72B-FP8-dynamic,qwen2.5,Qwen2.5-72B,fp8_dynamic,truthfulqa,60.4
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,mmlu_pro,59.7,59.4,-0.3,-0.8554285714285713,-3.03,1.319142857142857,False,True,37
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,hellaswag,83.7,83.25,-0.45,-0.8554285714285713,-3.03,1.319142857142857,False,True,37
 RedHatAI/Mixtral-8x22B-Instruct-v0.1-FP8,mistral,Mixtral-8x22B-Instruct-v0.1,fp8,arc_challenge,73.29,73.29,0.0,-0.32634146341463416,-0.95,0.2973170731707316,False,True,37
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.40395833333333336,-1.7079166666666667,0.8999999999999999,False,True,37
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.40395833333333336,-1.7079166666666667,0.8999999999999999,False,True,37
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,winogrande,69.77,69.85,0.08,-0.12534883720930234,-1.4506976744186046,1.2,False,True,37
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,ifeval,77.9,77.2,-0.7,-0.12534883720930234,-1.4506976744186046,1.2,False,True,37
 RedHatAI/Qwen2.5-3B-FP8-dynamic,qwen2.5,Qwen2.5-3B,fp8_dynamic,arc_challenge,63.59,62.5,-1.09,-0.12534883720930234,-1.4506976744186046,1.2,False,True,37
@@ -6526,7 +6526,7 @@ RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,math_
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,hellaswag,55.09,57.96,2.87,-0.6702173913043479,-2.520434782608696,1.18,False,False,39
 RedHatAI/Mistral-7B-Instruct-v0.3-FP8,mistral,Mistral-7B-Instruct-v0.3,fp8,hellaswag,84.76,84.52,-0.24,-0.23674418604651162,-1.51,1.0365116279069768,False,True,39
 RedHatAI/granite-3.1-8b-base-quantized.w8a8,granite,granite-3.1-8b-base,w8a8_int,arc_challenge,64.68,64.25,-0.43,-0.30887755102040815,-1.8777551020408163,1.2599999999999998,False,True,39
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.30887755102040815,-1.8777551020408163,1.2599999999999998,False,True,39
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.30887755102040815,-1.8777551020408163,1.2599999999999998,False,True,39
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,arc_challenge,58.36,57.85,-0.51,-0.23674418604651162,-1.51,1.0365116279069768,False,True,39
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gpqa_main,30.12,30.29,0.17,-1.0151428571428571,-3.92,1.8897142857142857,False,True,39
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.0151428571428571,-3.92,1.8897142857142857,False,True,39
@@ -6883,7 +6883,7 @@ RedHatAI/Qwen2.5-0.5B-quantized.w8a16,qwen2.5,Qwen2.5-0.5B,w8a16,truthfulqa,39.9
 RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,mmlu,79.71,79.38,-0.33,-0.3657446808510639,-1.8614893617021275,1.13,False,True,41
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,hellaswag,73.62,73.48,-0.14,-0.28214285714285714,-1.52,0.9557142857142858,False,True,41
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,humaneval,86.51,85.32,-1.19,-1.0202941176470588,-8.12,6.079411764705881,False,True,41
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3657446808510639,-1.8614893617021275,1.13,False,True,41
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3657446808510639,-1.8614893617021275,1.13,False,True,41
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,winogrande,68.82,69.46,0.64,-0.1711627906976744,-0.8723255813953488,0.53,False,False,41
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,gsm8k,95.4,94.4,-1.0,-0.623448275862069,-2.68,1.4331034482758622,False,True,41
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,gpqa_main,31.63,32.21,0.58,-1.0202941176470588,-8.12,6.079411764705881,False,True,41
@@ -7152,7 +7152,7 @@ RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,humaneval,90.14,90.4,0.26,-0.9545
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2,gemma-2-27b-it,w8a16,winogrande,77.98,77.74,-0.24,-0.10875,-0.9875,0.77,False,True,43
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,winogrande,65.98,66.22,0.24,-0.758019801980198,-2.786039603960396,1.2700000000000002,False,True,43
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,mmlu_cot,88.1,88.1,0.0,-0.033947368421052636,-2.0878947368421055,2.02,False,True,43
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.42213483146067415,-1.71,0.8657303370786518,False,True,43
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.42213483146067415,-1.71,0.8657303370786518,False,True,43
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,mmlu_cot,65.4,65.2,-0.2,-0.3394871794871795,-1.1,0.42102564102564116,False,True,43
 RedHatAI/Qwen2.5-1.5B-quantized.w8a8,qwen2.5,Qwen2.5-1.5B,w8a8_int,mmlu,60.98,60.35,-0.63,-0.42213483146067415,-1.71,0.8657303370786518,False,True,43
 RedHatAI/Qwen2.5-7B-quantized.w8a8,qwen2.5,Qwen2.5-7B,w8a8_int,mmlu,74.15,73.66,-0.49,-0.42213483146067415,-1.71,0.8657303370786518,False,True,43
@@ -7373,7 +7373,7 @@ RedHatAI/Mixtral-8x7B-v0.1-quantized.w4a16,mistral,Mixtral-8x7B-v0.1,w4a16,hella
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,humaneval,44.1,44.8,0.7,-0.021634615384615398,-1.44,1.396730769230769,False,True,44
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,gsm8k,96.4,96.3,-0.1,-0.8253333333333333,-3.2199999999999998,1.5693333333333335,False,True,44
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2,gemma-2-27b-it,w8a16,winogrande,77.98,77.74,-0.24,-0.1,-0.9099999999999999,0.71,False,True,44
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.021634615384615398,-1.44,1.396730769230769,False,True,44
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.021634615384615398,-1.44,1.396730769230769,False,True,44
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.021634615384615398,-1.44,1.396730769230769,False,True,44
 RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8_dynamic,ifeval,67.99,66.79,-1.2,-0.021634615384615398,-1.44,1.396730769230769,False,True,44
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,winogrande,87.2,86.1,-1.1,-0.2531764705882353,-1.47,0.9636470588235293,False,True,44
@@ -7887,7 +7887,7 @@ RedHatAI/Qwen2.5-7B-FP8-dynamic,qwen2.5,Qwen2.5-7B,fp8_dynamic,gsm8k,79.76,80.74
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,mmlu_cot,71.24,71.12,-0.12,-0.22170731707317073,-0.88,0.4365853658536586,False,True,48
 RedHatAI/Mixtral-8x22B-Instruct-v0.1-FP8,mistral,Mixtral-8x22B-Instruct-v0.1,fp8,gsm8k,85.06,84.08,-0.98,-0.22170731707317073,-0.88,0.4365853658536586,False,False,48
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,gsm8k,81.96,81.12,-0.84,-0.22170731707317073,-0.88,0.4365853658536586,False,True,48
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.303010752688172,-1.97,1.363978494623656,False,True,48
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.303010752688172,-1.97,1.363978494623656,False,True,48
 RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,w8a8_int,arc_challenge,55.63,55.12,-0.51,-0.303010752688172,-1.97,1.363978494623656,False,True,48
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,bbh,53.19,52.59,-0.6,-0.303010752688172,-1.97,1.363978494623656,False,True,48
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.011904761904761915,-1.11,1.0861904761904764,False,True,48
@@ -8043,7 +8043,7 @@ RedHatAI/Qwen2.5-1.5B-quantized.w4a16,qwen2.5,Qwen2.5-1.5B,w4a16,hellaswag,67.65
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,humaneval_plus,80.1,78.9,-1.2,-0.6740860215053763,-4.25,2.901827956989248,False,True,49
 RedHatAI/Llama-3.2-3B-Instruct-FP8-dynamic,llama-3,Llama-3.2-3B-Instruct,fp8_dynamic,winogrande,71.11,71.11,0.0,-0.04361111111111112,-1.18,1.0927777777777778,False,True,49
 RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,mmlu,79.71,79.38,-0.33,-0.30333333333333334,-1.71,1.1033333333333335,False,True,49
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.04361111111111112,-1.18,1.0927777777777778,False,True,49
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.04361111111111112,-1.18,1.0927777777777778,False,True,49
 RedHatAI/Qwen2.5-0.5B-quantized.w8a8,qwen2.5,Qwen2.5-0.5B,w8a8_int,arc_challenge,34.9,34.47,-0.43,-0.30333333333333334,-1.71,1.1033333333333335,False,True,49
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2,gemma-2-27b-it,w8a16,hellaswag,86.03,86.04,0.01,-0.11405405405405404,-1.02,0.791891891891892,False,True,49
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,gsm8k,60.88,54.89,-5.99,-0.6740860215053763,-4.25,2.901827956989248,False,False,49
@@ -8690,7 +8690,7 @@ RedHatAI/Meta-Llama-3.1-8B-quantized.w8a16,llama-3,Meta-Llama-3.1-8B,w8a16,hella
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,gsm8k,24.03,23.81,-0.22,-0.17844444444444446,-1.0668888888888888,0.71,False,True,52
 RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-7B-Instruct,w8a8_int,mmlu,74.24,73.87,-0.37,-0.3062857142857143,-1.8725714285714286,1.26,False,True,52
 RedHatAI/Llama-3.2-3B-Instruct-FP8-dynamic,llama-3,Llama-3.2-3B-Instruct,fp8_dynamic,winogrande,71.11,71.11,0.0,-0.11602040816326531,-1.6920408163265304,1.46,False,True,52
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3062857142857143,-1.8725714285714286,1.26,False,True,52
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3062857142857143,-1.8725714285714286,1.26,False,True,52
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-8B-Instruct,w8a16,winogrande,78.06,77.51,-0.55,-0.01883720930232557,-1.1776744186046508,1.14,False,True,53
 RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,arc_challenge,59.39,58.7,-0.69,-0.8046078431372549,-3.00921568627451,1.4,False,True,53
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,winogrande,70.96,70.56,-0.4,-0.01883720930232557,-1.1776744186046508,1.14,False,True,53
@@ -8733,7 +8733,7 @@ RedHatAI/Qwen2.5-14B-FP8-dynamic,qwen2.5,Qwen2.5-14B,fp8_dynamic,arc_challenge,6
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,arc_challenge,95.0,95.3,0.3,-0.8046078431372549,-3.00921568627451,1.4,False,True,53
 RedHatAI/Meta-Llama-3.1-8B-FP8,llama-3,Meta-Llama-3.1-8B,fp8,truthfulqa,44.14,43.83,-0.31,-0.3462790697674419,-1.3225581395348838,0.6300000000000001,False,True,53
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,winogrande,78.45,77.9,-0.55,-0.3462790697674419,-1.3225581395348838,0.6300000000000001,False,True,53
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3606896551724138,-2.221379310344828,1.5,False,True,53
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3606896551724138,-2.221379310344828,1.5,False,True,53
 RedHatAI/Qwen2.5-1.5B-quantized.w4a16,qwen2.5,Qwen2.5-1.5B,w4a16,winogrande,65.04,65.51,0.47,-0.8046078431372549,-3.00921568627451,1.4,False,True,53
 RedHatAI/Qwen2.5-3B-FP8-dynamic,qwen2.5,Qwen2.5-3B,fp8_dynamic,hellaswag,74.46,74.13,-0.33,0.008155339805825248,-1.3136893203883497,1.33,False,True,53
 RedHatAI/Qwen2.5-72B-quantized.w8a16,qwen2.5,Qwen2.5-72B,w8a16,truthfulqa,60.44,60.3,-0.14,-0.01883720930232557,-1.1776744186046508,1.14,False,True,53
@@ -10346,7 +10346,7 @@ RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w4a16,mistral,Mistral-Small-2
 RedHatAI/Meta-Llama-3.1-405B-FP8,llama-3,Meta-Llama-3.1-405B,fp8,winogrande,87.61,86.42,-1.19,-0.21525,-1.21,0.7795000000000001,False,True,63
 RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,w8a8_int,gpqa_main_norm,28.3,27.6,-0.7,-0.3196808510638298,-1.71,1.0706382978723403,False,True,63
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,arena_hard,57.0,57.9,0.9,-0.08214953271028036,-2.2842990654205613,2.12,False,True,63
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.08214953271028036,-2.2842990654205613,2.12,False,True,63
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.08214953271028036,-2.2842990654205613,2.12,False,True,63
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.08214953271028036,-2.2842990654205613,2.12,False,True,63
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,humaneval,90.74,89.87,-0.87,-1.0848148148148147,-4.039629629629629,1.8699999999999999,False,True,63
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.7857999999999999,-2.21,0.6384,False,False,63
@@ -10583,7 +10583,7 @@ RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8
 RedHatAI/granite-3.1-8b-base-quantized.w8a8,granite,granite-3.1-8b-base,w8a8_int,gsm8k,60.88,60.5,-0.38,-0.4102970297029703,-1.44,0.6194059405940595,False,True,64
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,winogrande,78.1,78.5,0.4,-0.4102970297029703,-1.44,0.6194059405940595,False,True,64
 RedHatAI/Mixtral-8x7B-v0.1-quantized.w4a16,mistral,Mixtral-8x7B-v0.1,w4a16,arc_challenge,66.55,65.61,-0.94,-0.7642574257425743,-4.178514851485149,2.65,False,True,64
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.1892783505154639,-1.7785567010309276,1.4,False,True,64
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.1892783505154639,-1.7785567010309276,1.4,False,True,64
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,ifeval,74.01,73.5,-0.51,-0.4102970297029703,-1.44,0.6194059405940595,False,True,64
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,humaneval,44.1,44.8,0.7,-0.1892783505154639,-1.7785567010309276,1.4,False,True,64
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.1593939393939396,-8.12,5.801212121212119,False,True,64
@@ -11097,7 +11097,7 @@ RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic,mistral,Mistral-Small-24B-I
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,musr,39.29,41.01,1.72,-1.5654285714285714,-5.380857142857143,2.25,False,True,67
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.5654285714285714,-5.380857142857143,2.25,False,True,67
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,winogrande,62.51,63.61,1.1,-0.04610526315789477,-1.8222105263157897,1.73,False,True,67
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3485057471264368,-2.22,1.5229885057471266,False,True,67
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3485057471264368,-2.22,1.5229885057471266,False,True,67
 RedHatAI/Qwen2.5-3B-quantized.w8a8,qwen2.5,Qwen2.5-3B,w8a8_int,truthfulqa,48.93,47.93,-1.0,-0.3485057471264368,-2.22,1.5229885057471266,False,True,67
 RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8_dynamic,humaneval,53.4,54.9,1.5,-0.04610526315789477,-1.8222105263157897,1.73,False,True,67
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,truthfulqa,63.09,62.75,-0.34,-0.3485057471264368,-2.22,1.5229885057471266,False,True,67
@@ -11349,7 +11349,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu,80.96,80.36,-0.6,-
 RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,arc_challenge,57.76,57.25,-0.51,-0.28500000000000003,-1.2000000000000002,0.63,False,True,69
 RedHatAI/Llama-3.2-3B-Instruct-quantized.w8a8,llama-3,Llama-3.2-3B-Instruct,w8a8_int,winogrande,71.11,71.9,0.79,-0.35022988505747127,-1.6804597701149424,0.98,False,True,69
 RedHatAI/gemma-2-9b-it-quantized.w8a8,gemma-2,gemma-2-9b-it,w8a8_int,winogrande,77.98,78.37,0.39,-0.35022988505747127,-1.6804597701149424,0.98,False,True,69
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.005566037735849063,-1.4888679245283019,1.5,False,True,69
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.005566037735849063,-1.4888679245283019,1.5,False,True,69
 RedHatAI/granite-3.1-2b-base-quantized.w8a8,granite,granite-3.1-2b-base,w8a8_int,humaneval,30.0,29.6,-0.4,-0.35022988505747127,-1.6804597701149424,0.98,False,True,69
 RedHatAI/Qwen2.5-0.5B-quantized.w8a8,qwen2.5,Qwen2.5-0.5B,w8a8_int,truthfulqa,39.9,40.32,0.42,-0.35022988505747127,-1.6804597701149424,0.98,False,True,69
 RedHatAI/Qwen2.5-72B-quantized.w8a8,qwen2.5,Qwen2.5-72B,w8a8_int,arc_challenge,68.26,68.17,-0.09,-0.35022988505747127,-1.6804597701149424,0.98,False,True,69
@@ -12060,7 +12060,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-In
 RedHatAI/Mixtral-8x7B-Instruct-v0.1-FP8,mistral,Mixtral-8x7B-Instruct-v0.1,fp8,hellaswag,87.33,86.96,-0.37,-0.312972972972973,-1.1,0.4740540540540541,False,True,73
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,ifeval,74.01,73.5,-0.51,-0.31933333333333336,-1.4286666666666665,0.7899999999999999,False,True,73
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,bbh,62.35,60.72,-1.63,-1.2222222222222223,-4.164444444444444,1.7199999999999998,False,True,73
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.09804123711340205,-1.22,1.0239175257731958,False,True,73
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.09804123711340205,-1.22,1.0239175257731958,False,True,73
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,musr,40.61,42.86,2.25,-1.2222222222222223,-4.164444444444444,1.7199999999999998,False,False,73
 RedHatAI/Qwen2.5-1.5B-quantized.w8a16,qwen2.5,Qwen2.5-1.5B,w8a16,truthfulqa,46.57,46.57,0.0,0.07772727272727273,-2.57,2.725454545454545,False,True,73
 RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-7B-Instruct,w8a8_int,mmlu,74.24,73.87,-0.37,-0.31933333333333336,-1.4286666666666665,0.7899999999999999,False,True,73
@@ -12644,7 +12644,7 @@ RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct
 RedHatAI/Mixtral-8x7B-Instruct-v0.1-FP8,mistral,Mixtral-8x7B-Instruct-v0.1,fp8,arc_challenge,70.48,69.54,-0.94,-0.35512195121951223,-0.8702439024390245,0.15999999999999998,False,False,77
 RedHatAI/Qwen2.5-3B-quantized.w8a16,qwen2.5,Qwen2.5-3B,w8a16,arc_challenge,53.58,53.07,-0.51,-0.040638297872340426,-0.8512765957446808,0.77,False,True,77
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,math_lvl5,39.0,37.6,-1.4,-0.838901098901099,-3.0299999999999994,1.3521978021978016,False,True,77
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.026111111111111113,-1.4077777777777776,1.46,False,True,77
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.026111111111111113,-1.4077777777777776,1.46,False,True,77
 RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,w8a8_int,humaneval,53.4,54.9,1.5,-0.4283333333333333,-1.7566666666666666,0.9000000000000001,False,False,77
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,winogrande,83.74,83.43,-0.31,-0.838901098901099,-3.0299999999999994,1.3521978021978016,False,True,77
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.838901098901099,-3.0299999999999994,1.3521978021978016,False,True,77
@@ -12864,7 +12864,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B
 RedHatAI/Qwen2.5-0.5B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-0.5B-Instruct,w8a8_int,hellaswag,51.31,50.97,-0.34,-0.3243956043956044,-2.13,1.481208791208791,False,True,78
 RedHatAI/gemma-2-2b-it-quantized.w4a16,gemma-2,gemma-2-2b-it,w4a16,mmlu,56.93,55.98,-0.95,-0.7894,-4.2288,2.65,False,True,78
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.07238095238095238,-1.474761904761905,1.33,False,True,78
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3243956043956044,-2.13,1.481208791208791,False,True,78
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3243956043956044,-2.13,1.481208791208791,False,True,78
 RedHatAI/Qwen2.5-0.5B-quantized.w8a16,qwen2.5,Qwen2.5-0.5B,w8a16,hellaswag,51.83,51.78,-0.05,-0.03309523809523809,-2.37,2.303809523809524,False,True,78
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,gsm8k,60.96,60.12,-0.84,-0.07238095238095238,-1.474761904761905,1.33,False,True,78
 RedHatAI/granite-3.1-8b-instruct-FP8-dynamic,granite,granite-3.1-8b-instruct,fp8_dynamic,truthfulqa,60.57,60.52,-0.05,-0.07238095238095238,-1.474761904761905,1.33,False,True,78
@@ -13020,7 +13020,7 @@ RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,truthfulqa,53
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,winogrande,73.72,73.8,0.08,-1.09875,-4.4475,2.25,False,True,79
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,ifeval,86.4,87.6,1.2,-0.21614583333333337,-1.3322916666666669,0.9,False,False,79
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.21614583333333337,-1.3322916666666669,0.9,False,False,79
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.21614583333333337,-1.3322916666666669,0.9,False,True,79
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.21614583333333337,-1.3322916666666669,0.9,False,True,79
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w4a16,mistral,Mistral-7B-Instruct-v0.3,w4a16,gsm8k,49.27,43.36,-5.91,-0.5811,-2.83,1.6678,False,False,79
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,mmlu,62.98,62.61,-0.37,-0.3466666666666667,-1.21,0.5166666666666666,False,True,79
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,winogrande,78.1,78.0,-0.1,-0.5811,-2.83,1.6678,False,True,79
@@ -13242,7 +13242,7 @@ RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,mistral,Mistral-Small-3
 RedHatAI/granite-3.1-8b-instruct-FP8-dynamic,granite,granite-3.1-8b-instruct,fp8_dynamic,arc_challenge,66.81,66.81,0.0,-0.10106796116504854,-1.22,1.017864077669903,False,True,80
 RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-NVFP4,mistral,Mistral-Small-3.2-24B-Instruct-2506,nvfp4,mmlu_pro,50.84,48.45,-2.39,-1.0806666666666667,-4.15,1.988666666666667,False,True,80
 RedHatAI/Mixtral-8x22B-Instruct-v0.1-FP8,mistral,Mixtral-8x22B-Instruct-v0.1,fp8,hellaswag,88.94,88.85,-0.09,-0.2773684210526316,-1.19,0.6352631578947368,False,True,80
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.10106796116504854,-1.22,1.017864077669903,False,True,80
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.10106796116504854,-1.22,1.017864077669903,False,True,80
 RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,gsm8k,45.11,44.35,-0.76,-0.2773684210526316,-1.19,0.6352631578947368,False,True,80
 RedHatAI/Qwen2.5-3B-quantized.w4a16,qwen2.5,Qwen2.5-3B,w4a16,mmlu,65.68,64.1,-1.58,-0.8706666666666667,-3.631333333333333,1.8899999999999997,False,True,80
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu,71.95,69.74,-2.21,-0.8706666666666667,-3.631333333333333,1.8899999999999997,False,True,80
@@ -13345,7 +13345,7 @@ RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instru
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,truthfulqa,39.04,41.35,2.31,-0.5919417475728155,-4.25,3.066116504854369,False,True,81
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,winogrande,78.5,77.7,-0.8,0.013853211009174303,-1.1,1.1277064220183486,False,True,81
 RedHatAI/gemma-2-2b-it-quantized.w8a8,gemma-2,gemma-2-2b-it,w8a8_int,truthfulqa,53.22,53.19,-0.03,-0.39705882352941174,-1.97,1.1758823529411766,False,True,81
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.39705882352941174,-1.97,1.1758823529411766,False,True,81
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.39705882352941174,-1.97,1.1758823529411766,False,True,81
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,winogrande,71.43,68.43,-3.0,-0.9616216216216216,-4.173243243243244,2.25,False,True,81
 RedHatAI/Meta-Llama-3.1-8B-FP8,llama-3,Meta-Llama-3.1-8B,fp8,hellaswag,82.33,81.96,-0.37,-0.19545454545454546,-0.98,0.5890909090909091,False,True,81
 RedHatAI/Meta-Llama-3.1-8B-FP8,llama-3,Meta-Llama-3.1-8B,fp8,arc_challenge,78.84,77.73,-1.11,-0.19545454545454546,-0.98,0.5890909090909091,False,False,81
@@ -13763,7 +13763,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,6
 RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic,mistral,Mistral-Small-24B-Instruct-2501,fp8_dynamic,mmlu,80.69,80.55,-0.14,-0.10942307692307691,-1.6188461538461536,1.4,False,True,83
 RedHatAI/Qwen2.5-7B-quantized.w8a8,qwen2.5,Qwen2.5-7B,w8a8_int,winogrande,75.69,75.22,-0.47,-0.20578947368421052,-1.97,1.558421052631579,False,True,83
 RedHatAI/Qwen2.5-7B-quantized.w8a8,qwen2.5,Qwen2.5-7B,w8a8_int,truthfulqa,56.38,56.38,0.0,-0.20578947368421052,-1.97,1.558421052631579,False,True,83
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.10942307692307691,-1.6188461538461536,1.4,False,True,83
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.10942307692307691,-1.6188461538461536,1.4,False,True,83
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,humaneval_plus,78.4,78.7,0.3,-0.10942307692307691,-1.6188461538461536,1.4,False,True,83
 RedHatAI/Qwen2.5-0.5B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-0.5B-Instruct,w8a8_int,truthfulqa,41.85,41.47,-0.38,-0.20578947368421052,-1.97,1.558421052631579,False,True,83
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,winogrande,80.9,79.24,-1.66,-0.676236559139785,-2.62247311827957,1.27,False,True,83
@@ -13930,7 +13930,7 @@ RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,mmlu,74.15,73.47,-0
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w4a16,mistral,Mistral-7B-Instruct-v0.3,w4a16,arc_challenge,63.73,63.9,0.17,-1.0067058823529413,-3.193411764705883,1.18,False,True,84
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,gsm8k,81.96,81.12,-0.84,-0.298,-1.51,0.9139999999999999,False,True,84
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-70B-Instruct,w8a8_int,humaneval_plus,74.8,74.0,-0.8,-0.19157894736842104,-1.42,1.0368421052631578,False,True,84
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.19157894736842104,-1.42,1.0368421052631578,False,True,84
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.19157894736842104,-1.42,1.0368421052631578,False,True,84
 RedHatAI/gemma-2-9b-it-quantized.w4a16,gemma-2,gemma-2-9b-it,w4a16,truthfulqa,60.32,59.97,-0.35,-1.0067058823529413,-3.193411764705883,1.18,False,True,84
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,0.07824074074074074,-1.5735185185185183,1.73,False,True,84
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,gsm8k,60.96,60.12,-0.84,0.07824074074074074,-1.5735185185185183,1.73,False,True,84
@@ -14226,7 +14226,7 @@ RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,llama-3,Llama-3.3-70B-Instruct,w
 RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w4a16,mistral,Mistral-Small-24B-Instruct-2501,w4a16,mmlu_pro,38.83,36.0,-2.83,-0.725,-2.68,1.23,False,False,86
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.319,-4.358,1.7199999999999998,False,True,86
 RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,gsm8k,45.11,44.35,-0.76,-0.3042222222222222,-1.8684444444444444,1.26,False,True,86
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.11615384615384618,-1.18,0.9476923076923075,False,True,86
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.11615384615384618,-1.18,0.9476923076923075,False,True,86
 RedHatAI/Llama-3.2-3B-Instruct-quantized.w8a8,llama-3,Llama-3.2-3B-Instruct,w8a8_int,gsm8k,77.94,77.56,-0.38,-0.32752808988764043,-2.22,1.5649438202247192,False,True,86
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-405B-Instruct,w8a16,hellaswag,88.33,88.52,0.19,-0.08180000000000001,-2.37,2.2064000000000004,False,True,86
 RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,mmlu,74.15,73.47,-0.68,-0.725,-2.68,1.23,False,True,86
@@ -14552,7 +14552,7 @@ RedHatAI/Mixtral-8x22B-v0.1-quantized.w4a16,mistral,Mixtral-8x22B-v0.1,w4a16,mml
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,truthfulqa,51.47,51.65,0.18,-0.3229268292682927,-1.9,1.2541463414634144,False,True,88
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,hellaswag,67.65,67.49,-0.16,-0.05288659793814433,-1.4757731958762887,1.37,False,True,88
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,bbh,63.15,62.54,-0.61,-0.2712244897959184,-1.9424489795918367,1.4,False,True,88
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.05288659793814433,-1.4757731958762887,1.37,False,True,88
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.05288659793814433,-1.4757731958762887,1.37,False,True,88
 RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,hellaswag,71.22,70.87,-0.35,-0.3229268292682927,-1.9,1.2541463414634144,False,True,88
 RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,winogrande,81.37,81.22,-0.15,-0.2712244897959184,-1.9424489795918367,1.4,False,True,88
 RedHatAI/Mixtral-8x7B-v0.1-quantized.w4a16,mistral,Mixtral-8x7B-v0.1,w4a16,gsm8k,59.89,58.07,-1.82,-0.6538541666666667,-2.5777083333333333,1.27,False,True,88
@@ -14745,7 +14745,7 @@ RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-7B-Instruct,w8a8_int
 RedHatAI/gemma-2-2b-it-quantized.w4a16,gemma-2,gemma-2-2b-it,w4a16,gsm8k,45.11,42.0,-3.11,-0.897912087912088,-2.705824175824176,0.91,False,False,89
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,winogrande,65.04,65.98,0.94,-0.1110377358490566,-1.7220754716981133,1.5,False,True,89
 RedHatAI/Llama-3.2-1B-Instruct-FP8-dynamic,llama-3,Llama-3.2-1B-Instruct,fp8_dynamic,hellaswag,61.01,60.95,-0.06,-0.1110377358490566,-1.7220754716981133,1.5,False,True,89
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.1110377358490566,-1.7220754716981133,1.5,False,True,89
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.1110377358490566,-1.7220754716981133,1.5,False,True,89
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,winogrande,78.5,77.7,-0.8,-0.1110377358490566,-1.7220754716981133,1.5,False,True,89
 RedHatAI/Meta-Llama-3.1-70B-FP8,llama-3,Meta-Llama-3.1-70B,fp8,gsm8k,81.88,81.35,-0.53,-0.3554285714285714,-1.21,0.4991428571428571,False,True,89
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,arc_challenge,58.87,58.7,-0.17,-0.07999999999999999,-0.9299999999999999,0.77,False,True,89
@@ -14965,7 +14965,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,truthfulqa,53.17,53.71,0.
 RedHatAI/Llama-3.2-3B-Instruct-quantized.w8a8,llama-3,Llama-3.2-3B-Instruct,w8a8_int,mmlu,62.98,62.75,-0.23,-0.31398058252427186,-2.0279611650485436,1.4,False,True,91
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,humaneval,67.3,67.1,-0.2,-0.31398058252427186,-2.0279611650485436,1.4,False,True,91
 RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,gsm8k,84.46,83.93,-0.53,-0.31398058252427186,-2.0279611650485436,1.4,False,True,91
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.31398058252427186,-2.0279611650485436,1.4,False,True,91
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.31398058252427186,-2.0279611650485436,1.4,False,True,91
 RedHatAI/granite-3.1-8b-base-quantized.w8a8,granite,granite-3.1-8b-base,w8a8_int,humaneval,44.1,43.1,-1.0,-0.31398058252427186,-2.0279611650485436,1.4,False,True,91
 RedHatAI/Llama-3.2-1B-Instruct-FP8-dynamic,llama-3,Llama-3.2-1B-Instruct,fp8_dynamic,arc_challenge,58.36,57.25,-1.11,0.0591,-1.2518000000000002,1.37,False,True,91
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8,llama-3,Meta-Llama-3.1-405B-Instruct,fp8,arc_challenge,94.97,94.88,-0.09,-0.41727272727272724,-0.9945454545454545,0.16000000000000003,False,True,91
@@ -15948,7 +15948,7 @@ RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Inst
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,truthfulqa,54.5,52.8,-1.7,-0.7399,-4.25,2.7702,False,True,97
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,truthfulqa,64.6,65.3,0.7,-0.7399,-4.25,2.7702,False,True,97
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,truthfulqa,58.63,59.13,0.5,-0.05449999999999999,-1.44,1.331,False,True,97
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.05449999999999999,-1.44,1.331,False,True,97
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.05449999999999999,-1.44,1.331,False,True,97
 RedHatAI/Qwen2.5-32B-quantized.w8a16,qwen2.5,Qwen2.5-32B,w8a16,hellaswag,85.08,85.14,0.06,-0.22325581395348837,-1.126511627906977,0.68,False,True,97
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,mistral,Mistral-Small-3.1-24B-Instruct-2503,fp8_dynamic,arc_challenge,72.78,72.87,0.09,-0.05449999999999999,-1.44,1.331,False,True,97
 RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-NVFP4,mistral,Mistral-Small-3.2-24B-Instruct-2506,nvfp4,musr,39.15,40.21,1.06,-1.2013333333333334,-7.15,4.747333333333334,False,True,97
@@ -16246,7 +16246,7 @@ RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-
 RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,winogrande,75.69,76.01,0.32,-0.6468686868686868,-2.6937373737373735,1.4,False,True,99
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,humaneval,67.3,67.1,-0.2,-0.6468686868686868,-2.6937373737373735,1.4,False,True,99
 RedHatAI/Qwen2.5-3B-quantized.w8a16,qwen2.5,Qwen2.5-3B,w8a16,hellaswag,51.83,51.78,-0.05,-0.1781081081081081,-1.0362162162162163,0.68,False,True,99
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.008039215686274512,-1.3839215686274509,1.4,False,True,99
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.008039215686274512,-1.3839215686274509,1.4,False,True,99
 RedHatAI/granite-3.1-2b-base-quantized.w8a8,granite,granite-3.1-2b-base,w8a8_int,winogrande,74.43,74.35,-0.08,-0.23031578947368422,-1.97,1.5093684210526315,False,True,99
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,arc_challenge,64.68,64.16,-0.52,0.008039215686274512,-1.3839215686274509,1.4,False,True,99
 RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,hellaswag,71.22,70.87,-0.35,-0.31326086956521737,-1.21,0.5834782608695652,False,True,99
@@ -16484,7 +16484,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,llama-3,Llama-3.3-70B-Instruct,w4a16,winogrande,84.77,84.45,-0.32,-0.7147368421052632,-2.6994736842105262,1.27,False,True,100
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,hellaswag,86.8,86.6,-0.2,0.09417475728155339,-1.22,1.4083495145631069,False,True,100
 RedHatAI/Qwen2.5-1.5B-quantized.w8a16,qwen2.5,Qwen2.5-1.5B,w8a16,hellaswag,67.65,67.64,-0.01,-0.16142857142857142,-1.002857142857143,0.6799999999999999,False,True,100
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.2631578947368421,-2.13,1.6036842105263158,False,True,100
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.2631578947368421,-2.13,1.6036842105263158,False,True,100
 RedHatAI/Qwen2.5-72B-FP8-dynamic,qwen2.5,Qwen2.5-72B,fp8_dynamic,mmlu,86.05,85.84,-0.21,0.09417475728155339,-1.22,1.4083495145631069,False,True,100
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,0.09417475728155339,-1.22,1.4083495145631069,False,True,100
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,mmlu_pro,30.8,31.2,0.4,0.09417475728155339,-1.22,1.4083495145631069,False,True,100
@@ -16692,7 +16692,7 @@ RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,mistral,Mistral-Small-3
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,hellaswag,55.09,57.96,2.87,-0.7866981132075471,-3.463396226415094,1.8899999999999997,False,False,101
 RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-7B-Instruct,w8a8_int,arc_challenge,63.4,63.23,-0.17,-0.3766666666666667,-1.7733333333333334,1.02,False,True,101
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8,llama-3,Meta-Llama-3.1-405B-Instruct,fp8,mmlu_cot,88.11,88.02,-0.09,-0.3853191489361702,-0.9506382978723404,0.18,False,True,101
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3766666666666667,-1.7733333333333334,1.02,False,True,101
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3766666666666667,-1.7733333333333334,1.02,False,True,101
 RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,gsm8k,84.46,83.93,-0.53,-0.3766666666666667,-1.7733333333333334,1.02,False,True,101
 RedHatAI/Qwen2.5-0.5B-FP8-dynamic,qwen2.5,Qwen2.5-0.5B,fp8_dynamic,arc_challenge,34.9,33.87,-1.03,-0.0316304347826087,-1.5232608695652172,1.46,False,True,101
 RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct,w4a16,hellaswag,75.21,73.36,-1.85,-0.7866981132075471,-3.463396226415094,1.8899999999999997,False,True,101
@@ -17310,7 +17310,7 @@ RedHatAI/Qwen2.5-7B-Instruct-quantized.w4a16,qwen2.5,Qwen2.5-7B-Instruct,w4a16,t
 RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct,w4a16,gsm8k,60.96,62.85,1.89,-0.6652884615384616,-2.600576923076923,1.27,False,False,105
 RedHatAI/Qwen2.5-1.5B-quantized.w8a8,qwen2.5,Qwen2.5-1.5B,w8a8_int,mmlu,60.98,60.35,-0.63,-0.3781111111111111,-1.886222222222222,1.13,False,True,105
 RedHatAI/Qwen2.5-14B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-14B-Instruct,w8a8_int,truthfulqa,68.93,68.94,0.01,-0.3781111111111111,-1.886222222222222,1.13,False,True,105
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3781111111111111,-1.886222222222222,1.13,False,True,105
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3781111111111111,-1.886222222222222,1.13,False,True,105
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,mmlu_pro,59.7,59.4,-0.3,0.003775510204081643,-1.74,1.7475510204081635,False,True,105
 RedHatAI/Qwen2.5-7B-quantized.w8a16,qwen2.5,Qwen2.5-7B,w8a16,winogrande,75.69,75.37,-0.32,0.032790697674418605,-0.68,0.7455813953488372,False,True,105
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,winogrande,77.9,78.22,0.32,-0.3781111111111111,-1.886222222222222,1.13,False,True,105
@@ -17744,7 +17744,7 @@ RedHatAI/Meta-Llama-3.1-8B-quantized.w8a16,llama-3,Meta-Llama-3.1-8B,w8a16,mmlu,
 RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,w8a8_int,mmlu,54.38,54.12,-0.26,-0.4332584269662922,-1.8465168539325845,0.98,False,True,108
 RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct,w4a16,gpqa_main_norm,28.3,28.56,0.26,-0.7018000000000001,-3.2936,1.8900000000000001,False,True,108
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,arc_challenge,95.0,95.0,0.0,-0.0740952380952381,-1.518190476190476,1.37,False,True,108
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.0740952380952381,-1.518190476190476,1.37,False,True,108
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.0740952380952381,-1.518190476190476,1.37,False,True,108
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,winogrande,73.72,73.8,0.08,-1.20875,-4.1375,1.72,False,True,108
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,winogrande,77.9,78.22,0.32,-0.4332584269662922,-1.8465168539325845,0.98,False,True,108
 RedHatAI/gemma-2-2b-it-quantized.w4a16,gemma-2,gemma-2-2b-it,w4a16,winogrande,68.67,68.35,-0.32,-0.7018000000000001,-3.2936,1.8900000000000001,False,True,108
@@ -17924,7 +17924,7 @@ RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2,gemma-2-27b-it,w8a16,winogrande,
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.59,0.2,-0.02643564356435645,-1.382871287128713,1.33,False,True,109
 RedHatAI/Llama-3.2-1B-Instruct-quantized.w8a8,llama-3,Llama-3.2-1B-Instruct,w8a8_int,mmlu_cot,47.1,44.63,-2.47,-0.2639252336448598,-1.29,0.7621495327102803,False,False,109
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,mmlu,87.4,87.5,0.1,-0.02643564356435645,-1.382871287128713,1.33,False,True,109
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.02643564356435645,-1.382871287128713,1.33,False,True,109
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.02643564356435645,-1.382871287128713,1.33,False,True,109
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-8B-Instruct,w8a16,winogrande,78.06,77.51,-0.55,-0.13911111111111113,-2.098222222222222,1.82,False,True,109
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,humaneval,86.8,85.1,-1.7,-0.6820652173913043,-3.03,1.6658695652173914,False,True,109
 RedHatAI/Qwen2.5-7B-FP8-dynamic,qwen2.5,Qwen2.5-7B,fp8_dynamic,arc_challenge,59.39,59.39,0.0,-0.02643564356435645,-1.382871287128713,1.33,False,True,109
@@ -18144,7 +18144,7 @@ RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-0.6658620689655173,-3.9300000000000006,2.5982758620689657,False,True,110
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,mmlu_pro,53.48,50.26,-3.22,-0.6658620689655173,-3.9300000000000006,2.5982758620689657,False,True,110
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.8244117647058824,-2.83,1.1811764705882355,False,False,110
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.19626506024096388,-2.2,1.8074698795180726,False,True,110
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.19626506024096388,-2.2,1.8074698795180726,False,True,110
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,mmlu,60.98,60.25,-0.73,-0.011037735849056608,-2.5420754716981135,2.52,False,True,110
 RedHatAI/Llama-3.2-3B-Instruct-FP8-dynamic,llama-3,Llama-3.2-3B-Instruct,fp8_dynamic,winogrande,71.11,71.11,0.0,-0.011037735849056608,-2.5420754716981135,2.52,False,True,110
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,winogrande,69.77,69.85,0.08,-0.011037735849056608,-2.5420754716981135,2.52,False,True,110
@@ -18216,7 +18216,7 @@ RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,mmlu_pro,59.7,59.4,-0.3,0.0006999999999999984,-1.13,1.1313999999999997,False,True,111
 RedHatAI/Qwen2.5-1.5B-quantized.w8a8,qwen2.5,Qwen2.5-1.5B,w8a8_int,gsm8k,60.96,60.12,-0.84,-0.24919191919191921,-2.2,1.7016161616161618,False,True,111
 RedHatAI/gemma-2-9b-it-quantized.w8a16,gemma-2,gemma-2-9b-it,w8a16,arc_challenge,71.08,71.33,0.25,-0.086,-1.26,1.0879999999999999,False,True,111
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.24919191919191921,-2.2,1.7016161616161618,False,True,111
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.24919191919191921,-2.2,1.7016161616161618,False,True,111
 RedHatAI/Llama-3.2-3B-Instruct-quantized.w8a8,llama-3,Llama-3.2-3B-Instruct,w8a8_int,hellaswag,73.62,73.63,0.01,-0.24919191919191921,-2.2,1.7016161616161618,False,True,111
 RedHatAI/Qwen2.5-72B-quantized.w8a16,qwen2.5,Qwen2.5-72B,w8a16,arc_challenge,68.26,68.17,-0.09,-0.086,-1.26,1.0879999999999999,False,True,111
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,0.0006999999999999984,-1.13,1.1313999999999997,False,True,111
@@ -18244,7 +18244,7 @@ RedHatAI/Qwen2.5-1.5B-quantized.w8a8,qwen2.5,Qwen2.5-1.5B,w8a8_int,winogrande,65
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,gpqa_main,31.63,32.21,0.58,-0.828529411764706,-7.15,5.492941176470589,False,True,111
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,bbh,67.0,67.1,0.1,0.0006999999999999984,-1.13,1.1313999999999997,False,True,111
 RedHatAI/gemma-2-2b-it-quantized.w4a16,gemma-2,gemma-2-2b-it,w4a16,truthfulqa,53.11,52.57,-0.54,-0.713265306122449,-3.22,1.7934693877551022,False,True,111
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.0006999999999999984,-1.13,1.1313999999999997,False,True,111
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.0006999999999999984,-1.13,1.1313999999999997,False,True,111
 RedHatAI/Mixtral-8x22B-v0.1-quantized.w4a16,mistral,Mixtral-8x22B-v0.1,w4a16,mmlu,77.4,76.21,-1.19,-0.713265306122449,-3.22,1.7934693877551022,False,True,111
 RedHatAI/Meta-Llama-3.1-8B-FP8,llama-3,Meta-Llama-3.1-8B,fp8,arc_challenge,78.84,77.73,-1.11,-0.21783783783783786,-1.51,1.0743243243243243,False,True,111
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.713265306122449,-3.22,1.7934693877551022,False,True,111
@@ -18578,7 +18578,7 @@ RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instru
 RedHatAI/Meta-Llama-3.1-405B-FP8,llama-3,Meta-Llama-3.1-405B,fp8,truthfulqa,49.83,47.93,-1.9,-0.22818181818181818,-1.19,0.7336363636363636,False,False,113
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,hellaswag,83.52,83.46,-0.06,-0.0725,-1.645,1.5,False,True,113
 RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8_dynamic,hellaswag,75.21,75.26,0.05,-0.0725,-1.645,1.5,False,True,113
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.0725,-1.645,1.5,False,True,113
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.0725,-1.645,1.5,False,True,113
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,arc_challenge,82.0,81.66,-0.34,-0.22818181818181818,-1.19,0.7336363636363636,False,True,113
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,gsm8k,82.8,84.8,2.0,-0.40404040404040403,-1.9480808080808079,1.14,False,False,113
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-70B-Instruct,w8a16,gsm8k,95.38,92.34,-3.04,-0.025957446808510642,-0.7319148936170213,0.68,False,False,113
@@ -19091,7 +19091,7 @@ RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,llama-3,Llama-3.3-70B-Instruct,w
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,mmlu_cot,71.24,71.12,-0.12,-0.37,-1.21,0.47,False,True,116
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,gsm8k,45.72,45.49,-0.23,-0.37,-1.21,0.47,False,True,116
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,llama-3,Llama-3.3-70B-Instruct,w4a16,humaneval,83.2,83.4,0.2,-0.6669473684210526,-3.22,1.8861052631578947,False,True,116
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.12901960784313726,-1.9880392156862743,1.73,False,True,116
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.12901960784313726,-1.9880392156862743,1.73,False,True,116
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,mmlu,63.33,62.78,-0.55,-0.6669473684210526,-3.22,1.8861052631578947,False,True,116
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w8a16,mistral,Mistral-7B-Instruct-v0.3,w8a16,mmlu,61.84,62.06,0.22,-0.2644444444444444,-1.02,0.4911111111111111,False,True,116
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,hellaswag,80.5,79.9,-0.6,-0.6669473684210526,-3.22,1.8861052631578947,False,True,116
@@ -19589,7 +19589,7 @@ RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,winogrande,71.11,70.88,-0.23,-0.1947222222222222,-1.19,0.8005555555555555,False,True,119
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,hellaswag,86.7,86.3,-0.4,-0.7763829787234043,-3.11,1.557234042553191,False,True,119
 RedHatAI/Mixtral-8x22B-Instruct-v0.1-FP8,mistral,Mixtral-8x22B-Instruct-v0.1,fp8,truthfulqa,68.49,68.01,-0.48,-0.1947222222222222,-1.19,0.8005555555555555,False,True,119
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.010408163265306124,-1.9208163265306122,1.9,False,True,119
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.010408163265306124,-1.9208163265306122,1.9,False,True,119
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.010408163265306124,-1.9208163265306122,1.9,False,True,119
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.010408163265306124,-1.9208163265306122,1.9,False,True,119
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,gsm8k,81.96,81.12,-0.84,-0.1947222222222222,-1.19,0.8005555555555555,False,True,119
@@ -19777,7 +19777,7 @@ RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-In
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,gsm8k,24.03,23.81,-0.22,-0.14,-1.42,1.1399999999999997,False,True,120
 RedHatAI/Qwen2.5-14B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-14B-Instruct,w8a8_int,gsm8k,83.55,85.52,1.97,-0.3565957446808511,-2.13,1.4168085106382975,False,False,120
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-70B-Instruct,w8a16,truthfulqa,60.65,59.39,-1.26,-0.14,-1.42,1.1399999999999997,False,True,120
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3565957446808511,-2.13,1.4168085106382975,False,True,120
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3565957446808511,-2.13,1.4168085106382975,False,True,120
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,musr,44.35,43.96,-0.39,-0.05237623762376239,-1.434752475247525,1.33,False,True,120
 RedHatAI/Qwen2.5-32B-quantized.w8a16,qwen2.5,Qwen2.5-32B,w8a16,gsm8k,78.09,78.62,0.53,-0.14,-1.42,1.1399999999999997,False,True,120
 RedHatAI/Qwen2.5-3B-FP8-dynamic,qwen2.5,Qwen2.5-3B,fp8_dynamic,winogrande,70.64,69.93,-0.71,-0.05237623762376239,-1.434752475247525,1.33,False,True,120
@@ -19950,7 +19950,7 @@ RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w4a16,mistral,Mistral-Small-2
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.04373831775700934,-1.5874766355140189,1.5,False,True,121
 RedHatAI/gemma-2-9b-it-quantized.w8a8,gemma-2,gemma-2-9b-it,w8a8_int,truthfulqa,60.21,60.12,-0.09,-0.4323232323232323,-1.8446464646464644,0.98,False,True,121
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,ifeval,89.45,90.41,0.96,-1.4096875,-4.539375,1.7200000000000002,False,True,121
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.4323232323232323,-1.8446464646464644,0.98,False,True,121
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.4323232323232323,-1.8446464646464644,0.98,False,True,121
 RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic,mistral,Mistral-Small-24B-Instruct-2501,fp8_dynamic,truthfulqa,65.55,64.85,-0.7,-0.04373831775700934,-1.5874766355140189,1.5,False,True,121
 RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8_dynamic,winogrande,69.67,69.61,-0.06,-0.04373831775700934,-1.5874766355140189,1.5,False,True,121
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,arc_challenge,58.36,57.85,-0.51,-0.22634146341463418,-1.51,1.0573170731707318,False,True,121
@@ -20123,7 +20123,7 @@ RedHatAI/granite-3.1-8b-instruct-FP8-dynamic,granite,granite-3.1-8b-instruct,fp8
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,mmlu_pro,51.89,51.5,-0.39,-0.033465346534653474,-1.266930693069307,1.2,False,True,122
 RedHatAI/Qwen2.5-1.5B-quantized.w8a16,qwen2.5,Qwen2.5-1.5B,w8a16,winogrande,65.04,65.11,0.07,-0.038285714285714284,-1.2165714285714284,1.14,False,True,122
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,mmlu_pro,59.7,58.4,-1.3,-0.28823529411764703,-1.9764705882352938,1.4,False,True,122
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.033465346534653474,-1.266930693069307,1.2,False,True,122
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.033465346534653474,-1.266930693069307,1.2,False,True,122
 RedHatAI/Qwen2.5-0.5B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-0.5B-Instruct,w8a8_int,truthfulqa,41.85,41.47,-0.38,-0.28823529411764703,-1.9764705882352938,1.4,False,True,122
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,truthfulqa,63.09,62.75,-0.34,-0.28823529411764703,-1.9764705882352938,1.4,False,True,122
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.506875,-4.88375,1.87,False,True,122
@@ -20206,7 +20206,7 @@ RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,musr,44.35,44.34,-0.01,-0.25772727272727275,-1.3054545454545456,0.79,False,True,123
 RedHatAI/granite-3.1-8b-instruct-FP8-dynamic,granite,granite-3.1-8b-instruct,fp8_dynamic,bbh,53.19,53.26,0.07,0.0797938144329897,-1.44,1.5995876288659794,False,True,123
 RedHatAI/gemma-2-9b-it-quantized.w8a8,gemma-2,gemma-2-9b-it,w8a8_int,hellaswag,81.93,81.6,-0.33,-0.25772727272727275,-1.3054545454545456,0.79,False,True,123
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.0797938144329897,-1.44,1.5995876288659794,False,True,123
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.0797938144329897,-1.44,1.5995876288659794,False,True,123
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-8B-Instruct,w8a16,truthfulqa,54.48,54.41,-0.07,-0.12121951219512195,-1.2599999999999998,1.0175609756097561,False,True,123
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,musr,44.18,44.18,0.0,-1.4909999999999999,-4.851999999999999,1.8699999999999999,False,True,123
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,arc_challenge,49.23,48.04,-1.19,-0.25772727272727275,-1.3054545454545456,0.79,False,True,123
@@ -20355,7 +20355,7 @@ RedHatAI/Qwen2.5-3B-quantized.w8a16,qwen2.5,Qwen2.5-3B,w8a16,hellaswag,51.83,51.
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,winogrande,70.96,70.56,-0.4,-0.17744186046511629,-1.0348837209302326,0.6800000000000002,False,True,124
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,winogrande,80.9,80.66,-0.24,-0.20093750000000002,-1.771875,1.37,False,True,124
 RedHatAI/granite-3.1-8b-instruct-quantized.w4a16,granite,granite-3.1-8b-instruct,w4a16,winogrande,80.19,78.37,-1.82,-0.9344444444444445,-4.178888888888889,2.31,False,True,124
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.20093750000000002,-1.771875,1.37,False,True,124
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.20093750000000002,-1.771875,1.37,False,True,124
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-70B-Instruct,w8a8_int,math_lvl5,26.1,23.9,-2.2,-0.2912871287128713,-1.8425742574257427,1.26,False,False,124
 RedHatAI/granite-3.1-8b-instruct-FP8-dynamic,granite,granite-3.1-8b-instruct,fp8_dynamic,musr,46.01,47.34,1.33,-0.20093750000000002,-1.771875,1.37,False,True,124
 RedHatAI/Mixtral-8x22B-v0.1-quantized.w4a16,mistral,Mixtral-8x22B-v0.1,w4a16,winogrande,84.45,85.16,0.71,-0.9344444444444445,-4.178888888888889,2.31,False,True,124
@@ -20578,7 +20578,7 @@ RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8
 RedHatAI/Meta-Llama-3.1-70B-FP8,llama-3,Meta-Llama-3.1-70B,fp8,mmlu,78.81,78.85,0.04,-0.33625,-1.3025,0.6300000000000001,False,True,125
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-70B-Instruct,w8a8_int,mmlu_pro,48.1,47.1,-1.0,-0.2187128712871287,-1.9374257425742574,1.5,False,True,125
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,0.05908045977011494,-1.74,1.8581609195402298,False,True,125
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.2187128712871287,-1.9374257425742574,1.5,False,True,125
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.2187128712871287,-1.9374257425742574,1.5,False,True,125
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,hellaswag,80.5,79.9,-0.6,-0.8265094339622642,-3.5430188679245282,1.8900000000000001,False,True,125
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,gsm8k,60.88,54.89,-5.99,-0.8265094339622642,-3.5430188679245282,1.8900000000000001,False,False,125
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,bbh,63.15,62.54,-0.61,-0.2187128712871287,-1.9374257425742574,1.5,False,True,125
@@ -21112,7 +21112,7 @@ RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,llama-3,Llama-3.3-70B-Instruct,w
 RedHatAI/Llama-3.2-1B-Instruct-FP8-dynamic,llama-3,Llama-3.2-1B-Instruct,fp8_dynamic,gsm8k,45.72,45.94,0.22,-0.1254368932038835,-1.7108737864077668,1.46,False,True,128
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,mmlu_pro,30.8,30.9,0.1,-0.3181720430107527,-1.29,0.6536559139784948,False,True,128
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8,llama-3,Meta-Llama-3.1-70B-Instruct,fp8,arc_challenge,93.26,92.92,-0.34,-0.26173913043478264,-1.9,1.3765217391304345,False,True,128
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3181720430107527,-1.29,0.6536559139784948,False,True,128
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3181720430107527,-1.29,0.6536559139784948,False,True,128
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,gsm8k,60.96,60.12,-0.84,-0.1254368932038835,-1.7108737864077668,1.46,False,True,128
 RedHatAI/Qwen2.5-1.5B-quantized.w4a16,qwen2.5,Qwen2.5-1.5B,w4a16,gsm8k,60.96,56.71,-4.25,-0.9127368421052631,-3.11,1.2845263157894737,False,False,128
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,math_lvl5,53.55,50.83,-2.72,-1.1558620689655172,-4.5617241379310345,2.25,False,True,128
@@ -21308,7 +21308,7 @@ RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,winogrande,74.43,74.27,-0.16,-0.7194897959183674,-3.3289795918367346,1.8899999999999997,False,True,129
 RedHatAI/Qwen2.5-3B-quantized.w8a16,qwen2.5,Qwen2.5-3B,w8a16,mmlu,65.68,65.65,-0.03,-0.08886363636363637,-0.98,0.8022727272727272,False,True,129
 RedHatAI/Qwen2.5-0.5B-quantized.w8a16,qwen2.5,Qwen2.5-0.5B,w8a16,winogrande,55.8,55.49,-0.31,-0.08886363636363637,-0.98,0.8022727272727272,False,True,129
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.09326315789473684,-1.18,1.3665263157894738,False,True,129
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.09326315789473684,-1.18,1.3665263157894738,False,True,129
 RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic,mistral,Mistral-Small-24B-Instruct-2501,fp8_dynamic,winogrande,83.11,82.48,-0.63,0.09326315789473684,-1.18,1.3665263157894738,False,True,129
 RedHatAI/gemma-2-2b-it-quantized.w4a16,gemma-2,gemma-2-2b-it,w4a16,hellaswag,71.22,70.53,-0.69,-0.7194897959183674,-3.3289795918367346,1.8899999999999997,False,True,129
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,gsm8k,58.68,59.59,0.91,-0.7194897959183674,-3.3289795918367346,1.8899999999999997,False,True,129
@@ -21326,7 +21326,7 @@ RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,m
 RedHatAI/Llama-3.2-3B-Instruct-FP8-dynamic,llama-3,Llama-3.2-3B-Instruct,fp8_dynamic,hellaswag,73.62,73.54,-0.08,0.07056603773584905,-1.358867924528302,1.5,False,True,130
 RedHatAI/Llama-3.2-1B-Instruct-quantized.w8a8,llama-3,Llama-3.2-1B-Instruct,w8a8_int,gsm8k,45.72,46.7,0.98,-0.3486666666666667,-1.3973333333333333,0.7,False,False,130
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,humaneval_plus,78.4,78.6,0.2,-0.3486666666666667,-1.3973333333333333,0.7,False,True,130
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.07056603773584905,-1.358867924528302,1.5,False,True,130
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.07056603773584905,-1.358867924528302,1.5,False,True,130
 RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w8a8,mistral,Mistral-Small-24B-Instruct-2501,w8a8_int,arc_challenge,72.18,68.86,-3.32,-0.3486666666666667,-1.3973333333333333,0.7,False,False,130
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,truthfulqa,58.59,58.49,-0.1,-1.066470588235294,-3.092941176470588,0.96,False,True,130
 RedHatAI/Qwen2.5-7B-FP8-dynamic,qwen2.5,Qwen2.5-7B,fp8_dynamic,winogrande,75.69,75.3,-0.39,0.07056603773584905,-1.358867924528302,1.5,False,True,130
@@ -21608,7 +21608,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-In
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8,llama-3,Meta-Llama-3.1-70B-Instruct,fp8,truthfulqa,60.68,60.84,0.16,-0.3181578947368421,-1.21,0.5736842105263158,False,True,131
 RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct,w4a16,gsm8k,60.96,62.85,1.89,-0.7986315789473685,-4.247263157894737,2.65,False,True,131
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,winogrande,80.19,79.87,-0.32,-0.3639130434782608,-1.71,0.9821739130434785,False,True,131
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3639130434782608,-1.71,0.9821739130434785,False,True,131
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3639130434782608,-1.71,0.9821739130434785,False,True,131
 RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-7B-Instruct,w8a8_int,winogrande,74.66,74.82,0.16,-0.3639130434782608,-1.71,0.9821739130434785,False,True,131
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,arena_hard,57.0,57.0,0.0,-0.7986315789473685,-4.247263157894737,2.65,False,True,131
 RedHatAI/Qwen2.5-7B-quantized.w8a16,qwen2.5,Qwen2.5-7B,w8a16,truthfulqa,56.38,56.28,-0.1,0.020566037735849054,-2.57,2.6111320754716982,False,True,131
@@ -21695,7 +21695,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-In
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,arc_challenge,49.23,51.96,2.73,-0.021530612244897964,-1.2,1.156938775510204,False,False,132
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,humaneval,90.14,90.4,0.26,-0.9193103448275862,-4.088620689655173,2.25,False,True,132
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,gsm8k,50.64,49.51,-1.13,-0.3390654205607477,-2.2,1.5218691588785047,False,True,132
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.021530612244897964,-1.2,1.156938775510204,False,True,132
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.021530612244897964,-1.2,1.156938775510204,False,True,132
 RedHatAI/Qwen2.5-32B-quantized.w8a16,qwen2.5,Qwen2.5-32B,w8a16,gsm8k,78.09,78.62,0.53,-0.034680851063829794,-0.65,0.5806382978723404,False,True,132
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,winogrande,70.96,70.56,-0.4,-0.034680851063829794,-0.65,0.5806382978723404,False,True,132
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,hellaswag,77.94,75.38,-2.56,-0.5467391304347826,-3.4,2.3065217391304347,False,True,132
@@ -22142,7 +22142,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu,71.95,69.74,-2.21,-0
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,humaneval_plus,78.4,78.7,0.3,0.026599999999999985,-1.1,1.1532,False,True,135
 RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w8a8,mistral,Mistral-Small-24B-Instruct-2501,w8a8_int,winogrande,83.11,81.69,-1.42,-0.3345977011494253,-1.6891954022988505,1.02,False,True,135
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w8a16,mistral,Mistral-7B-Instruct-v0.3,w8a16,hellaswag,84.84,84.78,-0.06,-0.01046511627906977,-1.8409302325581398,1.82,False,True,135
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3345977011494253,-1.6891954022988505,1.02,False,True,135
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3345977011494253,-1.6891954022988505,1.02,False,True,135
 RedHatAI/Mixtral-8x22B-Instruct-v0.1-FP8,mistral,Mixtral-8x22B-Instruct-v0.1,fp8,gsm8k,85.06,84.08,-0.98,-0.3223809523809524,-1.2747619047619048,0.6299999999999999,False,True,135
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,musr,39.29,41.01,1.72,-1.0125,-3.9300000000000006,1.9050000000000005,False,True,135
 RedHatAI/Qwen2.5-1.5B-quantized.w8a16,qwen2.5,Qwen2.5-1.5B,w8a16,mmlu,60.98,61.0,0.02,-0.01046511627906977,-1.8409302325581398,1.82,False,True,135
@@ -22557,7 +22557,7 @@ RedHatAI/Qwen2.5-0.5B-FP8-dynamic,qwen2.5,Qwen2.5-0.5B,fp8_dynamic,hellaswag,51.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,0.01735849056603773,-1.3352830188679246,1.37,False,True,137
 RedHatAI/Qwen2.5-14B-Instruct-quantized.w8a8,qwen2.5,Qwen2.5-14B-Instruct,w8a8_int,mmlu,79.87,79.75,-0.12,-0.3442391304347826,-1.3884782608695652,0.7000000000000001,False,True,137
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,winogrande,71.11,70.88,-0.23,-0.3282051282051282,-1.11,0.45358974358974374,False,True,137
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3442391304347826,-1.3884782608695652,0.7000000000000001,False,True,137
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3442391304347826,-1.3884782608695652,0.7000000000000001,False,True,137
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,truthfulqa,70.62,69.56,-1.06,-0.5620833333333334,-3.11,1.9858333333333333,False,True,137
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,hellaswag,77.94,75.38,-2.56,-0.5620833333333334,-3.11,1.9858333333333333,False,True,137
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,ifeval,86.4,85.7,-0.7,-0.5620833333333334,-3.11,1.9858333333333333,False,True,137
@@ -22859,7 +22859,7 @@ RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,mistral,Mistral-Smal
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,musr,44.18,44.18,0.0,-1.0771428571428572,-3.9300000000000006,1.775714285714286,False,True,139
 RedHatAI/Qwen2.5-0.5B-quantized.w8a16,qwen2.5,Qwen2.5-0.5B,w8a16,arc_challenge,34.9,34.9,0.0,-0.13142857142857145,-1.02,0.7571428571428571,False,True,139
 RedHatAI/gemma-2-9b-it-quantized.w8a16,gemma-2,gemma-2-9b-it,w8a16,winogrande,77.98,77.74,-0.24,-0.13142857142857145,-1.02,0.7571428571428571,False,True,139
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.0009574468085106451,-1.55,1.5519148936170215,False,True,139
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.0009574468085106451,-1.55,1.5519148936170215,False,True,139
 RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,arc_challenge,59.39,58.7,-0.69,-0.8158620689655173,-4.281724137931034,2.65,False,True,139
 RedHatAI/gemma-2-2b-quantized.w8a16,gemma-2,gemma-2-2b,w8a16,winogrande,70.96,70.56,-0.4,-0.13142857142857145,-1.02,0.7571428571428571,False,True,139
 RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic,mistral,Mistral-Small-24B-Instruct-2501,fp8_dynamic,gsm8k,90.14,89.01,-1.13,0.0009574468085106451,-1.55,1.5519148936170215,False,True,139
@@ -23025,7 +23025,7 @@ RedHatAI/Qwen2.5-7B-Instruct-FP8-dynamic,qwen2.5,Qwen2.5-7B-Instruct,fp8_dynamic
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,gsm8k,60.88,54.89,-5.99,-0.4875,-2.56,1.5850000000000002,False,False,140
 RedHatAI/granite-3.1-2b-instruct-FP8-dynamic,granite,granite-3.1-2b-instruct,fp8_dynamic,winogrande,69.67,69.61,-0.06,0.03412280701754386,-1.11,1.1782456140350879,False,True,140
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,humaneval,83.2,83.3,0.1,-0.3870526315789474,-1.2241052631578948,0.45000000000000007,False,True,140
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3870526315789474,-1.2241052631578948,0.45000000000000007,False,True,140
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3870526315789474,-1.2241052631578948,0.45000000000000007,False,True,140
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,truthfulqa,53.22,53.13,-0.09,-0.04250000000000001,-2.37,2.285,False,True,140
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,mmlu,63.33,62.78,-0.55,-0.4875,-2.56,1.5850000000000002,False,True,140
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,humaneval,30.0,29.8,-0.2,-0.4875,-2.56,1.5850000000000002,False,True,140
@@ -23305,7 +23305,7 @@ RedHatAI/Qwen2.5-72B-quantized.w8a16,qwen2.5,Qwen2.5-72B,w8a16,arc_challenge,68.
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.815056179775281,-2.7301123595505623,1.1,False,True,142
 RedHatAI/granite-3.1-8b-base-quantized.w4a16,granite,granite-3.1-8b-base,w4a16,hellaswag,83.52,82.53,-0.99,-0.815056179775281,-2.7301123595505623,1.1,False,True,142
 RedHatAI/Qwen2.5-72B-quantized.w8a8,qwen2.5,Qwen2.5-72B,w8a8_int,hellaswag,87.53,87.53,0.0,-0.3781553398058253,-2.1563106796116505,1.4,False,True,142
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3781553398058253,-2.1563106796116505,1.4,False,True,142
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3781553398058253,-2.1563106796116505,1.4,False,True,142
 RedHatAI/Llama-3.2-3B-Instruct-quantized.w8a8,llama-3,Llama-3.2-3B-Instruct,w8a8_int,mmlu,62.98,62.75,-0.23,-0.3781553398058253,-2.1563106796116505,1.4,False,True,142
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,arc_challenge,58.36,57.85,-0.51,-0.46780487804878046,-1.51,0.5743902439024391,False,True,142
 RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-NVFP4,mistral,Mistral-Small-3.2-24B-Instruct-2506,nvfp4,ifeval,84.05,84.41,0.36,-1.060625,-7.29125,5.17,False,True,142
@@ -23488,7 +23488,7 @@ RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,mistral,Mistral-Small-3
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8,llama-3,Meta-Llama-3.1-70B-Instruct,fp8,gsm8k,94.92,94.54,-0.38,-0.2536111111111111,-1.1372222222222224,0.63,False,True,143
 RedHatAI/Qwen2.5-7B-quantized.w8a16,qwen2.5,Qwen2.5-7B,w8a16,mmlu,74.15,74.41,0.26,0.05469387755102041,-2.37,2.4793877551020413,False,True,143
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,winogrande,80.9,80.66,-0.24,-0.0017525773195876436,-1.3735051546391754,1.37,False,True,143
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3447368421052632,-1.5894736842105264,0.8999999999999999,False,True,143
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3447368421052632,-1.5894736842105264,0.8999999999999999,False,True,143
 RedHatAI/Mistral-7B-Instruct-v0.3-FP8,mistral,Mistral-7B-Instruct-v0.3,fp8,winogrande,79.4,78.3,-1.1,-0.2536111111111111,-1.1372222222222224,0.63,False,True,143
 RedHatAI/granite-3.1-8b-instruct-quantized.w4a16,granite,granite-3.1-8b-instruct,w4a16,gsm8k,64.52,65.66,1.14,-0.7892857142857143,-2.8485714285714283,1.27,False,True,143
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,mmlu_cot,86.2,85.6,-0.6,-0.7892857142857143,-2.8485714285714283,1.27,False,True,143
@@ -24753,7 +24753,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-405B-Instruct,fp8_dynamic,ifeval,87.7,86.8,-0.9,-0.0745,-1.129,0.98,False,True,150
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,winogrande,78.45,77.9,-0.55,-0.27710526315789474,-1.52,0.9657894736842105,False,True,150
 RedHatAI/Meta-Llama-3.1-405B-FP8,llama-3,Meta-Llama-3.1-405B,fp8,truthfulqa,49.83,47.93,-1.9,-0.27710526315789474,-1.52,0.9657894736842105,False,False,150
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3243010752688172,-1.14,0.4913978494623656,False,True,150
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3243010752688172,-1.14,0.4913978494623656,False,True,150
 RedHatAI/Qwen2.5-3B-quantized.w8a8,qwen2.5,Qwen2.5-3B,w8a8_int,gsm8k,68.23,66.26,-1.97,-0.3243010752688172,-1.14,0.4913978494623656,False,False,150
 RedHatAI/Qwen2.5-7B-quantized.w4a16,qwen2.5,Qwen2.5-7B,w4a16,hellaswag,80.17,79.39,-0.78,-0.653,-2.53,1.2239999999999998,False,True,150
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,mmlu_cot,71.24,71.12,-0.12,-0.27710526315789474,-1.52,0.9657894736842105,False,True,150
@@ -24847,7 +24847,7 @@ RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,mmlu,63.33,63.35,0.02,0.016249999999999997,-1.18,1.2125000000000001,False,True,151
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,0.016249999999999997,-1.18,1.2125000000000001,False,True,151
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,mmlu,83.8,83.8,0.0,0.016249999999999997,-1.18,1.2125000000000001,False,True,151
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.016249999999999997,-1.18,1.2125000000000001,False,True,151
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.016249999999999997,-1.18,1.2125000000000001,False,True,151
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,arena_hard,67.4,64.6,-2.8,-0.2969791666666667,-2.093958333333333,1.5,False,False,151
 RedHatAI/Mixtral-8x7B-v0.1-quantized.w4a16,mistral,Mixtral-8x7B-v0.1,w4a16,winogrande,81.45,81.14,-0.31,-0.805,-2.3200000000000003,0.7100000000000001,False,True,151
 RedHatAI/granite-3.1-2b-base-quantized.w8a8,granite,granite-3.1-2b-base,w8a8_int,winogrande,74.43,74.35,-0.08,-0.2969791666666667,-2.093958333333333,1.5,False,True,151
@@ -26076,7 +26076,7 @@ RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,gsm
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,truthfulqa,64.6,64.4,-0.2,-0.22772727272727272,-2.465454545454545,2.01,False,True,158
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,arc_challenge,81.4,81.7,0.3,-0.22772727272727272,-2.465454545454545,2.01,False,True,158
 RedHatAI/gemma-2-2b-it-FP8,gemma-2,gemma-2-2b-it,fp8,arc_challenge,57.76,57.25,-0.51,-0.2915217391304348,-0.94,0.3569565217391304,False,True,159
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3650485436893204,-2.47,1.7399029126213592,False,True,159
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3650485436893204,-2.47,1.7399029126213592,False,True,159
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,winogrande,68.82,69.46,0.64,-0.06837209302325582,-0.65,0.5132558139534883,False,False,159
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,mistral,Mistral-Small-3.1-24B-Instruct-2503,fp8_dynamic,arc_challenge,72.78,72.87,0.09,-0.20408602150537636,-2.1381720430107527,1.73,False,True,159
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,hellaswag,71.1,71.44,0.34,-0.20408602150537636,-2.1381720430107527,1.73,False,True,159
@@ -26091,7 +26091,7 @@ RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w4a16,mistral,Mistral-Small-2
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2,gemma-2-27b-it,w8a16,arc_challenge,74.49,74.49,0.0,-0.06837209302325582,-0.65,0.5132558139534883,False,True,159
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w8a16,mistral,Mistral-7B-Instruct-v0.3,w8a16,gsm8k,49.28,50.42,1.14,-0.06837209302325582,-0.65,0.5132558139534883,False,False,159
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,truthfulqa,53.22,53.13,-0.09,-0.06837209302325582,-0.65,0.5132558139534883,False,True,159
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.20408602150537636,-2.1381720430107527,1.73,False,True,159
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.20408602150537636,-2.1381720430107527,1.73,False,True,159
 RedHatAI/Llama-3.2-3B-Instruct-quantized.w8a8,llama-3,Llama-3.2-3B-Instruct,w8a8_int,mmlu,62.98,62.75,-0.23,-0.3650485436893204,-2.47,1.7399029126213592,False,True,159
 RedHatAI/Mixtral-8x22B-Instruct-v0.1-FP8,mistral,Mixtral-8x22B-Instruct-v0.1,fp8,truthfulqa,68.49,68.01,-0.48,-0.2915217391304348,-0.94,0.3569565217391304,False,True,159
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,bbh,55.8,54.9,-0.9,-0.20408602150537636,-2.1381720430107527,1.73,False,True,159
@@ -26318,7 +26318,7 @@ RedHatAI/Qwen2.5-7B-quantized.w8a8,qwen2.5,Qwen2.5-7B,w8a8_int,mmlu,74.15,73.66,
 RedHatAI/Llama-3.2-3B-Instruct-FP8,llama-3,Llama-3.2-3B-Instruct,fp8,truthfulqa,51.47,51.65,0.18,-0.26799999999999996,-1.51,0.974,False,True,160
 RedHatAI/Qwen2.5-0.5B-FP8-dynamic,qwen2.5,Qwen2.5-0.5B,fp8_dynamic,gsm8k,34.19,34.65,0.46,0.0065979381443298825,-1.55,1.56319587628866,False,True,160
 RedHatAI/granite-3.1-2b-instruct-quantized.w8a8,granite,granite-3.1-2b-instruct,w8a8_int,gpqa_main_norm,28.3,27.6,-0.7,-0.18708333333333335,-2.2,1.8258333333333336,False,True,160
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.0065979381443298825,-1.55,1.56319587628866,False,True,160
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.0065979381443298825,-1.55,1.56319587628866,False,True,160
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,llama-3,Llama-3.3-70B-Instruct,nvfp4,bbh,69.05,66.31,-2.74,-1.0651515151515152,-7.300303030303031,5.17,False,True,160
 RedHatAI/Qwen2.5-72B-quantized.w8a16,qwen2.5,Qwen2.5-72B,w8a16,hellaswag,87.53,87.49,-0.04,-0.06804347826086957,-1.2760869565217392,1.14,False,True,160
 RedHatAI/Qwen2.5-0.5B-quantized.w8a8,qwen2.5,Qwen2.5-0.5B,w8a8_int,gsm8k,34.19,34.19,0.0,-0.18708333333333335,-2.2,1.8258333333333336,False,True,160
@@ -26592,7 +26592,7 @@ RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,musr,40.61,42.86,2.25,-1.1340625,-4
 RedHatAI/granite-3.1-8b-instruct-FP8-dynamic,granite,granite-3.1-8b-instruct,fp8_dynamic,mmlu,65.52,65.36,-0.16,0.020392156862745103,-1.4,1.4407843137254903,False,True,162
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-70B-Instruct,w8a16,winogrande,85.32,85.56,0.24,-0.09717948717948718,-2.57,2.3756410256410256,False,True,162
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,arc_challenge,58.36,57.85,-0.51,-0.31189189189189187,-1.2537837837837837,0.6300000000000001,False,True,162
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.15784946236559141,-1.71,1.394301075268817,False,True,162
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.15784946236559141,-1.71,1.394301075268817,False,True,162
 RedHatAI/Qwen2.5-3B-quantized.w8a16,qwen2.5,Qwen2.5-3B,w8a16,mmlu,65.68,65.65,-0.03,-0.09717948717948718,-2.57,2.3756410256410256,False,True,162
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.6018095238095238,-3.2200000000000006,2.0163809523809526,False,True,162
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,mmlu_cot,86.58,85.92,-0.66,-0.15784946236559141,-1.71,1.394301075268817,False,True,162
@@ -26871,7 +26871,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8,llama-3,Meta-Llama-3.1-405B-Instruct,f
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a16,llama-3,Meta-Llama-3.1-8B-Instruct,w8a16,winogrande,78.06,77.51,-0.55,-0.17641025641025643,-1.0328205128205128,0.68,False,True,163
 RedHatAI/Qwen2.5-14B-quantized.w8a8,qwen2.5,Qwen2.5-14B,w8a8_int,arc_challenge,65.7,65.27,-0.43,-0.2927,-2.2,1.6146000000000003,False,True,163
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,mmlu,87.4,87.2,-0.2,-0.7852688172043011,-2.970537634408602,1.4,False,True,163
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.2927,-2.2,1.6146000000000003,False,True,163
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.2927,-2.2,1.6146000000000003,False,True,163
 RedHatAI/Qwen2.5-1.5B-FP8-dynamic,qwen2.5,Qwen2.5-1.5B,fp8_dynamic,truthfulqa,46.57,46.08,-0.49,-0.010188679245283015,-1.390377358490566,1.37,False,True,163
 RedHatAI/Qwen2.5-32B-quantized.w8a16,qwen2.5,Qwen2.5-32B,w8a16,gsm8k,78.09,78.62,0.53,-0.17641025641025643,-1.0328205128205128,0.68,False,True,163
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a16,llama-3,Meta-Llama-3.1-8B,w8a16,mmlu,65.07,65.44,0.37,-0.17641025641025643,-1.0328205128205128,0.68,False,True,163
@@ -28039,7 +28039,7 @@ RedHatAI/granite-3.1-8b-base-quantized.w8a8,granite,granite-3.1-8b-base,w8a8_int
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8,llama-3,Meta-Llama-3.1-405B-Instruct,fp8,mmlu_cot,88.11,88.02,-0.09,-0.3278378378378379,-1.21,0.5543243243243241,False,True,170
 RedHatAI/Qwen2.5-7B-Instruct-quantized.w4a16,qwen2.5,Qwen2.5-7B-Instruct,w4a16,arc_challenge,63.4,63.23,-0.17,-0.681142857142857,-3.11,1.7477142857142858,False,True,170
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,mistral,Mistral-Small-3.1-24B-Instruct-2503,w8a8_int,winogrande,83.74,80.9,-2.84,-0.4257608695652174,-1.5515217391304348,0.6999999999999998,False,False,170
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.05561224489795919,-1.5112244897959184,1.4,False,True,170
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.05561224489795919,-1.5112244897959184,1.4,False,True,170
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-8B-Instruct,w4a16,humaneval_plus,60.7,59.1,-1.6,-0.681142857142857,-3.11,1.7477142857142858,False,True,170
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,mmlu_pro,54.39,51.13,-3.26,-1.8870967741935485,-5.494193548387097,1.7200000000000002,False,True,170
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,mistral,Mistral-Small-3.1-24B-Instruct-2503,w8a8_int,truthfulqa,70.62,69.15,-1.47,-0.4257608695652174,-1.5515217391304348,0.6999999999999998,False,True,170
@@ -28580,7 +28580,7 @@ RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405
 RedHatAI/granite-3.1-2b-instruct-quantized.w4a16,granite,granite-3.1-2b-instruct,w4a16,hellaswag,75.21,73.36,-1.85,-0.7135869565217392,-3.3171739130434785,1.89,False,True,174
 RedHatAI/Qwen2.5-14B-FP8-dynamic,qwen2.5,Qwen2.5-14B,fp8_dynamic,gsm8k,84.46,83.62,-0.84,0.06279569892473116,-1.3344086021505377,1.46,False,True,174
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,0.06279569892473116,-1.3344086021505377,1.46,False,False,174
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.33345454545454545,-1.926909090909091,1.26,False,True,174
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.33345454545454545,-1.926909090909091,1.26,False,True,174
 RedHatAI/Qwen2.5-0.5B-quantized.w4a16,qwen2.5,Qwen2.5-0.5B,w4a16,hellaswag,51.83,49.15,-2.68,-0.7135869565217392,-3.3171739130434785,1.89,False,True,174
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,hellaswag,71.41,71.34,-0.07,-0.13369565217391305,-1.26,0.992608695652174,False,True,174
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,mistral,Mistral-Small-3.1-24B-Instruct-2503,w8a8_int,winogrande,83.74,80.9,-2.84,-0.33345454545454545,-1.926909090909091,1.26,False,False,174
@@ -29248,7 +29248,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,hellaswag,71.1,71.18,0.
 RedHatAI/Qwen2.5-0.5B-FP8-dynamic,qwen2.5,Qwen2.5-0.5B,fp8_dynamic,winogrande,55.8,55.56,-0.24,-0.04432692307692308,-1.18,1.091346153846154,False,True,178
 RedHatAI/granite-3.1-8b-base-FP8-dynamic,granite,granite-3.1-8b-base,fp8_dynamic,truthfulqa,51.33,51.56,0.23,-0.04432692307692308,-1.18,1.091346153846154,False,True,178
 RedHatAI/gemma-2-2b-it-quantized.w8a16,gemma-2,gemma-2-2b-it,w8a16,truthfulqa,53.22,53.13,-0.09,-0.19782608695652174,-1.26,0.8643478260869565,False,True,178
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.29255555555555557,-1.8451111111111111,1.2600000000000002,False,True,178
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.29255555555555557,-1.8451111111111111,1.2600000000000002,False,True,178
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.2632142857142856,-4.776428571428571,2.25,False,True,178
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,gsm8k,82.8,84.8,2.0,-0.29255555555555557,-1.8451111111111111,1.2600000000000002,False,False,178
 RedHatAI/Llama-3.2-1B-Instruct-FP8,llama-3,Llama-3.2-1B-Instruct,fp8,mmlu,47.66,47.76,0.1,-0.2987234042553191,-1.19,0.5925531914893618,False,True,178
@@ -29548,7 +29548,7 @@ RedHatAI/Qwen2.5-7B-FP8-dynamic,qwen2.5,Qwen2.5-7B,fp8_dynamic,hellaswag,80.17,8
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8,llama-3,Meta-Llama-3.1-8B-Instruct,fp8,hellaswag,80.46,80.4,-0.06,-0.2785714285714286,-1.52,0.962857142857143,False,True,180
 RedHatAI/Meta-Llama-3.1-8B-quantized.w8a8,llama-3,Meta-Llama-3.1-8B,w8a8_int,hellaswag,82.3,81.63,-0.67,-0.2923157894736842,-2.084631578947368,1.5,False,True,180
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-405B-Instruct,w4a16,truthfulqa,64.6,65.3,0.7,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.2923157894736842,-2.084631578947368,1.5,False,True,180
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.2923157894736842,-2.084631578947368,1.5,False,True,180
 RedHatAI/Mixtral-8x7B-v0.1-quantized.w4a16,mistral,Mixtral-8x7B-v0.1,w4a16,truthfulqa,46.65,47.18,0.53,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,truthfulqa,39.04,41.35,2.31,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w4a16,mistral,Mistral-7B-Instruct-v0.3,w4a16,arc_challenge,63.73,63.9,0.17,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
@@ -29627,7 +29627,7 @@ RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w4a16,mistral,Mistral-Small-2
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,mmlu_pro,51.89,51.5,-0.39,-0.032429906542056075,-1.4348598130841124,1.37,False,True,180
 RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-8B-Instruct,w8a8_int,mmlu_pro,30.8,30.9,0.1,-0.2923157894736842,-2.084631578947368,1.5,False,True,180
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w4a16,llama-3,Meta-Llama-3.1-70B-Instruct,w4a16,humaneval,79.7,80.5,0.8,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.032429906542056075,-1.4348598130841124,1.37,False,True,180
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.032429906542056075,-1.4348598130841124,1.37,False,True,180
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,arc_challenge,72.78,72.18,-0.6,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
 RedHatAI/Meta-Llama-3.1-8B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-8B-Instruct,fp8_dynamic,humaneval,67.3,67.3,0.0,-0.032429906542056075,-1.4348598130841124,1.37,False,True,180
 RedHatAI/Qwen2.5-1.5B-quantized.w4a16,qwen2.5,Qwen2.5-1.5B,w4a16,truthfulqa,46.57,44.49,-2.08,-0.7867708333333333,-4.3,2.7264583333333334,False,True,180
@@ -30149,7 +30149,7 @@ RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.25
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.20076923076923076,-1.44,1.0384615384615383,False,True,183
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8,llama-3,Meta-Llama-3.1-405B-Instruct,fp8,mmlu_cot,88.11,88.02,-0.09,-0.35833333333333334,-1.11,0.39333333333333337,False,True,183
 RedHatAI/granite-3.1-8b-instruct-quantized.w4a16,granite,granite-3.1-8b-instruct,w4a16,truthfulqa,60.57,60.17,-0.4,-0.6327586206896552,-3.4,2.1344827586206896,False,True,183
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.20076923076923076,-1.44,1.0384615384615383,False,True,183
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.20076923076923076,-1.44,1.0384615384615383,False,True,183
 RedHatAI/Qwen2.5-3B-quantized.w8a8,qwen2.5,Qwen2.5-3B,w8a8_int,truthfulqa,48.93,47.93,-1.0,-0.2780188679245283,-1.97,1.4139622641509433,False,True,183
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,mistral,Mistral-Small-3.1-24B-Instruct-2503,w4a16,mmlu,80.67,79.74,-0.93,-0.6327586206896552,-3.4,2.1344827586206896,False,True,183
 RedHatAI/Qwen2.5-3B-quantized.w8a8,qwen2.5,Qwen2.5-3B,w8a8_int,mmlu,65.68,64.73,-0.95,-0.2780188679245283,-1.97,1.4139622641509433,False,True,183
@@ -30800,7 +30800,7 @@ RedHatAI/gemma-2-2b-it-quantized.w8a8,gemma-2,gemma-2-2b-it,w8a8_int,winogrande,
 RedHatAI/Qwen2.5-7B-Instruct-quantized.w4a16,qwen2.5,Qwen2.5-7B-Instruct,w4a16,winogrande,74.66,74.19,-0.47,-0.7520652173913043,-4.25,2.745869565217392,False,True,187
 RedHatAI/Mistral-7B-Instruct-v0.3-FP8,mistral,Mistral-7B-Instruct-v0.3,fp8,gsm8k,49.05,47.54,-1.51,-0.3178947368421053,-1.1,0.4642105263157896,False,False,187
 RedHatAI/Meta-Llama-3.1-405B-Instruct-FP8,llama-3,Meta-Llama-3.1-405B-Instruct,fp8,hellaswag,88.54,88.54,0.0,-0.3178947368421053,-1.1,0.4642105263157896,False,True,187
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.065,-1.4,1.27,False,True,187
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.065,-1.4,1.27,False,True,187
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,winogrande,62.51,63.61,1.1,-0.065,-1.4,1.27,False,True,187
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,arc_challenge,61.6,61.52,-0.08,-0.7520652173913043,-4.25,2.745869565217392,False,True,187
 RedHatAI/Llama-3.2-1B-Instruct-quantized.w8a8,llama-3,Llama-3.2-1B-Instruct,w8a8_int,mmlu,47.66,47.95,0.29,-0.39988095238095245,-1.9699999999999998,1.170238095238095,False,True,187
@@ -32223,7 +32223,7 @@ RedHatAI/granite-3.1-2b-base-quantized.w8a8,granite,granite-3.1-2b-base,w8a8_int
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,truthfulqa,58.63,59.13,0.5,0.013483146067415722,-1.4330337078651687,1.46,False,True,196
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,hellaswag,56.52,57.79,1.27,-0.6076530612244898,-2.83,1.6146938775510202,False,True,196
 RedHatAI/Meta-Llama-3.1-70B-Instruct-FP8-dynamic,llama-3,Meta-Llama-3.1-70B-Instruct,fp8_dynamic,winogrande,85.3,84.6,-0.7,0.013483146067415722,-1.4330337078651687,1.46,False,True,196
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,0.013483146067415722,-1.4330337078651687,1.46,False,True,196
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,0.013483146067415722,-1.4330337078651687,1.46,False,True,196
 RedHatAI/Qwen2.5-32B-quantized.w8a16,qwen2.5,Qwen2.5-32B,w8a16,mmlu,83.25,83.19,-0.06,-0.08148936170212766,-2.57,2.4070212765957444,False,True,196
 RedHatAI/Meta-Llama-3.1-405B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-405B-Instruct,w8a8_int,mmlu_pro,59.7,58.4,-1.3,-0.3945,-1.44,0.6509999999999998,False,True,196
 RedHatAI/granite-3.1-2b-base-quantized.w4a16,granite,granite-3.1-2b-base,w4a16,winogrande,74.43,74.27,-0.16,-0.6076530612244898,-2.83,1.6146938775510202,False,True,196
@@ -32605,7 +32605,7 @@ RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,mistral,Mistral-Smal
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,ifeval,74.01,73.5,-0.51,-0.261340206185567,-1.42,0.897319587628866,False,True,198
 RedHatAI/Qwen2.5-14B-FP8-dynamic,qwen2.5,Qwen2.5-14B,fp8_dynamic,hellaswag,84.28,84.28,0.0,-0.20072727272727275,-1.7400000000000002,1.3385454545454545,False,True,198
 RedHatAI/Qwen2.5-3B-FP8-dynamic,qwen2.5,Qwen2.5-3B,fp8_dynamic,hellaswag,74.46,74.13,-0.33,-0.20072727272727275,-1.7400000000000002,1.3385454545454545,False,True,198
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_diamond,46.1,46.3,0.2,-0.20072727272727275,-1.7400000000000002,1.3385454545454545,False,True,198
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,llama-3,Llama-3.3-70B-Instruct,fp8_dynamic,gpqa_ambiguous_46,46.1,46.3,0.2,-0.20072727272727275,-1.7400000000000002,1.3385454545454545,False,True,198
 RedHatAI/Meta-Llama-3.1-70B-FP8,llama-3,Meta-Llama-3.1-70B,fp8,hellaswag,87.98,87.82,-0.16,-0.3505128205128205,-1.331025641025641,0.63,False,True,198
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite,granite-3.1-8b-instruct,w8a8_int,gsm8k,64.52,65.66,1.14,-0.261340206185567,-1.42,0.897319587628866,False,False,198
 RedHatAI/Qwen2.5-3B-quantized.w8a8,qwen2.5,Qwen2.5-3B,w8a8_int,gsm8k,68.23,66.26,-1.97,-0.261340206185567,-1.42,0.897319587628866,False,False,198
@@ -32763,7 +32763,7 @@ RedHatAI/granite-3.1-8b-instruct-quantized.w4a16,granite,granite-3.1-8b-instruct
 RedHatAI/Qwen2.5-7B-quantized.w8a8,qwen2.5,Qwen2.5-7B,w8a8_int,truthfulqa,56.38,56.38,0.0,-0.3598837209302326,-1.5097674418604652,0.79,False,True,199
 RedHatAI/gemma-2-2b-it-quantized.w8a8,gemma-2,gemma-2-2b-it,w8a8_int,truthfulqa,53.22,53.19,-0.03,-0.3598837209302326,-1.5097674418604652,0.79,False,True,199
 RedHatAI/Meta-Llama-3.1-70B-Instruct-quantized.w8a8,llama-3,Meta-Llama-3.1-70B-Instruct,w8a8_int,arc_challenge,93.3,93.1,-0.2,-0.3598837209302326,-1.5097674418604652,0.79,False,True,199
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_diamond,46.1,46.44,0.34,-0.3598837209302326,-1.5097674418604652,0.79,False,True,199
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,llama-3,Llama-3.3-70B-Instruct,w8a8_int,gpqa_ambiguous_46,46.1,46.44,0.34,-0.3598837209302326,-1.5097674418604652,0.79,False,True,199
 RedHatAI/Mistral-7B-Instruct-v0.3-quantized.w4a16,mistral,Mistral-7B-Instruct-v0.3,w4a16,mmlu,61.84,60.83,-1.01,-0.4589285714285714,-3.11,2.192142857142857,False,True,199
 RedHatAI/Mixtral-8x7B-v0.1-quantized.w4a16,mistral,Mixtral-8x7B-v0.1,w4a16,arc_challenge,66.55,65.61,-0.94,-0.4589285714285714,-3.11,2.192142857142857,False,True,199
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.0545714285714285,-7.2791428571428565,5.17,False,True,199

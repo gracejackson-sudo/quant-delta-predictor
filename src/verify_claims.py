@@ -1061,7 +1061,8 @@ def registry():
         "rows still under the plain 'gpqa' label after Tier 2.5 v4 "
         "(expected 0 -- every row now carries a card-verified label)")
     for _lbl in ("gpqa_main", "gpqa_main_norm", "gpqa_main_cot_5shot",
-                 "gpqa_diamond", "gpqa_diamond_cot_5shot"):
+                 "gpqa_diamond", "gpqa_diamond_cot_5shot",
+                 "gpqa_ambiguous_46"):
         add(f"n_rows_{_lbl}", int((d.benchmark == _lbl).sum()), 0,
             f"rows carrying the card-verified {_lbl} label")
 

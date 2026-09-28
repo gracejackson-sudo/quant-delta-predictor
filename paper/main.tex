@@ -691,29 +691,35 @@ survived---would misrepresent how the result was obtained.
     at 60 folds. A staleness gate now fails if any consumed artifact
     predates \texttt{data/dataset.csv}, so this class of silent-stale
     cannot repeat.
-  \item \emph{GPQA was five protocols under one label.} The label
-    \texttt{gpqa} in the harvested corpus was found to conflate at
-    least five distinct GPQA evaluation protocols. Inspection of every
-    RedHatAI card that reported a GPQA figure gives the following
-    verbatim card labels and row counts, which we now carry under
-    protocol-specific labels rather than one collapsed \texttt{gpqa}:
-    \texttt{GPQA (0-shot)} $\to$ \texttt{gpqa\_main} (15 rows);
+  \item \emph{GPQA was multiple protocols under one label.} The label
+    \texttt{gpqa} in the harvested corpus conflated several distinct
+    GPQA evaluation protocols. Every card was reopened and the label
+    text taken from the card itself rather than inferred from the
+    value; the result is the following mapping (verbatim card string
+    $\to$ corpus label, row counts in raw dataset.csv):
+    \texttt{GPQA (0-shot)} $\to$ \texttt{gpqa\_main} (15);
     \texttt{GPQA (Acc-Norm, 0-shot)} $\to$ \texttt{gpqa\_main\_norm}
-    (8 rows); \texttt{GPQA CoT main (5-shot)} $\to$
-    \texttt{gpqa\_main\_cot\_5shot} (2 rows);
-    \texttt{GPQA (Diamond, 0-shot)} $\to$ \texttt{gpqa\_diamond}
-    (8 rows); \texttt{GPQA CoT diamond (5-shot)} $\to$
-    \texttt{gpqa\_diamond\_cot\_5shot} (1 row). The first-table-wins
-    dedup that produced the earlier \texttt{gpqa} label kept whichever
-    protocol each card listed first, so a single label mixed 0-shot
-    unnormalised, 0-shot Acc-Norm, and 5-shot CoT scoring against both
-    Main and Diamond subsets. We relabel rather than drop: the
-    measurements are real under their respective protocols. Four rows
-    lie under the modeling-set filter's chance floor
-    (\texttt{acc\_before}$\geq$\MinAccBefore\%) and are excluded from the fitted
-    set exactly as before; the split does not add or remove
-    modelling-set rows. Every GPQA row now carries a card-verified
-    protocol label; the harvester should adopt the same split so
+    (8);
+    \texttt{GPQA CoT main (5-shot)} $\to$
+    \texttt{gpqa\_main\_cot\_5shot} (2);
+    \texttt{GPQA diamond} $\to$ \texttt{gpqa\_diamond} (6);
+    \texttt{GPQA CoT diamond (5-shot)} $\to$
+    \texttt{gpqa\_diamond\_cot\_5shot} (1).
+    Two Llama-3.3-70B-Instruct rows (FP8-dynamic and w8a8) at
+    \texttt{acc\_before} $\approx$ 46.10 come from cards that carry
+    only the string \texttt{GPQA (0-shot)} -- the same string used for
+    the low-baseline \texttt{gpqa\_main} rows -- yet report a value
+    that disagrees with the same checkpoint's NVFP4 row's \texttt{GPQA
+    (0-shot)} = 31.63 by 14pp. These 2 rows carry the placeholder label
+    \texttt{gpqa\_ambiguous\_46}: the card does not resolve which
+    protocol they measure, and we do not infer from the value. An
+    earlier version of this paragraph asserted that 8 rows carried
+    the string \texttt{GPQA (Diamond, 0-shot)}. That was wrong: no row
+    in the corpus carries that exact string. Corrected here from the
+    cards. Four rows lie under the modeling-set filter's chance floor
+    (\texttt{acc\_before}$\geq$\MinAccBefore\%) and are excluded from the
+    fitted set exactly as before; the split does not add or remove
+    modelling-set rows. The harvester should adopt this split so
     future corpora do not re-introduce the conflation.
   \item \emph{Nine pre-registered prospective repos were dropped by a
     name-gate.} The prospective set was pre-registered as

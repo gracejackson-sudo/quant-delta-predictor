@@ -7,7 +7,7 @@
         "bench_mean": 0.4513901070519893,
         "scheme_mean": 0.3937341764940267,
         "scheme_x_bench": 0.37639282206543573,
-        "ridge": 0.39423607461364396,
+        "ridge": 0.39450652650764884,
         "grad_boost": 0.43612416499183687,
         "n": 59
       },
@@ -17,17 +17,17 @@
         "bench_mean": 0.855327299767386,
         "scheme_mean": 0.7456146999087953,
         "scheme_x_bench": 0.7875333342183727,
-        "ridge": 0.833873558424068,
+        "ridge": 0.83350571059906,
         "grad_boost": 0.9299395093372906,
         "n": 114
       },
       {
         "family": "llama-3",
         "global_mean": 0.6510610590390002,
-        "bench_mean": 0.6737092083858449,
+        "bench_mean": 0.6763680283240765,
         "scheme_mean": 0.6207553696971796,
-        "scheme_x_bench": 0.7031215255338621,
-        "ridge": 0.6947767943920659,
+        "scheme_x_bench": 0.6962323756676129,
+        "ridge": 0.6969088348949917,
         "grad_boost": 0.6462841416290549,
         "n": 273
       },
@@ -37,7 +37,7 @@
         "bench_mean": 0.8531272524133908,
         "scheme_mean": 0.8328911868443312,
         "scheme_x_bench": 0.8183295074504785,
-        "ridge": 0.83197491530303,
+        "ridge": 0.832162948448214,
         "grad_boost": 0.8629902524947037,
         "n": 108
       },
@@ -47,17 +47,17 @@
         "bench_mean": 0.5348841212523576,
         "scheme_mean": 0.512232420927941,
         "scheme_x_bench": 0.5095315788866986,
-        "ridge": 0.5660958562705647,
+        "ridge": 0.5653581223835116,
         "grad_boost": 0.6114097955399869,
         "n": 162
       },
       {
         "family": "qwen3",
         "global_mean": 1.369244703799989,
-        "bench_mean": 1.367501565500085,
+        "bench_mean": 1.3754140606602152,
         "scheme_mean": 1.3978974063050476,
-        "scheme_x_bench": 1.4520214213173706,
-        "ridge": 1.4334811006195427,
+        "scheme_x_bench": 1.4633828074559845,
+        "ridge": 1.448974462989334,
         "grad_boost": 1.3495766818487545,
         "n": 101
       }
@@ -65,9 +65,9 @@
     "weighted": {
       "scheme_mean": 0.7243796163236282,
       "global_mean": 0.7552763738661187,
-      "scheme_x_bench": 0.760729521677908,
-      "bench_mean": 0.7649554117477623,
-      "ridge": 0.7764234879592598,
+      "scheme_x_bench": 0.7598320456516093,
+      "bench_mean": 0.7668220211165632,
+      "ridge": 0.7788980208311329,
       "grad_boost": 0.7793617863859628
     }
   },
@@ -168,20 +168,20 @@
         "analytic_se": 0.5258049828823214
       },
       {
-        "benchmark": "gsm8k",
-        "n_all": 98,
-        "sd_all": 2.124118648678305,
-        "n_lossless": 35,
-        "sd_lossless": 2.0950116824447145,
-        "analytic_se": 1.577201461164682
-      },
-      {
         "benchmark": "arc_challenge",
         "n_all": 98,
         "sd_all": 0.7738382155475292,
         "n_lossless": 35,
         "sd_lossless": 0.6898306941232913,
         "analytic_se": 1.8176686856387976
+      },
+      {
+        "benchmark": "gsm8k",
+        "n_all": 98,
+        "sd_all": 2.124118648678305,
+        "n_lossless": 35,
+        "sd_lossless": 2.0950116824447145,
+        "analytic_se": 1.577201461164682
       },
       {
         "benchmark": "humaneval",
@@ -256,14 +256,6 @@
         "analytic_se": 2.9543199927664436
       },
       {
-        "benchmark": "gpqa_diamond",
-        "n_all": 8,
-        "sd_all": 1.8638420380646914,
-        "n_lossless": 4,
-        "sd_lossless": 1.102164537020978,
-        "analytic_se": 3.2551508677810452
-      },
-      {
         "benchmark": "gpqa_main_norm",
         "n_all": 6,
         "sd_all": 1.022945094649105,
@@ -280,12 +272,28 @@
         "analytic_se": 3.019484675880641
       },
       {
+        "benchmark": "gpqa_diamond",
+        "n_all": 6,
+        "sd_all": 2.198050651524361,
+        "n_lossless": 3,
+        "sd_lossless": 0.2886751345948129,
+        "analytic_se": 3.2300053534904065
+      },
+      {
         "benchmark": "gpqa_main_cot_5shot",
         "n_all": 2,
         "sd_all": 1.7394826817189069,
         "n_lossless": 0,
         "sd_lossless": NaN,
         "analytic_se": 3.304274220611843
+      },
+      {
+        "benchmark": "gpqa_ambiguous_46",
+        "n_all": 2,
+        "sd_all": 0.09899494936611666,
+        "n_lossless": 1,
+        "sd_lossless": NaN,
+        "analytic_se": 3.330587410652961
       },
       {
         "benchmark": "gpqa_diamond_cot_5shot",

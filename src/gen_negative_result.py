@@ -78,7 +78,7 @@ def main():
       "very different sizes and difficulty. Broken out, the "
       "per-scheme mean (the best predictor we found) ranges from "
       f"{n('lofo_scheme_mean_min','{:.2f}')}pp on gemma-2 (the "
-      "smallest fold, 59 rows) to "
+      f"smallest fold, {n('gemma2_fold_rows')} rows) to "
       f"{n('lofo_scheme_mean_max','{:.2f}')}pp on qwen3 (the "
       f"second-smallest, at {n('qwen3_fold_rows')} rows), against a pooled "
       f"{n('pred_mae::scheme_mean','{:.2f}')}pp. The predictor beats "

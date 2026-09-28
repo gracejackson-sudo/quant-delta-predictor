@@ -1450,14 +1450,16 @@ def test_mae_floor_and_global_lofo_come_from_live_computation():
     assert "mae_floor_excluded_benchmarks" in R, (
         "Tier 2.7 requires exposure of the benchmark-exclusion count in "
         "the registry so the disclosure cannot be dropped silently")
-    # Under the current corpus (Tier 2.5 v4) exactly six benchmarks are
-    # excluded from the MAE floor: arena_hard, musr, and four of the
-    # five gpqa* labels (gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot,
-    # gpqa_diamond_cot_5shot). Only gpqa_diamond has enough
-    # lossless-scheme rows (4 of 8) to qualify. If this count moves,
-    # verify the new set of excluded benchmarks and update the §9
-    # audit note before prose moves.
-    assert R["mae_floor_excluded_benchmarks"] == 6, (
+    # Under the current corpus (C3 fresh) exactly eight benchmarks are
+    # excluded from the MAE floor: arena_hard, musr, and all six gpqa*
+    # variants (gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot,
+    # gpqa_diamond, gpqa_diamond_cot_5shot, gpqa_ambiguous_46). Before
+    # C3 fresh the 8 gpqa_diamond rows had 4 lossless-scheme rows and
+    # qualified; after 2 rows moved to gpqa_ambiguous_46, gpqa_diamond
+    # dropped to 6 rows / 2 lossless and now fails the >=4 lossless
+    # gate. If this count moves, verify the new set of excluded
+    # benchmarks and update §9 before prose moves.
+    assert R["mae_floor_excluded_benchmarks"] == 8, (
         f"mae_floor benchmark-exclusion count changed to "
         f"{R['mae_floor_excluded_benchmarks']}. Verify the new set of "
         f"excluded benchmarks and update the audit note before the "
@@ -1726,56 +1728,116 @@ def test_max_benchmarks_per_run_paper_prose_matches_registry():
             f"§9 must use the \\MaxBenchmarksPerRun{{}} macro")
 
 
-def test_gpqa_labels_match_authoritative_card_labels():
-    """Tier 2.5 v4 plant test (day-7 audit): every GPQA row in the
-    dataset carries the authoritative protocol label taken verbatim
-    from the source RedHatAI card. Card inspection covered ALL 34 GPQA
-    rows (not only the four dual-baseline checkpoints), and found five
-    distinct protocols:
-      gpqa_main               - "GPQA (0-shot)"
-      gpqa_main_norm          - "GPQA (Acc-Norm, 0-shot)"
-      gpqa_main_cot_5shot     - "GPQA CoT main (5-shot)"
-      gpqa_diamond            - "GPQA (Diamond, 0-shot)"
-      gpqa_diamond_cot_5shot  - "GPQA CoT diamond (5-shot)"
+def test_gpqa_corpus_label_matches_card_label_per_row():
+    """C3b (day-7 audit, replacing the v4 count-based test): for every
+    GPQA row in the corpus, OPEN the source card, extract the label
+    string(s) that carry a value equal to acc_before, and verify the
+    corpus label agrees with what the card actually says.
 
-    This test enforces:
-      (a) plain 'gpqa' label no longer exists (would collapse protocols
-          again);
-      (b) no dual-baseline drift remains under any gpqa* label;
-      (c) the five expected labels are all present with the row counts
-          the audit's card inspection produced."""
+    Files READ:
+      * data/dataset.csv (every row whose benchmark starts with 'gpqa')
+      * data/rh_card_scan_2026_09_26/RedHatAI_<model>.md for each row
+
+    A row PASSES iff the card carries a GPQA table with a value within
+    0.5 of acc_before AND the label of that table string-matches the
+    corpus label under the following whitelist (verbatim card string
+    -> corpus label):
+
+      "GPQA (0-shot)"             -> gpqa_main
+      "GPQA (Acc-Norm, 0-shot)"   -> gpqa_main_norm
+      "GPQA CoT main (5-shot)"    -> gpqa_main_cot_5shot
+      "GPQA diamond"              -> gpqa_diamond
+      "GPQA CoT diamond (5-shot)" -> gpqa_diamond_cot_5shot
+      "GPQA (0-shot)"             -> gpqa_ambiguous_46
+        (only when the value contradicts a same-checkpoint sister
+         row's value under the same string by >5pp -- documented in §9)
+
+    Planted failures this catches (each is a real thing that would
+    break the corpus and that the earlier count-based test missed):
+      * Relabel a row without card evidence: the card lookup returns
+        a string that doesn't match the corpus label; the assertion
+        names the row, the card path, and the string the card actually
+        carries.
+      * Move a row into a variant the card doesn't have: the value
+        won't appear on the card at all; the test names the missing
+        value and lists what the card DOES carry.
+      * Add a new gpqa* corpus label without adding it to the whitelist:
+        rows carrying the new label have no allowed card string; the
+        assertion names the unknown label and the offending rows.
+
+    A test that checks counts (which the earlier version did) does NOT
+    catch any of these -- a mislabeled corpus can produce the same
+    counts as a correctly-labeled one. This test opens the cards."""
+    import re
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
     d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
-    # (a) no plain 'gpqa' anywhere
-    assert (d.benchmark == "gpqa").sum() == 0, (
-        "plain 'gpqa' label re-appeared; Tier 2.5 v4 requires every "
-        "GPQA row to carry a card-verified specific protocol label")
-    # (b) no dual-baseline conflict under any gpqa* label
-    offenders = []
-    for (bm, b), g in d.groupby(["base_model", "benchmark"]):
-        if not b.startswith("gpqa"):
-            continue
-        acc = sorted(g.acc_before.unique())
-        if len(acc) >= 2 and (max(acc) - min(acc)) > 5.0:
-            offenders.append((bm, b, acc))
-    assert not offenders, (
-        "gpqa* dual-baseline conflict re-appeared:\n"
-        + "\n".join(f"  {bm} / {b}: baselines={acc}"
-                    for bm, b, acc in offenders))
-    # (c) expected row counts, per the card inspection
-    expected = {
-        "gpqa_main":              15,
-        "gpqa_main_norm":          8,
-        "gpqa_main_cot_5shot":     2,
-        "gpqa_diamond":            8,
-        "gpqa_diamond_cot_5shot":  1,
+    gpqa = d[d.benchmark.str.startswith("gpqa")]
+    # Whitelist: which card strings are allowed under which corpus label.
+    ALLOWED = {
+        "gpqa_main":              {"GPQA (0-shot)"},
+        "gpqa_main_norm":         {"GPQA (Acc-Norm, 0-shot)"},
+        "gpqa_main_cot_5shot":    {"GPQA CoT main (5-shot)"},
+        "gpqa_diamond":           {"GPQA diamond"},
+        "gpqa_diamond_cot_5shot": {"GPQA CoT diamond (5-shot)"},
+        "gpqa_ambiguous_46":      {"GPQA (0-shot)"},   # documented in §9
     }
-    for label, want in expected.items():
-        got = int((d.benchmark == label).sum())
-        assert got == want, (
-            f"{label}: {got} rows, expected {want} per the card "
-            f"inspection recorded in the Tier 2.5 v4 audit note")
+    card_dir = os.path.join(root, "data", "rh_card_scan_2026_09_26")
+    unknown_labels = sorted(set(gpqa.benchmark.unique()) - set(ALLOWED))
+    assert not unknown_labels, (
+        f"Unknown gpqa* corpus labels in dataset.csv: {unknown_labels}. "
+        f"Add each to the ALLOWED whitelist above with the verbatim "
+        f"card string it maps to, or fix the dataset row(s)."
+    )
+    failures = []
+    for _, row in gpqa.iterrows():
+        card_path = os.path.join(
+            card_dir, row.model.replace("RedHatAI/", "RedHatAI_") + ".md")
+        if not os.path.exists(card_path):
+            failures.append(
+                f"{row.model} scheme={row.scheme}: card not found at "
+                f"{card_path}")
+            continue
+        text = open(card_path, encoding="utf-8", errors="ignore").read()
+        # Find any GPQA table with a value within 0.5 of acc_before.
+        hits: set[str] = set()
+        # HTML two-cell rows (multi-line or single-line)
+        for m in re.finditer(
+                r"<td>\s*(GPQA[^<\n]*?)\s*</td>[\s\n]*<td>\s*([\d.]+)",
+                text, re.I):
+            if abs(float(m.group(2)) - row.acc_before) < 0.5:
+                hits.add(m.group(1).strip())
+        # Pipe-table rows
+        for m in re.finditer(
+                r"^\s*\|\s*(GPQA[^|]*?)\s*\|\s*([\d.]+)\s*\|",
+                text, re.I | re.M):
+            if abs(float(m.group(2)) - row.acc_before) < 0.5:
+                hits.add(m.group(1).strip())
+        # HTML blocks with value on its own line
+        for m in re.finditer(
+                r"<td>\s*(GPQA[^\n<]*)\s*\n?\s*</td>\s*\n?\s*<td>"
+                r"\s*([\d.]+)\s*\n?\s*</td>",
+                text, re.I | re.S):
+            if abs(float(m.group(2)) - row.acc_before) < 0.5:
+                hits.add(m.group(1).strip())
+        if not hits:
+            failures.append(
+                f"{row.model} scheme={row.scheme} corpus_label="
+                f"{row.benchmark}: no GPQA row in the card carries "
+                f"a value close to acc_before={row.acc_before}. "
+                f"card={card_path}")
+            continue
+        allowed = ALLOWED[row.benchmark]
+        if not (hits & allowed):
+            failures.append(
+                f"{row.model} scheme={row.scheme} corpus_label="
+                f"{row.benchmark} (acc_before={row.acc_before}): card "
+                f"carries {sorted(hits)!r} at that value; the "
+                f"corpus label allows only {sorted(allowed)!r}. "
+                f"card={card_path}")
+    assert not failures, (
+        "Corpus GPQA labels do not agree with card labels row-by-row:\n"
+        + "\n".join(f"  * {f}" for f in failures))
 
 
 def test_dataset_row_count_pinned_at_817():

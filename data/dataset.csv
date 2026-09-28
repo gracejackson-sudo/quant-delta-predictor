@@ -837,9 +837,9 @@ RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,8.0,1,w8a8_int,8,8,int,smoothquant,musr,756,46.01,44.3,-1.71,arith,1
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,8.0,1,w8a8_int,8,8,int,smoothquant,mmlu_pro,12032,35.81,35.41,-0.4,arith,1
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,8.0,1,w8a8_int,8,8,int,smoothquant,humaneval,164,71.0,70.5,-0.5,arith,1
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,46.1,46.3,0.2,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,gpqa_ambiguous_46,448,46.1,46.3,0.2,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,gpqa_main,448,31.63,32.21,0.58,arith,1
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,gpqa_diamond,448,46.1,46.44,0.34,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,gpqa_ambiguous_46,448,46.1,46.44,0.34,arith,1
 RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,61.62,64.14,2.52,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,gpqa_main,448,27.43,26.59,-0.84,arith,1
 RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,61.62,61.11,-0.51,arith,1

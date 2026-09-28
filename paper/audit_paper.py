@@ -84,6 +84,11 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "60",        # Regime C fold count under 6-family
           "89.15",     # pre-regen Regime C mondrian coverage
           "40",        # "roughly 40% narrower" qualitative (already exempt via string)
+          # C3 fresh (day-7 audit) §9 gpqa bullet quotes the two acc_before
+          # values on the disputed rows: 31.63 (Llama-3.3 NVFP4 "GPQA (0-shot)")
+          # and 46.10 (Llama-3.3 FP8-dynamic and w8a8 "GPQA (0-shot)").
+          # They are the concrete numbers the ambiguity note points at.
+          "31.63", "46.10",
           "40",    # 40 GB VRAM (A100-SXM4-40GB, on which the day-6 rerun OOM'd)
           "80",    # 80 GB VRAM (the hardware that would make the 3B extension fit)
           "0.85",  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression

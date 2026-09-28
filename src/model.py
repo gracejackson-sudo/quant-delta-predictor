@@ -28,6 +28,13 @@ BENCH_LEVELS = [
     "winogrande", "truthfulqa", "ifeval", "bbh", "math_lvl5",
     "gpqa_main", "gpqa_main_norm", "gpqa_main_cot_5shot",
     "gpqa_diamond", "gpqa_diamond_cot_5shot",
+    "gpqa_ambiguous_46",  # C3 fresh: 2 Llama-3.3 rows whose card only
+                          # carries "GPQA (0-shot)" but with a value
+                          # that contradicts the same checkpoint's NVFP4
+                          # row under the same string. Cannot be
+                          # honestly assigned to a variant from the card
+                          # text alone; the label is a placeholder so
+                          # the rows are still featurised uniformly.
     "musr", "humaneval", "humaneval_plus", "arena_hard",
 ]
 METHOD_LEVELS = ["gptq", "smoothquant", "smoothquant+gptq", "rtn", "awq", "unknown"]
