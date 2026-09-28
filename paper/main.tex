@@ -642,24 +642,30 @@ survived---would misrepresent how the result was obtained.
     the shipped pipeline reports the pooled figure, and the reader
     should know what the pool contains.
   \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, and the strict figure is now \ProspInside/\ProspN. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about.
-  \item \emph{GPQA was two protocols under one label; the corpus was
-    relabelled, not dropped.} Four checkpoints
-    (Llama-3.3-70B-Instruct and Qwen3-\{8B, 14B, 32B\}) shipped two
-    GPQA tables in their RedHatAI cards, labelled
-    \texttt{GPQA (0-shot)} (near-chance $\sim$25--32\%) and
-    \texttt{GPQA (Diamond, 0-shot)} (well above chance $\sim$46--67\%);
-    inspection of the raw cards confirms the mapping. The harvester's
-    first-table-wins dedup silently kept whichever the card listed
-    first, so across quantization schemes on the same checkpoint the
-    label \texttt{gpqa} carried two different baselines. We relabelled
-    the eight high-baseline rows to \texttt{gpqa\_diamond} and the four
-    low-baseline rows to \texttt{gpqa\_main} rather than dropping
-    them: they are real measurements under distinct protocols. The
-    other \GpqaOtherRows{} \texttt{gpqa} rows come from cards that
-    listed only one GPQA table and are kept under the plain label
-    without over-asserting which specific variant each measures; a
-    reader who needs a uniform label should re-harvest from the cards
-    and split those too.
+  \item \emph{GPQA was five protocols under one label.} The label
+    \texttt{gpqa} in the harvested corpus was found to conflate at
+    least five distinct GPQA evaluation protocols. Inspection of every
+    RedHatAI card that reported a GPQA figure gives the following
+    verbatim card labels and row counts, which we now carry under
+    protocol-specific labels rather than one collapsed \texttt{gpqa}:
+    \texttt{GPQA (0-shot)} $\to$ \texttt{gpqa\_main} (15 rows);
+    \texttt{GPQA (Acc-Norm, 0-shot)} $\to$ \texttt{gpqa\_main\_norm}
+    (8 rows); \texttt{GPQA CoT main (5-shot)} $\to$
+    \texttt{gpqa\_main\_cot\_5shot} (2 rows);
+    \texttt{GPQA (Diamond, 0-shot)} $\to$ \texttt{gpqa\_diamond}
+    (8 rows); \texttt{GPQA CoT diamond (5-shot)} $\to$
+    \texttt{gpqa\_diamond\_cot\_5shot} (1 row). The first-table-wins
+    dedup that produced the earlier \texttt{gpqa} label kept whichever
+    protocol each card listed first, so a single label mixed 0-shot
+    unnormalised, 0-shot Acc-Norm, and 5-shot CoT scoring against both
+    Main and Diamond subsets. We relabel rather than drop: the
+    measurements are real under their respective protocols. Four rows
+    lie under the modeling-set filter's chance floor
+    (\texttt{acc\_before}$\geq$\MinAccBefore\%) and are excluded from the fitted
+    set exactly as before; the split does not add or remove
+    modelling-set rows. Every GPQA row now carries a card-verified
+    protocol label; the harvester should adopt the same split so
+    future corpora do not re-introduce the conflation.
   \item \emph{Nine pre-registered prospective repos were dropped by a
     name-gate.} The prospective set was pre-registered as
     \ProspRegisteredRepos{} repositories. The harvester requires a

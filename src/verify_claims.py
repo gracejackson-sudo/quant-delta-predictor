@@ -81,9 +81,9 @@ def registry():
     add("n_checkpoints", meta["n_checkpoints"], 0, "distinct base models")
     add("n_families", meta["n_families"], 0, "distinct families")
     add("n_benchmarks", int(d.benchmark.nunique()), 0,
-        "distinct benchmarks in the modeling set (Tier 2.5 v3 split "
-        "GPQA into gpqa_main / gpqa_diamond for the four flagged "
-        "checkpoints, so the count grew from 16 to 18)")
+        "distinct benchmarks in the modeling set (Tier 2.5 v4 split "
+        "the plain 'gpqa' label into five card-verified protocol "
+        "labels, so the count grew from 16 to 20)")
 
     for key, cell in cc["cells"].items():
         add(f"cell_coverage_pct::{key}", cell["coverage"] * 100, 0.05,
@@ -265,10 +265,20 @@ def registry():
             f"rank-2 variance, base rows only, {_k} benchmarks")
     add("t2b_filled_global_mean_pct", 100 * float(_M2.isna().to_numpy().mean()), 0.05,
         "share of cells the original variance figure filled with one mean")
-    for _b in ("gpqa", "musr"):
-        _nb = _t2.best_neighbour(_M2, _b)
-        add(f"t2b_corr_{_b}", _nb[0], 0.005, f"strongest neighbour correlation, {_b}")
-        add(f"t2b_corr_{_b}_overlap", _nb[2], 0, f"rows behind that correlation, {_b}")
+    # Tier 2.5 v4 (day-7 audit): the plain 'gpqa' column no longer
+    # exists in the corpus (split into gpqa_main / gpqa_main_norm /
+    # gpqa_main_cot_5shot / gpqa_diamond / gpqa_diamond_cot_5shot per
+    # the RedHatAI cards). Use gpqa_main as the representative here --
+    # it is the largest of the five (15 rows) and matches the label the
+    # external commenter's remark was about; the other four are
+    # separately available under their own names.
+    for _b in ("gpqa_main", "musr"):
+        if _b in _M2.columns:
+            _nb = _t2.best_neighbour(_M2, _b)
+            add(f"t2b_corr_{_b}", _nb[0], 0.005,
+                f"strongest neighbour correlation, {_b}")
+            add(f"t2b_corr_{_b}_overlap", _nb[2], 0,
+                f"rows behind that correlation, {_b}")
     t2bp = os.path.join(HERE, "..", "out", "track2_benchpress.json")
     if os.path.exists(t2bp):
         _sm = json.load(open(t2bp))["summary"]
@@ -949,13 +959,18 @@ def registry():
     _gem = [-3.03, -2.99, -2.90, -2.41, -1.34, 1.40]
     _EPS_gem = 1e-9
     _lo_gem, _hi_gem = -2.87, 1.40
-    # Tier 2.5 v3: how many plain-'gpqa' rows remain after the four
-    # flagged checkpoints were relabelled to gpqa_main / gpqa_diamond.
-    # Registered so §9 can reference it.
+    # Tier 2.5 v4: after inspecting EVERY GPQA card the plain 'gpqa'
+    # label should be gone (all rows carry a card-verified specific
+    # protocol label). Registered at 0 so a future re-introduction of
+    # 'gpqa' would fail the audit rather than silently return.
     add("gpqa_other_rows",
         int((d.benchmark == "gpqa").sum()), 0,
-        "rows still under the plain 'gpqa' label after Tier 2.5 v3 "
-        "(cards that listed only one GPQA table)")
+        "rows still under the plain 'gpqa' label after Tier 2.5 v4 "
+        "(expected 0 -- every row now carries a card-verified label)")
+    for _lbl in ("gpqa_main", "gpqa_main_norm", "gpqa_main_cot_5shot",
+                 "gpqa_diamond", "gpqa_diamond_cot_5shot"):
+        add(f"n_rows_{_lbl}", int((d.benchmark == _lbl).sum()), 0,
+            f"rows carrying the card-verified {_lbl} label")
 
     add("gemma_1b_wfour_caught",
         int(sum(1 for _x in _gem

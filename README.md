@@ -142,7 +142,7 @@ python3 verify/independent_check.py
 
 850 rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102
 [RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38 base checkpoints, 8 model
-families, 6 quantization schemes and 18 benchmarks (gpqa_main and gpqa_diamond are separate labels for four checkpoints where the card carried two GPQA protocols; see the §9 audit note). Every three-column row is verified against
+families, 6 quantization schemes and 20 benchmarks (GPQA is split across five card-verified protocol labels — gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot, gpqa_diamond, gpqa_diamond_cot_5shot — because the raw RedHatAI cards report as many as five different GPQA protocols and the earlier collapsed label conflated them; see the §9 audit note). Every three-column row is verified against
 the card's own printed Recovery percentage; internally inconsistent rows are rejected rather than
 guessed at.
 

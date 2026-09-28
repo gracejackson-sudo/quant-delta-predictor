@@ -1450,14 +1450,14 @@ def test_mae_floor_and_global_lofo_come_from_live_computation():
     assert "mae_floor_excluded_benchmarks" in R, (
         "Tier 2.7 requires exposure of the benchmark-exclusion count in "
         "the registry so the disclosure cannot be dropped silently")
-    # Under the current corpus exactly four benchmarks are excluded:
-    # arena_hard, gpqa_main, gpqa_diamond, musr. (Pre-Tier-2.5-v3 the
-    # count was 3 with plain gpqa excluded and gpqa_main/gpqa_diamond
-    # non-existent; after the v3 split the count is 4 because each of
-    # the new gpqa_* labels has fewer than 4 lossless-scheme rows.)
-    # If a future data change moves this count, verify the new set of
-    # excluded benchmarks and update the audit note before prose moves.
-    assert R["mae_floor_excluded_benchmarks"] == 4, (
+    # Under the current corpus (Tier 2.5 v4) exactly six benchmarks are
+    # excluded from the MAE floor: arena_hard, musr, and four of the
+    # five gpqa* labels (gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot,
+    # gpqa_diamond_cot_5shot). Only gpqa_diamond has enough
+    # lossless-scheme rows (4 of 8) to qualify. If this count moves,
+    # verify the new set of excluded benchmarks and update the §9
+    # audit note before prose moves.
+    assert R["mae_floor_excluded_benchmarks"] == 6, (
         f"mae_floor benchmark-exclusion count changed to "
         f"{R['mae_floor_excluded_benchmarks']}. Verify the new set of "
         f"excluded benchmarks and update the audit note before the "
@@ -1510,27 +1510,31 @@ def test_regime_b_seed_is_stable_across_processes():
 
 
 def test_gpqa_labels_match_authoritative_card_labels():
-    """Tier 2.5 v3 plant test (day-7 audit): the four flagged checkpoints
-    (Llama-3.3-70B-Instruct + Qwen3-{8B,14B,32B}) each shipped two GPQA
-    tables in their raw RedHatAI cards, labelled 'GPQA (0-shot)' (the
-    main variant, near-chance ~25-32%) and 'GPQA (Diamond, 0-shot)'
-    (the diamond variant, well-above-chance ~46-67%). Card inspection
-    confirmed the mapping; the dataset now carries the authoritative
-    labels rather than a placeholder gpqa_v2.
+    """Tier 2.5 v4 plant test (day-7 audit): every GPQA row in the
+    dataset carries the authoritative protocol label taken verbatim
+    from the source RedHatAI card. Card inspection covered ALL 34 GPQA
+    rows (not only the four dual-baseline checkpoints), and found five
+    distinct protocols:
+      gpqa_main               - "GPQA (0-shot)"
+      gpqa_main_norm          - "GPQA (Acc-Norm, 0-shot)"
+      gpqa_main_cot_5shot     - "GPQA CoT main (5-shot)"
+      gpqa_diamond            - "GPQA (Diamond, 0-shot)"
+      gpqa_diamond_cot_5shot  - "GPQA CoT diamond (5-shot)"
 
-    (a) No baseline-drift conflict remains under any of the three
-        gpqa* labels.
-    (b) gpqa_main is present for exactly the 4 flagged checkpoints.
-    (c) gpqa_diamond is present for exactly the same 4 checkpoints.
-    (d) For each flagged checkpoint, gpqa_main baselines sit strictly
-        below gpqa_diamond baselines (matches card measurements).
-    (e) Plain 'gpqa' is preserved for the remaining 22 rows from other
-        checkpoints; those cards listed only one GPQA table and we do
-        not over-label them without card-by-card verification."""
+    This test enforces:
+      (a) plain 'gpqa' label no longer exists (would collapse protocols
+          again);
+      (b) no dual-baseline drift remains under any gpqa* label;
+      (c) the five expected labels are all present with the row counts
+          the audit's card inspection produced."""
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
     d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
-    # (a) no dual-baseline conflict left under any gpqa* label
+    # (a) no plain 'gpqa' anywhere
+    assert (d.benchmark == "gpqa").sum() == 0, (
+        "plain 'gpqa' label re-appeared; Tier 2.5 v4 requires every "
+        "GPQA row to carry a card-verified specific protocol label")
+    # (b) no dual-baseline conflict under any gpqa* label
     offenders = []
     for (bm, b), g in d.groupby(["base_model", "benchmark"]):
         if not b.startswith("gpqa"):
@@ -1542,32 +1546,19 @@ def test_gpqa_labels_match_authoritative_card_labels():
         "gpqa* dual-baseline conflict re-appeared:\n"
         + "\n".join(f"  {bm} / {b}: baselines={acc}"
                     for bm, b, acc in offenders))
-    flagged = {"Llama-3.3-70B-Instruct", "Qwen3-8B",
-               "Qwen3-14B", "Qwen3-32B"}
-    # (b) + (c)
-    main = d[d.benchmark == "gpqa_main"]
-    diamond = d[d.benchmark == "gpqa_diamond"]
-    assert set(main.base_model.unique()) == flagged, (
-        f"gpqa_main should cover exactly the 4 card-verified checkpoints; "
-        f"got {set(main.base_model.unique())}")
-    assert set(diamond.base_model.unique()) == flagged, (
-        f"gpqa_diamond should cover exactly the same 4 checkpoints; "
-        f"got {set(diamond.base_model.unique())}")
-    # (d) per-checkpoint main < diamond
-    for bm in flagged:
-        m = d[(d.base_model == bm) & (d.benchmark == "gpqa_main")]
-        di = d[(d.base_model == bm) & (d.benchmark == "gpqa_diamond")]
-        assert m.acc_before.max() < di.acc_before.min(), (
-            f"{bm}: gpqa_main baseline {m.acc_before.tolist()} must sit "
-            f"strictly below gpqa_diamond {di.acc_before.tolist()}")
-    # (e) plain 'gpqa' rows exist for the other checkpoints (unlabeled
-    #     variant), and NONE from the four flagged
-    plain = d[d.benchmark == "gpqa"]
-    flagged_in_plain = set(plain.base_model.unique()) & flagged
-    assert not flagged_in_plain, (
-        f"plain 'gpqa' must not carry rows for flagged checkpoints "
-        f"(their rows are now gpqa_main / gpqa_diamond); found "
-        f"{flagged_in_plain}")
+    # (c) expected row counts, per the card inspection
+    expected = {
+        "gpqa_main":              15,
+        "gpqa_main_norm":          8,
+        "gpqa_main_cot_5shot":     2,
+        "gpqa_diamond":            8,
+        "gpqa_diamond_cot_5shot":  1,
+    }
+    for label, want in expected.items():
+        got = int((d.benchmark == label).sum())
+        assert got == want, (
+            f"{label}: {got} rows, expected {want} per the card "
+            f"inspection recorded in the Tier 2.5 v4 audit note")
 
 
 def test_dataset_row_count_pinned_at_817():

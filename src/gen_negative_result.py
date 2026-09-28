@@ -146,8 +146,8 @@ def main():
       f"{n('n_benchmarks')}-benchmark matrix is the same order as their own.\n")
     A("### 4c. The reviewer's two smaller points\n")
     A(f"- **Benchmarks without close neighbours.** Confirmed: the strongest "
-      f"correlation for GPQA is {n('t2b_corr_gpqa', '{:.2f}')} "
-      f"(over {n('t2b_corr_gpqa_overlap')} rows) and for MuSR "
+      f"correlation for GPQA (main, 0-shot) is {n('t2b_corr_gpqa_main', '{:.2f}')} "
+      f"(over {n('t2b_corr_gpqa_main_overlap')} rows) and for MuSR "
       f"{n('t2b_corr_musr', '{:.2f}')} (over {n('t2b_corr_musr_overlap')} rows). "
       f"Correlations elsewhere are near 1 but rest on very few overlapping "
       f"rows and on base and quantized rows that duplicate each other, so we "
