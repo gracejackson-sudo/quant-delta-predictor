@@ -1,8 +1,34 @@
 # quant_delta_predictor
 
 **Before you compress a model: how much accuracy did other people lose doing the same thing?**
-A small command-line tool that answers from published results, and says so when it does not
-have enough evidence to answer.
+A small command-line tool that answers from published results.
+
+## What it measured
+
+The shipped intervals were prospectively validated on 131 rows from 19 unseen quantized checkpoints
+(Gemma-3, DeepSeek-R1-Distill, SmolLM, SmolLM3, NVIDIA-Nemotron-Nano) — none of which were used to
+build the tool. **Two-sided empirical coverage at a nominal 90% is 90.8% (119/131, 95% Clopper–Pearson
+CI [84.5, 95.2]).** The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
+coverage, cluster bootstrap, tier and flag — is independently re-verified by a stdlib-only
+reimplementation (`verify/independent_rank.py`) that shares no code with the pipeline; zero field-level
+disagreements on the ranking, statistical equivalence within 1pp on the cluster-bootstrap CI, exact
+agreement on the noise-floor pool behind the abstract's variance claim.
+
+The point prediction carries almost no signal beyond the quantization scheme; the fitted artifact is a
+per-scheme envelope with calibrated coverage and cell-level refusal flags, not a per-model predictor.
+A separate GPU adversarial arm on deliberately-bad quantization configs — outside the training corpus —
+measured losses down to **−39.5pp** (RedHatAI publishes only recipes that worked, so the corpus
+understates the left tail; the adversarial arm is the direct measure of how bad it can get).
+
+## Refusal is a feature
+
+A quantization risk estimate is only worth having if it will tell you when not to trust it. When a
+`(scheme, size)` cell rests on too few independent published checkpoints, the tool prints the
+historical range, marks it `INSUFFICIENT_EVIDENCE`, drops the scheme to Tier C, and tells you to run
+your own evaluation. A cell is *refused* outright, with its interval withheld
+(`INSUFFICIENT CALIBRATION`), only when measured coverage is poor on enough independent checkpoints;
+none currently is. Currently 6 of 17 cells are at insufficient evidence and 0 are refused; the cells
+in each state are listed in `RANKING.md`.
 
 ## Try it in about a minute
 
@@ -13,13 +39,14 @@ python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scipy
 ./.venv/bin/python src/rank.py w4a16 --size 1.5B        # a case it says it cannot judge
 ```
 
-No network, API key or GPU is needed after the install. Runs after the install take a few seconds; the very first one can take longer while numpy, pandas and scipy load for the first time.
+No network, API key or GPU is needed after the install. Runs after the install take a few seconds; the
+very first one can take longer while numpy, pandas and scipy load for the first time.
 
 **What you will see.** The first command returns a historical range of accuracy change for that
-scheme, with no warning flags, and still shows the worst loss ever observed, which is worth reading.
-The second prints a range too, but marks it `INSUFFICIENT_EVIDENCE`, drops the scheme to Tier C, and
-explains why: for 4-bit weights on sub-2B models there are too few independent published checkpoints
-to trust a number. That flag is the tool declining to vouch for its own output.
+scheme, the worst loss ever observed, the share of evaluations that lost more than 3pp, and how many
+checkpoints and families back it — with no warning flags. The second command prints a range too, but
+marks it `INSUFFICIENT_EVIDENCE`, drops the scheme to Tier C, and explains why: for 4-bit weights on
+sub-2B models there are too few independent published checkpoints to trust a number.
 
 ## What it is, and is not
 
@@ -27,9 +54,6 @@ to trust a number. That flag is the tool declining to vouch for its own output.
   checkpoints lost, checked against checkpoints it was not built from.
 - **It is not** a per-model predictor. Predicting the loss for one specific model did not work:
   most of the differences between models were benchmark measurement noise.
-- **Two separate limits, easy to confuse.** (1) *Noise* is why per-model prediction fails.
-  (2) *Thin evidence* is why the tool flags a scheme-and-size combination: not enough independent
-  published checkpoints, which has nothing to do with noise.
 - **Read every range as a floor on risk, not a ceiling.** It is built from one publisher's
   checkpoints, so a badly tuned recipe can do far worse than anything in the record.
 
@@ -44,13 +68,6 @@ Everything else is in the table below.
 ---
 
 ## All documentation
-Feasibility spike: given `(base model, quantization config)`, predict the accuracy delta on
-OpenLLM-style benchmarks with a calibrated prediction interval.
-
-**Result (current, from the paper): the calibration works — 90.8% two-sided empirical coverage on
-unseen checkpoints at a nominal 90% (119/131, 95% CI [84.5, 95.2]); the point prediction carries
-almost no signal beyond the quantization scheme, and the fitted artifact is a small number table
-— a calibrated historical baseline, not a predictor.**
 
 | document | what it holds |
 |---|---|
@@ -59,8 +76,9 @@ almost no signal beyond the quantization scheme, and the fitted artifact is a sm
 | [NEGATIVE_RESULT.md](NEGATIVE_RESULT.md) | per-model prediction has no signal beyond the scheme average |
 | [BIAS_CORRECTION.md](BIAS_CORRECTION.md) | the selection bias: what is identified, what is not, and why there is no corrected point estimate |
 | [AUDIT_DISCIPLINE.md](AUDIT_DISCIPLINE.md) | the standing audit rule and what it has caught |
+| [EXTERNAL_FEEDBACK.md](EXTERNAL_FEEDBACK.md) | six external reviews (Reddit maintainer, a BenchPress author, an ML engineer voice call, a technical collaborator voice call, an ML engineer form submission, a Tong et al. author), point by point, with what was done |
+| [ADVERSARIAL_AUDIT.md](ADVERSARIAL_AUDIT.md) | attempts to break the headline number, including the −39.5pp GPU adversarial worst case |
 | [RESEARCH.md](RESEARCH.md) | prior-art synthesis + pre-registered predictions, written first |
-| [ADVERSARIAL_AUDIT.md](ADVERSARIAL_AUDIT.md) | attempts to break the headline number |
 | [ACCOUNTING.md](ACCOUNTING.md) | every model, tested or dropped, and why |
 | [PROVENANCE.md](PROVENANCE.md) | which parser fixes were informed by test-set rows |
 | [RANKING.md](RANKING.md) | the scheme ranking, and why size stratification was mostly rejected |
@@ -77,23 +95,30 @@ python3 -m venv .venv && ./.venv/bin/pip install numpy pandas scipy
 
 No network, no API key, no GPU. Three packages: numpy, pandas, scipy.
 
-**Run this one first.** It is the command that shows you what the tool is:
+Rank a specific scheme at a specific size:
+
+```bash
+./.venv/bin/python src/rank.py fp8_dynamic --size 5B
+```
+
+The tool returns a 90% interval, the worst loss ever observed, the share of evaluations that lost
+more than 3pp, how many checkpoints and families back it, and a tier.
+
+Now see it flag a cell whose coverage rests on too few checkpoints:
 
 ```bash
 ./.venv/bin/python src/rank.py w4a16 --size 1.5B
 ```
 
-It does not give you a clean answer. It prints the historical range for 4-bit weights, then flags
-that cell `INSUFFICIENT_EVIDENCE`: measured coverage there rests on only two checkpoints, so the tool
-demotes W4A16 to Tier C and tells you to run your own evaluation. A cell is *refused* outright, with
-its interval withheld (`INSUFFICIENT CALIBRATION`), only when measured coverage is poor on enough
-independent checkpoints; none currently is.
+It prints the historical range for 4-bit weights, then flags that cell `INSUFFICIENT_EVIDENCE`:
+measured coverage there rests on only two checkpoints, so the tool demotes W4A16 to Tier C and tells
+you to run your own evaluation. A cell is *refused* outright, with its interval withheld
+(`INSUFFICIENT CALIBRATION`), only when measured coverage is poor on enough independent checkpoints;
+none currently is. That is the design. A quantization risk estimate is only worth having if it will
+tell you when not to trust it, and the cells it flags are exactly the ones where a confident-sounding
+answer would do the most damage.
 
-That is the design. A quantization risk estimate is only worth having if it will tell you when not
-to trust it, and the cells it flags are exactly the ones where a confident-sounding answer would do
-the most damage.
-
-Once you have seen it flag a cell, the rest:
+The rest:
 
 ```bash
 ./.venv/bin/python src/rank.py                      # rank every scheme
@@ -101,10 +126,12 @@ Once you have seen it flag a cell, the rest:
 ./.venv/bin/python src/rank.py --form-fields        # what a contributed result needs
 ```
 
-Each scheme comes back with a 90% interval, the worst loss ever observed for it, the
-share of evaluations that lost more than 3pp, how many checkpoints and families back
-it, and a tier. Cells resting on fewer than three distinct checkpoints, or whose coverage
-estimate is too uncertain to judge, are marked `INSUFFICIENT_EVIDENCE`; `RANKING.md` lists them.
+Each `(scheme, size band)` cell gets one of three verdicts. A cell with adequately supported coverage
+is *trusted*. A cell whose coverage is measurably poor is *refused*: the tool prints
+`INSUFFICIENT CALIBRATION` and **no interval**. A cell resting on fewer than three checkpoints, or
+whose checkpoint-bootstrap interval straddles the 85% line, is *insufficient evidence*: the interval
+is still printed, but the scheme is demoted to Tier C with a note that the cell cannot be judged. At
+present no cell is refused; the cells in the third state are listed in `RANKING.md`.
 
 ## Reproduce the research
 
@@ -146,12 +173,18 @@ families (Definition B, which collapses Llama-3.1/3.2/3.3 into one Llama-3 famil
 the card's own printed Recovery percentage; internally inconsistent rows are rejected rather than
 guessed at.
 
-## What it does NOT do
+## Limitations
 
-- It does not use the model family or size — those features made out-of-family accuracy *worse*.
+- **Two separate limits, easy to confuse.** (1) *Noise* is why per-model prediction fails: most
+  differences between models are benchmark measurement noise, not real predictability. (2) *Thin
+  evidence* is why the tool flags a scheme-and-size combination: not enough independent published
+  checkpoints, which has nothing to do with noise.
+- It does not use the model family or size as prediction features — those made out-of-family accuracy
+  *worse*.
 - Its intervals never exclude zero, so it cannot tell you a config will definitely hurt.
 - It is trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from a
-  badly-tuned recipe.
+  badly-tuned recipe. See the −39.5pp adversarial worst case in `ADVERSARIAL_AUDIT.md` for the
+  direct measure of that gap.
 - Sub-2B, MoE and reasoning-distilled models fall outside the validated envelope.
 
 ## Standing rule on claims
@@ -174,13 +207,6 @@ This is enforced mechanically, not by discipline:
 ./.venv/bin/python src/gen_ranking_doc.py   # regenerate RANKING.md
 ./.venv/bin/python src/verify_claims.py     # re-verify every number
 ```
-
-Each `(scheme, size band)` cell gets one of three verdicts. A cell with adequately supported
-coverage is *trusted*. A cell whose coverage is measurably poor is *refused*: the tool prints
-`INSUFFICIENT CALIBRATION` and **no interval**. A cell resting on fewer than three checkpoints, or
-whose checkpoint-bootstrap interval straddles the 85% line, is *insufficient evidence*: the interval
-is still printed, but the scheme is demoted to Tier C with a note that the cell cannot be judged.
-At present no cell is refused; the cells in the third state are listed in `RANKING.md`.
 
 ## Data and licence
 
