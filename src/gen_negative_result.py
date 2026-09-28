@@ -143,7 +143,7 @@ def main():
       f"paired quantization delta averages {n('t2b_mae_zero::bp', '{:.1f}')} points in size, so an "
       f"estimate built from cross-benchmark prediction cannot resolve it. "
       f"Our error of {n('t2b_mae::bp', '{:.1f}')} points on a sparser, "
-      f"16-benchmark matrix is the same order as their own.\n")
+      f"{n('n_benchmarks')}-benchmark matrix is the same order as their own.\n")
     A("### 4c. The reviewer's two smaller points\n")
     A(f"- **Benchmarks without close neighbours.** Confirmed: the strongest "
       f"correlation for GPQA is {n('t2b_corr_gpqa', '{:.2f}')} "

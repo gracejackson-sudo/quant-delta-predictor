@@ -9,7 +9,7 @@
     "rows": 817,
     "checkpoints": 38,
     "families": 6,
-    "benchmarks": 17
+    "benchmarks": 18
   },
   "validation": {
     "leave_one_family_out": {

@@ -80,6 +80,10 @@ def registry():
     add("min_acc_before_pct", _MAB, 0, "baseline accuracy floor, in points")
     add("n_checkpoints", meta["n_checkpoints"], 0, "distinct base models")
     add("n_families", meta["n_families"], 0, "distinct families")
+    add("n_benchmarks", int(d.benchmark.nunique()), 0,
+        "distinct benchmarks in the modeling set (Tier 2.5 v3 split "
+        "GPQA into gpqa_main / gpqa_diamond for the four flagged "
+        "checkpoints, so the count grew from 16 to 18)")
 
     for key, cell in cc["cells"].items():
         add(f"cell_coverage_pct::{key}", cell["coverage"] * 100, 0.05,
@@ -945,6 +949,14 @@ def registry():
     _gem = [-3.03, -2.99, -2.90, -2.41, -1.34, 1.40]
     _EPS_gem = 1e-9
     _lo_gem, _hi_gem = -2.87, 1.40
+    # Tier 2.5 v3: how many plain-'gpqa' rows remain after the four
+    # flagged checkpoints were relabelled to gpqa_main / gpqa_diamond.
+    # Registered so §9 can reference it.
+    add("gpqa_other_rows",
+        int((d.benchmark == "gpqa").sum()), 0,
+        "rows still under the plain 'gpqa' label after Tier 2.5 v3 "
+        "(cards that listed only one GPQA table)")
+
     add("gemma_1b_wfour_caught",
         int(sum(1 for _x in _gem
                 if _lo_gem - _EPS_gem <= _x <= _hi_gem + _EPS_gem)), 0,

@@ -142,7 +142,7 @@ python3 verify/independent_check.py
 
 850 rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102
 [RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38 base checkpoints, 8 model
-families, 6 quantization schemes and 16 benchmarks. Every three-column row is verified against
+families, 6 quantization schemes and 18 benchmarks (gpqa_main and gpqa_diamond are separate labels for four checkpoints where the card carried two GPQA protocols; see the §9 audit note). Every three-column row is verified against
 the card's own printed Recovery percentage; internally inconsistent rows are rejected rather than
 guessed at.
 

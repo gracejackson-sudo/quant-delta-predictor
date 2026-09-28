@@ -669,19 +669,21 @@ survived---would misrepresent how the result was obtained.
   \item \emph{GPQA was two protocols under one label; the corpus was
     relabelled, not dropped.} Four checkpoints
     (Llama-3.3-70B-Instruct and Qwen3-\{8B, 14B, 32B\}) shipped two
-    GPQA tables in their model cards: one at chance-baseline
-    ($\sim$25--32\%, close to random on a 4-choice test) and one well
-    above chance ($\sim$46--67\%, matching the publisher's headline
-    figures). The harvester's first-table-wins dedup silently kept
-    whichever table each card listed first, so across quantization
-    schemes on the same checkpoint the label \texttt{gpqa} carried
-    two different baselines. We relabelled the four low-baseline rows
-    to \texttt{gpqa\_v2} rather than dropping them: they are real
-    measurements under a distinct protocol and dropping would discard
-    evidence. We cannot authoritatively map the two protocols to
-    GPQA-Main vs GPQA-Diamond without a re-harvest that reads the
-    cards; the \texttt{gpqa\_v2} label is a placeholder and should be
-    renamed once the protocol is confirmed.
+    GPQA tables in their RedHatAI cards, labelled
+    \texttt{GPQA (0-shot)} (near-chance $\sim$25--32\%) and
+    \texttt{GPQA (Diamond, 0-shot)} (well above chance $\sim$46--67\%);
+    inspection of the raw cards confirms the mapping. The harvester's
+    first-table-wins dedup silently kept whichever the card listed
+    first, so across quantization schemes on the same checkpoint the
+    label \texttt{gpqa} carried two different baselines. We relabelled
+    the eight high-baseline rows to \texttt{gpqa\_diamond} and the four
+    low-baseline rows to \texttt{gpqa\_main} rather than dropping
+    them: they are real measurements under distinct protocols. The
+    other \GpqaOtherRows{} \texttt{gpqa} rows come from cards that
+    listed only one GPQA table and are kept under the plain label
+    without over-asserting which specific variant each measures; a
+    reader who needs a uniform label should re-harvest from the cards
+    and split those too.
   \item \emph{Nine pre-registered prospective repos were dropped by a
     name-gate.} The prospective set was pre-registered as
     \ProspRegisteredRepos{} repositories. The harvester requires a

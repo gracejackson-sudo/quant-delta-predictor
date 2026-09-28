@@ -1450,10 +1450,14 @@ def test_mae_floor_and_global_lofo_come_from_live_computation():
     assert "mae_floor_excluded_benchmarks" in R, (
         "Tier 2.7 requires exposure of the benchmark-exclusion count in "
         "the registry so the disclosure cannot be dropped silently")
-    # Under the current corpus exactly three benchmarks are excluded
-    # (arena_hard, gpqa, musr). If a future data change moves that count
-    # this test flips loudly; the reader will know to look.
-    assert R["mae_floor_excluded_benchmarks"] == 3, (
+    # Under the current corpus exactly four benchmarks are excluded:
+    # arena_hard, gpqa_main, gpqa_diamond, musr. (Pre-Tier-2.5-v3 the
+    # count was 3 with plain gpqa excluded and gpqa_main/gpqa_diamond
+    # non-existent; after the v3 split the count is 4 because each of
+    # the new gpqa_* labels has fewer than 4 lossless-scheme rows.)
+    # If a future data change moves this count, verify the new set of
+    # excluded benchmarks and update the audit note before prose moves.
+    assert R["mae_floor_excluded_benchmarks"] == 4, (
         f"mae_floor benchmark-exclusion count changed to "
         f"{R['mae_floor_excluded_benchmarks']}. Verify the new set of "
         f"excluded benchmarks and update the audit note before the "
@@ -1505,52 +1509,65 @@ def test_regime_b_seed_is_stable_across_processes():
         "requires a stable seed derivation")
 
 
-def test_no_gpqa_dual_baseline_conflict_in_dataset():
-    """Tier 2.5 plant test (day-7 audit v2): four checkpoints
-    (Llama-3.3-70B-Instruct, Qwen3-8B, Qwen3-14B, Qwen3-32B) shipped
-    two GPQA tables in their cards -- one at chance-baseline (~25-31%)
-    and one well above chance (~46-67%). First-table-wins dedup
-    silently kept whichever the card listed first, so different
-    quantization schemes on the same checkpoint carried different
-    baselines for one 'gpqa' label.
+def test_gpqa_labels_match_authoritative_card_labels():
+    """Tier 2.5 v3 plant test (day-7 audit): the four flagged checkpoints
+    (Llama-3.3-70B-Instruct + Qwen3-{8B,14B,32B}) each shipped two GPQA
+    tables in their raw RedHatAI cards, labelled 'GPQA (0-shot)' (the
+    main variant, near-chance ~25-32%) and 'GPQA (Diamond, 0-shot)'
+    (the diamond variant, well-above-chance ~46-67%). Card inspection
+    confirmed the mapping; the dataset now carries the authoritative
+    labels rather than a placeholder gpqa_v2.
 
-    The v1 fix dropped the 12 conflicted rows. The v2 fix (this
-    revision) RELABELS the lower-baseline row per checkpoint as
-    'gpqa_v2', preserving the measurements as two separate protocols
-    under two distinct labels. This test asserts:
-      (a) no (base_model, 'gpqa') tuple retains baseline drift >5pp,
-      (b) the four relabeled rows are present as 'gpqa_v2', and
-      (c) no gpqa_v2 row appears for a checkpoint not in the flagged
-          four (so the relabel didn't over-reach)."""
+    (a) No baseline-drift conflict remains under any of the three
+        gpqa* labels.
+    (b) gpqa_main is present for exactly the 4 flagged checkpoints.
+    (c) gpqa_diamond is present for exactly the same 4 checkpoints.
+    (d) For each flagged checkpoint, gpqa_main baselines sit strictly
+        below gpqa_diamond baselines (matches card measurements).
+    (e) Plain 'gpqa' is preserved for the remaining 22 rows from other
+        checkpoints; those cards listed only one GPQA table and we do
+        not over-label them without card-by-card verification."""
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
     d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
-    # (a) no dual-baseline conflict left under 'gpqa'
+    # (a) no dual-baseline conflict left under any gpqa* label
     offenders = []
     for (bm, b), g in d.groupby(["base_model", "benchmark"]):
-        if b != "gpqa":
+        if not b.startswith("gpqa"):
             continue
         acc = sorted(g.acc_before.unique())
         if len(acc) >= 2 and (max(acc) - min(acc)) > 5.0:
-            offenders.append((bm, acc))
+            offenders.append((bm, b, acc))
     assert not offenders, (
-        "gpqa dual-baseline conflict re-appeared:\n"
-        + "\n".join(f"  {bm}: baselines={acc}" for bm, acc in offenders))
-    # (b) the four relabeled rows are present as gpqa_v2, one per
-    #     flagged checkpoint (each in its NVFP4 row)
+        "gpqa* dual-baseline conflict re-appeared:\n"
+        + "\n".join(f"  {bm} / {b}: baselines={acc}"
+                    for bm, b, acc in offenders))
     flagged = {"Llama-3.3-70B-Instruct", "Qwen3-8B",
                "Qwen3-14B", "Qwen3-32B"}
-    v2 = d[d.benchmark == "gpqa_v2"]
-    assert set(v2.base_model.unique()) == flagged, (
-        f"gpqa_v2 rows present for {set(v2.base_model.unique())}; "
-        f"expected exactly {flagged}")
-    # (c) gpqa_v2 rows must be the LOWER baseline for each checkpoint
+    # (b) + (c)
+    main = d[d.benchmark == "gpqa_main"]
+    diamond = d[d.benchmark == "gpqa_diamond"]
+    assert set(main.base_model.unique()) == flagged, (
+        f"gpqa_main should cover exactly the 4 card-verified checkpoints; "
+        f"got {set(main.base_model.unique())}")
+    assert set(diamond.base_model.unique()) == flagged, (
+        f"gpqa_diamond should cover exactly the same 4 checkpoints; "
+        f"got {set(diamond.base_model.unique())}")
+    # (d) per-checkpoint main < diamond
     for bm in flagged:
-        gpqa = d[(d.base_model == bm) & (d.benchmark == "gpqa")]
-        v2b = d[(d.base_model == bm) & (d.benchmark == "gpqa_v2")]
-        assert v2b.acc_before.max() < gpqa.acc_before.min(), (
-            f"{bm}: gpqa_v2 baseline {v2b.acc_before.tolist()} must sit "
-            f"strictly below the gpqa baseline {gpqa.acc_before.tolist()}")
+        m = d[(d.base_model == bm) & (d.benchmark == "gpqa_main")]
+        di = d[(d.base_model == bm) & (d.benchmark == "gpqa_diamond")]
+        assert m.acc_before.max() < di.acc_before.min(), (
+            f"{bm}: gpqa_main baseline {m.acc_before.tolist()} must sit "
+            f"strictly below gpqa_diamond {di.acc_before.tolist()}")
+    # (e) plain 'gpqa' rows exist for the other checkpoints (unlabeled
+    #     variant), and NONE from the four flagged
+    plain = d[d.benchmark == "gpqa"]
+    flagged_in_plain = set(plain.base_model.unique()) & flagged
+    assert not flagged_in_plain, (
+        f"plain 'gpqa' must not carry rows for flagged checkpoints "
+        f"(their rows are now gpqa_main / gpqa_diamond); found "
+        f"{flagged_in_plain}")
 
 
 def test_dataset_row_count_pinned_at_817():
