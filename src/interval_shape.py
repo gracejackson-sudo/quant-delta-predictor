@@ -169,6 +169,27 @@ def main():
     with open(os.path.join(OUT, "interval_shape.json"), "w") as f:
         json.dump(res, f, indent=2)
     print(f"\nwrote {OUT}/interval_shape.json")
+
+    # C1+C2 staleness fix (day-7 audit): the finite-only slice used to
+    # live in interval_shape_finite.json but was written once by an old
+    # version and never regenerated. Compute and write it here so a
+    # dataset change flows through.
+    _finite = r[np.isfinite(r.emp_w)]
+    _n_fin = int(len(_finite))
+    _inf = r[~np.isfinite(r.emp_w)]
+    res_fin = {
+        "n_finite": _n_fin,
+        "conf_coverage": float(_finite.conf_ok.mean()) if _n_fin else float("nan"),
+        "conf_width": float(_finite.conf_w.mean()) if _n_fin else float("nan"),
+        "emp_coverage": float(_finite.emp_ok.mean()) if _n_fin else float("nan"),
+        "emp_width": float(_finite.emp_w.mean()) if _n_fin else float("nan"),
+        "inf_rows": int(len(_inf)),
+        "inf_share": float(len(_inf) / len(r)) if len(r) else float("nan"),
+        "inf_rows_coverage": float(_inf.emp_ok.mean()) if len(_inf) else float("nan"),
+    }
+    with open(os.path.join(OUT, "interval_shape_finite.json"), "w") as f:
+        json.dump(res_fin, f, indent=2)
+    print(f"wrote {OUT}/interval_shape_finite.json")
     return 0
 
 

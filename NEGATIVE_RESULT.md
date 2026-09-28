@@ -113,16 +113,16 @@ So the excess-over-control figures measure **bad recipe against mediocre recipe*
 
 Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (91.0<!-- claim: band_emp_coverage_pct = 90.987695 -->% vs 90.6<!-- claim: band_conf_coverage_pct = 90.555371 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
 
-Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 43<!-- claim: inf_share_pct = 43.313668 -->% of evaluations (1762<!-- claim: inf_rows = 1762.000000 --> of 3007<!-- claim: band_n_pairs = 3007.000000 -->; the 817<!-- claim: band_n_rows = 817.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
+Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 26<!-- claim: inf_share_pct = 25.806452 -->% of evaluations (776<!-- claim: inf_rows = 776.000000 --> of 3007<!-- claim: band_n_pairs = 3007.000000 -->; the 817<!-- claim: band_n_rows = 817.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
 
 On the rows where both bands are actually defined:
 
 | band | coverage | mean width |
 |---|---|---|
-| symmetric conformal (shipped) | **89.0<!-- claim: finite_conf_cov_pct = 89.028621 -->%** | **3.93<!-- claim: finite_conf_width = 3.928252 -->pp** |
-| asymmetric empirical | 88.3<!-- claim: finite_emp_cov_pct = 88.291414 -->% | 5.48<!-- claim: finite_emp_width = 5.480763 -->pp |
+| symmetric conformal (shipped) | **88.5<!-- claim: finite_conf_cov_pct = 88.525325 -->%** | **3.96<!-- claim: finite_conf_width = 3.956189 -->pp** |
+| asymmetric empirical | 87.9<!-- claim: finite_emp_cov_pct = 87.852981 -->% | 5.51<!-- claim: finite_emp_width = 5.513805 -->pp |
 
-Conformal wins on coverage AND width, on 2306<!-- claim: finite_n = 2306.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (90.1<!-- claim: band_hybrid_coverage_pct = 90.056535 -->%). **The shipped interval was right and the intuition was wrong.**
+Conformal wins on coverage AND width, on 2231<!-- claim: finite_n = 2231.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (90.1<!-- claim: band_hybrid_coverage_pct = 90.056535 -->%). **The shipped interval was right and the intuition was wrong.**
 
 Two conclusions, both uncomfortable and both kept:
 
