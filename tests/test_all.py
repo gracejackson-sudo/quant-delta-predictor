@@ -1558,6 +1558,118 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
           "named scripts and regenerate downstream docs.")
 
 
+def test_hardcoded_enumeration_lists_cover_all_data_values():
+    """Sweep for the BENCH_LEVELS-class bug: any hard-coded list that is
+    supposed to enumerate the values the data contains, where a missing
+    entry would silently produce a wrong answer rather than an error.
+
+    Reads: `data/dataset.csv` after annotate(), and imports each of
+      * src.model.BENCH_LEVELS   (featurizer one-hot columns)
+      * src.model.METHOD_LEVELS  (featurizer one-hot columns)
+      * src.adversarial_schema.KNOWN_SCHEMES (schema validator)
+      * src.strata.BANDS         (size-band enumeration)
+    Fails: if any distinct value in the dataset for that column is
+      NOT in the hardcoded list. This is exactly the failure that
+      Tier 2.5 v4 introduced with BENCH_LEVELS -- the featurize()
+      one-hot silently dropped 34 rows' benchmark identity because the
+      new gpqa_* labels weren't in the list.
+
+    Planted failure that fires this test: add a new benchmark /
+    method / scheme / band value to dataset.csv without updating the
+    corresponding list. The test names the list and the missing
+    values."""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    import pandas as pd
+    from strata import annotate as _annotate
+    d = _annotate(pd.read_csv(os.path.join(root, "data", "dataset.csv")))
+    from model import BENCH_LEVELS, METHOD_LEVELS
+    from adversarial_schema import KNOWN_SCHEMES
+    from strata import BANDS
+    misses = []
+    for name, hardcoded, data_col in (
+        ("BENCH_LEVELS  (src.model)",      BENCH_LEVELS,   "benchmark"),
+        ("METHOD_LEVELS (src.model)",      METHOD_LEVELS,  "method"),
+        ("KNOWN_SCHEMES (adversarial_schema)", KNOWN_SCHEMES, "scheme"),
+        ("BANDS         (src.strata)",     BANDS,          "band"),
+    ):
+        data_vals = set(d[data_col].dropna().unique())
+        missing = sorted(data_vals - set(hardcoded))
+        if missing:
+            misses.append(
+                f"  {name}: data has values not in the list: {missing}\n"
+                f"    (present in list but unused: "
+                f"{sorted(set(hardcoded) - data_vals)})")
+    assert not misses, (
+        "Hard-coded enumeration list does not cover all data values. "
+        "This is the BENCH_LEVELS-class bug -- the missing values will "
+        "be silently dropped by downstream code, not caught as errors:\n"
+        + "\n".join(misses))
+
+
+def test_aggressive_scheme_set_agrees_across_implementations():
+    """The AGGRESSIVE scheme tag ({w4a16, nvfp4}) is enumerated in
+    src/rank.py AND verify/independent_rank.py. The verifier is
+    supposed to be independent, so the duplication is deliberate;
+    but 'independent' does not mean the classifier is allowed to
+    silently disagree. If someone adds a new aggressive scheme
+    to rank.py and forgets the verifier, the verifier keeps
+    producing outputs against the old classification. This test
+    catches the divergence.
+
+    Reads: src.rank.AGGRESSIVE and verify.independent_rank.AGGRESSIVE.
+    Fails: iff they differ as sets.
+
+    Planted failure: add 'mxfp4' to rank.AGGRESSIVE without updating
+    the verifier. The test names both sides of the diff."""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    _sys.path.insert(0, os.path.join(root, "verify"))
+    from rank import AGGRESSIVE as _pipe
+    from independent_rank import AGGRESSIVE as _verif
+    assert _pipe == _verif, (
+        f"AGGRESSIVE scheme set differs between the pipeline and the "
+        f"independent verifier -- silent-divergence risk.\n"
+        f"  rank.py:                    {sorted(_pipe)}\n"
+        f"  verify/independent_rank.py: {sorted(_verif)}")
+
+
+def test_lossless_scheme_set_matches_measured_near_zero_deltas():
+    """LOSSLESS in run_final.py enumerates the schemes treated as
+    ~zero-delta ground truth for the MAE floor. The current set
+    ({w8a16, fp8_dynamic}) matches the schemes with |mean delta| below
+    0.15pp on the current corpus; the next-closest scheme sits at 0.32pp.
+    This test pins that clean gap so a future scheme with near-zero
+    delta cannot be silently omitted from the LOSSLESS set (and thus
+    from the MAE floor computation).
+
+    Reads: dataset.csv per-scheme mean delta AND src.run_final.LOSSLESS.
+    Fails: iff a non-LOSSLESS scheme's |mean delta| sits below LOSSLESS's
+    worst member. That would mean the enumeration is stale relative
+    to what the data actually looks like near zero.
+
+    Planted failure: add a new scheme to dataset.csv whose mean delta
+    is 0.05pp. The test names the scheme and asks: is this LOSSLESS?"""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    import pandas as pd
+    d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
+    d = d[d.acc_before >= 20]
+    from run_final import LOSSLESS
+    means = d.groupby("scheme").delta.mean().abs().sort_values()
+    ll_max = max(means[s] for s in LOSSLESS if s in means.index)
+    outsiders = {s: v for s, v in means.items()
+                 if s not in LOSSLESS and v < ll_max + 0.05}
+    assert not outsiders, (
+        f"LOSSLESS = {sorted(LOSSLESS)} has |mean delta| <= {ll_max:.4f}pp; "
+        f"but these schemes NOT in LOSSLESS have similar near-zero deltas: "
+        f"{outsiders}. Either add them to LOSSLESS or explain in "
+        f"run_final.py's docstring why they are excluded.")
+
+
 def test_mae_floor_and_headroom_are_deterministic_across_calls():
     """Tier 2.5 v4 check (day-7 audit): after four relabel passes
     (0.5294 stale literal -> 0.5075 -> 0.5257 -> 0.5106) confirm the

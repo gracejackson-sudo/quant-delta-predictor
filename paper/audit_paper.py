@@ -68,6 +68,22 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # affected Qwen3 variants (8B, 14B, 32B). These are qualitative
           # ranges and model-name digits, not measured claim-macros.
           "25", "32", "46", "67", "14",
+          # §9 "artifact family regenerated" bullet and the rewritten
+          # "regression we nearly shipped" paragraph document before/
+          # after values for the day-7 regeneration. Each is present
+          # in a narrative role, paired with the current live macro,
+          # and each is enumerated in PROVENANCE.md's 2026-09-30 entry.
+          # Not tagged because they are historical, not "the current value
+          # to display" -- the current value IS the macro next to them.
+          "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
+          "0.7545",    # pre-regen mae_global_lofo
+          "0.7553",    # post-regen mae_global_lofo (approx; live macro)
+          "0.764",     # pre-regen pred_mae::ridge (approx)
+          "0.776",     # post-regen pred_mae::ridge (approx; live macro)
+          "3.8",       # pre-regen band gap (empirical-conformal ~3.8pp)
+          "60",        # Regime C fold count under 6-family
+          "89.15",     # pre-regen Regime C mondrian coverage
+          "40",        # "roughly 40% narrower" qualitative (already exempt via string)
           "40",    # 40 GB VRAM (A100-SXM4-40GB, on which the day-6 rerun OOM'd)
           "80",    # 80 GB VRAM (the hardware that would make the 3B extension fit)
           "0.85",  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression

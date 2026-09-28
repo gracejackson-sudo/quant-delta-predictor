@@ -642,6 +642,24 @@ survived---would misrepresent how the result was obtained.
     the shipped pipeline reports the pooled figure, and the reader
     should know what the pool contains.
   \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, and the strict figure is now \ProspInside/\ProspN. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about.
+  \item \emph{Artifact family regenerated after Definition B.} The
+    Definition B corpus change (Tier 0.1, 8 $\to$ 6 families) shifted
+    the shape of every leave-one-family-out artifact. Seven files were
+    kept from an 8-family run for several commits after the code moved
+    to 6 families: \texttt{predictor\_comparison.json},
+    \texttt{final\_results.json}, \texttt{diagnostics.json},
+    \texttt{interval\_shape.json}, \texttt{interval\_shape\_finite.json},
+    \texttt{bias\_correction.json}, and
+    \texttt{bias\_correction\_empirical.json}. The registry read from
+    all seven silently. Regenerating them moved \texttt{mae\_global\_lofo}
+    from 0.7545 to 0.7553, \texttt{pred\_mae::ridge} from 0.764 to
+    0.776, \texttt{band\_emp\_coverage\_pct} from 93.4\% to 91.0\% (the
+    ``empirical clearly beats conformal'' claim we nearly shipped a
+    switch on sat on the stale artifact; see the regression paragraph),
+    and Regime C mondrian coverage from 89.15\% at 168 folds to 90.01\%
+    at 60 folds. A staleness gate now fails if any consumed artifact
+    predates \texttt{data/dataset.csv}, so this class of silent-stale
+    cannot repeat.
   \item \emph{GPQA was five protocols under one label.} The label
     \texttt{gpqa} in the harvested corpus was found to conflate at
     least five distinct GPQA evaluation protocols. Inspection of every
@@ -732,14 +750,26 @@ survived---would misrepresent how the result was obtained.
 \end{itemize}
 
 \paragraph{A regression we nearly shipped.} An audit indicated that a raw
-asymmetric empirical band covered better than the shipped symmetric conformal
-interval (\BandEmpCov\% versus \BandConfCov\%). Since quantization damage is left-skewed, a
-symmetric band is obviously the wrong shape, and we were about to switch. On
-measuring first, the empirical band returns an \emph{infinite} interval on \InfShare\%
-of rows, because a two-sided empirical index requires more calibration points
-than are often available. An infinite interval covers by construction. On rows
-where both are finite, the original wins on coverage \emph{and} width. The
-change was reversed.
+asymmetric empirical band appeared to cover better than the shipped symmetric
+conformal interval; at the time it read as a $\sim$3.8pp gap in the empirical
+band's favour, and since quantization damage is left-skewed a symmetric band
+looked like the wrong shape. Under the current corpus (the day-7
+regeneration made every value below live) the raw gap has shrunk to
+$\BandEmpCov - \BandConfCov \approx 0.4$pp: empirical
+\BandEmpCov\% versus conformal \BandConfCov\%. But that gap is not what it
+looks like: the empirical band returns $\pm\infty$ on
+\InfSharePct\% of rows (a two-sided empirical index requires more
+calibration points than are often available), and an infinite interval
+trivially covers everything. On the \FiniteN{} rows where both bands are
+actually defined, conformal beats empirical (\FiniteConfCov\% vs
+\FiniteEmpCov\%) and does so with a \FiniteConfWidth{}pp mean width against
+empirical's \FiniteEmpWidth{}pp -- roughly \(40\%\) narrower. The
+counterfactual is not "a wider band that covers better", it is a wider band
+that answers ``don't know'' on one row in four. The change was reversed.
+The apparent-gap shrinkage from $\sim$3.8 to $\sim$0.4pp is itself a
+regeneration effect: the earlier figure sat on an eight-family-corpus artifact
+that predated Definition B; §\ref{sec:audit}'s "artifact family regenerated"
+note enumerates every macro that moved.
 
 \paragraph{An overclaimed guarantee.} The artifact was described as carrying a
 coverage guarantee without qualification. Checking the method against the

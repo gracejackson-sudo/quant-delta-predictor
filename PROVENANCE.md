@@ -126,6 +126,40 @@ reimplementations agreed on the same 118/131 wrong answer.
 
 The fix patched twelve comparison sites to use a `1e-9` tolerance on each
 bound (see the shared-assumption bullet in the paper's `\section{Audit}`).
+
+---
+
+## 2026-09-30, ridge MAE decomposition (day-7 audit follow-up)
+
+An external auditor asked why `pred_mae::ridge` moved from a Sep-26
+stale-artifact value of 0.763916 to a Sep-30 live value of 0.776423
+(+0.012507) while every other predictor moved in the fourth decimal.
+Attribution by reconstructing each intermediate corpus state and
+re-measuring ridge under identical BENCH_LEVELS / featurize logic:
+
+| step (Sep 26 → live)                       | ridge move  |
+|---|---:|
+| family merge (Tier 0.1, 8 → 6 families)    | **+0.013460** |
+| gpqa 5-way split in dataset.csv (Tier 2.5 v4) | +0.009690 |
+| BENCH_LEVELS featurizer fix (add gpqa* splits) | -0.010137 |
+| Mixtral MoE params_b 7 → 56 (Tier 1.6)     |  -0.000505 |
+| residual (other data changes since Sep 26) |  0.000000 |
+| **net**                                    | **+0.012507** |
+
+The residual is exactly zero: the four factors above account for
+every part of the move. The dominant contribution is the family
+merge; the gpqa split and the featurizer fix nearly cancel (the
+featurizer fix restores the benchmark identity the split removed);
+Mixtral is negligible for ridge.
+
+The BENCH_LEVELS featurizer bug is a real class-of-bug that could
+have been silent-permanent: when a data label ceases to match a
+hard-coded enumeration list, downstream one-hot columns become all
+zero for rows carrying the new label. Test coverage was added
+(`tests/test_all.py::test_hardcoded_enumeration_lists_cover_all_data_values`)
+so any future data-label change that isn't reflected in
+`BENCH_LEVELS` / `METHOD_LEVELS` / `KNOWN_SCHEMES` / `BANDS` fails
+loudly instead of silently reducing feature expressiveness.
 A subsequent audit on the same day found six more sites that had also kept
 the strict comparison (`src/model.py::evaluate`, three sites in `src/audit.py`,
 three in `src/interval_shape.py`, two in `src/adversarial_audit.py`, the
