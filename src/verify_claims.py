@@ -719,8 +719,12 @@ def registry():
         add("prosp_clus_n", len(_cl), 0, "quantized checkpoints resampled")
 
     if cc.get("pooled", {}).get("coverage_one_sided") is not None:
-        add("pooled_one_sided_pct", 100 * cc["pooled"]["coverage_one_sided"],
+        _one_sided = 100 * cc["pooled"]["coverage_one_sided"]
+        add("pooled_one_sided_pct", _one_sided,
             0.1, "pooled one-sided coverage")
+        add("m3_gap_pp", abs(_one_sided - 95.1), 0.05,
+            "|pooled_one_sided_pct - 95.1| (the engineer's paraphrased "
+            "figure in M3); dynamic on the corpus")
         add("pooled_below_lo_pct", 100 * cc["pooled"]["below_lo"], 0.1,
             "pooled share of rows below the lower bound")
         add("pooled_above_hi_pct", 100 * cc["pooled"]["above_hi"], 0.1,
