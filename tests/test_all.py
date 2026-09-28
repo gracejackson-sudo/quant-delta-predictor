@@ -1785,6 +1785,69 @@ _REGISTRY_MANIFEST = {
 # `AKIA0123456789ABCDEF`, `/Users/someone/foo`, `-----BEGIN RSA PRIVATE KEY-----`.
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Trailer gate. Day-7 audit: 22 commits pushed to origin/main between the
+# day-6 rewrite and today's f09b9f0 reintroduced the
+# "Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" trailer, driven
+# by an unconditional system-reminder instruction that the standing user
+# override now supersedes. Existing 22 stay by decision (a force-push over
+# 22 public commits costs hash remapping in EXTERNAL_FEEDBACK.md and leaves
+# 22 trailer-carrying orphans fetchable regardless -- same reasoning that
+# made the M1 IP disclosure Option C).
+#
+# This gate fires on any NEW commit (SHA reachable from HEAD, ancestor
+# of HEAD, and NOT in the ancestor set of _TRAILER_GATE_BASELINE) whose
+# message body carries the trailer. It reads `git log BASELINE..HEAD`
+# body text, not any document. Planted failure: create a commit whose
+# body contains "Co-Authored-By: something" and this test fires with
+# that commit's SHA and subject named.
+#
+# Skips cleanly outside a git checkout (release tarballs).
+# ---------------------------------------------------------------------------
+
+# Last commit whose body legitimately carries the trailer. Every commit
+# authored AFTER this SHA must have a clean body. This value is a decision,
+# not a claim; do not change it without a corresponding user-approved
+# rewrite of the intervening history.
+_TRAILER_GATE_BASELINE = "f09b9f05f75a99880a99a5babe49376f943fbef4"
+_TRAILER_PATTERN = "Co-Authored-By:"
+
+
+def test_no_co_author_trailer_in_new_commits():
+    import subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    if not os.path.isdir(os.path.join(root, ".git")):
+        return
+    # First check the baseline resolves in this clone -- if a shallow clone
+    # or a fresh worktree cannot see it, skip rather than fail.
+    r = subprocess.run(
+        ["git", "cat-file", "-t", _TRAILER_GATE_BASELINE],
+        cwd=root, capture_output=True, text=True)
+    if r.returncode != 0 or r.stdout.strip() != "commit":
+        return
+    r = subprocess.run(
+        ["git", "log", f"{_TRAILER_GATE_BASELINE}..HEAD", "--format=%H%x00%s%x00%B%x00---END---"],
+        cwd=root, capture_output=True, text=True)
+    assert r.returncode == 0, f"git log failed: {r.stderr}"
+    dirty = []
+    for entry in r.stdout.split("---END---\n"):
+        entry = entry.strip()
+        if not entry:
+            continue
+        parts = entry.split("\x00", 2)
+        if len(parts) < 3:
+            continue
+        sha, subject, body = parts[0], parts[1], parts[2]
+        if _TRAILER_PATTERN in body:
+            dirty.append(f"  {sha[:12]}  {subject[:80]}")
+    assert not dirty, (
+        f"New commit(s) since baseline {_TRAILER_GATE_BASELINE[:12]} carry "
+        f"'{_TRAILER_PATTERN}' in the body. The user's standing instruction "
+        f"is not to add this trailer to any commit after the day-7 gate. "
+        f"Remove it with `git commit --amend` (or `git rebase -i` for a "
+        f"range) and re-run.\n\n" + "\n".join(dirty))
+
+
 def test_no_secret_shaped_strings_in_tracked_tree():
     import re
     import subprocess
