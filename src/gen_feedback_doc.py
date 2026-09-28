@@ -66,7 +66,7 @@ def main():
         ("M4", "External ML engineer (voice call)", "Try Qwen3.5",
          "PARTIAL: published-card ingestion done; GPU testing not run"),
         ("M5", "External ML engineer (voice call)", "Distillation, enterprise nuance, other remarks",
-         "NOT DONE; a size-range correction to that engineer is drafted and unsent"),
+         "PARTIAL; a size-range correction to that engineer was sent on 2026-09-28"),
         ("C1", "External technical collaborator (voice call)", "README is overwhelming as an entry point", "DONE"),
         ("C2", "External technical collaborator (voice call)", "Another metric or benchmark would help", "NOT DONE"),
         ("C3", "External technical collaborator (voice call)", "Too small to sell alone; fits inside a suite",
@@ -280,8 +280,7 @@ def main():
       f"{n('adv_max_params_b', '{:.1f}')}B parameters.\n")
     A("**Owed:** a correction to the engineer. The sweep was described on "
       "the call as covering roughly 0.5B to 8B parameters; it covers only the "
-      "three sizes above. That correction has been drafted and not yet "
-      "sent.\n")
+      "three sizes above. That correction was sent on 2026-09-28.\n")
 
     A("### M5. Other remarks\n")
     A("- **Enterprise nuance:** asked whether built-in refusal matters to "
@@ -449,15 +448,15 @@ def main():
       "model\", which matches the author's wording. The author is not named "
       "in the paper. A private email reply is not consent to appear in a "
       "public paper.\n")
-    A(f"**What is open:** the author offered to hear more about the scale-"
-      f"related adversarial pattern; a matched follow-up describing the tail "
-      f"and the {n('adv_worst_delta', '{:.1f}')}pp adversarial worst has been "
-      f"drafted and not yet sent.\n")
+    A(f"**Follow-up sent:** a matched note describing the scale-related "
+      f"adversarial pattern -- the tail and the "
+      f"{n('adv_worst_delta', '{:.1f}')}pp adversarial worst -- was sent "
+      f"on 2026-09-28.\n")
 
     A("## Not addressed\n")
     A("- The voice-call engineer's reproduction, pending their inputs (M2).\n")
     A("- Whether the 85% refusal line should move (R1 / M3).\n")
-    A("- The Qwen3.5 GPU sweep (M4) and the correction owed to the engineer.\n")
+    A("- The Qwen3.5 GPU sweep (M4).\n")
     A("- Distillation and the other remarks (M5).\n")
     A("- A second metric (C2), and any willingness-to-pay measurement (C4).\n")
     A("- The matched BenchPress protocol (B1 in full) and the "

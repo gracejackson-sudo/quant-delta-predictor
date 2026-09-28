@@ -16,7 +16,7 @@ Six external conversations produced concrete feedback. Two came from structured 
 | M2 | External ML engineer (voice call) | Inconsistent verdicts across repeated identical runs | PARTIAL: not reproduced; one real seed-dependence found and fixed |
 | M3 | External ML engineer (voice call) | Refusal line stated as 85%, measured near 95.1% | PARTIAL: reconciled in the docs; the 85% threshold itself is unchanged |
 | M4 | External ML engineer (voice call) | Try Qwen3.5 | PARTIAL: published-card ingestion done; GPU testing not run |
-| M5 | External ML engineer (voice call) | Distillation, enterprise nuance, other remarks | NOT DONE; a size-range correction to that engineer is drafted and unsent |
+| M5 | External ML engineer (voice call) | Distillation, enterprise nuance, other remarks | PARTIAL; a size-range correction to that engineer was sent on 2026-09-28 |
 | C1 | External technical collaborator (voice call) | README is overwhelming as an entry point | DONE |
 | C2 | External technical collaborator (voice call) | Another metric or benchmark would help | NOT DONE |
 | C3 | External technical collaborator (voice call) | Too small to sell alone; fits inside a suite | PARTIAL: two integration paths scoped, nothing built |
@@ -105,7 +105,7 @@ This engineer tested the tool against their organization's internal models on a 
 
 **Not done:** the adversarial GPU sweep on Qwen3.5. It needs a paid GPU run that has not been approved, and the pipeline has not been adapted to Qwen3.5's hybrid attention layers. For context, the existing sweep covers 3<!-- claim: adv_models = 3.0000 --> base models, all Qwen2.5, at 0.135<!-- claim: adv_min_params_b = 0.1350 -->B, 0.5<!-- claim: adv_mid_params_b = 0.5000 -->B and 1.5<!-- claim: adv_max_params_b = 1.5000 -->B parameters.
 
-**Owed:** a correction to the engineer. The sweep was described on the call as covering roughly 0.5B to 8B parameters; it covers only the three sizes above. That correction has been drafted and not yet sent.
+**Owed:** a correction to the engineer. The sweep was described on the call as covering roughly 0.5B to 8B parameters; it covers only the three sizes above. That correction was sent on 2026-09-28.
 
 ### M5. Other remarks
 
@@ -183,7 +183,7 @@ This engineer cloned the repo and filed a form submission with detailed technica
 
 **What was done:** the Related Work paragraph in the paper was trimmed to what the author confirmed. Removed: our earlier reading "over label space, constructed from a compressed model's own output probabilities", which the author did not confirm; and the ambiguous "but measures it" clause. Kept: "they evaluate predictive uncertainty (coverage and set size) after running the compressed model", which matches the author's wording. The author is not named in the paper. A private email reply is not consent to appear in a public paper.
 
-**What is open:** the author offered to hear more about the scale-related adversarial pattern; a matched follow-up describing the tail and the -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp adversarial worst has been drafted and not yet sent.
+**Follow-up sent:** a matched note describing the scale-related adversarial pattern -- the tail and the -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp adversarial worst -- was sent on 2026-09-28.
 
 ## Not addressed
 
@@ -191,7 +191,7 @@ This engineer cloned the repo and filed a form submission with detailed technica
 
 - Whether the 85% refusal line should move (R1 / M3).
 
-- The Qwen3.5 GPU sweep (M4) and the correction owed to the engineer.
+- The Qwen3.5 GPU sweep (M4).
 
 - Distillation and the other remarks (M5).
 
