@@ -1650,6 +1650,138 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
           "named scripts and regenerate downstream docs.")
 
 
+# ---------------------------------------------------------------------------
+# Registry composition manifest.
+#
+# "N/N verified" is only meaningful if N is pinned. The registry expands 286
+# add() call sites into ~730 keys because many are inside for-loops over
+# data-defined lists (cells that pass the >=20/>=3-ckpt gate, schemes,
+# per-fold LOFO, per-benchmark noise pool, per-publisher census, ...).
+# A corpus change can therefore silently move N without any commit touching
+# verify_claims.py -- and the paper macro pipeline would keep saying
+# "N/N verified" with a green check on a moved denominator.
+#
+# This test pins N per group (prefix before "::") plus the scalar count.
+# Any change to a group size, or a new group appearing, must be reflected
+# in EXPECTED below in the same commit, so registry growth becomes an
+# explicit reviewable diff.
+#
+# What planted failure fires this: any code change that adds an add() call
+# with a new prefix, or a data change that flips an extra cell across the
+# >=20/>=3-ckpt gate, or a new publisher entering the census. The failure
+# message names which group(s) moved.
+# ---------------------------------------------------------------------------
+
+_REGISTRY_MANIFEST = {
+    "(scalar)": 252,
+    "band_coverage_pct::": 3,
+    "bias_after_correction::": 2,
+    "bias_effective::": 6,
+    "bias_gap_closed_pct::": 2,
+    "bias_miss_rate::": 6,
+    "bias_naive_mass::": 2,
+    "cell_boot_hi::": 17,
+    "cell_boot_lo::": 17,
+    "cell_ckpts::": 17,
+    "cell_coverage_pct::": 17,
+    "cell_one_sided_pct::": 17,
+    "cell_pairs::": 17,
+    "cell_rows::": 17,
+    "cell_train_ckpt2::": 17,
+    "cell_train_ckpt::": 17,
+    "cell_train_rows2::": 17,
+    "cell_train_rows::": 17,
+    "checkpoints::": 6,
+    "corrected_lower::": 6,
+    "coverage_pct::": 6,
+    "ctrl_baseagree::": 2,
+    "ctrl_gap::": 2,
+    "ctrl_our_delta::": 2,
+    "ctrl_pub_delta::": 2,
+    "families::": 6,
+    "hi::": 6,
+    "lo::": 6,
+    "lofo_fallback_rate_pct::": 6,
+    "lofo_l3merged_cov::": 5,
+    "lofo_l3sub_cov::": 15,
+    "lossless_mean::": 3,
+    "n::": 6,
+    "os_above_hi_pct::": 2,
+    "os_below_lo_pct::": 2,
+    "os_boot90_hi::": 2,
+    "os_boot90_lo::": 2,
+    "os_ckpt::": 7,
+    "os_distinct_checkpoints::": 2,
+    "os_distinct_families::": 2,
+    "os_distinct_model_benchmark::": 2,
+    "os_distinct_rows::": 2,
+    "os_missmean::": 6,
+    "os_one_sided_pct::": 2,
+    "os_scored_pairs::": 2,
+    "os_two_sided_pct::": 2,
+    "pred_mae::": 6,
+    "prosp_scheme_ckpts::": 4,
+    "prosp_scheme_cov_pct::": 4,
+    "prosp_scheme_rows::": 4,
+    "scheme_boot_hi::": 6,
+    "scheme_boot_lo::": 6,
+    "scheme_ckpts::": 6,
+    "scheme_cov_one::": 6,
+    "scheme_cov_two::": 6,
+    "scheme_pairs::": 6,
+    "scheme_rows::": 6,
+    "severe_pct::": 6,
+    "t2_mae_lowrank::": 3,
+    "t2_mae_scheme::": 3,
+    "t2_mae_zero::": 3,
+    "t2_mean_abs_pred::": 3,
+    "t2_n::": 3,
+    "t2b_corr_pred_true::": 6,
+    "t2b_false_alarms::": 6,
+    "t2b_mae::": 6,
+    "t2b_mae_scheme_mean::": 6,
+    "t2b_mae_sd::": 2,
+    "t2b_mae_zero::": 6,
+    "t2b_mean_abs_pred::": 6,
+    "t2b_n::": 6,
+    "t2b_n_severe::": 6,
+    "t2b_ratio_vs_scheme_mean::": 6,
+    "t2b_severe_caught::": 6,
+    "w4a16_mean::": 3,
+    "w4a16_p05::": 3,
+    "worst::": 6,
+}
+
+
+def test_registry_composition_matches_manifest():
+    from src.verify_claims import registry
+    r = registry()
+    live = {}
+    for k in r:
+        prefix = k.split("::")[0] + "::" if "::" in k else "(scalar)"
+        live[prefix] = live.get(prefix, 0) + 1
+
+    diffs = []
+    for g in sorted(set(_REGISTRY_MANIFEST) | set(live)):
+        want = _REGISTRY_MANIFEST.get(g)
+        got = live.get(g)
+        if want != got:
+            if want is None:
+                diffs.append(f"  NEW GROUP  {g!r}: live={got} (not in manifest)")
+            elif got is None:
+                diffs.append(f"  DROPPED    {g!r}: manifest={want} (missing from live)")
+            else:
+                diffs.append(f"  MOVED      {g!r}: manifest={want}  live={got}  (delta {got - want:+d})")
+
+    assert not diffs, (
+        "Registry composition diverges from the pinned manifest. This is by "
+        "design a hard failure -- 'N/N verified' is only meaningful when N "
+        "is fixed. If the change is intentional (a new benchmark, a cell "
+        "crossing the >=20/>=3-ckpt gate, a new publisher, a new add() "
+        "call), update _REGISTRY_MANIFEST in this test IN THE SAME COMMIT "
+        "so the diff shows which group moved.\n\n" + "\n".join(diffs))
+
+
 def test_hardcoded_enumeration_lists_cover_all_data_values():
     """Sweep for the BENCH_LEVELS-class bug: any hard-coded list that is
     supposed to enumerate the values the data contains, where a missing
