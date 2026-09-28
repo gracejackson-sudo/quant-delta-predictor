@@ -70,35 +70,35 @@
   "fp8_dynamic": {
     "scheme": "fp8_dynamic",
     "severe_rate": {
-      "1.0": 0.08163265306122448,
-      "1.5": 0.025510204081632654,
-      "2.0": 0.015306122448979591,
-      "2.5": 0.01020408163265306,
-      "3.0": 0.01020408163265306,
-      "3.5": 0.01020408163265306,
-      "4.0": 0.01020408163265306,
-      "4.5": 0.00510204081632653,
-      "5.0": 0.00510204081632653
+      "1.0": 0.08,
+      "1.5": 0.025,
+      "2.0": 0.015,
+      "2.5": 0.01,
+      "3.0": 0.01,
+      "3.5": 0.01,
+      "4.0": 0.01,
+      "4.5": 0.005,
+      "5.0": 0.005
     },
     "n_severe_3pp": 2,
     "label": "FP8-dynamic (8-bit float, dynamic scales)",
-    "mean": -0.08571428571428574,
-    "half_width": 1.314285714285714,
-    "lo": -1.4,
-    "hi": 1.2285714285714282,
+    "mean": -0.047700000000000006,
+    "half_width": 1.3922999999999999,
+    "lo": -1.44,
+    "hi": 1.3445999999999998,
     "worst_observed": -8.72,
-    "p05": -1.1424999999999998,
-    "n": 196,
+    "p05": -1.1324999999999998,
+    "n": 200,
     "n_checkpoints": 22,
     "n_families": 5,
-    "coverage_one_sided": 0.9724489795918367,
-    "coverage_two_sided": 0.926530612244898,
-    "coverage_rows": 196,
+    "coverage_one_sided": 0.972,
+    "coverage_two_sided": 0.913,
+    "coverage_rows": 200,
     "coverage_ckpts": 22,
-    "coverage_scored_pairs": 980,
+    "coverage_scored_pairs": 1000,
     "coverage_boot90": [
-      95.52238805970148,
-      98.7192118226601
+      95.5,
+      98.64253393665159
     ],
     "coverage_state": "trusted",
     "coverage_worst_family": 0.8736842105263158,
@@ -106,12 +106,12 @@
     "coverage_n_families": 5,
     "coverage_by_family": {
       "granite": 0.9578947368421052,
-      "llama-3": 0.9970588235294118,
+      "llama-3": 0.9971014492753624,
       "mistral": 0.8736842105263158,
-      "qwen2.5": 0.9809523809523809,
-      "qwen3": 0.9862068965517241
+      "qwen2.5": 0.9761904761904762,
+      "qwen3": 0.9875
     },
-    "coverage_spread": 0.12337461300309593,
+    "coverage_spread": 0.12341723874904653,
     "size_gradient": {
       "<2B": {
         "n": 19,
@@ -120,14 +120,14 @@
         "checkpoints": 3
       },
       "2-10B": {
-        "n": 86,
-        "mean": -0.035697674418604664,
+        "n": 87,
+        "mean": -0.006321839080459783,
         "worst": -4.32,
         "checkpoints": 10
       },
       ">10B": {
-        "n": 91,
-        "mean": -0.10241758241758243,
+        "n": 94,
+        "mean": -0.04872340425531919,
         "worst": -8.72,
         "checkpoints": 9
       }
@@ -139,56 +139,56 @@
   "nvfp4": {
     "scheme": "nvfp4",
     "severe_rate": {
-      "1.0": 0.4666666666666667,
-      "1.5": 0.4,
-      "2.0": 0.26666666666666666,
-      "2.5": 0.23333333333333334,
-      "3.0": 0.15,
-      "3.5": 0.1,
-      "4.0": 0.05,
-      "4.5": 0.03333333333333333,
-      "5.0": 0.03333333333333333
+      "1.0": 0.4375,
+      "1.5": 0.375,
+      "2.0": 0.25,
+      "2.5": 0.21875,
+      "3.0": 0.140625,
+      "3.5": 0.09375,
+      "4.0": 0.046875,
+      "4.5": 0.03125,
+      "5.0": 0.03125
     },
     "n_severe_3pp": 9,
     "label": "NVFP4 (4-bit float weights + activations)",
-    "mean": -1.207,
-    "half_width": 2.9430000000000005,
-    "lo": -4.15,
-    "hi": 1.7360000000000004,
+    "mean": -1.1146875,
+    "half_width": 2.9846875,
+    "lo": -4.099375,
+    "hi": 1.87,
     "worst_observed": -8.12,
-    "p05": -3.9410000000000003,
-    "n": 60,
+    "p05": -3.93,
+    "n": 64,
     "n_checkpoints": 5,
     "n_families": 3,
-    "coverage_one_sided": 0.9666666666666667,
-    "coverage_two_sided": 0.94,
-    "coverage_rows": 60,
+    "coverage_one_sided": 0.959375,
+    "coverage_two_sided": 0.93125,
+    "coverage_rows": 64,
     "coverage_ckpts": 5,
-    "coverage_scored_pairs": 300,
+    "coverage_scored_pairs": 320,
     "coverage_boot90": [
-      90.6896551724138,
+      88.38709677419355,
       100.0
     ],
     "coverage_state": "trusted",
-    "coverage_worst_family": 0.8363636363636363,
+    "coverage_worst_family": 0.8,
     "coverage_worst_family_name": "llama-3",
     "coverage_n_families": 3,
     "coverage_by_family": {
-      "llama-3": 0.8363636363636363,
+      "llama-3": 0.8,
       "mistral": 1.0,
-      "qwen3": 0.9944444444444445
+      "qwen3": 0.9948717948717949
     },
-    "coverage_spread": 0.1636363636363637,
+    "coverage_spread": 0.19999999999999996,
     "size_gradient": {
       "2-10B": {
-        "n": 12,
-        "mean": -1.1791666666666667,
+        "n": 13,
+        "mean": -0.9984615384615385,
         "worst": -7.15,
         "checkpoints": 1
       },
       ">10B": {
-        "n": 48,
-        "mean": -1.2139583333333333,
+        "n": 51,
+        "mean": -1.144313725490196,
         "worst": -8.12,
         "checkpoints": 4
       }
@@ -198,35 +198,35 @@
   "w4a16": {
     "scheme": "w4a16",
     "severe_rate": {
-      "1.0": 0.3263157894736842,
-      "1.5": 0.23684210526315788,
-      "2.0": 0.11578947368421053,
-      "2.5": 0.07368421052631578,
-      "3.0": 0.05263157894736842,
-      "3.5": 0.03684210526315789,
-      "4.0": 0.03684210526315789,
-      "4.5": 0.02631578947368421,
-      "5.0": 0.02631578947368421
+      "1.0": 0.32642487046632124,
+      "1.5": 0.23834196891191708,
+      "2.0": 0.11917098445595854,
+      "2.5": 0.07772020725388601,
+      "3.0": 0.05699481865284974,
+      "3.5": 0.03626943005181347,
+      "4.0": 0.03626943005181347,
+      "4.5": 0.025906735751295335,
+      "5.0": 0.025906735751295335
     },
-    "n_severe_3pp": 10,
+    "n_severe_3pp": 11,
     "label": "W4A16 (4-bit weights, 16-bit activations)",
-    "mean": -0.7278947368421054,
-    "half_width": 2.1021052631578945,
-    "lo": -2.83,
-    "hi": 1.374210526315789,
+    "mean": -0.7349222797927462,
+    "half_width": 2.134922279792746,
+    "lo": -2.8698445595854922,
+    "hi": 1.3999999999999997,
     "worst_observed": -8.86,
-    "p05": -2.9839999999999995,
-    "n": 190,
+    "p05": -3.062,
+    "n": 193,
     "n_checkpoints": 23,
     "n_families": 6,
-    "coverage_one_sided": 0.9568421052631579,
-    "coverage_two_sided": 0.9221052631578948,
-    "coverage_rows": 190,
+    "coverage_one_sided": 0.9564766839378238,
+    "coverage_two_sided": 0.9222797927461139,
+    "coverage_rows": 193,
     "coverage_ckpts": 23,
-    "coverage_scored_pairs": 950,
+    "coverage_scored_pairs": 965,
     "coverage_boot90": [
-      92.98245614035088,
-      97.92349726775956
+      92.91666666666667,
+      97.92079207920791
     ],
     "coverage_state": "trusted",
     "coverage_worst_family": 0.9071428571428571,
@@ -238,7 +238,7 @@
       "llama-3": 1.0,
       "mistral": 0.972972972972973,
       "qwen2.5": 0.9071428571428571,
-      "qwen3": 0.9185185185185185
+      "qwen3": 0.92
     },
     "coverage_spread": 0.09285714285714286,
     "size_gradient": {
@@ -249,14 +249,14 @@
         "checkpoints": 2
       },
       "2-10B": {
-        "n": 95,
-        "mean": -0.8669473684210526,
+        "n": 96,
+        "mean": -0.8894791666666668,
         "worst": -8.86,
         "checkpoints": 12
       },
       ">10B": {
-        "n": 84,
-        "mean": -0.3658333333333333,
+        "n": 86,
+        "mean": -0.3632558139534883,
         "worst": -3.22,
         "checkpoints": 9
       }
@@ -336,11 +336,11 @@
   "w8a8_int": {
     "scheme": "w8a8_int",
     "severe_rate": {
-      "1.0": 0.11398963730569948,
-      "1.5": 0.05181347150259067,
-      "2.0": 0.04145077720207254,
-      "2.5": 0.02072538860103627,
-      "3.0": 0.010362694300518135,
+      "1.0": 0.1134020618556701,
+      "1.5": 0.05154639175257732,
+      "2.0": 0.041237113402061855,
+      "2.5": 0.020618556701030927,
+      "3.0": 0.010309278350515464,
       "3.5": 0.0,
       "4.0": 0.0,
       "4.5": 0.0,
@@ -348,23 +348,23 @@
     },
     "n_severe_3pp": 2,
     "label": "W8A8-INT (8-bit int weights + activations)",
-    "mean": -0.3236787564766839,
-    "half_width": 1.386321243523316,
+    "mean": -0.32025773195876284,
+    "half_width": 1.3897422680412372,
     "lo": -1.71,
-    "hi": 1.0626424870466322,
+    "hi": 1.0694845360824745,
     "worst_observed": -3.32,
-    "p05": -1.5659999999999996,
-    "n": 193,
+    "p05": -1.5539999999999998,
+    "n": 194,
     "n_checkpoints": 24,
     "n_families": 5,
-    "coverage_one_sided": 0.9616580310880829,
-    "coverage_two_sided": 0.9316062176165804,
-    "coverage_rows": 193,
+    "coverage_one_sided": 0.9618556701030928,
+    "coverage_two_sided": 0.9329896907216495,
+    "coverage_rows": 194,
     "coverage_ckpts": 24,
-    "coverage_scored_pairs": 965,
+    "coverage_scored_pairs": 970,
     "coverage_boot90": [
-      93.91304347826087,
-      98.23204419889503
+      93.93617021276596,
+      98.2439024390244
     ],
     "coverage_state": "trusted",
     "coverage_worst_family": 0.8666666666666667,
@@ -373,7 +373,7 @@
     "coverage_by_family": {
       "gemma-2": 0.9333333333333333,
       "granite": 0.9947368421052631,
-      "llama-3": 0.94,
+      "llama-3": 0.9408450704225352,
       "mistral": 0.8666666666666667,
       "qwen2.5": 0.996551724137931
     },
@@ -392,8 +392,8 @@
         "checkpoints": 12
       },
       ">10B": {
-        "n": 71,
-        "mean": -0.44211267605633797,
+        "n": 72,
+        "mean": -0.43125,
         "worst": -3.32,
         "checkpoints": 8
       }
@@ -405,17 +405,17 @@
   "_meta": {
     "n_schemes": 6,
     "intervals_excluding_zero": 0,
-    "n_big_losses": 24,
-    "n_big_losses_below_floor": 17,
-    "pct_big_losses_below_floor": 70.83333333333333,
+    "n_big_losses": 25,
+    "n_big_losses_below_floor": 19,
+    "pct_big_losses_below_floor": 76.0,
     "n_numbers_in_predictor": 18,
     "n_size_dependent_widths": 6,
-    "n_rows": 805,
+    "n_rows": 817,
     "n_checkpoints": 38,
     "n_families": 6,
-    "pooled_cell_coverage": 0.9212422360248447,
-    "pooled_distinct_rows": 805,
-    "pooled_scored_pairs": 4025,
+    "pooled_cell_coverage": 0.9177478580171359,
+    "pooled_distinct_rows": 817,
+    "pooled_scored_pairs": 4085,
     "pooled_pairs_per_row": 5.0,
     "refused_cells": [],
     "insufficient_evidence_cells": [

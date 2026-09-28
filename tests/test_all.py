@@ -1506,21 +1506,26 @@ def test_regime_b_seed_is_stable_across_processes():
 
 
 def test_no_gpqa_dual_baseline_conflict_in_dataset():
-    """Tier 2.5 plant test (day-7 audit): four checkpoints
+    """Tier 2.5 plant test (day-7 audit v2): four checkpoints
     (Llama-3.3-70B-Instruct, Qwen3-8B, Qwen3-14B, Qwen3-32B) shipped
-    two GPQA tables in their cards -- one at chance-baseline (~25-31%,
-    likely main variant) and one well above chance (~46-67%, likely
-    diamond variant). First-table-wins dedup silently kept whichever
-    the card listed first, so different quantization schemes on the
-    same checkpoint carried different baselines for the same label.
+    two GPQA tables in their cards -- one at chance-baseline (~25-31%)
+    and one well above chance (~46-67%). First-table-wins dedup
+    silently kept whichever the card listed first, so different
+    quantization schemes on the same checkpoint carried different
+    baselines for one 'gpqa' label.
 
-    The 12 conflicted rows were dropped as unresolvable without a
-    re-harvest with cards. This test fires loudly if any come back:
-    for every (base_model, benchmark='gpqa') tuple, the acc_before
-    values must be within 5pp of each other."""
+    The v1 fix dropped the 12 conflicted rows. The v2 fix (this
+    revision) RELABELS the lower-baseline row per checkpoint as
+    'gpqa_v2', preserving the measurements as two separate protocols
+    under two distinct labels. This test asserts:
+      (a) no (base_model, 'gpqa') tuple retains baseline drift >5pp,
+      (b) the four relabeled rows are present as 'gpqa_v2', and
+      (c) no gpqa_v2 row appears for a checkpoint not in the flagged
+          four (so the relabel didn't over-reach)."""
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
     d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
+    # (a) no dual-baseline conflict left under 'gpqa'
     offenders = []
     for (bm, b), g in d.groupby(["base_model", "benchmark"]):
         if b != "gpqa":
@@ -1529,10 +1534,53 @@ def test_no_gpqa_dual_baseline_conflict_in_dataset():
         if len(acc) >= 2 and (max(acc) - min(acc)) > 5.0:
             offenders.append((bm, acc))
     assert not offenders, (
-        "gpqa dual-baseline conflict re-appeared. First-table-wins "
-        "dedup is silently keeping different GPQA variants (main vs "
-        "diamond) under one label:\n"
+        "gpqa dual-baseline conflict re-appeared:\n"
         + "\n".join(f"  {bm}: baselines={acc}" for bm, acc in offenders))
+    # (b) the four relabeled rows are present as gpqa_v2, one per
+    #     flagged checkpoint (each in its NVFP4 row)
+    flagged = {"Llama-3.3-70B-Instruct", "Qwen3-8B",
+               "Qwen3-14B", "Qwen3-32B"}
+    v2 = d[d.benchmark == "gpqa_v2"]
+    assert set(v2.base_model.unique()) == flagged, (
+        f"gpqa_v2 rows present for {set(v2.base_model.unique())}; "
+        f"expected exactly {flagged}")
+    # (c) gpqa_v2 rows must be the LOWER baseline for each checkpoint
+    for bm in flagged:
+        gpqa = d[(d.base_model == bm) & (d.benchmark == "gpqa")]
+        v2b = d[(d.base_model == bm) & (d.benchmark == "gpqa_v2")]
+        assert v2b.acc_before.max() < gpqa.acc_before.min(), (
+            f"{bm}: gpqa_v2 baseline {v2b.acc_before.tolist()} must sit "
+            f"strictly below the gpqa baseline {gpqa.acc_before.tolist()}")
+
+
+def test_dataset_row_count_pinned_at_817():
+    """Tier 2.5 sweep (day-7 audit): pin the corpus size so a future
+    row drop cannot silently apply to some downstream code paths and
+    not others. 850 raw rows minus 33 near-chance-baseline drops = 817
+    rows in the modeling set. If the count moves, this test fails
+    loudly and the paper's macros, the abstract, §3 and §5, and every
+    generated doc must all move together (see registry `n_rows` /
+    numbers.tex `\\Nrows`)."""
+    import pandas as pd
+    root = os.path.join(os.path.dirname(__file__), "..")
+    d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
+    assert len(d) == 850, (
+        f"data/dataset.csv has {len(d)} raw rows; expected 850. A drop "
+        f"went in without the sweep — check dataset.csv, the "
+        f"MIN_ACC_BEFORE filter, and the registry `n_rows_raw` claim.")
+    d2 = d[d.acc_before >= 20]
+    assert len(d2) == 817, (
+        f"dataset.csv has {len(d2)} rows after acc_before>=20; expected "
+        f"817. If a drop is intended, update paper/numbers.tex (Nrows), "
+        f"the abstract, §3, §5, the supplement, README, and this pin "
+        f"together.")
+    # And the registry must agree.
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(root, "src"))
+    from verify_claims import registry as _reg
+    R = {k: v[0] for k, v in _reg().items()}
+    assert R["n_rows"] == 817, f"registry n_rows = {R['n_rows']}"
+    assert R["n_rows_raw"] == 850, f"registry n_rows_raw = {R['n_rows_raw']}"
 
 
 def test_independent_check_benchmark_regex_handles_variants():

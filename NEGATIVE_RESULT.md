@@ -2,7 +2,7 @@
 
 *A negative result, with the measured noise floor, a low-rank transfer test, and a comparison to BenchPress.*
 
-Data: 805<!-- claim: n_rows = 805.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
+Data: 817<!-- claim: n_rows = 817.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
 
 ---
 
@@ -27,9 +27,9 @@ Ridge regression and gradient boosting both do **worse than predicting the avera
 
 ## 3. Why: the target is mostly measurement noise
 
-Benchmark scores are sample proportions over finite item sets, so a delta is a difference of two noisy quantities. Estimating the noise floor directly from near-lossless schemes (W8A16 and FP8-dynamic, whose true delta should be ~0) gives an irreducible MAE of **0.508<!-- claim: mae_floor_pp = 0.507523 -->pp**.
+Benchmark scores are sample proportions over finite item sets, so a delta is a difference of two noisy quantities. Estimating the noise floor directly from near-lossless schemes (W8A16 and FP8-dynamic, whose true delta should be ~0) gives an irreducible MAE of **0.526<!-- claim: mae_floor_pp = 0.525660 -->pp**.
 
-The global-mean baseline sits at 0.7545<!-- claim: mae_global_lofo = 0.754511 -->pp. So the entire headroom available to any predictor is about 0.247<!-- claim: headroom_pp = 0.2470 -->pp, and the best predictor we found captures roughly a tenth of it.
+The global-mean baseline sits at 0.7545<!-- claim: mae_global_lofo = 0.754511 -->pp. So the entire headroom available to any predictor is about 0.229<!-- claim: headroom_pp = 0.2289 -->pp, and the best predictor we found captures roughly a tenth of it.
 
 On GSM8K specifically, the observed spread for supposedly lossless schemes is nearly identical to the spread for 4-bit schemes: the measurement is louder than the effect.
 
@@ -37,7 +37,7 @@ On GSM8K specifically, the observed spread for supposedly lossless schemes is ne
 
 BenchPress (arXiv:2606.24020) predicts unseen benchmark scores by exploiting the fact that a frontier-model score matrix is roughly rank-2. We tested whether that structure helps on **paired** quantization deltas.
 
-> **Correction.** The first version of this section made three statements that a BenchPress author showed, on reviewing our code, to be wrong or unfair. (1) It said rank-2 explains 55.9<!-- claim: t2_var_explained_rank2_pct = 55.931459 -->% of the variance in our matrix, against over 90% for BenchPress. That figure was computed after filling 50.2<!-- claim: t2b_filled_global_mean_pct = 50.223214 -->% of the matrix with one global mean, which weakens any low-rank structure. Measured as the BenchPress paper does it, the structure is present (table below). (2) It tested a plain SVD-completion approximation, not BenchPress's method. (3) It called the resulting error gap 'an order of magnitude'; even our own numbers showed about 9<!-- claim: t2_mae_lowrank::2 = 8.746753 --> versus 1.4<!-- claim: t2_mae_scheme::2 = 1.385334 -->. What follows replaces it.
+> **Correction.** The first version of this section made three statements that a BenchPress author showed, on reviewing our code, to be wrong or unfair. (1) It said rank-2 explains 55.9<!-- claim: t2_var_explained_rank2_pct = 55.931459 -->% of the variance in our matrix, against over 90% for BenchPress. That figure was computed after filling 52.3<!-- claim: t2b_filled_global_mean_pct = 52.310924 -->% of the matrix with one global mean, which weakens any low-rank structure. Measured as the BenchPress paper does it, the structure is present (table below). (2) It tested a plain SVD-completion approximation, not BenchPress's method. (3) It called the resulting error gap 'an order of magnitude'; even our own numbers showed about 9<!-- claim: t2_mae_lowrank::2 = 8.746753 --> versus 1.4<!-- claim: t2_mae_scheme::2 = 1.385334 -->. What follows replaces it.
 
 ### 4a. Is the structure there?
 
@@ -66,7 +66,7 @@ Using their method instead of ours improves the error by about 23<!-- claim: t2b
 
 ### 4c. The reviewer's two smaller points
 
-- **Benchmarks without close neighbours.** Confirmed: the strongest correlation for GPQA is 0.96<!-- claim: t2b_corr_gpqa = 0.962705 --> (over 14<!-- claim: t2b_corr_gpqa_overlap = 14.000000 --> rows) and for MuSR 0.78<!-- claim: t2b_corr_musr = 0.780796 --> (over 12<!-- claim: t2b_corr_musr_overlap = 12.000000 --> rows). Correlations elsewhere are near 1 but rest on very few overlapping rows and on base and quantized rows that duplicate each other, so we do not treat them as strong evidence.
+- **Benchmarks without close neighbours.** Confirmed: the strongest correlation for GPQA is 0.98<!-- claim: t2b_corr_gpqa = 0.977376 --> (over 12<!-- claim: t2b_corr_gpqa_overlap = 12.000000 --> rows) and for MuSR 0.74<!-- claim: t2b_corr_musr = 0.738127 --> (over 22<!-- claim: t2b_corr_musr_overlap = 22.000000 --> rows). Correlations elsewhere are near 1 but rest on very few overlapping rows and on base and quantized rows that duplicate each other, so we do not treat them as strong evidence.
 
 - **Choosing the known scores.** Revealing the 3 most predictive benchmarks instead of 3 random ones gave a ratio to the lookup of 4.5<!-- claim: t2b_ratio_vs_scheme_mean::bp_pred = 4.468603 -->x for BenchPress and 4.3<!-- claim: t2b_ratio_vs_scheme_mean::orig_pred = 4.294123 -->x for our imputer, against 4.7<!-- claim: t2b_ratio_vs_scheme_mean::bp = 4.687995 -->x and 6.1<!-- claim: t2b_ratio_vs_scheme_mean::orig = 6.092992 -->x with random ones. That is a single deterministic run, with predictiveness ranked from base rows that include the model being tested, and it changes which rows are scored, so it is a weak check; it does not change the conclusion.
 

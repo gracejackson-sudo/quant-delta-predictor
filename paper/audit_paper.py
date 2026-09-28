@@ -63,6 +63,11 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "135",   # SmolLM-135M-Instruct model name digit
           "70",    # 70B model-name digit (Llama-3.1-70B, Llama-3.3-70B)
           "90",    # 90B model-name digit (Llama-3.2-90B-Vision)
+          # Tier 2.5 v2 §9 bullet describes the GPQA baseline ranges
+          # (~25-32% chance-baseline vs ~46-67% headline) and lists the
+          # affected Qwen3 variants (8B, 14B, 32B). These are qualitative
+          # ranges and model-name digits, not measured claim-macros.
+          "25", "32", "46", "67", "14",
           "40",    # 40 GB VRAM (A100-SXM4-40GB, on which the day-6 rerun OOM'd)
           "80",    # 80 GB VRAM (the hardware that would make the 3B extension fit)
           "0.85",  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression

@@ -53,11 +53,14 @@ HISTORICAL = {"5.1", "74", "94", "92.2", "90.2", "12", "19", "46",
               # historical record, not a bug to update silently.
               "91.0", "5719", "73.7", "217", "68.8", "77", "81.1",
               "29.9", "98", "95.1",
-              # Tier 2.5 dropped 12 gpqa rows, taking Nrows from 817 to 805;
-              # the external commenter's quote in EXTERNAL_FEEDBACK.md
-              # ("817 rows were each scored under 7 calibration families")
-              # describes the pre-Def-B / pre-Tier-2.5 corpus and is
-              # deliberately preserved as history.
+              # EXTERNAL_FEEDBACK.md's "817 rows under 7 calibration
+              # families" quotes the external commenter's audit, which was
+              # run against the pre-Def-B corpus (8 families, so 7
+              # calibration families per row). Under 6 families each row
+              # is now scored under 5 calibration families; the '817' is
+              # correct for the row count today but the '7' is historical
+              # and is preserved verbatim as their quote. The current
+              # Nrows is still 817 after the Tier 2.5 v2 relabel.
               "817"}
 EXEMPT = {
     # identifiers and fixed constants
