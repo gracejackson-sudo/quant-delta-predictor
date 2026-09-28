@@ -1188,6 +1188,96 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
 
 
 # ---------------------------------------------------------------------------
+# C4 gate: neither independent verifier is currently invoked by CI or by the
+# rest of the test suite. Before this test, independent_rank.py could exit
+# non-zero (severe_rate `<=` vs the pipeline's strict `<`) and independent_check.py
+# could crash on FileNotFoundError, and no gate would catch it. The test runs
+# both from the shell and asserts exit 0. independent_check.py's guarded
+# skip on missing data/cards/ counts as a clean exit, since the corpus is
+# intentionally not committed (PROVENANCE.md 2026-09-27).
+# Planted failure: revert verify/independent_rank.py:137 back to `<= -RISK_PP`
+# and the field-level disagreement re-appears, main() returns 2, this test fires.
+# ---------------------------------------------------------------------------
+
+def test_verifiers_exit_zero():
+    import subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for name in ("independent_rank.py", "independent_check.py"):
+        path = os.path.join(root, "verify", name)
+        r = subprocess.run([sys.executable, path],
+                           capture_output=True, text=True, cwd=root)
+        assert r.returncode == 0, (
+            f"verify/{name} exited {r.returncode}. Gate step for C4: "
+            f"any non-zero exit from a verifier must fail the suite.\n"
+            f"---stdout tail---\n{r.stdout[-800:]}\n"
+            f"---stderr tail---\n{r.stderr[-800:]}")
+
+
+# ---------------------------------------------------------------------------
+# C5: localized MMLU labels (Italian, Hindi, Thai, Portuguese, Spanish,
+# Arabic, French, German, ...) must NOT be classified as plain 'mmlu' by
+# EITHER the pipeline or the verifier. Previously the verifier's
+# negative-lookbehind enumeration was incomplete (missed Italian/Hindi/
+# Thai/Portuguese) and silently inflated the mmlu bucket by ~2 rows, so
+# the verifier reported 819 training rows while the pipeline emitted 817.
+#
+# Planted failure: put the old negative-lookbehind regex back on line 46 of
+# verify/independent_check.py and this test fires on 'Italian MMLU' etc.
+# ---------------------------------------------------------------------------
+
+def test_localized_mmlu_labels_are_not_classified_as_plain_mmlu():
+    import re
+    import importlib.util as _iu
+
+    def _load(name, path):
+        s = _iu.spec_from_file_location(name, path)
+        m = _iu.module_from_spec(s); s.loader.exec_module(m); return m
+
+    root = os.path.join(os.path.dirname(__file__), "..")
+    verif = _load("independent_check_c5",
+                  os.path.join(root, "verify", "independent_check.py"))
+    harvest = _load("harvest_c5", os.path.join(root, "src", "harvest.py"))
+
+    localized = [
+        "Italian MMLU", "Hindi MMLU", "Thai MMLU", "Portuguese MMLU",
+        "Spanish MMLU", "Arabic MMLU", "French MMLU", "German MMLU",
+        "Italian-MMLU", "Portuguese-MMLU",
+    ]
+
+    leaked_verif = []
+    for label in localized:
+        s = label.strip().lower()
+        matched = None
+        for name, pat in verif.BENCH:
+            if re.search(pat, s):
+                matched = name; break
+        if matched == "mmlu":
+            leaked_verif.append(label)
+
+    leaked_harvest = []
+    for label in localized:
+        got = harvest.canon_benchmark(label)
+        if got == "mmlu":
+            leaked_harvest.append(label)
+
+    assert not leaked_verif, (
+        f"verify/independent_check.py BENCH list classifies these localized "
+        f"labels as plain 'mmlu': {leaked_verif}. Anchor the plain-mmlu "
+        f"regex at the start of the label (^mmlu\\b), matching "
+        f"src/harvest.py:29.")
+    assert not leaked_harvest, (
+        f"src/harvest.py canon_benchmark classifies these localized labels "
+        f"as plain 'mmlu': {leaked_harvest}. That would inflate the mmlu "
+        f"row count and pollute the noise-floor estimate.")
+
+    # positive control: plain MMLU still matches both.
+    assert harvest.canon_benchmark("MMLU") == "mmlu"
+    s = "mmlu"
+    got = next((n for n, p in verif.BENCH if re.search(p, s)), None)
+    assert got == "mmlu", f"verifier lost plain 'mmlu': got {got!r}"
+
+
+# ---------------------------------------------------------------------------
 # A4 loose end: out/independent_check.csv was patched (not regenerated) with
 # a 1e-9 tolerance for the float-boundary case. If someone later regenerates
 # the CSV from data/cards/ and the tolerance is not applied, this test fails.

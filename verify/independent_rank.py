@@ -134,8 +134,11 @@ def cell(rows):
         "n_families": len({r["family"] for r in rows}),
         "worst": min(ds),
         "p05": percentile(ds, 0.05),
-        "severe_rate": sum(1 for x in ds if x <= -RISK_PP) / len(ds),
-        "n_severe": sum(1 for x in ds if x <= -RISK_PP),
+        # strict `<`, matching src/rank.py:205 (Tier 1.2). A row on the
+        # boundary (delta == -3.00) is NOT severe; the loose form silently
+        # inflated nvfp4 severe_rate 0.140625 -> 0.15625.
+        "severe_rate": sum(1 for x in ds if x < -RISK_PP) / len(ds),
+        "n_severe": sum(1 for x in ds if x < -RISK_PP),
     }
 
 
