@@ -23,7 +23,7 @@ Six external conversations produced concrete feedback. Two came from structured 
 | C4 | External technical collaborator (voice call) | Fastest willingness-to-pay signal | NOT DONE (form field drafted, then declined) |
 | H1 | External ML engineer (form submission) | Paper called the shipped intervals split-conformal; the code fits centre and half-width on the same rows | FIXED (paper wording; the split-conformal citation stays for the theory paragraph) |
 | H2 | External ML engineer (form submission) | Pair counting: 5719 was reported as if it were rows, when 817 rows were each scored under 7 calibration families | FIXED in the coverage refactor at 32e056f; distinct_rows and scored_pairs are now separate and labelled |
-| H3 | External ML engineer (form submission) | Drift across schemes and bands; nine cells at insufficient evidence, task-1 attribution untested | VERIFIED and reflected in the shipped tool; task-1 attribution is a GPU run not yet approved |
+| H3 | External ML engineer (form submission) | Drift across schemes and bands; nine cells at insufficient evidence, task-1 attribution untested | PARTIAL: cells-and-schemes work reflected in the shipped tool; the task-1 reproduction was run (`out/task1_real_gptq.json`, day 6) and both attempts hit chance-level MMLU, so the attribution question stays open |
 | H4 | External ML engineer (form submission) | LoRA-not-in-product; zero cells refused; product-strategy read | TRUE, recorded as strategic input; no product changes made on the strength of a single review |
 | T1 | An author of Tong et al. | Whether "forecast vs measure" is a fair characterization of their work | DONE: paper Related-Work paragraph trimmed to what she confirmed; not named in the paper |
 
@@ -165,7 +165,9 @@ This engineer cloned the repo and filed a form submission with detailed technica
 
 **What was said:** several cells looked undercovered; the tool should refuse where evidence is thin; and the 171<!-- claim: calib_ratio_x = 170.6667 -->x calibration-data ratio in task 1 was presented as causing the gap without an independent test.
 
-**What was done:** the two-level classifier in the refactor at `32e056f` demotes cells and schemes with too few checkpoints or straddling bootstrap intervals. Current state: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> at insufficient evidence. The paper now describes the 171<!-- claim: calib_ratio_x = 170.6667 -->x figure as "consistent with ... though the attribution is not independently tested"; the GPU test that would settle it (`task1_real_gptq.py`) has not been run.
+**What was done, cells and schemes:** the two-level classifier in the refactor at `32e056f` demotes cells and schemes with too few checkpoints or straddling bootstrap intervals. Current state: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> at insufficient evidence.
+
+**What was done, task-1 attribution:** the reproduction run happened on day 6 (`out/task1_real_gptq.json`; described in the paper's audit section, `\paragraph{An attempt at re-running the calibration-data test.}`). We attempted to reproduce Red Hat's published W4A16 checkpoints for Qwen2.5-0.5B and Qwen2.5-1.5B with `llm-compressor` at its documented defaults. Both attempts landed at four-way random chance on 5-shot MMLU (23.4<!-- claim: t1_anom_min_pct = 23.4333 -->--27.5<!-- claim: t1_anom_max_pct = 27.5000 -->%; 1.5B went 59.57<!-- claim: t1_before_qwen25_1_5b = 59.5667 --> -> 27.50<!-- claim: t1_after_qwen25_1_5b = 27.5000 -->, 0.5B went 47.23<!-- claim: t1_before_qwen25_0_5b = 47.2333 --> -> 23.43<!-- claim: t1_after_qwen25_0_5b = 23.4333 -->), well past the worst outcome in the corpus or the control arm. Neither card pins a library version or names a calibration dataset; a second attempt at an era-appropriate pin inferred from the card wording (`llmcompressor==0.4.1` + `transformers==4.44.2`) could not resolve to a working import combination. We treat the anomaly as a stack-level artifact rather than a calibration-data finding, so the paper still describes the 171<!-- claim: calib_ratio_x = 170.6667 -->x figure as "consistent with ... though the attribution is not independently tested". The engineer's original question -- whether that 171<!-- claim: calib_ratio_x = 170.6667 -->x calibration-data ratio explains the observed excess damage -- is neither answered nor abandoned; it awaits a reproduction stack that actually converges.
 
 ### H4. LoRA-not-in-product; zero cells refused; product-strategy read
 
@@ -197,6 +199,6 @@ This engineer cloned the repo and filed a form submission with detailed technica
 
 - The matched BenchPress protocol (B1 in full) and the benchmark-similarity / known-scores sensitivity (B2).
 
-- The task-1 GPU run that would test the 171x attribution (H3).
+- A task-1 reproduction stack that actually converges (H3). The day-6 run happened; both attempts hit chance-level MMLU, so the attribution question stays open.
 
 - Current tool state, for reference: 17<!-- claim: n_cells_total = 17.0000 --> cells, 0<!-- claim: n_cells_refused = 0.0000 --> refused, 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> at insufficient evidence (fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> checkpoints or an inconclusive bootstrap).

@@ -219,6 +219,14 @@ def registry():
                 "day-6 task-1 lowest quantized MMLU on the anomalous first run")
             add("t1_anom_max_pct", _accs[-1], 0.02,
                 "day-6 task-1 highest quantized MMLU on the anomalous first run")
+        # Per-model before/after so EXTERNAL_FEEDBACK.md can name them
+        # without hand-typing (Step 3b, day-7 audit).
+        for _row in _t:
+            _slug = _row["model"].replace("Qwen2.5-", "qwen25_").replace("-Instruct", "").lower().replace(".", "_")
+            add(f"t1_before_{_slug}", _row["acc_before"], 0.02,
+                f"day-6 task-1 acc_before for {_row['model']}")
+            add(f"t1_after_{_slug}", _row["acc_after"], 0.02,
+                f"day-6 task-1 acc_after for {_row['model']}")
 
     # RedHatAI-card recipe-documentation scan (see src/rh_card_recipe_scan.py).
     # Keys carry the scan date because the underlying count of published

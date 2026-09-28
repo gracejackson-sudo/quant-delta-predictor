@@ -1688,7 +1688,7 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
 # ---------------------------------------------------------------------------
 
 _REGISTRY_MANIFEST = {
-    "(scalar)": 252,
+    "(scalar)": 256,
     "band_coverage_pct::": 3,
     "bias_after_correction::": 2,
     "bias_effective::": 6,

@@ -78,7 +78,7 @@ def main():
         ("H2", "External ML engineer (form submission)", "Pair counting: 5719 was reported as if it were rows, when 817 rows were each scored under 7 calibration families",
          "FIXED in the coverage refactor at 32e056f; distinct_rows and scored_pairs are now separate and labelled"),
         ("H3", "External ML engineer (form submission)", "Drift across schemes and bands; nine cells at insufficient evidence, task-1 attribution untested",
-         "VERIFIED and reflected in the shipped tool; task-1 attribution is a GPU run not yet approved"),
+         "PARTIAL: cells-and-schemes work reflected in the shipped tool; the task-1 reproduction was run (`out/task1_real_gptq.json`, day 6) and both attempts hit chance-level MMLU, so the attribution question stays open"),
         ("H4", "External ML engineer (form submission)", "LoRA-not-in-product; zero cells refused; product-strategy read",
          "TRUE, recorded as strategic input; no product changes made on the strength of a single review"),
         ("T1", "An author of Tong et al.", "Whether \"forecast vs measure\" is a fair characterization of their work",
@@ -375,15 +375,35 @@ def main():
       f"should refuse where evidence is thin; and the "
       f"{n('calib_ratio_x')}x calibration-data ratio in task 1 was presented "
       f"as causing the gap without an independent test.\n")
-    A(f"**What was done:** the two-level classifier in the refactor at "
-      f"`32e056f` demotes cells and schemes with too few checkpoints or "
-      f"straddling bootstrap intervals. Current state: "
+    A(f"**What was done, cells and schemes:** the two-level classifier in the "
+      f"refactor at `32e056f` demotes cells and schemes with too few "
+      f"checkpoints or straddling bootstrap intervals. Current state: "
       f"{n('n_cells_total')} cells, {n('n_cells_refused')} refused, "
-      f"{n('n_cells_insufficient_evidence')} at insufficient evidence. "
-      f"The paper now describes the {n('calib_ratio_x')}x figure as "
+      f"{n('n_cells_insufficient_evidence')} at insufficient evidence.\n")
+    A(f"**What was done, task-1 attribution:** the reproduction run happened "
+      f"on day 6 (`out/task1_real_gptq.json`; described in the paper's "
+      f"audit section, `\\paragraph{{An attempt at re-running the "
+      f"calibration-data test.}}`). We attempted to reproduce Red Hat's "
+      f"published W4A16 checkpoints for Qwen2.5-0.5B and Qwen2.5-1.5B "
+      f"with `llm-compressor` at its documented defaults. Both attempts "
+      f"landed at four-way random chance on 5-shot MMLU "
+      f"({n('t1_anom_min_pct', '{:.1f}')}--{n('t1_anom_max_pct', '{:.1f}')}%; "
+      f"1.5B went {n('t1_before_qwen25_1_5b', '{:.2f}')} -> "
+      f"{n('t1_after_qwen25_1_5b', '{:.2f}')}, 0.5B went "
+      f"{n('t1_before_qwen25_0_5b', '{:.2f}')} -> "
+      f"{n('t1_after_qwen25_0_5b', '{:.2f}')}), well past the "
+      f"worst outcome in the corpus or the control arm. Neither card pins "
+      f"a library version or names a calibration dataset; a second attempt "
+      f"at an era-appropriate pin inferred from the card wording "
+      f"(`llmcompressor==0.4.1` + `transformers==4.44.2`) could not resolve "
+      f"to a working import combination. We treat the anomaly as a "
+      f"stack-level artifact rather than a calibration-data finding, so "
+      f"the paper still describes the {n('calib_ratio_x')}x figure as "
       f"\"consistent with ... though the attribution is not independently "
-      f"tested\"; the GPU test that would settle it (`task1_real_gptq.py`) "
-      f"has not been run.\n")
+      f"tested\". The engineer's original question -- whether that "
+      f"{n('calib_ratio_x')}x calibration-data ratio explains the observed "
+      f"excess damage -- is neither answered nor abandoned; it awaits a "
+      f"reproduction stack that actually converges.\n")
 
     A("### H4. LoRA-not-in-product; zero cells refused; product-strategy read\n")
     A("**What was said:** LoRA-forgetting is a corpus finding and should not "
@@ -427,7 +447,9 @@ def main():
     A("- A second metric (C2), and any willingness-to-pay measurement (C4).\n")
     A("- The matched BenchPress protocol (B1 in full) and the "
       "benchmark-similarity / known-scores sensitivity (B2).\n")
-    A("- The task-1 GPU run that would test the 171x attribution (H3).\n")
+    A("- A task-1 reproduction stack that actually converges (H3). The "
+      "day-6 run happened; both attempts hit chance-level MMLU, so the "
+      "attribution question stays open.\n")
     A(f"- Current tool state, for reference: {n('n_cells_total')} cells, "
       f"{n('n_cells_refused')} refused, "
       f"{n('n_cells_insufficient_evidence')} at insufficient evidence "
