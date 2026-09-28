@@ -89,6 +89,90 @@ def registry():
     # the hand-typed "sixteen". Register the max live so a future
     # card that carries more benchmarks flows through, and pin a test
     # that fails if the max moves without §9 being updated.
+    # Per-fold MAE spread for the §5 "how LOFO looks fold-by-fold"
+    # paragraph. Registered live so the paragraph's fold-min /
+    # fold-max / winners-vs-losers claims are traceable and cannot
+    # drift silently as the corpus evolves.
+    from model import Predictor as _Pred_pf
+    import numpy as _np_pf
+    _pf = []
+    for _fam in sorted(d.family.unique()):
+        _tr = d[d.family != _fam]; _te = d[d.family == _fam]
+        _y = _te.delta.to_numpy(float)
+        _pg = _tr.delta.mean()
+        _sm = _tr.groupby("scheme").delta.mean()
+        _psc = _te.scheme.map(_sm).fillna(_pg).to_numpy(float)
+        _mrid = _Pred_pf(alpha=3.0).fit(_tr)
+        _pri = _mrid.predict(_te)
+        _pf.append((_fam, len(_te),
+                    float(_np_pf.mean(_np_pf.abs(_y - _pg))),
+                    float(_np_pf.mean(_np_pf.abs(_y - _psc))),
+                    float(_np_pf.mean(_np_pf.abs(_y - _pri)))))
+    add("lofo_scheme_mean_wins_folds",
+        int(sum(1 for _, _n, _g, _s, _ in _pf if _s < _g)), 0,
+        "held-out folds where per-scheme mean beats global mean")
+    add("lofo_scheme_mean_loses_folds",
+        int(sum(1 for _, _n, _g, _s, _ in _pf if _s >= _g)), 0,
+        "held-out folds where per-scheme mean does not beat global")
+    _loss_fold = [f for f, _n, _g, _s, _ in _pf if _s >= _g]
+    add("lofo_scheme_mean_loss_fold_min",
+        min(_s for _f, _n, _g, _s, _ in _pf if _f in _loss_fold) if _loss_fold else float("nan"), 0.005,
+        "scheme-mean MAE on the loss fold (max, if multiple)")
+    add("lofo_scheme_mean_min",
+        min(_s for _, _n, _, _s, _ in _pf), 0.005,
+        "smallest per-fold scheme-mean MAE (best fold)")
+    add("lofo_scheme_mean_max",
+        max(_s for _, _n, _, _s, _ in _pf), 0.005,
+        "largest per-fold scheme-mean MAE (worst fold)")
+    add("lofo_ridge_min",
+        min(_r for _, _n, _, _, _r in _pf), 0.005,
+        "smallest per-fold ridge MAE (best fold)")
+    add("lofo_ridge_max",
+        max(_r for _, _n, _, _, _r in _pf), 0.005,
+        "largest per-fold ridge MAE (worst fold)")
+    _best_fam = min(_pf, key=lambda x: x[3])[0]
+    _worst_fam = max(_pf, key=lambda x: x[3])[0]
+    add("lofo_best_fold_size_pct", 100 * min(_pf, key=lambda x: x[3])[1] / len(d), 0.05,
+        f"training-set share of the best fold ({_best_fam})")
+    add("lofo_worst_fold_size_pct", 100 * max(_pf, key=lambda x: x[3])[1] / len(d), 0.05,
+        f"training-set share of the worst fold ({_worst_fam})")
+    add("llama3_fold_rows",
+        int((d.family == "llama-3").sum()), 0,
+        "rows in the merged Llama-3 fold")
+    add("llama3_fold_share_pct",
+        100 * int((d.family == "llama-3").sum()) / len(d), 0.05,
+        "Llama-3 fold share of the modeling corpus")
+    add("llama3_holdout_train_share_pct",
+        100 * (1 - int((d.family == "llama-3").sum()) / len(d)), 0.05,
+        "training-set share when Llama-3 is held out")
+    _other_train_shares = [100 * (1 - _n / len(d))
+                           for _f, _n, _g, _s, _ in _pf if _f != "llama-3"]
+    add("nonllama3_holdout_train_min_pct",
+        min(_other_train_shares), 0.05,
+        "smallest training-set share when a non-Llama-3 family is held out")
+    add("nonllama3_holdout_train_max_pct",
+        max(_other_train_shares), 0.05,
+        "largest training-set share when a non-Llama-3 family is held out")
+    _other_pf = [(_f, _n) for _f, _n, *_ in _pf if _f != "llama-3"]
+    add("gemma2_fold_rows",
+        int(next(_n for _f, _n in _other_pf if _f == "gemma-2")), 0,
+        "rows in the gemma-2 fold")
+    add("qwen3_fold_rows",
+        int(next(_n for _f, _n in _other_pf if _f == "qwen3")), 0,
+        "rows in the qwen3 fold")
+    add("nonllama3_fold_rows_min",
+        min(_n for _, _n in _other_pf), 0,
+        "smallest non-Llama-3 fold size in rows")
+    add("nonllama3_fold_rows_max",
+        max(_n for _, _n in _other_pf), 0,
+        "largest non-Llama-3 fold size in rows")
+    add("nonllama3_fold_share_min_pct",
+        100 * min(_n for _, _n in _other_pf) / len(d), 0.05,
+        "smallest non-Llama-3 fold share of the corpus")
+    add("nonllama3_fold_share_max_pct",
+        100 * max(_n for _, _n in _other_pf) / len(d), 0.05,
+        "largest non-Llama-3 fold share of the corpus")
+
     add("max_benchmarks_per_run",
         int(d.groupby(["base_model", "scheme"]).benchmark.nunique().max()),
         0, "maximum distinct benchmarks reported for a single "

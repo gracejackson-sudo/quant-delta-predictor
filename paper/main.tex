@@ -314,6 +314,34 @@ gradient boosting         & \MaeGradboost  & \textbf{no} \\
 
 The per-scheme mean's advantage is small: \MaeGain{}pp, with a checkpoint-bootstrap 95\% CI of \([\MaeGainLo, \MaeGainHi]\)pp, and it is
 positive in \MaeGainFamsPos{} of the \Nfam{} held-out families. It is a distinguishable but modest gain.
+
+\paragraph{How LOFO looks fold-by-fold, and what the pooled figure
+hides.} Definition B (\S\ref{sec:data}) merged Llama-3.1, Llama-3.2 and
+Llama-3.3 into one Llama-3 family, and the aggregate figures above are
+a weighted mean across the resulting \Nfam{} folds. Two properties of
+that pool are worth stating.
+\emph{Fold sizes are unequal.} Llama-3 accounts for \LThreeFoldRows{}
+of the \Nrows{} rows (\LThreeFoldSharePct\%); the other five folds are
+\NonLThreeFoldRowsMin--\NonLThreeFoldRowsMax{} rows
+(\NonLThreeFoldShareMin--\NonLThreeFoldShareMax\%). When Llama-3 is held out, the training
+set drops to \LThreeHoldoutTrainPct\% of the corpus; when any other
+family is held out, training is \NonLThreeHoldoutMin--\NonLThreeHoldoutMax\%.
+The Llama-3 fold carries a third of the LOFO weight on its own.
+\emph{Per-fold MAE varies by roughly 4x, and the demanding fold is not
+the biggest.} The per-scheme mean ranges from \LofoSchemeMeanMin{}pp on
+gemma-2 (the smallest fold, \GemmaTwoFoldRows{} rows) to
+\LofoSchemeMeanMax{}pp on qwen3 (the second-smallest, at
+\QwenThreeFoldRows{} rows), against a pooled \MaeSchememean{}pp;
+ridge shows the same shape, \LofoRidgeMin{}pp to \LofoRidgeMax{}pp
+against pooled \MaeRidge{}pp. The pooled MAE is a weighted mean, not a
+typical fold. And the sharpest version of the negative result lives in
+the spread: the per-scheme mean, the best predictor we found, beats
+guessing the global average on \LofoSchemeMeanWinsFolds{} of \Nfam{}
+folds but \emph{loses to it on qwen3} (\LofoSchemeMeanMax{}pp vs the
+global mean's per-fold MAE on the same fold). Within the merged
+Llama-3 fold, subgroup coverage varies too---Llama-3.3 alone sits
+5--10pp below Llama-3.1 and Llama-3.2 across every calibration family;
+the \S\ref{sec:results} subgroup table keeps that visible.
 Ridge regression (\(\alpha=3.0\), standardised features, no cross-validated
 tuning) and histogram gradient boosting (\texttt{max\_depth=3},
 \texttt{max\_iter=300}, \texttt{learning\_rate=0.05},
@@ -612,7 +640,10 @@ survived---would misrepresent how the result was obtained.
     changes from 87.3\% to 88.2\%, and the previously-worst held-out
     fold Llama-3.3 (85.1\%) folds into the merged Llama-3 fold at
     92.2\%. Per-family LOFO on the merged fold is reported so this
-    weakness does not disappear from view.
+    weakness does not disappear from view; §\ref{sec:negative}'s
+    ``how LOFO looks fold-by-fold'' paragraph and the
+    §\ref{sec:results} subgroup table are the two places a reader can
+    check it directly.
   \item \emph{A retracted headline, then re-partitioned.} An early claim
     that all \ProspClusN{} held-out checkpoints came from families never
     used in construction was wrong. Under the definition adopted in

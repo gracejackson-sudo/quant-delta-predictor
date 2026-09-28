@@ -33,6 +33,8 @@ The global-mean baseline sits at 0.7553<!-- claim: mae_global_lofo = 0.755276 --
 
 On GSM8K specifically, the observed spread for supposedly lossless schemes is nearly identical to the spread for 4-bit schemes: the measurement is louder than the effect.
 
+**A per-fold view of the same claim.** The MAE numbers above are weighted means across six leave-one-family-out folds of very different sizes and difficulty. Broken out, the per-scheme mean (the best predictor we found) ranges from 0.39<!-- claim: lofo_scheme_mean_min = 0.393734 -->pp on gemma-2 (the smallest fold, 59 rows) to 1.40<!-- claim: lofo_scheme_mean_max = 1.397897 -->pp on qwen3 (the second-smallest, at 101<!-- claim: qwen3_fold_rows = 101.000000 --> rows), against a pooled 0.72<!-- claim: pred_mae::scheme_mean = 0.724380 -->pp. The predictor beats the global-mean baseline on 5<!-- claim: lofo_scheme_mean_wins_folds = 5.000000 --> of 6<!-- claim: n_families = 6.000000 --> folds but *loses to it on qwen3*: the one-family fold where the global mean is actually the better bet. That is the sharpest version of the negative result in the whole paper -- our best predictor is worse than guessing the average on one of six families. The pooled MAE hides it because the qwen3 fold is 12% of the corpus.
+
 ## 4. Low-rank structure and paired deltas (Track 2, revised after external review)
 
 BenchPress (arXiv:2606.24020) predicts unseen benchmark scores by exploiting the fact that a frontier-model score matrix is roughly rank-2. We tested whether that structure helps on **paired** quantization deltas.

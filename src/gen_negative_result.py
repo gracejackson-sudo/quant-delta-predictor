@@ -73,6 +73,23 @@ def main():
       "schemes is nearly identical to the spread for 4-bit schemes: the "
       "measurement is louder than the effect.\n")
 
+    A("**A per-fold view of the same claim.** The MAE numbers above "
+      "are weighted means across six leave-one-family-out folds of "
+      "very different sizes and difficulty. Broken out, the "
+      "per-scheme mean (the best predictor we found) ranges from "
+      f"{n('lofo_scheme_mean_min','{:.2f}')}pp on gemma-2 (the "
+      "smallest fold, 59 rows) to "
+      f"{n('lofo_scheme_mean_max','{:.2f}')}pp on qwen3 (the "
+      f"second-smallest, at {n('qwen3_fold_rows')} rows), against a pooled "
+      f"{n('pred_mae::scheme_mean','{:.2f}')}pp. The predictor beats "
+      f"the global-mean baseline on {n('lofo_scheme_mean_wins_folds')} "
+      f"of {n('n_families')} folds but *loses to it on qwen3*: the "
+      "one-family fold where the global mean is actually the better "
+      "bet. That is the sharpest version of the negative result in the "
+      "whole paper -- our best predictor is worse than guessing the "
+      "average on one of six families. The pooled MAE hides it because "
+      "the qwen3 fold is 12% of the corpus.\n")
+
     A("## 4. Low-rank structure and paired deltas (Track 2, revised after external review)\n")
     A("BenchPress (arXiv:2606.24020) predicts unseen benchmark scores by "
       "exploiting the fact that a frontier-model score matrix is roughly "

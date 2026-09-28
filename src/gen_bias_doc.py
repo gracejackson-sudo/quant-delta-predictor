@@ -105,6 +105,19 @@ def bias_doc():
         if k in REG:
             A(f"| {float(pi)*100:.0f}% | {n(k,'{:+.2f}')}pp |")
     A("")
+    A("**A per-fold view of the same claim.** The pooled MAE and "
+      "coverage figures used throughout this note are weighted means "
+      "across six leave-one-family-out folds of very different sizes "
+      f"(the Llama-3 fold is {n('llama3_fold_share_pct','{:.1f}')}% of "
+      f"the corpus; gemma-2 is "
+      f"{n('nonllama3_fold_share_min_pct','{:.1f}')}%) and of very "
+      f"different difficulty "
+      f"(ridge on the qwen3 fold is {n('lofo_ridge_max','{:.2f}')}pp "
+      f"against a pooled {n('pred_mae::ridge','{:.2f}')}pp). The bias "
+      "correction argues about the shape of the tail; the fold-level "
+      "spread is a separate axis, and `NEGATIVE_RESULT.md` §3 reports "
+      "it under the header *A per-fold view of the same claim*.\n")
+
     A("**Note on the 0% row (day-7 audit, Tier 1.5).** The 0% row shows "
       "the alpha/2 quantile of the published w4a16 distribution measured "
       "by resampling. That is a *different estimator* from the shipped "
