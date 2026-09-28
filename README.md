@@ -141,8 +141,8 @@ python3 verify/independent_check.py
 ## Data
 
 850 rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102
-[RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38 base checkpoints, 8 model
-families, 6 quantization schemes and 20 benchmarks (GPQA is split across five card-verified protocol labels — gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot, gpqa_diamond, gpqa_diamond_cot_5shot — because the raw RedHatAI cards report as many as five different GPQA protocols and the earlier collapsed label conflated them; see the §9 audit note). Every three-column row is verified against
+[RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38 base checkpoints, 6 model
+families (Definition B, which collapses Llama-3.1/3.2/3.3 into one Llama-3 family on the mechanistic-shared-pretraining-base criterion; the earlier 8-family count read each generation as separate), 6 quantization schemes and 21 benchmarks (GPQA is split across six card-verified protocol labels — gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot, gpqa_diamond, gpqa_diamond_cot_5shot, gpqa_ambiguous_46 — because the raw RedHatAI cards report as many as five different GPQA protocols and two Llama-3.3 rows carry a card string that does not uniquely name a protocol; the earlier collapsed label conflated all of them; see the §9 audit note). Every three-column row is verified against
 the card's own printed Recovery percentage; internally inconsistent rows are rejected rather than
 guessed at.
 
