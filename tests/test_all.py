@@ -1753,6 +1753,92 @@ _REGISTRY_MANIFEST = {
 }
 
 
+def test_build_envelope_refuses_missing_cell_coverage():
+    """Tier 3.2: previously build_envelope.py silently fell back to
+    {'cells': {}} on a missing or corrupt cell_coverage.json, which
+    would emit a shippable envelope with no per-cell verdicts. Rank.py
+    was hardened for this in Tier 2.1 (MissingCellCoverage); build_envelope
+    reuses that hardened loader now. This test point-checks that fix.
+
+    What it reads: nothing on disk; it monkey-patches rank.load_cell_coverage
+    to raise MissingCellCoverage and asserts build_envelope.build_artifact
+    propagates it rather than swallowing it and emitting an artifact.
+
+    Planted failure: revert build_envelope.py's try/except back and the
+    module silently produces an envelope; this test fires."""
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    import rank as _r
+    import build_envelope as _be
+    orig = _r.load_cell_coverage
+    try:
+        _r.load_cell_coverage = lambda: (_ for _ in ()).throw(
+            _r.MissingCellCoverage("simulated missing cell_coverage.json"))
+        raised = None
+        try:
+            _be.build_artifact()
+        except _r.MissingCellCoverage as e:
+            raised = e
+        assert raised is not None, (
+            "build_envelope.build_artifact swallowed a "
+            "MissingCellCoverage instead of refusing to emit an artifact")
+    finally:
+        _r.load_cell_coverage = orig
+
+
+def test_audit_scripts_exit_zero():
+    """Tier 3.4: AUDIT_DISCIPLINE.md declares four audit scripts required
+    to pass before a change lands (audit_ranking, adversarial_audit,
+    census, check_docs). Until now nothing in the test suite actually
+    invoked them, so a regression in any of them landed silently and
+    the discipline was on the honor system.
+
+    Runs each in a subprocess with cwd=repo-root, asserts exit 0, and
+    dumps stdout/stderr tails on failure.
+
+    Planted failure: `raise SystemExit(1)` at the top of any of these
+    scripts and this test fires with the offender named."""
+    import subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for name in ("audit_ranking.py", "adversarial_audit.py",
+                 "census.py", "check_docs.py"):
+        path = os.path.join(root, "src", name)
+        r = subprocess.run([sys.executable, path],
+                           capture_output=True, text=True, cwd=root)
+        assert r.returncode == 0, (
+            f"src/{name} exited {r.returncode}. AUDIT_DISCIPLINE.md "
+            f"lists it as required-to-pass; a non-zero exit here means "
+            f"the audit-suite gate is broken.\n"
+            f"---stdout tail---\n{r.stdout[-800:]}\n"
+            f"---stderr tail---\n{r.stderr[-800:]}")
+
+
+def test_scope_md_nvfp4_severe_rate_matches_live_registry():
+    """SCOPE.md hand-types the NVFP4 severe-loss rate; the paper uses
+    the live \\SevNvfp macro. Before Tier 1.2 fixed the comparator to
+    strict `<`, SCOPE.md said 15.6% (one boundary row was counted as
+    severe under `<=`); the correct figure under `<` is 14.0625%.
+    Any future comparator or corpus change that moves severe_pct::nvfp4
+    must move SCOPE.md's line 6 too, or this test fires.
+
+    Planted failure: bump SCOPE.md's number by 1pp -> mismatch.
+    Reverting src/rank.py:205 back to `<=` -> the registry moves to
+    15.6, SCOPE.md still says 14.1, this test fires."""
+    from src.verify_claims import registry
+    scope = open(os.path.join(os.path.dirname(__file__), "..",
+                              "SCOPE.md")).read()
+    live = registry()["severe_pct::nvfp4"][0]
+    import re
+    m = re.search(r"NVFP4 carries a warning.*?(\d+\.\d+)%\s+of them losing",
+                  scope, re.S)
+    assert m, "SCOPE.md line 6 NVFP4 severe-rate figure not found"
+    stated = float(m.group(1))
+    assert abs(stated - round(live, 1)) < 0.05, (
+        f"SCOPE.md states NVFP4 severe rate = {stated}% but the live "
+        f"registry says severe_pct::nvfp4 = {live}% "
+        f"(rounded to one decimal: {round(live, 1)}%). Update SCOPE.md "
+        f"line 6, or reconcile the registry.")
+
+
 def test_registry_composition_matches_manifest():
     from src.verify_claims import registry
     r = registry()

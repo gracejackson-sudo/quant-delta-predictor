@@ -132,6 +132,18 @@ def fate_of_card(path, model_id, allow_unknown_family):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
+    # Tier 3.4 (day-8 audit): data/cards/ and data/prospective_cards/ are
+    # not committed (license and PII constraints; PROVENANCE.md 2026-09-27).
+    # Skip cleanly with exit 0 and a clear banner rather than raising
+    # FileNotFoundError. AUDIT_DISCIPLINE.md notes which shipped-repo
+    # audits are live vs skipped.
+    if not os.path.isdir(CARDS):
+        print("=" * 72)
+        print("SKIPPED: data/cards/ is not present in this checkout.")
+        print("The card corpus is not committed (PII / license).")
+        print("Rerun with the card corpus to regenerate ACCOUNTING.md.")
+        print("=" * 72)
+        return 0
     report = {}
 
     # ============================================== stage 0: corpus selection

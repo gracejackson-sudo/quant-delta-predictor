@@ -459,7 +459,7 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
 
     # size interaction
     g = e["size_gradient"]
-    if band and band in g and "&gt;10B" not in band:
+    if band and band in g:
         if band == "<2B" and e["scheme"] in AGGRESSIVE:
             flags.append("SIZE_RISK")
             small, large = g.get("<2B"), g.get(">10B")

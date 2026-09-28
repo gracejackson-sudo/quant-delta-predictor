@@ -49,17 +49,28 @@ Each was found by *trying to break a result that looked clean*, not by testing t
 ## Enforcement
 
 ```bash
-./.venv/bin/python src/audit_ranking.py        # R1-R5 adversarial audit
-./.venv/bin/python src/adversarial_audit.py    # headline-result audit
-./.venv/bin/python src/census.py               # silent-exclusion census
-./.venv/bin/python src/verify_claims.py        # every doc number recomputed
-python3 verify/independent_rank.py             # from-scratch rank rebuild
-python3 verify/independent_check.py            # from-scratch coverage rebuild
+./.venv/bin/python src/audit_ranking.py        # R1-R5 adversarial audit             [LIVE]
+./.venv/bin/python src/adversarial_audit.py    # headline-result audit               [SKIPS in shipped repo]
+./.venv/bin/python src/census.py               # silent-exclusion census             [SKIPS in shipped repo]
+./.venv/bin/python src/verify_claims.py        # every doc number recomputed         [LIVE]
+python3 verify/independent_rank.py             # from-scratch rank rebuild           [LIVE]
+python3 verify/independent_check.py            # from-scratch coverage rebuild       [SKIPS in shipped repo]
 ./.venv/bin/python -m pytest tests -q
 ```
 
-All seven must pass before a change counts as landed. `tests/test_all.py` runs the claims check
-and the banned-prose check automatically.
+`adversarial_audit.py`, `census.py`, and `verify/independent_check.py` all need the raw
+card corpus (`data/cards/` and/or `data/prospective_cards/`), which is not committed
+(license and PII constraints; `PROVENANCE.md` 2026-09-27). Each exits 0 with a `SKIPPED`
+banner in this repository so `test_verifiers_exit_zero` and `test_audit_scripts_exit_zero`
+gate them uniformly; the actual audit output for those three lives in the frozen artifacts
+those runs produced last time they had the corpus (`out/independent_check.csv`,
+`ACCOUNTING.md`, `out/adversarial_report.json` etc.), and the shipped repo's tolerance /
+recomputation gates check that those frozen outputs remain internally consistent. Running
+any of the three against the raw card corpus is what actually re-verifies the parse; the
+shipped repo cannot.
+
+All seven must pass before a change counts as landed. `tests/test_all.py` runs the claims
+check, the banned-prose check, and the two exit-zero gates automatically.
 
 ## The claims rule
 

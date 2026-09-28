@@ -72,10 +72,12 @@ def _prospective():
 def build_artifact():
     d = load(DATA)
     TABLE, META, R = _evidence()
-    try:
-        CELLS = json.load(open(os.path.join(OUT, "cell_coverage.json")))
-    except (OSError, ValueError):
-        CELLS = {"cells": {}}
+    # Tier 3.2 (day-8 audit): the previous silent fallback to {"cells": {}}
+    # was the same failure mode Tier 2.1 fixed in rank.py -- a missing or
+    # corrupt cell_coverage.json would silently yield a shippable envelope
+    # with no per-cell verdicts. Use rank's hardened loader so this file
+    # refuses to emit an artifact when the evidence file is unusable.
+    CELLS = R.load_cell_coverage()
     refused = list(META["refused_cells"])
     insufficient = list(META["insufficient_evidence_cells"])
     sch_states = {k: e["coverage_state"] for k, e in TABLE.items()}

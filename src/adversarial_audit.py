@@ -545,6 +545,18 @@ def a5_clustered_ci(p):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
+    # Tier 3.4 (day-8 audit): the whole run rests on data/prospective_cards/,
+    # which is not committed (license and PII constraints; PROVENANCE.md
+    # 2026-09-27). Skip cleanly with exit 0 and a clear banner rather
+    # than raising FileNotFoundError. AUDIT_DISCIPLINE.md's enforcement
+    # block names which shipped-repo audits are live vs skipped.
+    if not os.path.isdir(PC):
+        print("=" * 72)
+        print("SKIPPED: data/prospective_cards/ is not present in this checkout.")
+        print("The prospective card corpus is not committed (PII / license).")
+        print("Rerun with the corpus to regenerate the adversarial-audit report.")
+        print("=" * 72)
+        return 0
     d = load(DATA)
     conf, _ = frozen_predictor(d)
     p = score(build_prospective(), conf)
