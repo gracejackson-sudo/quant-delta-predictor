@@ -459,9 +459,28 @@ SmolLM/SmolLM3 and Nemotron-Nano contribute \ProspOutSmallRows{} rows at
 100\% from \ProspOutSmallCkpts{} small-sample checkpoints, which pull the
 out-of-family aggregate up by \ProspOutSmallPullup{}pp above Gemma-3
 alone. The classification is enumerated for these \ProspClusN{}
-checkpoints, not a general algorithm (\S\ref{sec:audit}). A from-scratch, standard-library-only reimplementation sharing no
-code with the pipeline reproduces this figure with zero disagreements.
-That checks the computation, not the validity of the design.
+checkpoints, not a general algorithm (\S\ref{sec:audit}).
+
+\paragraph{Independent verification --- what and when.} The strict protocol
+above is implemented in \texttt{verify/independent\_check.py}, a from-scratch
+reimplementation that shares no code with the pipeline. It parses the raw
+model cards independently and recomputes the prospective-coverage figures
+this section reports. It was run against the card corpus once, on 2026-09-27,
+and that run produced \texttt{out/independent\_check.csv} --- the \ProspN{}
+strict-prospective rows behind the numbers above. That run compared
+prospective rows only: the training corpus was used to build the envelope
+but no per-row training-parse verification was written, and the
+training-row-count and per-label comparisons in the current
+\texttt{verify/independent\_check.py} have not fired against the shipped
+data. The card corpus itself is not committed (license and PII constraints;
+\texttt{PROVENANCE.md} 2026-09-27), so this repository cannot re-run the
+parse. What it ships in its place is a tolerance-integrity gate on the
+2026-09-27 output
+(\texttt{tests/test\_all.py::test\_independent\_check\_csv\_matches\_tolerance\_recomputation}):
+the gate recomputes each row's \texttt{inside} flag from its \texttt{lo},
+\texttt{hi} and \texttt{delta} under a $10^{-9}$ boundary tolerance, and
+fires if the frozen CSV disagrees with its own bounds. It is not a fresh
+independent parse.
 
 \paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
 Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3

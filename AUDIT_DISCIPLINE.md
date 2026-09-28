@@ -27,6 +27,21 @@ Each was found by *trying to break a result that looked clean*, not by testing t
 4. **Independent recomputation.** Reimplement the changed logic from scratch, sharing no code, and
    diff every displayed number. `verify/independent_rank.py` and `verify/independent_check.py`
    are the pattern; this is what caught round 3.
+
+   *Status of the two verifiers in the shipped repository.* `verify/independent_rank.py` runs
+   live against `data/dataset.csv` and is gated by
+   `tests/test_all.py::test_verifiers_exit_zero`. `verify/independent_check.py` was run once,
+   on 2026-09-27, against the raw card corpus; that run produced `out/independent_check.csv`
+   (prospective rows only — training rows were used to build the envelope but no per-row
+   training-parse verification was written). The card corpus is not committed (license and PII
+   constraints; `PROVENANCE.md` 2026-09-27), so `verify/independent_check.py` skips cleanly in
+   this repository and the training-row-count and per-label comparisons it now performs have
+   not fired against the shipped data. What remains as the standing gate on the 2026-09-27
+   output is `tests/test_all.py::test_independent_check_csv_matches_tolerance_recomputation`,
+   which recomputes each row's `inside` flag from its stored `lo`, `hi` and `delta` under a
+   $10^{-9}$ boundary tolerance. That is a tolerance-integrity check on a past run's frozen
+   output, not a fresh independent parse; both facts belong in every disclosure that cites
+   this verifier.
 5. **Does the change do anything?** A guard that demotes nothing is decorative. State the count.
 6. **Are new thresholds derived or chosen?** Say which. A judgement call is fine; presenting one
    as derived is not.

@@ -58,6 +58,9 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "0.5",   # part of the model name "Qwen2.5-0.5B-Instruct"
           "1.5",   # part of the model name "Qwen2.5-1.5B-Instruct"
           "09", "26",  # month/day in the RedHatAI-card scan date 2026-09-26
+          "27",  # day in the 2026-09-27 A4 fix / independent-verification run
+                 # date (PROVENANCE.md; §5 "Independent verification --- what
+                 # and when" paragraph). A date, not a metric.
           "128",   # group size documented on RedHatAI/Qwen2.5-1.5B-quantized.w4a16
           "64",    # group size documented on RedHatAI/Qwen2.5-0.5B-quantized.w4a16
           "135",   # SmolLM-135M-Instruct model name digit
