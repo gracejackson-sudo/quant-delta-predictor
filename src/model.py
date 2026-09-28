@@ -13,10 +13,22 @@ import pandas as pd
 # (src/rank.py) only needs load() from this module, so a user running the
 # tool needs numpy and pandas and nothing else.
 
+# C1+C2 follow-up (day-7 audit): after Tier 2.5 v4 split the plain
+# 'gpqa' label into five card-verified protocol labels, the old
+# BENCH_LEVELS list still had only 'gpqa' -- which meant ridge and
+# HistGradientBoosting were silently missing a benchmark-identity
+# feature on the 34 relabelled gpqa* rows (their bench=gpqa one-hot
+# was always zero, and no bench=gpqa_main / _norm / _cot_5shot /
+# _diamond / _diamond_cot_5shot column existed to take its place).
+# This produced a ~0.023 ridge MAE move on top of the family-merge
+# effect. Adding the five labels restores full benchmark identity
+# for those rows.
 BENCH_LEVELS = [
     "mmlu", "mmlu_cot", "mmlu_pro", "arc_challenge", "gsm8k", "hellaswag",
-    "winogrande", "truthfulqa", "ifeval", "bbh", "math_lvl5", "gpqa", "musr",
-    "humaneval", "humaneval_plus", "arena_hard",
+    "winogrande", "truthfulqa", "ifeval", "bbh", "math_lvl5",
+    "gpqa_main", "gpqa_main_norm", "gpqa_main_cot_5shot",
+    "gpqa_diamond", "gpqa_diamond_cot_5shot",
+    "musr", "humaneval", "humaneval_plus", "arena_hard",
 ]
 METHOD_LEVELS = ["gptq", "smoothquant", "smoothquant+gptq", "rtn", "awq", "unknown"]
 

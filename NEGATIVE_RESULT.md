@@ -20,8 +20,8 @@ Leave-one-family-out, so the test family's checkpoints are never in training. Ro
 | global mean (baseline) | 0.7553<!-- claim: pred_mae::global_mean = 0.755276 --> | -- |
 | per-(scheme x benchmark) mean | 0.7607<!-- claim: pred_mae::scheme_x_bench = 0.760730 --> | **no** |
 | per-benchmark mean | 0.7650<!-- claim: pred_mae::bench_mean = 0.764955 --> | **no** |
+| ridge, 38 features | 0.7764<!-- claim: pred_mae::ridge = 0.776423 --> | **no** |
 | gradient boosting | 0.7794<!-- claim: pred_mae::grad_boost = 0.779362 --> | **no** |
-| ridge, 38 features | 0.7866<!-- claim: pred_mae::ridge = 0.786561 --> | **no** |
 
 Ridge regression and gradient boosting both do **worse than predicting the average**. Adding model size, benchmark identity, base accuracy and quantization method all degraded out-of-family accuracy.
 
