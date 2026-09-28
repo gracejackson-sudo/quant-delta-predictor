@@ -345,21 +345,28 @@ def main():
       "prospective figure as what the shipped intervals actually carry.\n")
 
     A("### H2. Pair counting\n")
-    A(f"**What was said:** the coverage numbers were described as if "
-      f"{n('pooled_scored_pairs')} were the row count. With eight families "
-      f"and leave-one-family-out, each row is scored under seven calibration "
-      f"families, so the real row count is {n('pooled_distinct_rows')} and "
-      f"the {n('pooled_scored_pairs')} figure is the (row, "
-      f"calibration-family) evaluation count. Independence claims on the "
-      f"evaluation count are wrong.\n")
+    A(f"**What was said:** the coverage numbers were reported as though the "
+      f"pair count were the row count. Under {n('n_families')} families and "
+      f"leave-one-family-out each row is scored under "
+      f"{n('pooled_pairs_per_row')} calibration families, so the real row "
+      f"count is {n('pooled_distinct_rows')} and the "
+      f"{n('pooled_scored_pairs')} figure is the "
+      f"(row, calibration-family) evaluation count "
+      f"({n('pooled_pairs_per_row')} × {n('pooled_distinct_rows')} = "
+      f"{n('pooled_scored_pairs')}). Independence claims on the evaluation "
+      f"count are wrong. (The engineer's original report was against an "
+      f"eight-family corpus where the count was 5719 = 7 × 817; the "
+      f"mistake class is the same under any family count and the arithmetic "
+      f"above is the current-corpus version.)\n")
     A(f"**What was done:** the coverage refactor at commit `32e056f` "
       f"centralises measurement in `src/cell_coverage.py`, exposes "
       f"`distinct_rows` and `scored_pairs` as separate fields, and labels "
       f"`scored_pairs` explicitly as not-independent evaluations. Tests "
-      f"enforce that `scored_pairs = 7 * distinct_rows` and that the row "
-      f"counts equal the raw-data counts per cell. The paper's audit section "
-      f"records the bug. Pooled figures now read: "
-      f"{n('pooled_scored_pairs')} evaluations across "
+      f"enforce that `scored_pairs = (n_families - 1) × distinct_rows` "
+      f"(currently {n('pooled_pairs_per_row')} × distinct_rows, dynamic "
+      f"on the family count) and that the row counts equal the raw-data "
+      f"counts per cell. The paper's audit section records the bug. Pooled "
+      f"figures now read: {n('pooled_scored_pairs')} evaluations across "
       f"{n('pooled_distinct_rows')} distinct rows, each scored under "
       f"{n('pooled_pairs_per_row')} calibration families.\n")
 
