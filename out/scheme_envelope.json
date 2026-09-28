@@ -6,18 +6,18 @@
   "target": "acc_after - acc_before, percentage points",
   "training_data": {
     "source": "RedHatAI model cards on Hugging Face",
-    "rows": 817,
+    "rows": 805,
     "checkpoints": 38,
     "families": 6,
     "benchmarks": 16
   },
   "validation": {
     "leave_one_family_out": {
-      "rows": 817,
+      "rows": 805,
       "calibration_families_per_row": 5.0,
-      "evaluations": 4085,
-      "coverage_two_sided": 0.9177,
-      "coverage_one_sided": 0.9569,
+      "evaluations": 4025,
+      "coverage_two_sided": 0.9212,
+      "coverage_one_sided": 0.9575,
       "note": "each row is scored once per calibration family, so evaluations are not independent rows"
     },
     "prospective_all_rows": {
@@ -56,7 +56,7 @@
   },
   "known_limitations": [
     "No interval excludes zero, so the tool can never say a config WILL cost accuracy -- only that damage is probably bounded.",
-    "19 of 25 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
+    "17 of 24 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
     "Trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from an untuned recipe (outcome-truncated training data).",
     "Reads exactly 2 inputs: quantization scheme, and size band via 6 size-dependent widths. It reads no family, benchmark or base accuracy.",
     "Coverage verdicts (rank.classify_cell): 0 size cells refused (none); 6 size cells and 1 schemes (w8a16) have insufficient evidence (fewer than 3 checkpoints or a checkpoint-bootstrap interval straddling 85%): fp8|<2B, nvfp4|2-10B, w4a16|<2B, w8a16|<2B, w8a16|>10B, w8a8_int|<2B. An interval is still shown for an insufficient-evidence cell but flagged; only a refused cell has its interval withheld.",
@@ -85,8 +85,8 @@
         "one_sided": 0.9475,
         "two_sided": 0.925,
         "bootstrap_90_pct": [
-          90.9,
-          98.1
+          90.88607594936708,
+          98.0722891566265
         ],
         "rows": 80,
         "checkpoints": 13,
@@ -120,7 +120,7 @@
             "rows": 37,
             "one_sided": 0.9351351351351351,
             "boot90": [
-              86.9,
+              86.85714285714286,
               99.0
             ]
           }
@@ -131,32 +131,32 @@
     },
     "fp8_dynamic": {
       "label": "FP8-dynamic (8-bit float, dynamic activation scales)",
-      "n_observations": 200,
+      "n_observations": 196,
       "n_checkpoints": 22,
       "n_families": 5,
-      "mean_delta_pp": -0.048,
-      "median_delta_pp": -0.085,
-      "conformal_half_width_pp": 1.392,
+      "mean_delta_pp": -0.086,
+      "median_delta_pp": -0.09,
+      "conformal_half_width_pp": 1.314,
       "interval_90_pp": [
-        -1.44,
-        1.34
+        -1.4,
+        1.23
       ],
       "empirical_band_90_pp": [
-        -1.18,
-        1.73
+        -1.2,
+        1.46
       ],
       "worst_observed_delta_pp": -8.72,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.972,
-        "two_sided": 0.913,
+        "one_sided": 0.9724,
+        "two_sided": 0.9265,
         "bootstrap_90_pct": [
-          95.5,
-          98.6
+          95.52238805970148,
+          98.7192118226601
         ],
-        "rows": 200,
+        "rows": 196,
         "checkpoints": 22,
-        "scored_pairs": 1000,
+        "scored_pairs": 980,
         "worst_family": "mistral",
         "worst_family_one_sided": 0.8737,
         "by_size_band": {
@@ -164,30 +164,30 @@
             "state": "trusted",
             "checkpoints": 3,
             "rows": 19,
-            "one_sided": 0.9789473684210527,
+            "one_sided": 0.9894736842105263,
             "boot90": [
-              96.8,
-              98.9
+              98.0,
+              100.0
             ]
           },
           "2-10B": {
             "state": "trusted",
             "checkpoints": 10,
-            "rows": 87,
-            "one_sided": 0.9724137931034482,
+            "rows": 86,
+            "one_sided": 0.9720930232558139,
             "boot90": [
-              94.9,
-              99.0
+              94.87179487179486,
+              99.03614457831326
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 9,
-            "rows": 94,
-            "one_sided": 0.9702127659574468,
+            "rows": 91,
+            "one_sided": 0.9692307692307692,
             "boot90": [
-              93.9,
-              99.6
+              93.76344086021506,
+              99.5505617977528
             ]
           }
         }
@@ -197,15 +197,15 @@
     },
     "nvfp4": {
       "label": "NVFP4 (4-bit float weights + activations)",
-      "n_observations": 64,
+      "n_observations": 60,
       "n_checkpoints": 5,
       "n_families": 3,
-      "mean_delta_pp": -1.115,
-      "median_delta_pp": -0.845,
-      "conformal_half_width_pp": 2.985,
+      "mean_delta_pp": -1.207,
+      "median_delta_pp": -0.91,
+      "conformal_half_width_pp": 2.943,
       "interval_90_pp": [
-        -4.1,
-        1.87
+        -4.15,
+        1.74
       ],
       "empirical_band_90_pp": [
         -4.15,
@@ -214,17 +214,17 @@
       "worst_observed_delta_pp": -8.12,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9594,
-        "two_sided": 0.9313,
+        "one_sided": 0.9667,
+        "two_sided": 0.94,
         "bootstrap_90_pct": [
-          88.4,
+          90.6896551724138,
           100.0
         ],
-        "rows": 64,
+        "rows": 60,
         "checkpoints": 5,
-        "scored_pairs": 320,
+        "scored_pairs": 300,
         "worst_family": "llama-3",
-        "worst_family_one_sided": 0.8,
+        "worst_family_one_sided": 0.8364,
         "by_size_band": {
           "<2B": {
             "state": "not_measured"
@@ -232,39 +232,39 @@
           "2-10B": {
             "state": "insufficient_evidence",
             "checkpoints": 1,
-            "rows": 13,
-            "one_sided": 0.9846153846153847,
+            "rows": 12,
+            "one_sided": 0.9833333333333333,
             "boot90": [
-              98.5,
-              98.5
+              98.33333333333333,
+              98.33333333333333
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 4,
-            "rows": 51,
-            "one_sided": 0.9529411764705882,
+            "rows": 48,
+            "one_sided": 0.9625,
             "boot90": [
-              85.3,
+              88.26086956521739,
               100.0
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": "measured coverage falls to 80% on held-out family 'llama-3', over 3 families of evidence"
+      "warning": "measured coverage falls to 84% on held-out family 'llama-3', over 3 families of evidence"
     },
     "w4a16": {
       "label": "W4A16 (4-bit weights, 16-bit activations, GPTQ)",
-      "n_observations": 193,
+      "n_observations": 190,
       "n_checkpoints": 23,
       "n_families": 6,
-      "mean_delta_pp": -0.735,
-      "median_delta_pp": -0.6,
-      "conformal_half_width_pp": 2.135,
+      "mean_delta_pp": -0.728,
+      "median_delta_pp": -0.61,
+      "conformal_half_width_pp": 2.102,
       "interval_90_pp": [
-        -2.87,
-        1.4
+        -2.83,
+        1.37
       ],
       "empirical_band_90_pp": [
         -3.22,
@@ -273,15 +273,15 @@
       "worst_observed_delta_pp": -8.86,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9565,
-        "two_sided": 0.9223,
+        "one_sided": 0.9568,
+        "two_sided": 0.9221,
         "bootstrap_90_pct": [
-          92.9,
-          97.9
+          92.98245614035088,
+          97.92349726775956
         ],
-        "rows": 193,
+        "rows": 190,
         "checkpoints": 23,
-        "scored_pairs": 965,
+        "scored_pairs": 950,
         "worst_family": "qwen2.5",
         "worst_family_one_sided": 0.9071,
         "by_size_band": {
@@ -292,26 +292,26 @@
             "one_sided": 0.7636363636363637,
             "boot90": [
               68.0,
-              83.3
+              83.33333333333334
             ]
           },
           "2-10B": {
             "state": "trusted",
             "checkpoints": 12,
-            "rows": 96,
-            "one_sided": 0.9458333333333333,
+            "rows": 95,
+            "one_sided": 0.9473684210526315,
             "boot90": [
-              90.6,
-              98.0
+              90.81632653061224,
+              98.0392156862745
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 9,
-            "rows": 86,
-            "one_sided": 0.9930232558139535,
+            "rows": 84,
+            "one_sided": 0.9928571428571429,
             "boot90": [
-              98.5,
+              98.39080459770115,
               100.0
             ]
           }
@@ -342,8 +342,8 @@
         "one_sided": 0.9186,
         "two_sided": 0.8674,
         "bootstrap_90_pct": [
-          79.8,
-          99.8
+          79.77011494252874,
+          99.76470588235294
         ],
         "rows": 86,
         "checkpoints": 15,
@@ -367,7 +367,7 @@
             "rows": 43,
             "one_sided": 0.9720930232558139,
             "boot90": [
-              93.3,
+              93.33333333333333,
               100.0
             ]
           },
@@ -377,7 +377,7 @@
             "rows": 31,
             "one_sided": 0.8129032258064516,
             "boot90": [
-              47.3,
+              47.27272727272727,
               100.0
             ]
           }
@@ -388,15 +388,15 @@
     },
     "w8a8_int": {
       "label": "W8A8-INT (8-bit int weights + activations, SmoothQuant)",
-      "n_observations": 194,
+      "n_observations": 193,
       "n_checkpoints": 24,
       "n_families": 5,
-      "mean_delta_pp": -0.32,
-      "median_delta_pp": -0.29,
-      "conformal_half_width_pp": 1.39,
+      "mean_delta_pp": -0.324,
+      "median_delta_pp": -0.3,
+      "conformal_half_width_pp": 1.386,
       "interval_90_pp": [
         -1.71,
-        1.07
+        1.06
       ],
       "empirical_band_90_pp": [
         -1.97,
@@ -405,15 +405,15 @@
       "worst_observed_delta_pp": -3.32,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9619,
-        "two_sided": 0.933,
+        "one_sided": 0.9617,
+        "two_sided": 0.9316,
         "bootstrap_90_pct": [
-          93.9,
-          98.2
+          93.91304347826087,
+          98.23204419889503
         ],
-        "rows": 194,
+        "rows": 193,
         "checkpoints": 24,
-        "scored_pairs": 970,
+        "scored_pairs": 965,
         "worst_family": "mistral",
         "worst_family_one_sided": 0.8667,
         "by_size_band": {
@@ -423,7 +423,7 @@
             "rows": 29,
             "one_sided": 0.9448275862068966,
             "boot90": [
-              84.5,
+              84.51612903225806,
               100.0
             ]
           },
@@ -433,18 +433,18 @@
             "rows": 93,
             "one_sided": 0.9870967741935484,
             "boot90": [
-              97.0,
+              97.01149425287356,
               99.8
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 8,
-            "rows": 72,
-            "one_sided": 0.9361111111111111,
+            "rows": 71,
+            "one_sided": 0.9352112676056338,
             "boot90": [
-              90.0,
-              97.3
+              89.87654320987654,
+              97.23076923076923
             ]
           }
         }

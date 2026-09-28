@@ -22,7 +22,7 @@ Every figure below was recomputed from `data/dataset.csv` by `src/one_sided_audi
 
 | check | they claimed (8-fam corpus) | we computed (6-fam, Def B) | verdict |
 |---|---|---|---|
-| pooled coverage | 91.0% / 5719 evaluations | 91.8<!-- claim: os_pooled_pct = 91.7748 -->% / 4085<!-- claim: os_pooled_pairs = 4085.0000 --> evaluations (= 817<!-- claim: os_pooled_rows = 817.0000 --> rows x 5<!-- claim: pooled_pairs_per_row = 5.0000 --> calibration families) | fold count changed, per-checkpoint values below still match |
+| pooled coverage | 91.0% / 5719 evaluations | 92.1<!-- claim: os_pooled_pct = 92.1242 -->% / 4025<!-- claim: os_pooled_pairs = 4025.0000 --> evaluations (= 805<!-- claim: os_pooled_rows = 805.0000 --> rows x 5<!-- claim: pooled_pairs_per_row = 5.0000 --> calibration families) | fold count changed, per-checkpoint values below still match |
 | `w8a16\|>10B` two-sided | 73.7% / 217 evaluations | 73.5<!-- claim: os_two_sided_pct::w8a16\|>10B = 73.5484 -->% / 155<!-- claim: os_scored_pairs::w8a16\|>10B = 155.0000 --> evaluations (31<!-- claim: os_distinct_rows::w8a16\|>10B = 31.0000 --> rows) | pair count changed |
 | `w4a16\|<2B` two-sided | 68.8% / 77 evaluations | 76.4<!-- claim: os_two_sided_pct::w4a16\|<2B = 76.3636 -->% / 55<!-- claim: os_scored_pairs::w4a16\|<2B = 55.0000 --> evaluations (11<!-- claim: os_distinct_rows::w4a16\|<2B = 11.0000 --> rows) | pair count changed |
 | `w8a16\|>10B` checkpoints | 5 | 5<!-- claim: os_distinct_checkpoints::w8a16\|>10B = 5.0000 --> | matches |
@@ -61,7 +61,7 @@ What remains after that is one checkpoint. Resampling whole checkpoints puts a 9
 
 A fair objection: the tool prints a two-sided 90% interval, so measuring a one-sided property and comparing it to 90% could look like choosing the flattering number. It is the opposite.
 
-The interval is symmetric -- a mean plus or minus one conformal half-width on the absolute residual -- so the 10% permitted to miss is split across two tails. Pooled across all 817<!-- claim: pooled_distinct_rows = 817.0000 --> rows, each scored under 5<!-- claim: pooled_pairs_per_row = 5.0000 --> calibration families, that split is 4.3<!-- claim: pooled_below_lo_pct = 4.3084 -->% below the lower bound and 3.9<!-- claim: pooled_above_hi_pct = 3.9168 -->% above it, giving a pooled one-sided coverage of 95.7<!-- claim: pooled_one_sided_pct = 95.6916 -->%. **The nominal one-sided level for this construction is therefore about 95%, not 90%.**
+The interval is symmetric -- a mean plus or minus one conformal half-width on the absolute residual -- so the 10% permitted to miss is split across two tails. Pooled across all 805<!-- claim: pooled_distinct_rows = 805.0000 --> rows, each scored under 5<!-- claim: pooled_pairs_per_row = 5.0000 --> calibration families, that split is 4.2<!-- claim: pooled_below_lo_pct = 4.2484 -->% below the lower bound and 3.6<!-- claim: pooled_above_hi_pct = 3.6273 -->% above it, giving a pooled one-sided coverage of 95.8<!-- claim: pooled_one_sided_pct = 95.7516 -->%. **The nominal one-sided level for this construction is therefore about 95%, not 90%.**
 
 Judging a one-sided measurement against 90% is the lenient comparison. Both refused cells fail it anyway: 76.4<!-- claim: os_one_sided_pct::w4a16\|<2B = 76.3636 -->% and 81.3<!-- claim: os_one_sided_pct::w8a16\|>10B = 81.2903 -->%. Against the ~95% that the construction actually implies they fail by a wider margin. The refusals are not a product of the scoring choice.
 

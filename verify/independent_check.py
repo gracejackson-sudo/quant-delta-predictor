@@ -30,12 +30,25 @@ MIN_ACC = 20.0
 # --------------------------------------------------------------------------
 # independent benchmark vocabulary (written from the card text, not copied)
 # --------------------------------------------------------------------------
+# Tier 2.4 (day-7 audit): the benchmark regexes must handle
+#   * suffixed variants ("arc_challenge_llama", "gsm8k_llama"),
+#   * embedded parameter tokens ("HumanEval_64 pass@2"), and
+#   * localised prefixes that should NOT match the base benchmark
+#     ("Spanish-MMLU" is not MMLU).
+# The order matters: mmlu_pro / mmlu_cot / spanish-mmlu / arabic-mmlu
+# must be excluded from plain mmlu, and humaneval_plus from plain humaneval.
+_LLAMA_SUFFIX = r"(?:[\s\-_]*llama|[\s\-_]*meta)?"
 BENCH = [
     ("mmlu_pro", r"\bmmlu[\s\-_]*pro\b"),
     ("mmlu_cot", r"\bmmlu\b[^a-z]*\(?\s*cot"),
-    ("mmlu", r"\bmmlu\b"),
-    ("arc_challenge", r"\barc[\s\-_]*(challenge|c)\b"),
-    ("gsm8k", r"\bgsm[\s\-_]*8?k\b"),
+    # plain MMLU: forbid a localised prefix (spanish-, arabic-, french-,
+    # de-, fr-, ...) so "Spanish-MMLU" does not match.
+    ("mmlu", r"(?<!\-)(?<!spanish[\s\-])(?<!arabic[\s\-])"
+             r"(?<!french[\s\-])(?<!german[\s\-])"
+             r"\bmmlu(?:_llama)?\b"),
+    ("arc_challenge",
+     r"\barc[\s\-_]*(?:challenge|c)" + _LLAMA_SUFFIX + r"\b"),
+    ("gsm8k", r"\bgsm[\s\-_]*8?k" + _LLAMA_SUFFIX + r"\b"),
     ("hellaswag", r"\bhellaswag\b"),
     ("winogrande", r"\bwinogrande\b"),
     ("truthfulqa", r"\btruthful"),
@@ -46,7 +59,10 @@ BENCH = [
     ("gpqa", r"\bgpqa\b"),
     ("musr", r"\bmusr\b"),
     ("humaneval_plus", r"\bhumaneval\s*\+|\bhumaneval[\s\-_]*plus\b"),
-    ("humaneval", r"\bhumaneval\b"),
+    # Tier 2.4: match humaneval with optional _<digits> suffix
+    # ("HumanEval_64 pass@2" on NVFP4 cards). Anchored at start-of-word
+    # only so humaneval_plus stays a separate label above.
+    ("humaneval", r"\bhumaneval(?:_\d+)?\b"),
     ("arena_hard", r"\barena[\s\-_]*hard\b"),
 ]
 SKIP_LABEL = re.compile(r"average|recovery|^\s*score\s*$", re.I)

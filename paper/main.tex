@@ -621,7 +621,47 @@ survived---would misrepresent how the result was obtained.
     pretraining runs; the point estimates on both sides land near nominal
     but the difference between them is not resolvable at this sample size
     (\S\ref{sec:results}).
+  \item \emph{LOFO means different things for different schemes.}
+    Under the shipped calibration path, when a leave-one-family-out
+    calibration family has fewer than 9 rows of a scheme, the code
+    keeps the training-set half-width for that scheme and labels the
+    result as if it were calibrated. Under the \Nfam-family corpus
+    this fallback fires on \LofoFallbackPairs{} of \LofoTotalPairs{}
+    LOFO evaluations (\LofoFallbackRate\%), and the rate is highly
+    scheme-specific: \LofoFallRateFp\% for fp8, \LofoFallRateNvfp\%
+    for nvfp4, \LofoFallRateWsixteen\% for w8a16, \LofoFallRateFpdyn\%
+    for fp8\_dynamic, \LofoFallRateWint\% for w8a8\_int, and
+    \LofoFallRateWfour\% for w4a16 (never). A LOFO figure quoted at
+    the pooled level is therefore an average over a construction that
+    is genuinely held-out for w4a16, mostly held-out for fp8\_dynamic
+    and w8a8\_int, and predominantly in-sample for fp8, nvfp4 and
+    w8a16. On the held-out subset alone (fallback rows excluded),
+    pooled two-sided coverage moves from \PooledCellCov\% to
+    \LofoHeldoutCov\% and one-sided from \PooledOneSided\% to
+    \LofoHeldoutOneSided\%. We disclose here rather than exclude:
+    the shipped pipeline reports the pooled figure, and the reader
+    should know what the pool contains.
   \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, and the strict figure is now \ProspInside/\ProspN. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about.
+  \item \emph{Nine pre-registered prospective repos were dropped by a
+    name-gate.} The prospective set was pre-registered as
+    \ProspRegisteredRepos{} repositories. The harvester requires a
+    \texttt{<n>B} parameter-count token in the checkpoint name; the
+    \ProspNameGatedRepos{} pre-registered repos whose names lack that
+    token (phi-4 x3, Phi-4-mini x2, Mistral-Nemo x2, Devstral x2) are
+    rejected by the name-gate and never enter the harvested corpus.
+    The predictor is frozen and does not use size, so the gate is not
+    load-bearing on the method; it is load-bearing on which of the
+    pre-registered repos actually get scored. The paper reports on the
+    \ProspN-row frozen-and-scored set (\ProspInside/\ProspN{} =
+    \ProspCov\%). An external audit reports that, if the
+    \ProspNameGatedRepos{} gated cards were harvested and scored under
+    the same protocol, the with-them figure would be
+    \ProspWithGatedInside/\ProspWithGatedTotal{} = \ProspWithGatedCov\%;
+    that figure is not locally reproducible in this repository because
+    the raw cards for those nine repos are not shipped. We report the
+    frozen-set figure as our headline and disclose the with-them
+    figure as an external check that the frozen-set number is not
+    materially inflated by the drop.
   \item \emph{The family classifier is enumerated.} The in-family /
     out-of-family split of the \ProspClusN{} strict prospective checkpoints
     was decided by inspecting each card and matching against the

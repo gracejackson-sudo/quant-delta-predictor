@@ -96,12 +96,21 @@ def regime_A(d, cfg, seeds=200):
 
 
 def regime_B(d, cfg, seeds=5):
+    # Tier 2.6 (day-7 audit): Python's built-in hash() randomises per
+    # process (PYTHONHASHSEED=random by default), so `hash(bm)` gave a
+    # different seed on every run and Regime B did not reproduce (two
+    # runs gave 90.5% and 90.0% against the stored 89.8%). We derive a
+    # stable seed from a hex digest of the base-model name.
+    import hashlib
+    def _stable_seed(name, offset):
+        digest = hashlib.sha256(name.encode("utf-8")).digest()
+        return int.from_bytes(digest[:4], "big") % 9973 + offset
     out = []
     for bm in sorted(d.base_model.unique()):
         te, rest = d[d.base_model == bm], d[d.base_model != bm]
         others = sorted(rest.base_model.unique())
         for s in range(seeds):
-            rng = np.random.default_rng(abs(hash(bm)) % 9973 + s)
+            rng = np.random.default_rng(_stable_seed(bm, s))
             perm = list(rng.permutation(others))
             cal = set(perm[:max(1, int(round(.3 * len(perm))))])
             ca, tr = rest[rest.base_model.isin(cal)], \

@@ -108,13 +108,32 @@ MIN_CELL_CHECKPOINTS = 3     # distinct checkpoints a cell needs to reach Tier A
 CELL_COVERAGE = os.path.join(HERE, "..", "out", "cell_coverage.json")
 
 
+class MissingCellCoverage(RuntimeError):
+    """Raised when out/cell_coverage.json cannot be loaded.
+
+    Tier 2.1 (day-7 audit): the previous behaviour swallowed OSError /
+    ValueError and returned an empty dict, so classify sites that saw
+    `c = None` silently promoted unmeasured cells to 'trusted'. A tool
+    whose premise is refusing when evidence is thin must not default to
+    trusted when its evidence file goes missing."""
+
+
 def load_cell_coverage():
-    """Measured per-(scheme, band) coverage from src/cell_coverage.py."""
+    """Measured per-(scheme, band) coverage from src/cell_coverage.py.
+
+    Raises MissingCellCoverage on missing/corrupt file rather than
+    silently returning empty. Callers can catch this if they want the
+    old "empty is fine" behaviour, but the CLI does not."""
     try:
         with open(CELL_COVERAGE) as f:
             return json.load(f)
-    except (OSError, ValueError):
-        return {"cells": {}, "bands": {}, "pooled": {}, "widening": {}}
+    except (OSError, ValueError) as e:
+        raise MissingCellCoverage(
+            f"out/cell_coverage.json is missing or unreadable "
+            f"({type(e).__name__}: {e}). Run "
+            f"`python src/cell_coverage.py` to generate it. Without "
+            f"this file rank.py cannot judge cell-level evidence and "
+            f"must not report cell verdicts.")
 
 # Why a RATE and not the single worst observation: the worst value grows with
 # sample size, so thresholding on it flags every well-studied scheme and tells
@@ -171,9 +190,15 @@ def build_table(d=None):
         # ("more than 3pp" / ">3pp" -- strict) so a corpus row at exactly
         # -3.00pp does not silently reclassify. See rank.py:208 (`< -RISK_FLOOR_PP`)
         # for the other severe-loss site, which uses the same strict form.
+        #
+        # Tier 2.2 (day-7 audit): also compute at half-integer thresholds
+        # so `--risk 2.5` (etc.) does not silently return NaN and drop the
+        # TAIL_RISK flag. The keys are floats stringified without trailing
+        # zeroes, and the CLI validates --risk against this grid.
         sev = {}
-        for thr in (2.0, 3.0, 4.0):
-            sev[str(thr)] = float((g.delta < -thr).mean())
+        _thrs = [x / 2 for x in range(2, 11)]   # 1.0, 1.5, ..., 5.0
+        for thr in _thrs:
+            sev[str(float(thr))] = float((g.delta < -thr).mean())
         table[s] = {
             "scheme": s,
             "severe_rate": sev,
@@ -280,27 +305,43 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
         thin_ckpts = ckpts is not None and ckpts < MIN_CELL_CHECKPOINTS
         straddles = (boot_lo is not None and boot_hi is not None and
                      boot_lo < REFUSE_BELOW * 100 < boot_hi)
-        state = classify_cell(c) if c else "trusted"
+        # Tier 2.1 (day-7 audit): if no coverage record exists for this
+        # (scheme, band), the cell has no measured evidence and must be
+        # 'insufficient_evidence', not 'trusted'. The previous default
+        # silently promoted unmeasured cells; that is the exact failure
+        # mode this classifier's docstring says it is supposed to prevent.
+        state = classify_cell(c) if c else "insufficient_evidence"
         if state == "insufficient_evidence":
             e["insufficient_evidence"] = True
             e["evidence_coverage"] = judged
             e["evidence_ckpts"] = ckpts
             e["evidence_boot90"] = [boot_lo, boot_hi]
-            e["evidence_reason"] = (
-                "checkpoint floor" if thin_ckpts and not straddles else
-                "bootstrap straddle" if straddles and not thin_ckpts else
-                "checkpoint floor and bootstrap straddle")
-            flags.append("INSUFFICIENT_EVIDENCE")
-            notes.append(
-                f"{e['scheme']} at {band} is neither trusted nor refused: "
-                f"its measured one-sided coverage is {judged*100:.1f}% from "
-                f"only {ckpts} distinct checkpoints, and the checkpoint "
-                f"bootstrap 90% interval [{boot_lo:.0f}%, {boot_hi:.0f}%] "
-                f"{'straddles' if straddles else 'sits below'} the "
-                f"{REFUSE_BELOW*100:.0f}% line the tool judges against "
-                f"-- {e['evidence_reason']}. There is not enough independent "
-                f"evidence here to call this cell either way; run your own "
-                f"evaluation")
+            if not c:
+                # Tier 2.1: no coverage record at all.
+                e["evidence_reason"] = "no measured coverage record"
+                flags.append("INSUFFICIENT_EVIDENCE")
+                notes.append(
+                    f"{e['scheme']} at {band} has no measured coverage "
+                    f"record in `out/cell_coverage.json`. Without measured "
+                    f"evidence the tool cannot judge this cell; run "
+                    f"`python src/cell_coverage.py` and retry, or query a "
+                    f"different (scheme, size) combination")
+            else:
+                e["evidence_reason"] = (
+                    "checkpoint floor" if thin_ckpts and not straddles else
+                    "bootstrap straddle" if straddles and not thin_ckpts else
+                    "checkpoint floor and bootstrap straddle")
+                flags.append("INSUFFICIENT_EVIDENCE")
+                notes.append(
+                    f"{e['scheme']} at {band} is neither trusted nor refused: "
+                    f"its measured one-sided coverage is {judged*100:.1f}% from "
+                    f"only {ckpts} distinct checkpoints, and the checkpoint "
+                    f"bootstrap 90% interval [{boot_lo:.0f}%, {boot_hi:.0f}%] "
+                    f"{'straddles' if straddles else 'sits below'} the "
+                    f"{REFUSE_BELOW*100:.0f}% line the tool judges against "
+                    f"-- {e['evidence_reason']}. There is not enough independent "
+                    f"evidence here to call this cell either way; run your own "
+                    f"evaluation")
         elif state == "refused":
             e["refused"] = True
             e["refusal_coverage"] = judged
@@ -333,9 +374,17 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
             f"{risk_pp:.0f}pp severe threshold")
 
     # (2) tail risk: how OFTEN a severe loss happened, not just whether one did
+    # Tier 2.2 (day-7 audit): a missing rate is a hard error, not a silent
+    # NaN. If --risk lands on a threshold not precomputed in severe_rate,
+    # the CLI's validator caught it upstream; getting a None here means
+    # the table was built by an older code path and is stale.
     rate = e["severe_rate"].get(str(float(risk_pp)))
     if rate is None:
-        rate = float(np.nan)
+        raise ValueError(
+            f"severe_rate is missing for risk={risk_pp}. The rank table "
+            f"was built without this threshold. Rerun rank so build_table "
+            f"populates the grid, or query a threshold in "
+            f"{sorted(float(k) for k in e['severe_rate'])}")
     e["severe_rate_used"] = rate
     margin_n = e["n"] - THIN_ROWS
     margin_f = e["n_families"] - THIN_FAMILIES
@@ -345,7 +394,7 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
             f"{THIN_ROWS} threshold, {e['n_families']} families vs "
             f"{THIN_FAMILIES}) - its rank rests on barely enough evidence")
 
-    if not np.isnan(rate) and rate > SEVERE_RATE:
+    if rate > SEVERE_RATE:
         flags.append("TAIL_RISK")
         notes.append(
             f"{rate*100:.1f}% of observed evaluations lost more than "
@@ -725,7 +774,13 @@ def main(argv=None):
                                    "(applies the size-risk check)")
     ap.add_argument("--moe", action="store_true",
                     help="model is mixture-of-experts")
+    # Tier 2.2 (day-7 audit): pin --risk to the half-integer grid
+    # precomputed in build_table. A value off the grid used to silently
+    # NaN the severe_rate lookup and drop the TAIL_RISK flag; it now
+    # errors before rank runs.
+    _RISK_GRID = [x / 2 for x in range(2, 11)]  # 1.0, 1.5, ..., 5.0
     ap.add_argument("--risk", type=float, default=DEFAULT_RISK_PP,
+                    choices=_RISK_GRID,
                     help=f"severe-loss threshold in pp "
                          f"(default {DEFAULT_RISK_PP})")
     ap.add_argument("--json", action="store_true", help="machine-readable")

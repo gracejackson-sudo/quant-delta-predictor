@@ -292,11 +292,26 @@ def registry():
         # (arXiv:2606.24020: held-out scores recovered within 4.6 points).
         add("benchpress_reported_error_pts", 4.6, 0, "BenchPress abstract, held-out error")
 
-    # --- negative-result headline numbers
-    add("mae_floor_pp", 0.5293677169647244, 0.002,
-        "irreducible MAE from evaluation noise (run_final)")
-    add("mae_global_lofo", 0.7545, 0.002,
-        "global-mean baseline MAE, leave-one-family-out")
+    # --- negative-result headline numbers.
+    # Tier 2.7 (day-7 audit): these were previously hard-coded literals
+    # from a specific run_final run. A data change (Def B, gpqa dedup,
+    # Mixtral rebinning) left the values still "verified" but silently
+    # stale. Both now compute live from the current corpus. The floor
+    # excludes arena_hard, gpqa and musr because those benchmarks have
+    # fewer than 4 lossless-scheme rows; the exclusion is a property of
+    # the current data, not of the method, so we record which benchmarks
+    # were included so the exclusion is visible.
+    from run_final import mae_floor as _mae_floor_fn
+    _floor, _floor_tab = _mae_floor_fn(d)
+    add("mae_floor_pp", _floor, 0.002,
+        "irreducible MAE from evaluation noise (mean absolute deviation "
+        "on lossless-scheme rows, pooled by row count; computed live)")
+    add("mae_floor_n_benchmarks", int(len(_floor_tab)), 0,
+        "benchmarks included in the MAE floor (needs 4+ lossless rows)")
+    add("mae_floor_excluded_benchmarks",
+        int(d.benchmark.nunique() - len(_floor_tab)), 0,
+        "benchmarks EXCLUDED from the MAE floor (fewer than 4 lossless "
+        "rows -- currently arena_hard, gpqa and musr)")
 
     bcp = os.path.join(HERE, "..", "out", "bias_correction.json")
     if os.path.exists(bcp):
@@ -772,8 +787,12 @@ def registry():
     add("mae_gain_fams_pos", int((_r.groupby("family")["diff"].mean() > 0).sum()), 0,
         "held-out families where the per-scheme mean beats the global mean")
 
-    add("headroom_pp", 0.7545 - 0.5293677169647244, 0.002,
-        "global-mean baseline MAE minus the evaluation-noise floor")
+    # Tier 2.7: also computed live so a data change updates the headroom.
+    if "pred_mae::global_mean" in reg and "mae_floor_pp" in reg:
+        add("headroom_pp",
+            reg["pred_mae::global_mean"][0] - reg["mae_floor_pp"][0],
+            0.002,
+            "global-mean baseline MAE minus the evaluation-noise floor")
 
     add("thin_rows_threshold", R.THIN_ROWS, 0, "rank.THIN_ROWS")
     add("thin_families_threshold", R.THIN_FAMILIES, 0, "rank.THIN_FAMILIES")
@@ -788,6 +807,12 @@ def registry():
         add("mae_gain_pp",
             reg["pred_mae::global_mean"][0] - reg["pred_mae::scheme_mean"][0],
             0.0005, "LOFO MAE gain of the per-scheme mean over the global mean")
+    if "pred_mae::global_mean" in reg:
+        # Tier 2.7: registered here (after pred_mae is populated) so the
+        # stale literal 0.7545 cannot come back.
+        add("mae_global_lofo", reg["pred_mae::global_mean"][0], 0.002,
+            "global-mean baseline MAE, LOFO (live from "
+            "out/predictor_comparison.json)")
 
     # --- Tier 0.1 disclosure: per-subgroup coverage of the held-out
     #     llama-3 fold. Definition B collapses Llama-3.1/3.2/3.3 into a
@@ -834,6 +859,100 @@ def registry():
         add(f"lofo_l3merged_cov::{_cf}",
             100 * float(_in_l3.mean()), 0.05,
             f"held-out llama-3 merged coverage under {_cf} calibration")
+
+    # --- Tier 1.1 disclosure: LOFO fallback rate under the 6-family corpus
+    #     (day-7 audit). ConservativeStratified.fit_calibrated keeps the
+    #     training-set half-width whenever the calibration family has <9
+    #     rows of a scheme, and labels the result as if it had been
+    #     calibrated. We disclose the pooled rate and the per-scheme rate;
+    #     the paper's §6 states plainly that fp8, nvfp4 and w8a16 fall back
+    #     on ~60% of their evaluations while w4a16 never does.
+    from strata import ConservativeStratified as _CS_lo
+    _fams_lo = sorted(d.family.unique())
+    _lo_total = 0
+    _lo_fallback = 0
+    _lo_by_scheme = {}
+    _lo_held_covered = 0
+    _lo_held_total = 0
+    _lo_held_ok1 = 0
+    for _tf in _fams_lo:
+        _te_lo = d[d.family == _tf]
+        for _cf_lo in _fams_lo:
+            if _cf_lo == _tf:
+                continue
+            _ca_lo = d[d.family == _cf_lo]
+            _tr_lo = d[~d.family.isin([_tf, _cf_lo])]
+            if len(_te_lo) == 0 or len(_ca_lo) < 19 or len(_tr_lo) < 50:
+                continue
+            _m_lo = _CS_lo().fit_calibrated(_tr_lo, _ca_lo)
+            _, _lo_, _hi_, _ = _m_lo.predict_interval(_te_lo)
+            _y_lo = _te_lo.delta.to_numpy(float)
+            _EPS_lo = 1e-9
+            _in2 = (_y_lo >= _lo_ - _EPS_lo) & (_y_lo <= _hi_ + _EPS_lo)
+            _os_ = (_y_lo >= _lo_ - _EPS_lo)
+            _sch_cnt = _ca_lo.groupby("scheme").size().to_dict()
+            _te2 = _te_lo.reset_index(drop=True)
+            for _i in range(len(_te2)):
+                _sc = _te2.iloc[_i].scheme
+                _fb = _sch_cnt.get(_sc, 0) < 9
+                _lo_total += 1
+                _lo_fallback += int(_fb)
+                _lo_by_scheme.setdefault(_sc, [0, 0])
+                _lo_by_scheme[_sc][0] += 1
+                _lo_by_scheme[_sc][1] += int(_fb)
+                if not _fb:
+                    _lo_held_total += 1
+                    _lo_held_covered += int(_in2[_i])
+                    _lo_held_ok1 += int(_os_[_i])
+    add("lofo_fallback_pairs", _lo_fallback, 0,
+        "LOFO pairs where calibration family had <9 rows of the row's scheme")
+    add("lofo_total_pairs", _lo_total, 0,
+        "total LOFO (test row, cal family) pairs")
+    add("lofo_fallback_rate_pct", 100 * _lo_fallback / _lo_total, 0.05,
+        "share of LOFO pairs using the training-set half-width fallback")
+    for _sc, (_n, _nf) in _lo_by_scheme.items():
+        add(f"lofo_fallback_rate_pct::{_sc}", 100 * _nf / _n, 0.05,
+            f"fallback rate for {_sc} under 6-fam LOFO")
+    add("lofo_heldout_pairs", _lo_held_total, 0,
+        "LOFO pairs after excluding fallback rows")
+    add("lofo_heldout_cov_pct", 100 * _lo_held_covered / _lo_held_total, 0.05,
+        "pooled two-sided coverage on held-out (fallback-excluded) LOFO evals")
+    add("lofo_heldout_one_sided_pct", 100 * _lo_held_ok1 / _lo_held_total, 0.05,
+        "pooled one-sided coverage on held-out LOFO evals")
+
+    # --- Tier 1.3 disclosure: pre-registered set had 34 repos; 9 are
+    #     name-gated (no <n>B token). The frozen-set headline is 119/131
+    #     (registry). The with-them figure 143/156 comes from an external
+    #     audit and is NOT locally reproducible (the 9 cards are not in
+    #     data/prospective_cards/). Registered here so the paper prose can
+    #     reference the two values through claim tags; the value is treated
+    #     as EXTERNAL by the traceability audit.
+    add("prosp_registered_repos", 34, 0, "pre-registered prospective repos")
+    add("prosp_name_gated_repos", 9, 0,
+        "pre-registered repos rejected by parse_params_b name-gate")
+    add("prosp_with_gated_inside", 143, 0,
+        "with-gated-repos rows inside the interval (EXTERNAL, day-7 audit; "
+        "not locally reproducible without the 9 gated cards)")
+    add("prosp_with_gated_total", 156, 0,
+        "with-gated-repos total rows (EXTERNAL, day-7 audit)")
+    add("prosp_with_gated_cov_pct", 100 * 143 / 156, 0.02,
+        "with-gated-repos coverage (EXTERNAL, day-7 audit)")
+
+    # Tier 2.8 (day-7 audit): gemma-3-1b-it W4A16 has 6 TruthfulQA-and-
+    # friends deltas; how many the shipped conformal bound catches was
+    # hand-typed as "2 of 6" and now says 3 under the 1e-9 tolerance
+    # (matches the bias_correction_empirical docstring). Registered live.
+    _gem = [-3.03, -2.99, -2.90, -2.41, -1.34, 1.40]
+    _EPS_gem = 1e-9
+    _lo_gem, _hi_gem = -2.87, 1.40
+    add("gemma_1b_wfour_caught",
+        int(sum(1 for _x in _gem
+                if _lo_gem - _EPS_gem <= _x <= _hi_gem + _EPS_gem)), 0,
+        "of the 6 gemma-3-1b-it W4A16 deltas, how many the shipped "
+        "conformal bound catches (with 1e-9 boundary tolerance, Tier 2.8)")
+    add("gemma_1b_wfour_total", len(_gem), 0,
+        "total gemma-3-1b-it W4A16 deltas evaluated in the correction note")
+
     return reg
 
 

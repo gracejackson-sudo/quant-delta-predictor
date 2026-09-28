@@ -1,7 +1,7 @@
 {
-  "pooled_coverage_pct": 91.7748,
-  "pooled_scored_pairs": 4085,
-  "pooled_distinct_rows": 817,
+  "pooled_coverage_pct": 92.1242,
+  "pooled_scored_pairs": 4025,
+  "pooled_distinct_rows": 805,
   "cells": {
     "w8a16|>10B": {
       "mean_delta_of_misses": -1.1083,

@@ -73,11 +73,18 @@ def scored_pairs(d):
 
 
 def _boot(g, col, draws, seed=0):
-    """Checkpoint-cluster bootstrap 90% interval (5th, 95th percentile, in %)."""
+    """Checkpoint-cluster bootstrap 90% interval (5th, 95th percentile, in %).
+
+    Tier 2.3 (day-7 audit): the previous version rounded both bounds to
+    0.1 before returning. That is the same class as the A4 float-boundary
+    bug: a bound of 84.95% rounds to 85.0% and then compares equal to
+    the REFUSE_BELOW*100 straddle line, silently hiding a straddle. We
+    now return full precision; display code can format at 0.1.
+    """
     grp = [x[col].to_numpy(float) for _, x in g.groupby("base_model")]
     lo, hi = cluster_boot.bounds([x.sum() for x in grp], [len(x) for x in grp],
                                  rng=np.random.default_rng(seed), draws=draws)
-    return round(float(lo), 1), round(float(hi), 1)
+    return float(lo), float(hi)
 
 
 def scheme_records(r):

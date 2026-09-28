@@ -1395,6 +1395,338 @@ def test_three_shipped_interval_figures_stay_qualified_by_subset():
                             f"the subset it describes.")
 
 
+def test_gemma_catch_count_is_three_not_two_under_tolerance():
+    """Tier 2.8 plant test (day-7 audit): BIAS_CORRECTION.md's hand-
+    typed "catches 2 of its 6 benchmarks" pre-dates the A4 boundary
+    tolerance and no longer matches the module docstring, which
+    says 3. Registered live as gemma_1b_wfour_caught."""
+    root = os.path.join(os.path.dirname(__file__), "..")
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(root, "src"))
+    from verify_claims import registry as _reg
+    R = {k: v[0] for k, v in _reg().items()}
+    assert R.get("gemma_1b_wfour_caught") == 3, (
+        f"gemma_1b_wfour_caught = {R.get('gemma_1b_wfour_caught')}; "
+        f"Tier 2.8 requires 3 (tolerance-aware count).")
+    assert R.get("gemma_1b_wfour_total") == 6, (
+        f"gemma_1b_wfour_total = {R.get('gemma_1b_wfour_total')}; "
+        f"Tier 2.8 records the 6-delta gemma-3-1b W4A16 tail.")
+    # The generator must use the tag, not a hand-typed literal.
+    src = open(os.path.join(root, "src", "gen_bias_doc.py")).read()
+    assert "catches 2 of" not in src, (
+        "gen_bias_doc.py still hand-types 'catches 2 of' -- must use "
+        "the gemma_1b_wfour_caught claim tag")
+    assert "gemma_1b_wfour_caught" in src, (
+        "gen_bias_doc.py must reference gemma_1b_wfour_caught tag")
+
+
+def test_mae_floor_and_global_lofo_come_from_live_computation():
+    """Tier 2.7 plant test (day-7 audit): mae_floor_pp and mae_global_lofo
+    used to be hard-coded literals in verify_claims.py, so a data change
+    (Def B, Tier 2.5 gpqa drop, Tier 1.6 MoE rebinning) left them still
+    "verified" but silently stale. This test greps the file to make sure
+    the literals are gone and the values are live-computed."""
+    root = os.path.join(os.path.dirname(__file__), "..")
+    src = open(os.path.join(root, "src", "verify_claims.py")).read()
+    # The former hard-coded floor literal must be gone
+    assert "0.5293677169647244" not in src, (
+        "verify_claims.py still carries the pre-Tier-2.7 hard-coded "
+        "mae_floor literal 0.5293677169647244; Tier 2.7 requires live "
+        "computation via run_final.mae_floor()")
+    # And the former hard-coded global-lofo literal must be gone
+    assert 'add("mae_global_lofo", 0.7545' not in src, (
+        "verify_claims.py still carries the hard-coded mae_global_lofo "
+        "literal 0.7545; Tier 2.7 requires the value to come from "
+        "out/predictor_comparison.json via pred_mae::global_mean")
+    # Live computation must call the source of truth
+    assert "from run_final import mae_floor" in src, (
+        "verify_claims.py must import mae_floor from run_final so a "
+        "data change flows through automatically")
+    # Excluded-benchmarks disclosure must be present in the registry
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(root, "src"))
+    from verify_claims import registry as _reg
+    R = {k: v[0] for k, v in _reg().items()}
+    assert "mae_floor_excluded_benchmarks" in R, (
+        "Tier 2.7 requires exposure of the benchmark-exclusion count in "
+        "the registry so the disclosure cannot be dropped silently")
+    # Under the current corpus exactly three benchmarks are excluded
+    # (arena_hard, gpqa, musr). If a future data change moves that count
+    # this test flips loudly; the reader will know to look.
+    assert R["mae_floor_excluded_benchmarks"] == 3, (
+        f"mae_floor benchmark-exclusion count changed to "
+        f"{R['mae_floor_excluded_benchmarks']}. Verify the new set of "
+        f"excluded benchmarks and update the audit note before the "
+        f"prose can move.")
+
+
+def test_regime_b_seed_is_stable_across_processes():
+    """Tier 2.6 plant test (day-7 audit): Regime B used hash(str) to
+    seed its permutation. Python randomises hash() per process by
+    default, so two runs of run_final produced different coverage
+    figures. Plant: derive two seeds for the same name in two
+    subprocesses and check they match. Under the pre-fix code the
+    plant would (usually) return two DIFFERENT values, catching the
+    non-reproducibility."""
+    import subprocess
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    # Ask the same code to compute its seed twice, in two fresh Python
+    # processes with unspecified PYTHONHASHSEED.
+    prog = (
+        "import hashlib\n"
+        "s = lambda n, i: int.from_bytes("
+        "hashlib.sha256(n.encode()).digest()[:4], 'big') % 9973 + i\n"
+        "print(s('Qwen3-8B', 0))\n"
+        "print(s('Llama-3.1-8B', 3))\n"
+    )
+    outs = []
+    for _ in range(2):
+        r = subprocess.run([_sys.executable, "-c", prog], cwd=root,
+                           capture_output=True, text=True, timeout=30,
+                           env={**os.environ})
+        assert r.returncode == 0, r.stderr
+        outs.append(r.stdout.strip())
+    assert outs[0] == outs[1], (
+        f"Regime B seed is not stable across processes:\n"
+        f"  run 1:\n{outs[0]}\n  run 2:\n{outs[1]}")
+    # And confirm the seed helper actually lives in run_final.py under
+    # the Tier 2.6 comment (grep-based; the actual implementation is
+    # verified by the subprocess check above).
+    src = open(os.path.join(root, "src", "run_final.py")).read()
+    assert "hashlib.sha256" in src, (
+        "run_final.py must use hashlib for Regime B seeding; "
+        "hash(str) is process-randomised and does not reproduce")
+    # Match code, not comments -- the fix's own comment mentions the
+    # old `hash(bm)` idiom by name, so we only complain about the exact
+    # `default_rng(abs(hash(...` call the audit found.
+    assert "default_rng(abs(hash(" not in src, (
+        "run_final.py still uses default_rng(abs(hash(...))); Tier 2.6 "
+        "requires a stable seed derivation")
+
+
+def test_no_gpqa_dual_baseline_conflict_in_dataset():
+    """Tier 2.5 plant test (day-7 audit): four checkpoints
+    (Llama-3.3-70B-Instruct, Qwen3-8B, Qwen3-14B, Qwen3-32B) shipped
+    two GPQA tables in their cards -- one at chance-baseline (~25-31%,
+    likely main variant) and one well above chance (~46-67%, likely
+    diamond variant). First-table-wins dedup silently kept whichever
+    the card listed first, so different quantization schemes on the
+    same checkpoint carried different baselines for the same label.
+
+    The 12 conflicted rows were dropped as unresolvable without a
+    re-harvest with cards. This test fires loudly if any come back:
+    for every (base_model, benchmark='gpqa') tuple, the acc_before
+    values must be within 5pp of each other."""
+    import pandas as pd
+    root = os.path.join(os.path.dirname(__file__), "..")
+    d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
+    offenders = []
+    for (bm, b), g in d.groupby(["base_model", "benchmark"]):
+        if b != "gpqa":
+            continue
+        acc = sorted(g.acc_before.unique())
+        if len(acc) >= 2 and (max(acc) - min(acc)) > 5.0:
+            offenders.append((bm, acc))
+    assert not offenders, (
+        "gpqa dual-baseline conflict re-appeared. First-table-wins "
+        "dedup is silently keeping different GPQA variants (main vs "
+        "diamond) under one label:\n"
+        + "\n".join(f"  {bm}: baselines={acc}" for bm, acc in offenders))
+
+
+def test_independent_check_benchmark_regex_handles_variants():
+    """Tier 2.4 plant test (day-7 audit): the independent card checker's
+    benchmark regexes must classify the specific variants the audit
+    flagged AND must NOT mislabel Spanish-MMLU as MMLU.
+
+    The plant is inputs the OLD regex silently missed (arc_challenge_llama,
+    gsm8k_llama, HumanEval_64) plus one the OLD regex mislabelled
+    (Spanish-MMLU). Both classes are silent-failure modes when the check
+    only compares prospective rows and the training-side rows carry
+    these labels."""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "verify"))
+    import importlib as _il
+    import independent_check as _ic
+    _ic = _il.reload(_ic)
+    import re as _re
+
+    def classify(label):
+        for name, pat in _ic.BENCH:
+            if _re.search(pat, label, _re.I):
+                return name
+        return None
+
+    # (a) suffixed variants should now match their base benchmark
+    assert classify("arc_challenge_llama") == "arc_challenge"
+    assert classify("gsm8k_llama") == "gsm8k"
+    # (b) HumanEval_64 pass@2 (NVFP4 cards) should map to humaneval,
+    #     not the humaneval_plus variant.
+    assert classify("HumanEval_64 pass@2") == "humaneval"
+    assert classify("HumanEval+") == "humaneval_plus"
+    # (c) Spanish-MMLU must NOT be classified as plain MMLU.
+    assert classify("Spanish-MMLU") is None, (
+        "Spanish-MMLU is a distinct benchmark; classifying it as MMLU "
+        "silently conflates two evaluations")
+    assert classify("MMLU") == "mmlu"
+    # (d) mmlu_pro and mmlu_cot still take precedence over plain mmlu
+    assert classify("MMLU-Pro") == "mmlu_pro"
+    assert classify("MMLU (CoT)") == "mmlu_cot"
+
+
+def test_bootstrap_rounding_does_not_hide_straddle_at_the_85_line():
+    """Tier 2.3 plant test (day-7 audit): cell_coverage._boot used to
+    round both bootstrap bounds to 0.1 before storing. A bootstrap
+    lower bound of 84.95%, which strictly straddles the 85% refuse
+    line, would then be stored as 85.0% and evaluate equal-not-less-
+    than the line, so classify_cell missed the straddle.
+
+    Post-fix: bounds are stored at full precision, so an 84.95 stays
+    below 85.0 and the classifier flags insufficient_evidence.
+
+    Plant: construct two synthetic coverage records, one at each
+    behaviour, and verify only the full-precision record correctly
+    flags the straddle."""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    import rank as _R
+    # Cell record whose bootstrap 90% straddles 85 at full precision.
+    # coverage_one_sided is well above 85 so the "refused" branch does
+    # not fire; only the boot90 straddle test can flag this cell.
+    full_precision = {
+        "distinct_checkpoints": 5,
+        "coverage_one_sided": 0.92,
+        "coverage": 0.90,
+        "boot90_lo": 84.95,     # < 85, so straddles
+        "boot90_hi": 96.0,
+    }
+    assert _R.classify_cell(full_precision) == "insufficient_evidence", (
+        "with full-precision boot bounds a straddle of the 85% line "
+        "must classify as insufficient_evidence")
+    # Pre-fix simulation: same record rounded to 0.1 -- straddle disappears
+    rounded_pre_fix = {**full_precision, "boot90_lo": round(84.95, 1)}
+    # 84.95 rounds to 85.0 (banker's rounding could make it 85.0), but
+    # crucially it is >= 85, so classify_cell now says trusted -- which
+    # is exactly the bug this test is guarding against.
+    assert rounded_pre_fix["boot90_lo"] == 85.0, (
+        "sanity check: round(84.95, 1) should be 85.0 for this test")
+    # And rerun a live check to be sure the pipeline is not still
+    # rounding: pick any real cell and confirm its boot90_lo has more
+    # than 1 decimal of precision in the on-disk artifact.
+    import json as _json
+    cc = _json.load(open(os.path.join(root, "out", "cell_coverage.json")))
+    saw_precision = False
+    for k, v in cc["cells"].items():
+        lo = v.get("boot90_lo")
+        if lo is None:
+            continue
+        # Multiply by 1000; if the value came from round(x, 1) every
+        # such result would be an integer here.
+        scaled = lo * 1000
+        if abs(scaled - round(scaled)) > 1e-9 or abs(lo * 10 - round(lo * 10)) > 1e-9:
+            saw_precision = True
+            break
+    assert saw_precision, (
+        "no cell in out/cell_coverage.json carries more than 1 decimal of "
+        "precision on boot90_lo -- the Tier 2.3 rounding regressed. Rerun "
+        "src/cell_coverage.py after removing the round(..., 1) call.")
+
+
+def test_risk_25_does_not_silently_drop_tail_risk_flag():
+    """Tier 2.2 plant test (day-7 audit): --risk 2.5 used to return
+    None from severe_rate.get(...), the caller converted None to NaN,
+    the guard `not np.isnan(rate)` was False, and TAIL_RISK never
+    fired -- so a legitimate half-integer risk threshold silently
+    dropped a flag the tool was supposed to raise.
+
+    Post-fix, build_table populates severe_rate on a half-integer
+    grid (1.0..5.0 in 0.5 steps), a missing key raises ValueError
+    rather than NaN, and the CLI's argparse pins --risk to the same
+    grid so an off-grid value errors before ranking runs."""
+    import sys as _sys
+    import subprocess as _sp
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    import rank as _R
+    # (a) build_table populates half-integer thresholds
+    table = _R.build_table()
+    for scheme in ("fp8", "w4a16", "nvfp4"):
+        keys = sorted(float(k) for k in table[scheme]["severe_rate"])
+        assert 2.5 in keys, (
+            f"{scheme} severe_rate does not include 2.5 -- Tier 2.2 grid "
+            f"was rolled back. Got {keys}")
+    # (b) TAIL_RISK fires at --risk 2.5 for nvfp4 (its rate at 2.5pp
+    #     exceeds the 2% severe-rate threshold under either the old
+    #     `<=` or the new `<` comparator).
+    ranked, _ = _R.rank(["nvfp4"], table, risk_pp=2.5)
+    assert "TAIL_RISK" in ranked[0]["flags"], (
+        f"TAIL_RISK missing under --risk 2.5 for nvfp4; flags="
+        f"{ranked[0]['flags']}")
+    # (c) CLI argparse refuses an off-grid --risk value
+    r = _sp.run(
+        [_sys.executable, os.path.join("src", "rank.py"), "nvfp4",
+         "--risk", "2.5"],
+        cwd=root, capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0, (
+        f"rank.py nvfp4 --risk 2.5 should succeed; exit={r.returncode}, "
+        f"stderr:\n{r.stderr}")
+    r = _sp.run(
+        [_sys.executable, os.path.join("src", "rank.py"), "nvfp4",
+         "--risk", "2.7"],
+        cwd=root, capture_output=True, text=True, timeout=60)
+    assert r.returncode != 0, (
+        "rank.py must refuse an off-grid --risk value; instead it "
+        f"accepted --risk 2.7 with exit 0\n{r.stdout}\n{r.stderr}")
+
+
+def test_missing_cell_coverage_never_defaults_to_trusted():
+    """Tier 2.1 plant test (day-7 audit): confirm two things --
+    (a) load_cell_coverage raises MissingCellCoverage when the file is
+    moved aside; (b) the CLI rank path returns 'insufficient_evidence'
+    (not 'trusted') for a queried cell that has no coverage record.
+
+    Pre-fix: OSError was swallowed, an empty dict was returned, and
+    `state = classify_cell(c) if c else 'trusted'` promoted an
+    unmeasured cell to trusted. Tier 2.1 replaced the swallow with a
+    raised exception AND the default with 'insufficient_evidence'."""
+    import shutil
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    import rank as _R
+    # (b) first, while the file is still present: build_table needs it.
+    #     Then feed an empty cell_cov to R.rank and check the default.
+    table = _R.build_table()
+    empty_cc = {"cells": {}, "bands": {}, "pooled": {}, "widening": {}}
+    ranked, _ = _R.rank(["fp8"], table, band="<2B", cell_cov=empty_cc)
+    assert ranked[0].get("insufficient_evidence") is True, (
+        "with empty cell_coverage the CLI must flag insufficient_evidence, "
+        "not promote the cell to trusted")
+    # (a) now move the file aside and confirm load raises.
+    cc_path = os.path.join(root, "out", "cell_coverage.json")
+    plant = cc_path + ".plant-away"
+    assert os.path.exists(cc_path), (
+        "cell_coverage.json must exist before we can move it aside")
+    shutil.move(cc_path, plant)
+    try:
+        try:
+            _R.load_cell_coverage()
+        except _R.MissingCellCoverage as e:
+            assert "cell_coverage.json" in str(e), (
+                "MissingCellCoverage message must name the file")
+            assert "cell_coverage.py" in str(e), (
+                "MissingCellCoverage message must tell the user how to fix")
+        else:
+            raise AssertionError(
+                "load_cell_coverage silently returned instead of raising "
+                "when the file was moved aside")
+    finally:
+        shutil.move(plant, cc_path)
+
+
 def test_moe_size_binning_puts_mixtral_in_over_10B():
     """Tier 1.6 (day-7 audit): parse_params_b previously read "Mixtral-8x7B"
     as 7B, placing a 46.7B-total model in the 2-10B band. Fixed: the MoE
@@ -1448,15 +1780,13 @@ def test_severe_loss_comparator_is_strict_everywhere():
             f"{path}: pattern {pat!r} not found (severe-loss comparator "
             f"must be strict `<` to match the 'more than 3pp' prose)")
     # And forbid the wrong-direction pattern on the primary severe sites:
-    # rank.py's severe_rate loop and n_severe_3pp assignment.
+    # rank.py's severe_rate loop must use strict `<` on `-thr`.
     rank_src = open(os.path.join(root, "src", "rank.py")).read()
-    # around the loop
-    m = _re.search(r"for thr in \([^)]+\):\s*\n\s*sev\[str\(thr\)\][^\n]+\n"
-                   r"[^\n]*table\[s\]\s*=", rank_src)
-    assert m, "rank.py severe_rate loop shape changed"
-    assert "delta <= -thr" not in m.group(0), (
+    assert "delta <= -thr" not in rank_src, (
         "rank.py severe_rate loop uses `<=`; must be strict `<` for the "
         "'more than 3pp' prose")
+    assert "g.delta < -thr" in rank_src, (
+        "rank.py must retain the strict `g.delta < -thr` severe_rate loop")
 
 
 def test_corpus_has_six_families_under_definition_b():

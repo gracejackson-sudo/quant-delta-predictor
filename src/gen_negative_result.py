@@ -9,7 +9,12 @@ DOC = os.path.join(HERE, "..", "NEGATIVE_RESULT.md")
 REG = registry()
 def v(k): return REG[k][0]
 def n(k, f="{:.0f}"):
-    x = v(k); return f"{f.format(x)}<!-- claim: {k} = {x:.4f} -->"
+    # Tier 2.7/2.8 (day-7 audit): the tag needs at least as many decimals
+    # as any display of the same value; 4dp used to round short of a 3dp
+    # display for values like 0.5075232 (audit_traceability rounds the
+    # TAG to the displayed precision and compares, so a truncated tag
+    # can miss even when the doc's shown value is correct).
+    x = v(k); return f"{f.format(x)}<!-- claim: {k} = {x:.6f} -->"
 
 def main():
     L=[];A=L.append
