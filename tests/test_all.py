@@ -1327,6 +1327,138 @@ def test_paper_section6_protocol_sentence_states_both_grounds():
 # Import-fails-loudly, not silently.
 # ---------------------------------------------------------------------------
 
+def test_three_shipped_interval_figures_stay_qualified_by_subset():
+    """Tier 1.4 (day-7 audit): three registry keys carry values that all
+    look like 'the shipped interval's coverage' but measure DIFFERENT
+    subsets. This test pins:
+        band_conf_coverage_pct  -- coverage of the shipped conformal
+            band across all rows in the interval_shape comparison
+            (including rows where the empirical band is ±∞). Reported
+            in the paper's §9 'A regression we nearly shipped' block.
+        finite_conf_cov_pct     -- coverage of the same band on the
+            finite-only subset, used to compare against the empirical
+            band on the same rows. Reported in BIAS_CORRECTION.md.
+        pooled_cell_coverage_pct -- pooled coverage across every
+            (test row × calibration family) evaluation under the
+            shipped LOFO protocol. Reported in ONE_SIDED_COVERAGE.md
+            and in the paper's §6.
+    They are all legitimate; they are not interchangeable. The test
+    fails if the three values collapse (a rewrite that made them mean
+    the same thing) or if a doc drops its claim tag (silent drift)."""
+    import re as _re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(root, "src"))
+    from verify_claims import registry as _reg
+    R = {k: v[0] for k, v in _reg().items()}
+    # All three must exist, be distinct, and each be in the range for
+    # a coverage percentage.
+    for k in ("band_conf_coverage_pct", "finite_conf_cov_pct",
+              "pooled_cell_coverage_pct"):
+        assert k in R, f"registry lost {k}; is verify_claims.py intact?"
+        assert 60 <= R[k] <= 100, f"{k} = {R[k]!r} out of coverage range"
+    # The three must not be within 0.1pp of each other, or a reader will
+    # rightly ask why they aren't the same number.
+    vals = {k: R[k] for k in ("band_conf_coverage_pct",
+                              "finite_conf_cov_pct",
+                              "pooled_cell_coverage_pct")}
+    for k1, v1 in vals.items():
+        for k2, v2 in vals.items():
+            if k1 >= k2:
+                continue
+            assert abs(v1 - v2) > 0.1, (
+                f"{k1} and {k2} are within 0.1pp of each other "
+                f"({v1:.2f} vs {v2:.2f}); if these two numbers really "
+                f"describe the same subset now, collapse them into one "
+                f"registry key rather than reporting two.")
+    # Each figure must carry a claim tag wherever it is displayed. Grep
+    # each doc for a bare percentage that rounds to the registered value
+    # without a claim tag in the same line -- fail if found.
+    docs = ["BIAS_CORRECTION.md", "NEGATIVE_RESULT.md"]
+    for k in vals:
+        for doc in docs:
+            p = os.path.join(root, doc)
+            if not os.path.exists(p):
+                continue
+            v_show = f"{R[k]:.1f}"
+            for lineno, line in enumerate(open(p), 1):
+                if v_show in line and f"claim: {k}" not in line:
+                    # Ignore lines that already carry SOME claim tag for
+                    # a nearby value; we want the specific pairing.
+                    if _re.search(rf"\b{_re.escape(v_show)}\s*<!--\s*claim:\s*{_re.escape(k)}\b", line):
+                        continue
+                    if _re.search(rf"\b{_re.escape(v_show)}\b(?![^<]*<!--\s*claim)", line):
+                        raise AssertionError(
+                            f"{doc}:{lineno}: value {v_show}% appears "
+                            f"without a claim tag for {k}. Every shipped-"
+                            f"interval figure must be registry-traced to "
+                            f"the subset it describes.")
+
+
+def test_moe_size_binning_puts_mixtral_in_over_10B():
+    """Tier 1.6 (day-7 audit): parse_params_b previously read "Mixtral-8x7B"
+    as 7B, placing a 46.7B-total model in the 2-10B band. Fixed: the MoE
+    "NxMB" form is parsed as N*M. Lock the fix so a future regex rollback
+    breaks the gate."""
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    from harvest import parse_params_b as _pb
+    assert _pb("Mixtral-8x7B-Instruct-v0.1") == 56.0
+    assert _pb("Mixtral-8x22B-v0.1") == 176.0
+    # dense models still work
+    assert _pb("Llama-3.1-8B") == 8.0
+    assert _pb("Mistral-7B") == 7.0
+    # And the CSV rows must reflect the fix (see the Def-B/A4 CSV-patch
+    # pattern documented in PROVENANCE.md).
+    import pandas as _pd
+    from strata import annotate as _ann
+    d = _ann(_pd.read_csv(os.path.join(root, "data", "dataset.csv")))
+    for m in ("Mixtral-8x7B-Instruct-v0.1", "Mixtral-8x22B-v0.1"):
+        rows = d[d.base_model == m]
+        assert len(rows) > 0, f"{m}: no rows in dataset.csv"
+        assert (rows.band == ">10B").all(), (
+            f"{m}: found band {rows.band.unique().tolist()}; must be >10B "
+            f"under Tier 1.6")
+
+
+def test_severe_loss_comparator_is_strict_everywhere():
+    """Tier 1.2 (day-7 audit): the paper table, RANKING.md, TOOL_SUMMARY,
+    README and CLI all say "more than 3pp" / ">3pp". The code must use
+    strict `<` at every severe-loss site so a corpus row at exactly
+    -3.00pp does not silently reclassify. This test greps the sources
+    of the six sites named in the audit brief; a future edit that reverts
+    any of them to `<=` fails the gate."""
+    import re as _re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    checks = [
+        ("src/rank.py",                    r"g\.delta\s*<\s*-thr"),
+        ("src/rank.py",                    r"g\.delta\s*<\s*-3\.0"),
+        ("src/adversarial_schema.py",      r"dd\s*<\s*-3\.0"),
+        ("src/verify_claims.py",           r"a\.delta\s*<\s*-3"),
+        ("src/verify_claims.py",           r"bad\.delta\s*<\s*-3"),
+        ("src/verify_claims.py",           r"ctl\.delta\s*<\s*-3"),
+        ("paper/audit_paper.py",           r"bad\.delta\s*<\s*-3"),
+        ("paper/audit_paper.py",           r"ctl\.delta\s*<\s*-3"),
+        ("paper/audit_paper.py",           r"nv\.delta\s*<\s*-3"),
+    ]
+    for path, pat in checks:
+        text = open(os.path.join(root, path)).read()
+        assert _re.search(pat, text), (
+            f"{path}: pattern {pat!r} not found (severe-loss comparator "
+            f"must be strict `<` to match the 'more than 3pp' prose)")
+    # And forbid the wrong-direction pattern on the primary severe sites:
+    # rank.py's severe_rate loop and n_severe_3pp assignment.
+    rank_src = open(os.path.join(root, "src", "rank.py")).read()
+    # around the loop
+    m = _re.search(r"for thr in \([^)]+\):\s*\n\s*sev\[str\(thr\)\][^\n]+\n"
+                   r"[^\n]*table\[s\]\s*=", rank_src)
+    assert m, "rank.py severe_rate loop shape changed"
+    assert "delta <= -thr" not in m.group(0), (
+        "rank.py severe_rate loop uses `<=`; must be strict `<` for the "
+        "'more than 3pp' prose")
+
+
 def test_corpus_has_six_families_under_definition_b():
     """Tier 0.1 (day-7 audit): the corpus's family label must reflect
     Definition B (paper §3). Meta's cards state Llama-3.2 and Llama-3.3

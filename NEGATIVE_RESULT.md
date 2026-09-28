@@ -88,7 +88,7 @@ So the honest framing of this work is not that we built something new. It is tha
 
 The published corpus contains only recipes that worked. We rented an A100 and measured 45<!-- claim: adv_rows = 45.0000 --> rows from 3<!-- claim: adv_models = 3.0000 --> models under 5<!-- claim: adv_recipes = 5.0000 --> recipes, including a correctly-configured control arm evaluated on identical items.
 
-**Worst measured loss: -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp.** 18<!-- claim: adv_rows_over_3pp = 18.0000 --> of 45<!-- claim: adv_rows = 45.0000 --> rows lost more than 3pp. The worst loss anywhere in the published w4a16 corpus is -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp.
+**Worst measured loss: -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp.** 17<!-- claim: adv_rows_over_3pp = 17.0000 --> of 45<!-- claim: adv_rows = 45.0000 --> rows lost more than 3pp. The worst loss anywhere in the published w4a16 corpus is -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp.
 
 | deliberate fault | mean excess over control | worst |
 |---|---|---|

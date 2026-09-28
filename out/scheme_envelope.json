@@ -16,8 +16,8 @@
       "rows": 817,
       "calibration_families_per_row": 5.0,
       "evaluations": 4085,
-      "coverage_two_sided": 0.9207,
-      "coverage_one_sided": 0.9581,
+      "coverage_two_sided": 0.9177,
+      "coverage_one_sided": 0.9569,
       "note": "each row is scored once per calibration family, so evaluations are not independent rows"
     },
     "prospective_all_rows": {
@@ -106,22 +106,22 @@
           },
           "2-10B": {
             "state": "trusted",
-            "checkpoints": 7,
-            "rows": 43,
-            "one_sided": 0.9255813953488372,
+            "checkpoints": 6,
+            "rows": 37,
+            "one_sided": 0.9513513513513514,
             "boot90": [
-              86.5,
-              98.0
+              90.0,
+              100.0
             ]
           },
           ">10B": {
             "state": "trusted",
-            "checkpoints": 5,
-            "rows": 31,
-            "one_sided": 0.967741935483871,
+            "checkpoints": 6,
+            "rows": 37,
+            "one_sided": 0.9351351351351351,
             "boot90": [
-              91.7,
-              100.0
+              86.9,
+              99.0
             ]
           }
         }
@@ -273,11 +273,11 @@
       "worst_observed_delta_pp": -8.86,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9617,
-        "two_sided": 0.9347,
+        "one_sided": 0.9565,
+        "two_sided": 0.9223,
         "bootstrap_90_pct": [
-          93.7,
-          98.2
+          92.9,
+          97.9
         ],
         "rows": 193,
         "checkpoints": 23,
@@ -297,21 +297,21 @@
           },
           "2-10B": {
             "state": "trusted",
-            "checkpoints": 13,
-            "rows": 102,
-            "one_sided": 0.9588235294117647,
+            "checkpoints": 12,
+            "rows": 96,
+            "one_sided": 0.9458333333333333,
             "boot90": [
-              92.8,
-              98.6
+              90.6,
+              98.0
             ]
           },
           ">10B": {
             "state": "trusted",
-            "checkpoints": 8,
-            "rows": 80,
-            "one_sided": 0.9925,
+            "checkpoints": 9,
+            "rows": 86,
+            "one_sided": 0.9930232558139535,
             "boot90": [
-              98.3,
+              98.5,
               100.0
             ]
           }

@@ -196,7 +196,7 @@ def registry():
             continue
         add(f"worst::{s}", e["worst_observed"], 0.005, f"min delta for {s}")
         add(f"severe_pct::{s}", e["severe_rate"]["3.0"] * 100, 0.05,
-            f"share of {s} rows <= -3pp")
+            f"share of {s} rows losing more than 3pp (strict, delta < -3)")
         add(f"n::{s}", e["n"], 0, f"evaluations for {s}")
         add(f"families::{s}", e["n_families"], 0, f"families for {s}")
         add(f"checkpoints::{s}", e["n_checkpoints"], 0, f"checkpoints for {s}")
@@ -345,8 +345,8 @@ def registry():
         add("adv_models", a.base_model.nunique(), 0, "base models quantized")
         add("adv_recipes", a.recipe.nunique(), 0, "recipes run")
         add("adv_worst_delta", a.delta.min(), 0.01, "worst raw delta measured")
-        add("adv_rows_over_3pp", int((a.delta <= -3).sum()), 0,
-            "adversarial rows losing >3pp")
+        add("adv_rows_over_3pp", int((a.delta < -3).sum()), 0,
+            "adversarial rows losing more than 3pp (strict; Tier 1.2 fix)")
         add("adv_control_mean", a[a.is_control == 1].delta.mean(), 0.01,
             "control arm mean delta (our harness)")
         # The 45 rows mix 36 deliberately-faulted rows with a 9-row correct
@@ -354,11 +354,11 @@ def registry():
         # all of them to sabotage overstates the fault effect.
         ctl = a[a.is_control == 1]
         add("adv_bad_rows", len(bad), 0, "deliberately-faulted rows")
-        add("adv_bad_over_3pp", int((bad.delta <= -3).sum()), 0,
-            "faulted rows losing >=3pp")
+        add("adv_bad_over_3pp", int((bad.delta < -3).sum()), 0,
+            "faulted rows losing more than 3pp (strict; Tier 1.2 fix)")
         add("adv_control_rows", len(ctl), 0, "control-arm rows")
-        add("adv_control_over_3pp", int((ctl.delta <= -3).sum()), 0,
-            "control rows losing >=3pp")
+        add("adv_control_over_3pp", int((ctl.delta < -3).sum()), 0,
+            "control rows losing more than 3pp (strict; Tier 1.2 fix)")
         add("adv_max_params_b", a.params_b.max(), 0.01,
             "largest model in the adversarial arm")
         add("adv_min_params_b", a.params_b.min(), 0.001,

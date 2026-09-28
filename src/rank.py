@@ -167,13 +167,17 @@ def build_table(d=None):
                 grad[b] = {"n": int(len(gb)), "mean": float(gb.delta.mean()),
                            "worst": float(gb.delta.min()),
                            "checkpoints": int(gb.base_model.nunique())}
+        # Tier 1.2 (day-7 audit): the comparator MUST match the prose
+        # ("more than 3pp" / ">3pp" -- strict) so a corpus row at exactly
+        # -3.00pp does not silently reclassify. See rank.py:208 (`< -RISK_FLOOR_PP`)
+        # for the other severe-loss site, which uses the same strict form.
         sev = {}
         for thr in (2.0, 3.0, 4.0):
-            sev[str(thr)] = float((g.delta <= -thr).mean())
+            sev[str(thr)] = float((g.delta < -thr).mean())
         table[s] = {
             "scheme": s,
             "severe_rate": sev,
-            "n_severe_3pp": int((g.delta <= -3.0).sum()),
+            "n_severe_3pp": int((g.delta < -3.0).sum()),
             "label": LABELS.get(s, s),
             "mean": base["mean"],
             "half_width": base["half_width"],

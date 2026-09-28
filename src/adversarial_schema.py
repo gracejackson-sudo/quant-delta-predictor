@@ -154,7 +154,8 @@ def validate(path, corpus=None):
     # --- is the data actually adversarial?
     if not probs:
         dd = df.acc_after - df.acc_before
-        n_bad = int((dd <= -3.0).sum())
+        # strict: matches the "more than 3pp" prose (Tier 1.2, day-7 audit)
+        n_bad = int((dd < -3.0).sum())
         if n_bad == 0:
             warns.append(
                 f"no row lost more than 3pp (worst {dd.min():+.2f}pp). These "

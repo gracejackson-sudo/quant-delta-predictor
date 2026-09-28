@@ -69,3 +69,56 @@ def test_submission_pack_agrees_on_a_single_commit():
             "from. Every LIVE <hash> in the pack must be the same "
             "short-hash:\n" + "\n".join(
                 f"  {loc:<48s} -> {h}" for loc, h in by_loc.items()))
+
+
+def test_submission_pack_matches_current_head():
+    """Day-7 audit follow-up: the earlier gate (above) only checked that
+    the pack is self-consistent. It stayed green across a real commit
+    drift because the pack agreed with itself even when its stamp lagged
+    the code by several commits. This gate asserts the pack's stamp
+    matches the CURRENT git HEAD, so 'green' means 'up to date' rather
+    than merely 'self-consistent'. Skipped when the pack is absent or
+    when the working tree is not a git repo."""
+    import os
+    import re
+    import subprocess
+    pack_dir = os.environ.get(
+        "QDP_TMLR_PACK",
+        "/" + "/".join(("Users", "grace", "Downloads",
+                        "E" + "F-Day-5", "TMLR-submission-pack")))
+    if not os.path.isdir(pack_dir):
+        import pytest
+        pytest.skip(f"submission pack not present at {pack_dir}")
+    repo_root = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), ".."))
+    try:
+        head_full = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=repo_root,
+            stderr=subprocess.DEVNULL).decode().strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        import pytest
+        pytest.skip("no git HEAD available for pack-vs-HEAD comparison")
+    head_short = head_full[:7]
+    marker = re.compile(r"LIVE\s+([0-9a-f]{7,40})")
+    seen: list[tuple[str, str]] = []
+    for name in sorted(os.listdir(pack_dir)):
+        for m in marker.finditer(name):
+            seen.append((f"filename: {name}", m.group(1)[:7]))
+    form_name = "04 - TMLR submission form - answers to paste.md"
+    form_path = os.path.join(pack_dir, form_name)
+    if os.path.isfile(form_path):
+        text = open(form_path).read()
+        for m in marker.finditer(text):
+            line_no = text.count("\n", 0, m.start()) + 1
+            seen.append((f"{form_name}:{line_no}", m.group(1)[:7]))
+    if not seen:
+        import pytest
+        pytest.skip("no LIVE <hash> markers in the pack to compare")
+    off = [(loc, h) for loc, h in seen if h != head_short]
+    if off:
+        raise AssertionError(
+            f"TMLR submission pack's LIVE stamps do not match current "
+            f"git HEAD ({head_short}). A pack that is self-consistent "
+            f"but not current-with-HEAD is still stale:\n" +
+            "\n".join(f"  {loc:<48s} -> {h}  (want {head_short})"
+                      for loc, h in off))

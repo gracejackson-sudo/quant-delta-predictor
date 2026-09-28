@@ -2,7 +2,7 @@
 
 > ## ⚠ Read this first
 > We quantized real models on an A100 with deliberately-bad configs and measured losses to **-39.5<!-- claim: adv_worst_delta = -39.5000 -->pp**. The largest single effect was wrong scale granularity: per-tensor instead of per-group.
-> 16<!-- claim: adv_bad_over_3pp = 16.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows lost 3pp or more. Separately, 2<!-- claim: adv_control_over_3pp = 2.0000 --> of 9<!-- claim: adv_control_rows = 9.0000 --> rows from our *correct* control arm did too. The worst loss anywhere in the published corpus this tool is calibrated on is -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp.
+> 15<!-- claim: adv_bad_over_3pp = 15.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows lost 3pp or more. Separately, 2<!-- claim: adv_control_over_3pp = 2.0000 --> of 9<!-- claim: adv_control_rows = 9.0000 --> rows from our *correct* control arm did too. The worst loss anywhere in the published corpus this tool is calibrated on is -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp.
 > **Scope:** that left tail was measured only at 1.5<!-- claim: adv_max_params_b = 1.5000 -->B and below, a band where this tool flags w4a16 as having insufficient evidence. It shows catastrophic damage is reachable. It is not a measured bound for larger models.
 > **Treat every interval below as a floor on risk, not a ceiling.** Published recipes are the ones that worked; yours may not be one of them.
 
@@ -21,7 +21,7 @@ Most of what this tool does is give you a calibrated interval. The part worth yo
 
 The judgment is scored on the guarantee that matters for a risk tool: how often the true result stayed at or above the interval's lower bound. A model that beats its envelope has not exposed anyone to anything, so counting that as a failure would flag cells that are merely outperforming (see `ONE_SIDED_COVERAGE.md`).
 
-**What that figure should be compared against.** The interval is symmetric -- a mean plus or minus one conformal half-width -- so its nominal *one-sided* level is not the 90% printed on the two-sided interval. The 10% permitted to miss is split across two tails, which pooled across every scored row lands at 4.2<!-- claim: pooled_below_lo_pct = 4.1860 -->% below and 3.7<!-- claim: pooled_above_hi_pct = 3.7454 -->% above, giving a pooled one-sided coverage of 95.8<!-- claim: pooled_one_sided_pct = 95.8140 -->%. Judging a one-sided number against 90% is therefore the *lenient* comparison, not a flattering one. Both of the cells that first raised the question fail even under it.
+**What that figure should be compared against.** The interval is symmetric -- a mean plus or minus one conformal half-width -- so its nominal *one-sided* level is not the 90% printed on the two-sided interval. The 10% permitted to miss is split across two tails, which pooled across every scored row lands at 4.3<!-- claim: pooled_below_lo_pct = 4.3084 -->% below and 3.9<!-- claim: pooled_above_hi_pct = 3.9168 -->% above, giving a pooled one-sided coverage of 95.7<!-- claim: pooled_one_sided_pct = 95.6916 -->%. Judging a one-sided number against 90% is therefore the *lenient* comparison, not a flattering one. Both of the cells that first raised the question fail even under it.
 
 Each (scheme, size) cell gets one of three verdicts. *Trusted*: coverage is adequate and adequately supported. *Refused*: coverage is measurably poor on enough independent checkpoints, so the interval is withheld (`INSUFFICIENT CALIBRATION`); 0<!-- claim: n_cells_refused = 0.0000 --> cells are currently in that state. *Insufficient evidence*: the cell rests on fewer than 3<!-- claim: min_cell_checkpoints = 3.0000 --> distinct checkpoints, or its checkpoint-bootstrap interval straddles the 85<!-- claim: refuse_below_pct = 85.0000 -->% line. The interval is still printed, but the scheme is demoted to Tier C with a note that the cell cannot be judged. 6<!-- claim: n_cells_insufficient_evidence = 6.0000 --> of 17<!-- claim: n_cells_total = 17.0000 --> cells are in that state.
 
@@ -51,7 +51,7 @@ Input a quantization scheme, optionally a model size band. Output a 90% interval
 | fp8 | [-1.11<!-- claim: lo::fp8 = -1.1100 -->, +0.48<!-- claim: hi::fp8 = 0.4765 -->] | -1.90<!-- claim: worst::fp8 = -1.9000 -->pp | 0.0<!-- claim: severe_pct::fp8 = 0.0000 -->% | 80<!-- claim: n::fp8 = 80.0000 --> | **B** |
 | w8a16 | [-0.98<!-- claim: lo::w8a16 = -0.9800 -->, +0.81<!-- claim: hi::w8a16 = 0.8119 -->] | -3.04<!-- claim: worst::w8a16 = -3.0400 -->pp | 1.2<!-- claim: severe_pct::w8a16 = 1.1628 -->% | 86<!-- claim: n::w8a16 = 86.0000 --> | **C** |
 | w4a16 | [-2.87<!-- claim: lo::w4a16 = -2.8698 -->, +1.40<!-- claim: hi::w4a16 = 1.4000 -->] | -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp | 5.7<!-- claim: severe_pct::w4a16 = 5.6995 -->% | 193<!-- claim: n::w4a16 = 193.0000 --> | **C** |
-| nvfp4 | [-4.10<!-- claim: lo::nvfp4 = -4.0994 -->, +1.87<!-- claim: hi::nvfp4 = 1.8700 -->] | -8.12<!-- claim: worst::nvfp4 = -8.1200 -->pp | 15.6<!-- claim: severe_pct::nvfp4 = 15.6250 -->% | 64<!-- claim: n::nvfp4 = 64.0000 --> | **C** |
+| nvfp4 | [-4.10<!-- claim: lo::nvfp4 = -4.0994 -->, +1.87<!-- claim: hi::nvfp4 = 1.8700 -->] | -8.12<!-- claim: worst::nvfp4 = -8.1200 -->pp | 14.1<!-- claim: severe_pct::nvfp4 = 14.0625 -->% | 64<!-- claim: n::nvfp4 = 64.0000 --> | **C** |
 
 ## The flagged cells, in full
 
@@ -79,7 +79,7 @@ The clearest gap is that accuracy is not the whole of deployment risk. Tong et a
 
 **Clean, and safe to rely on:**
 
-- *Existence proof.* Deliberately-bad configs produce catastrophic damage: worst measured -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp raw, 16<!-- claim: adv_bad_over_3pp = 16.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows losing 3pp. This does not depend on any baseline.
+- *Existence proof.* Deliberately-bad configs produce catastrophic damage: worst measured -39.5<!-- claim: adv_worst_delta = -39.5000 -->pp raw, 15<!-- claim: adv_bad_over_3pp = 15.0000 --> of 36<!-- claim: adv_bad_rows = 36.0000 --> faulted rows losing 3pp. This does not depend on any baseline.
 - *Harness alignment.* Re-running MMLU at 5-shot with letter scoring recovers accuracies in the range on the RedHatAI cards: our Qwen2.5-0.5B-Instruct scores 47.20<!-- claim: s2_base_qwen05 = 47.2000 --> against the Instruct card's 46.83<!-- claim: s2_pub_qwen05 = 46.8300 --> (base card 47.57<!-- claim: s2_pub_qwen05_base = 47.5700 -->), and our Qwen2.5-1.5B-Instruct scores 59.57<!-- claim: s2_base_qwen15 = 59.5667 -->. Our measurements are on the same footing as the published corpus.
 
 **Caveated, and not to be quoted as a bound:**

@@ -21,7 +21,7 @@
   },
   {
     "tag": "FINDING",
-    "finding": "only 4.7 of 12 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 598/4085 (15%) of scored rows. Where it does apply it over-covers at 94.1%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
+    "finding": "only 4.4 of 12 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 496/4085 (12%) of scored rows. Where it does apply it over-covers at 93.3%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
   },
   {
     "tag": "OK",

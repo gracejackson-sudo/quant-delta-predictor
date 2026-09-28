@@ -250,17 +250,17 @@ a["delta"] = a.acc_after - a.acc_before
 bad = a[a.is_control == 0]
 ctl = a[a.is_control == 1]
 chk("worst adversarial delta", a.delta.min(), "adv_worst_delta", 0.01)
-chk("faulted rows <= -3pp", float((bad.delta <= -3).sum()),
+chk("faulted rows > -3pp (strict)", float((bad.delta < -3).sum()),
     "adv_bad_over_3pp", 0)
 chk("faulted rows total", float(len(bad)), "adv_bad_rows", 0)
-chk("control rows <= -3pp", float((ctl.delta <= -3).sum()),
+chk("control rows > -3pp (strict)", float((ctl.delta < -3).sum()),
     "adv_control_over_3pp", 0)
 
 # (d) per-scheme severe rate, from the dataset
 d = pd.read_csv(os.path.join(ROOT, "data", "dataset.csv"))
 d = d[d.acc_before >= 20]
 nv = d[d.scheme == "nvfp4"]
-chk("nvfp4 severe-loss %", 100 * (nv.delta <= -3).mean(),
+chk("nvfp4 severe-loss %", 100 * (nv.delta < -3).mean(),
     "severe_pct::nvfp4", 0.05)
 
 # ---------------------------------------------------------------- report

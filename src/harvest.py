@@ -425,6 +425,20 @@ def parse_config(model_id):
 
 
 def parse_params_b(model_id):
+    """Return the model's parameter count in billions, for size-banding.
+
+    MoE names of the form "NxMB" (Mixtral-8x7B, Mixtral-8x22B) are read
+    as N * M -- the total-parameter count -- rather than as the per-expert
+    M alone. Tier 1.6 (day-7 audit): the previous regex saw Mixtral-8x7B
+    as 7B and placed a 46.7B-total model in the 2-10B band, which moved
+    the w4a16|2-10B 5th percentile by 0.24pp and inflated the band's
+    checkpoint count from 12 to 13. The MoE match is anchored at a word
+    boundary so ordinary "Nx" strings elsewhere in a name cannot match.
+    """
+    moe = re.search(r"(?:^|[-_])(\d+)x(\d+(?:\.\d+)?)[bB](?![a-zA-Z0-9])",
+                    model_id)
+    if moe:
+        return float(moe.group(1)) * float(moe.group(2))
     m = re.findall(r"(\d+(?:\.\d+)?)\s*[bB](?![a-zA-Z0-9])", model_id)
     return float(m[0]) if m else None
 
