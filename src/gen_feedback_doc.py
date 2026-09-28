@@ -127,14 +127,17 @@ def main():
       "said the check was preliminary.\n")
 
     A("### B1. Rank-2 variance on our matrix is contaminated by mean-fill\n")
-    A("**What was said:** rank-2 explaining 56% of variance on our score "
-      "matrix was measured after filling about half the matrix with a global "
-      "mean, which weakens the low-rank structure. On the largest fully "
-      "observed submatrices with column mean-centering, rank-2 explains "
-      "88--99% of the variance on our data. For prediction, plain soft-impute "
-      "on raw scores lacks the logit transform, bias terms and regularization "
-      "of BenchPress's released method, so running their released code would "
-      "be a fairer test.\n")
+    A(f"**What was said** (against the matrix as it stood at the time of the "
+      f"review, before the Definition-B family merge and the GPQA protocol "
+      f"split; the current matrix has {n('n_benchmarks')} benchmarks and "
+      f"variance-explained has not been re-computed on it): rank-2 explaining "
+      f"56% of variance on our score matrix was measured after filling about "
+      f"half the matrix with a global mean, which weakens the low-rank "
+      f"structure. On the largest fully observed submatrices with column "
+      f"mean-centering, rank-2 explains 88--99% of the variance on our data. "
+      f"For prediction, plain soft-impute on raw scores lacks the logit "
+      f"transform, bias terms and regularization of BenchPress's released "
+      f"method, so running their released code would be a fairer test.\n")
     A(f"**What was done:** Track 2b (`229c902`) reran the imputation using "
       f"BenchPress's own soft-impute construction on our full matrix. On the "
       f"primary condition, BenchPress's method had MAE "
@@ -150,12 +153,15 @@ def main():
       "matched rerun is deferred.\n")
 
     A("### B2. Benchmark similarity and choice of known scores\n")
-    A("**What was said:** our matrix has 16 benchmarks and some have no "
-      "strongly correlated neighbour (strongest correlations 0.58 for GPQA "
-      "and 0.74 for MuSR); when a benchmark has no similar benchmark in the "
-      "matrix, it is hard to predict. And each quantized model has only three "
-      "known scores chosen at random; picking the most predictive scores as "
-      "the known ones may improve results.\n")
+    A(f"**What was said** (at the time of the review the matrix had 16 "
+      f"benchmarks; it now has {n('n_benchmarks')}, six of them card-verified "
+      f"GPQA protocol splits, and the correlations below have not been "
+      f"re-measured on the new matrix): our matrix has 16 benchmarks and "
+      f"some have no strongly correlated neighbour (strongest correlations "
+      f"0.58 for GPQA and 0.74 for MuSR); when a benchmark has no similar "
+      f"benchmark in the matrix, it is hard to predict. And each quantized "
+      f"model has only three known scores chosen at random; picking the "
+      f"most predictive scores as the known ones may improve results.\n")
     A("**What was done:** nothing yet. Both are sensitivity experiments that "
       "would need the matched protocol from B1 to be worth interpreting.\n")
 

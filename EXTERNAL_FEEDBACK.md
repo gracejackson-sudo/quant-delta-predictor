@@ -51,7 +51,7 @@ An author of BenchPress replied to an email asking whether their low-rank claim 
 
 ### B1. Rank-2 variance on our matrix is contaminated by mean-fill
 
-**What was said:** rank-2 explaining 56% of variance on our score matrix was measured after filling about half the matrix with a global mean, which weakens the low-rank structure. On the largest fully observed submatrices with column mean-centering, rank-2 explains 88--99% of the variance on our data. For prediction, plain soft-impute on raw scores lacks the logit transform, bias terms and regularization of BenchPress's released method, so running their released code would be a fairer test.
+**What was said** (against the matrix as it stood at the time of the review, before the Definition-B family merge and the GPQA protocol split; the current matrix has 21<!-- claim: n_benchmarks = 21.0000 --> benchmarks and variance-explained has not been re-computed on it): rank-2 explaining 56% of variance on our score matrix was measured after filling about half the matrix with a global mean, which weakens the low-rank structure. On the largest fully observed submatrices with column mean-centering, rank-2 explains 88--99% of the variance on our data. For prediction, plain soft-impute on raw scores lacks the logit transform, bias terms and regularization of BenchPress's released method, so running their released code would be a fairer test.
 
 **What was done:** Track 2b (`229c902`) reran the imputation using BenchPress's own soft-impute construction on our full matrix. On the primary condition, BenchPress's method had MAE 6.81<!-- claim: t2b_mae::bp = 6.8149 -->pp against our original imputer's 8.86<!-- claim: t2b_mae::orig = 8.8574 -->pp -- a ratio-vs-scheme-mean of 4.7<!-- claim: t2b_ratio_vs_scheme_mean::bp = 4.6880 -->x for BenchPress against 6.1<!-- claim: t2b_ratio_vs_scheme_mean::orig = 6.0930 -->x for our original. The earlier `~10x` framing was retracted; the paper now describes BenchPress on the core mechanism only.
 
@@ -59,7 +59,7 @@ An author of BenchPress replied to an email asking whether their low-rank claim 
 
 ### B2. Benchmark similarity and choice of known scores
 
-**What was said:** our matrix has 16 benchmarks and some have no strongly correlated neighbour (strongest correlations 0.58 for GPQA and 0.74 for MuSR); when a benchmark has no similar benchmark in the matrix, it is hard to predict. And each quantized model has only three known scores chosen at random; picking the most predictive scores as the known ones may improve results.
+**What was said** (at the time of the review the matrix had 16 benchmarks; it now has 21<!-- claim: n_benchmarks = 21.0000 -->, six of them card-verified GPQA protocol splits, and the correlations below have not been re-measured on the new matrix): our matrix has 16 benchmarks and some have no strongly correlated neighbour (strongest correlations 0.58 for GPQA and 0.74 for MuSR); when a benchmark has no similar benchmark in the matrix, it is hard to predict. And each quantized model has only three known scores chosen at random; picking the most predictive scores as the known ones may improve results.
 
 **What was done:** nothing yet. Both are sensitivity experiments that would need the matched protocol from B1 to be worth interpreting.
 
