@@ -65,8 +65,8 @@ Modelling a user's recipe as competent with probability 1-pi and botched with pr
 | 5% | -4.25<!-- claim: corrected_lower::0.05 = -4.2500 -->pp |
 | 10% | -5.89<!-- claim: corrected_lower::0.1 = -5.8900 -->pp |
 | 15% | -6.21<!-- claim: corrected_lower::0.15 = -6.2100 -->pp |
-| 20% | -8.16<!-- claim: corrected_lower::0.2 = -8.1640 -->pp |
-| 30% | -12.28<!-- claim: corrected_lower::0.3 = -12.2800 -->pp |
+| 20% | -8.13<!-- claim: corrected_lower::0.2 = -8.1334 -->pp |
+| 30% | -12.29<!-- claim: corrected_lower::0.3 = -12.2867 -->pp |
 
 **Note on the 0% row (day-7 audit, Tier 1.5).** The 0% row shows the alpha/2 quantile of the published w4a16 distribution measured by resampling. That is a *different estimator* from the shipped conformal band's lower bound, which is `mean - conformal_q(|residuals|)` and rounds to -2.87<!-- claim: lo::w4a16 = -2.8698 -->pp for w4a16. Both are correct on what they measure -- the correction table asks 'where does the alpha/2 quantile land under mixture with botched runs?' and the shipped band asks 'what is the symmetric conformal interval around the mean?' -- and the two differ by a small amount on w4a16 because the quantile is not the point-estimate + conformal-half-width. The 0% row is therefore not a claim that 'the uncorrected lower bound is worse than the shipped one'; it is the quantile the correction starts from before any botch shift is applied.
 

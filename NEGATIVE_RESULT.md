@@ -16,12 +16,12 @@ Leave-one-family-out, so the test family's checkpoints are never in training. Ro
 
 | predictor | MAE (pp) | beats global mean? |
 |---|---|---|
-| per-scheme mean (shipped) | 0.7227<!-- claim: pred_mae::scheme_mean = 0.722660 --> | yes |
-| global mean (baseline) | 0.7545<!-- claim: pred_mae::global_mean = 0.754511 --> | -- |
-| per-(scheme x benchmark) mean | 0.7607<!-- claim: pred_mae::scheme_x_bench = 0.760691 --> | **no** |
-| ridge, 38 features | 0.7639<!-- claim: pred_mae::ridge = 0.763916 --> | **no** |
-| per-benchmark mean | 0.7647<!-- claim: pred_mae::bench_mean = 0.764651 --> | **no** |
-| gradient boosting | 0.7878<!-- claim: pred_mae::grad_boost = 0.787802 --> | **no** |
+| per-scheme mean (shipped) | 0.7244<!-- claim: pred_mae::scheme_mean = 0.724380 --> | yes |
+| global mean (baseline) | 0.7553<!-- claim: pred_mae::global_mean = 0.755276 --> | -- |
+| per-(scheme x benchmark) mean | 0.7607<!-- claim: pred_mae::scheme_x_bench = 0.760730 --> | **no** |
+| per-benchmark mean | 0.7650<!-- claim: pred_mae::bench_mean = 0.764955 --> | **no** |
+| gradient boosting | 0.7794<!-- claim: pred_mae::grad_boost = 0.779362 --> | **no** |
+| ridge, 38 features | 0.7866<!-- claim: pred_mae::ridge = 0.786561 --> | **no** |
 
 Ridge regression and gradient boosting both do **worse than predicting the average**. Adding model size, benchmark identity, base accuracy and quantization method all degraded out-of-family accuracy.
 
@@ -29,7 +29,7 @@ Ridge regression and gradient boosting both do **worse than predicting the avera
 
 Benchmark scores are sample proportions over finite item sets, so a delta is a difference of two noisy quantities. Estimating the noise floor directly from near-lossless schemes (W8A16 and FP8-dynamic, whose true delta should be ~0) gives an irreducible MAE of **0.511<!-- claim: mae_floor_pp = 0.510604 -->pp**.
 
-The global-mean baseline sits at 0.7545<!-- claim: mae_global_lofo = 0.754511 -->pp. So the entire headroom available to any predictor is about 0.244<!-- claim: headroom_pp = 0.2439 -->pp, and the best predictor we found captures roughly a tenth of it.
+The global-mean baseline sits at 0.7553<!-- claim: mae_global_lofo = 0.755276 -->pp. So the entire headroom available to any predictor is about 0.245<!-- claim: headroom_pp = 0.2447 -->pp, and the best predictor we found captures roughly a tenth of it.
 
 On GSM8K specifically, the observed spread for supposedly lossless schemes is nearly identical to the spread for 4-bit schemes: the measurement is louder than the effect.
 
@@ -111,9 +111,9 @@ So the excess-over-control figures measure **bad recipe against mediocre recipe*
 
 ## 7. The self-correction that mattered most
 
-Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (93.4<!-- claim: band_emp_coverage_pct = 93.362832 -->% vs 89.6<!-- claim: band_conf_coverage_pct = 89.552606 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
+Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (91.0<!-- claim: band_emp_coverage_pct = 90.987695 -->% vs 90.6<!-- claim: band_conf_coverage_pct = 90.555371 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
 
-Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 43<!-- claim: inf_share_pct = 43.313668 -->% of evaluations (1762<!-- claim: inf_rows = 1762.000000 --> of 4068<!-- claim: band_n_pairs = 4068.000000 -->; the 817<!-- claim: band_n_rows = 817.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
+Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 43<!-- claim: inf_share_pct = 43.313668 -->% of evaluations (1762<!-- claim: inf_rows = 1762.000000 --> of 3007<!-- claim: band_n_pairs = 3007.000000 -->; the 817<!-- claim: band_n_rows = 817.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
 
 On the rows where both bands are actually defined:
 
@@ -122,7 +122,7 @@ On the rows where both bands are actually defined:
 | symmetric conformal (shipped) | **89.0<!-- claim: finite_conf_cov_pct = 89.028621 -->%** | **3.93<!-- claim: finite_conf_width = 3.928252 -->pp** |
 | asymmetric empirical | 88.3<!-- claim: finite_emp_cov_pct = 88.291414 -->% | 5.48<!-- claim: finite_emp_width = 5.480763 -->pp |
 
-Conformal wins on coverage AND width, on 2306<!-- claim: finite_n = 2306.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (89.1<!-- claim: band_hybrid_coverage_pct = 89.134710 -->%). **The shipped interval was right and the intuition was wrong.**
+Conformal wins on coverage AND width, on 2306<!-- claim: finite_n = 2306.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (90.1<!-- claim: band_hybrid_coverage_pct = 90.056535 -->%). **The shipped interval was right and the intuition was wrong.**
 
 Two conclusions, both uncomfortable and both kept:
 

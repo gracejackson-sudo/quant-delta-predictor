@@ -1509,6 +1509,55 @@ def test_regime_b_seed_is_stable_across_processes():
         "requires a stable seed derivation")
 
 
+def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
+    """C1+C2 (day-7 audit): every out/*.json the registry reads must
+    be at least as recent as data/dataset.csv. When Definition B moved
+    the corpus from 8 families to 6, several artifacts silently kept
+    values from an 8-family run for months, and mae_global_lofo /
+    headroom_pp / regime C coverage all silently diverged.
+
+    What this test READS: the mtimes of each artifact the registry
+    consumes AND the mtime of data/dataset.csv. A planted failure would
+    move data/dataset.csv forward without regenerating an artifact --
+    exactly the state that produced the C1/C2 divergence.
+
+    Failure mode this catches: someone edits the dataset and forgets to
+    rerun run_final / diagnose / interval_shape / bias_correction /
+    cell_coverage / build_envelope. The test says which artifact is
+    stale, so the fix is 'rerun the named script'."""
+    import os as _os
+    root = _os.path.join(_os.path.dirname(__file__), "..")
+    dataset_mtime = _os.path.getmtime(_os.path.join(root, "data",
+                                                    "dataset.csv"))
+    artifacts = [
+        ("out/predictor_comparison.json", "python src/diagnose.py"),
+        ("out/diagnostics.json",          "python src/diagnose.py"),
+        ("out/final_results.json",        "python src/run_final.py"),
+        ("out/interval_shape.json",       "python src/interval_shape.py"),
+        ("out/interval_shape_finite.json","python src/interval_shape.py"),
+        ("out/bias_correction.json",      "python src/bias_correction.py"),
+        ("out/bias_correction_empirical.json",
+                                          "python src/bias_correction_empirical.py"),
+        ("out/cell_coverage.json",        "python src/cell_coverage.py"),
+        ("out/scheme_envelope.json",      "python src/build_envelope.py"),
+        ("out/one_sided_audit.json",      "python src/one_sided_audit.py"),
+        ("out/audit_ranking.json",        "python src/audit_ranking.py"),
+    ]
+    stale = []
+    for rel, howto in artifacts:
+        p = _os.path.join(root, rel)
+        if not _os.path.exists(p):
+            continue
+        if _os.path.getmtime(p) < dataset_mtime:
+            stale.append(f"  {rel} is older than dataset.csv -- rerun `{howto}`")
+    assert not stale, (
+        "Registry-consumed artifacts are older than data/dataset.csv:\n"
+        + "\n".join(stale)
+        + "\nThis is the C1/C2 pattern from the day-7 audit: a data "
+          "change did not propagate to the artifact family. Rerun the "
+          "named scripts and regenerate downstream docs.")
+
+
 def test_mae_floor_and_headroom_are_deterministic_across_calls():
     """Tier 2.5 v4 check (day-7 audit): after four relabel passes
     (0.5294 stale literal -> 0.5075 -> 0.5257 -> 0.5106) confirm the
