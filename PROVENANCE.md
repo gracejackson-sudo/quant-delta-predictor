@@ -362,3 +362,25 @@ change rather than regenerating the artifact chain and re-running the tuning
 protocol a third time for a single row. Leaving two Diamond labels with
 different item counts is a known inconsistency in the interim, recorded here so
 it cannot be mistaken for a judgement that the second label is correct.
+
+### Five stale findings flushed in the same regeneration
+
+Regenerating `out/adversarial_audit.json` moved six figures, only one of which
+the `n_items` correction can explain. The other five predated it: the A4 fix
+and the GPQA protocol split had both landed without anyone regenerating this
+artifact, so its findings described a corpus two changes old.
+
+| finding | stale | current |
+| --- | --- | --- |
+| gate-rejected coupling bound | 87.5%-90.6% | 88.0%-91.1% |
+| adversarial pass count | 168/186 | 169/186 |
+| gemma miss count | 4 of 6 | 3 of 6 |
+| naive interval width | 11.0 | 10.6 |
+| clustered interval width | 11.5 | 9.0 |
+| duplicate-benchmark accounting (`out/census.json`) | 12 | 6 |
+
+This is the same failure the artifact-staleness gate exists to catch: a
+generated file whose inputs moved and whose outputs did not. The gate covers
+the registry's reading artifacts against `data/dataset.csv`, and these files
+sit outside that check. Worth closing after Friday; recorded here because the
+numbers in question were quoted in `SCOPE.md` while stale.
