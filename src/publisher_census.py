@@ -115,7 +115,42 @@ def survey(author):
     }
 
 
+# This script SAMPLES THE HUGGING FACE API LIVE. The committed
+# out/publisher_census.json and out/publisher_cards/ are a dated snapshot, not
+# a reproducible derivation: the publisher landscape moves, and a fresh run
+# returns a different set of cards. It is also not corpus-derived -- nothing
+# here reads data/dataset.csv -- so it has no business being re-run as part of
+# a corpus change.
+#
+# Re-running it unguarded broke the claims registry on 2026-10-01. The fresh
+# sample contained no non-RedHatAI card printing a recovery figure, so
+# card_quality.py (which reads out/publisher_cards/) produced a per_publisher
+# table with one entry, and verify_claims.py raised
+# `ValueError: max() iterable argument is empty` computing
+# cq_rec_best_other. Anyone following README's regeneration commands in order
+# hit that. So the overwrite is now opt-in and the refusal says why.
+def _guard_overwrite(argv):
+    if "--refresh" in argv:
+        return
+    if not os.path.exists(RESULT):
+        return
+    raise SystemExit(
+        "refusing to overwrite out/publisher_census.json.\n\n"
+        "This script re-samples the Hugging Face API live, so a run today\n"
+        "returns a different set of cards than the committed snapshot. It\n"
+        "does not read data/dataset.csv, so a corpus change cannot make it\n"
+        "stale and it is not part of the regeneration chain.\n\n"
+        "Overwriting it also rewrites out/publisher_cards/, which\n"
+        "card_quality.py reads. If the new sample happens to contain no\n"
+        "non-RedHatAI card printing a recovery figure, the claims registry\n"
+        "loses cq_rec_best_other and the gate fails.\n\n"
+        "If you mean to take a new dated snapshot, pass --refresh, then\n"
+        "re-run src/card_quality.py and src/verify_claims.py and commit all\n"
+        "three together with the new date recorded in PROVENANCE.md.")
+
+
 def main():
+    _guard_overwrite(sys.argv[1:])
     # cards are small but there are hundreds of them
     print(diskguard.report("card cache", 0.5))
     diskguard.require_free_gb(0.5, "the publisher card cache")

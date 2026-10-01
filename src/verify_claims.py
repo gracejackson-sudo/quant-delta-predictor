@@ -957,9 +957,31 @@ def registry():
         add("cq_publishers", q["n_publishers"], 0, "publishers scored")
         add("cq_rec_redhat", pp["RedHatAI"]["recovery_printed"], 0.1,
             "% RedHatAI cards printing a recovery figure")
-        add("cq_rec_best_other", max(
-            v["recovery_printed"] for k, v in pp.items() if k != "RedHatAI"),
-            0.1, "best non-RedHatAI recovery-printing rate")
+        # Defensive because the input is a dated live sample, not a
+        # derivation: out/card_quality.json reads out/publisher_cards/, which
+        # src/publisher_census.py repopulates from the Hugging Face API. A
+        # sample containing no other publisher made this a bare
+        # `ValueError: max() iterable argument is empty` on 2026-10-01, which
+        # is an unreadable failure for the one person most likely to hit it,
+        # someone reproducing from a clean checkout.
+        _others = [v["recovery_printed"] for k, v in pp.items()
+                   if k != "RedHatAI"]
+        if not _others:
+            raise SystemExit(
+                "out/card_quality.json has no publisher other than RedHatAI, "
+                "so cq_rec_best_other cannot be computed.\n\n"
+                "This is almost certainly because src/publisher_census.py was "
+                "re-run and re-sampled the Hugging Face API, replacing "
+                "out/publisher_cards/ with a set in which no other "
+                "publisher prints a recovery figure.\n\n"
+                "Restore the committed out/publisher_census.json, "
+                "out/card_quality.json and out/publisher_cards/ "
+                "(git checkout -- out/), or take a deliberate new snapshot "
+                "with `python src/publisher_census.py --refresh` and record "
+                "it in PROVENANCE.md. Neither file is corpus-derived, so "
+                "neither needs regenerating after a data change.")
+        add("cq_rec_best_other", max(_others), 0.1,
+            "best non-RedHatAI recovery-printing rate")
         add("cq_parser_missed", q["parser_missed_total"], 0,
             "cards with a benchmark table the parser could not read")
 

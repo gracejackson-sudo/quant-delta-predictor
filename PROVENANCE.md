@@ -716,3 +716,27 @@ order. The check no longer covers "is this the partition they say it is" and
 still covers "given that partition, is every printed number right". A 13-name
 list is auditable by eye; a reimplemented RNG is not. Its docstring states the
 split.
+
+### Fix: publisher_census.py can no longer break the registry by accident
+
+Both halves of the 2026-10-01 breakage are closed.
+
+`src/publisher_census.py` refuses to overwrite `out/publisher_census.json`
+without `--refresh`, and the refusal explains that the script samples the
+Hugging Face API live, that the committed artifact is a dated snapshot rather
+than a derivation, that it does not read `data/dataset.csv` so a corpus change
+cannot make it stale, and that overwriting also rewrites
+`out/publisher_cards/` which `card_quality.py` reads.
+
+`src/verify_claims.py` no longer raises a bare
+`ValueError: max() iterable argument is empty` when `out/card_quality.json`
+contains only RedHatAI. It names the likely cause, gives the restore command,
+and gives the deliberate-snapshot path. Verified by planting a single-publisher
+`card_quality.json` and reading the message.
+
+Scanned for the mechanism rather than the instance: nine other `max`/`min`
+reductions over filtered comprehensions exist in the registry. Every one of
+them iterates corpus-derived data, which is non-empty whenever the corpus is,
+and that is already pinned by the row-count tests. The one that broke was the
+only reduction sourced from a live-sampled artifact. That is the boundary, not
+"we got lucky with the rest".
