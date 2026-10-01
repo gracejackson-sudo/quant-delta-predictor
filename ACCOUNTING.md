@@ -374,7 +374,12 @@ This count was 12, then 10, and is now 6, because the GPQA rows that used to lan
 
 | | rows |
 |---|---|
-| rows in `dataset.csv` | 856 |
-| dropped by `acc_before < 20` (near-random baselines) | 33 |
+| rows in `dataset.csv` | 856<!-- claim: n_rows_raw = 856.0000 --> |
+| dropped by `acc_before < 20`<!-- claim: min_acc_before_pct = 20.0000 --> (near-random baselines) | 33<!-- claim: n_rows_dropped_near_chance = 33.0000 --> |
 | kept but sign not machine-verified (2-column tables) | 53 |
-| **used for modelling** | **823** |
+| **used for modelling** | **823<!-- claim: n_rows = 823.0000 -->** |
+
+The three tagged figures above are checked against the registry on every run
+(`src/verify_claims.py`); this file was outside that check until 2026-10-01 and
+its funnel sat two corpus changes stale. The 2-column count is not yet
+registered.

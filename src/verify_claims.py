@@ -27,12 +27,25 @@ from strata import (ConservativeStratified, SchemeOnlyBaseline,  # noqa: E402
 import rank as R  # noqa: E402
 
 HERE = os.path.dirname(__file__)
-# Generated docs. Any that are absent from a given checkout are skipped, so a
-# doc can be kept out of the public repo without breaking the gate.
+# Docs whose tagged figures this gate verifies. Any that are absent from a
+# given checkout are skipped, so a doc can be kept out of the public repo
+# without breaking the gate.
+#
+# README.md and ACCOUNTING.md are hand-written, not generated, and were
+# outside this list until 2026-10-01. That was a real hole and not a
+# deliberate exemption: audit_traceability.py already required every numeral
+# in README.md to carry a claim tag or an explicit exemption, so its figures
+# looked verified, but nothing ever compared a tagged value against the
+# computed one. README.md's raw row count sat two corpus changes stale behind
+# its own tag, and ACCOUNTING.md's funnel -- which carried no tags at all --
+# sat stale behind the paper. Traceability asks whether a number is sourced;
+# this asks whether it is right. They are different questions and the
+# most-read file in the repository was only answering the first.
 DOCS = [p for p in (os.path.join(HERE, "..", f) for f in
         ("RANKING.md", "NEGATIVE_RESULT.md", "BIAS_CORRECTION.md",
          "TOOL_SUMMARY.md", "ONE_SIDED_COVERAGE.md", "EXTERNAL_FEEDBACK.md",
-         "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md")) if os.path.exists(p)]
+         "NARRATIVE_TECHNICAL.md", "NARRATIVE_GENERAL.md",
+         "README.md", "ACCOUNTING.md")) if os.path.exists(p)]
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 CELLS = os.path.join(HERE, "..", "out", "cell_coverage.json")
 
