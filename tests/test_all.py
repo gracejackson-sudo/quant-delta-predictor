@@ -962,11 +962,33 @@ def test_fair_variance_uses_only_fully_observed_cells():
     assert ve > 0.999
 
 
-def test_paper_describes_the_three_verdicts_not_the_old_two_state_rule():
-    """The paper once said the tool 'declines to answer' or 'withholds an
-    interval' where evidence is thin. In fact insufficient-evidence cells still
-    print their interval; only refused cells withhold it. Keep the abstract,
-    contributions and conclusion on the three-state wording."""
+def test_paper_describes_the_verdicts_that_actually_fire():
+    """The paper must describe the verdicts the tool actually reaches.
+
+    HISTORY, twice over. The paper first said the tool "declines to answer"
+    where evidence is thin, which was two-state wording describing a
+    three-state rule: insufficient-evidence cells still print their interval
+    and only refused cells withhold it. That was corrected to three-state
+    wording, which this test then pinned.
+
+    Round item 3 retired the claim in the other direction. The refused state
+    is implemented and does not fire on this corpus, and lowering the support
+    floor to make it fire was considered and rejected -- it would have weakened
+    the Tier-A floor the same constant enforces, promoted a cell whose
+    bootstrap had collapsed onto its point estimate, and rested a confident
+    refusal on 11 rows from 2 checkpoints in one family. So the abstract,
+    contributions and conclusion now describe the two verdicts that occur, and
+    the third is recorded in the audit section as a decision.
+
+    What this test asserts:
+      * neither flavour of stale wording is back;
+      * the abstract and conclusion name the middle verdict, which is the
+        original bug this test was written for;
+      * they do NOT advertise three verdicts, which is the round item 3
+        change;
+      * the audit section still records the retired state, so retiring the
+        claim never becomes quietly dropping it.
+    """
     root = os.path.join(os.path.dirname(__file__), "..", "paper")
     found = [n for n in ("neurips_main.tex", "main.tex", "tmlr_main.tex")
              if os.path.exists(os.path.join(root, n))]
@@ -976,9 +998,24 @@ def test_paper_describes_the_three_verdicts_not_the_old_two_state_rule():
         for stale in ("declines to answer", "an explicit rule that withholds"):
             assert stale not in s, f"{name}: stale two-state wording {stale!r}"
         head = s.split("\\section{Introduction}")[0]
-        assert "insufficient evidence" in head, f"{name}: abstract lacks the middle verdict"
+        assert "insufficient evidence" in head, (
+            f"{name}: abstract lacks the middle verdict")
+        assert "three verdicts" not in head, (
+            f"{name}: the abstract advertises three verdicts again. Round "
+            f"item 3 retired that claim because the third does not fire on "
+            f"this corpus; if it now fires, restore the wording deliberately "
+            f"and update this test.")
         tail = s.split("\\section{Conclusion}")[1]
-        assert "insufficient evidence" in tail and "refused" in tail, name
+        assert "insufficient evidence" in tail, (
+            f"{name}: conclusion lacks the middle verdict")
+        assert "three verdicts" not in tail, (
+            f"{name}: the conclusion advertises three verdicts again")
+        # retiring the claim must not become dropping the record
+        audit = s.split("\\section{Audit}")[1]
+        assert "could have made fire" in audit, (
+            f"{name}: the audit section no longer records the decision not to "
+            f"lower the support floor. Retiring a claim from the abstract is "
+            f"only honest if the reasoning stays on the record.")
 
 
 # ------------------------------------------------------------------------

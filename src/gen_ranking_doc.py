@@ -216,12 +216,15 @@ def main():
             A(f"| {b} | {n(k, '{:.1f}')}% |")
     A("")
     A(f"Two cells were originally flagged for falling below the "
-      f"{n('poor_coverage_threshold_pct')}% threshold. Under the three-state "
+      f"{n('poor_coverage_threshold_pct')}% threshold. Under the current "
       f"rule neither is a confident refusal: both are `insufficient_evidence`. "
       f"For an `insufficient_evidence` cell the tool still prints the "
       f"all-sizes interval, but demotes the scheme to Tier C and says the "
       f"cell cannot be judged; only a `refused` cell has its interval "
-      f"withheld (`INSUFFICIENT CALIBRATION`), and none currently is. "
+      f"withheld (`INSUFFICIENT CALIBRATION`), and none currently is -- a "
+      f"state the rule defines but this corpus does not reach, recorded as a "
+      f"deliberate decision in the paper's audit section rather than as an "
+      f"omission. "
       f"The checkpoint floor is checked before anything else, so a cell "
       f"with one checkpoint (such as `fp8\\|<2B`, "
       f"{n('cell_rows::fp8|<2B')} rows) is insufficient evidence whatever its "

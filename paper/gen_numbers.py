@@ -232,6 +232,7 @@ M = {
     "RefuseBelow": ("refuse_below_pct", "{:.0f}"),
     "BootLoWsixteenBig": ("os_boot90_lo::w8a16|>10B", "{:.0f}"),
     "BootHiWsixteenBig": ("os_boot90_hi::w8a16|>10B", "{:.0f}"),
+    "BootLoWfourSmall": ("cell_boot_lo::w4a16|<2B", "{:.1f}"),
     "BootHiWfourSmall": ("cell_boot_hi::w4a16|<2B", "{:.1f}"),
     "PubChecked": ("pub_publishers_checked", "{:.0f}"),
     "PubCards": ("pub_cards_inspected", "{:.0f}"),
