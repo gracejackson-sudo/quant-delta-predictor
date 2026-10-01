@@ -718,6 +718,92 @@ def registry():
             "cluster bootstrap 95% upper bound, resampling quantized checkpoints")
         add("prosp_clus_n", len(_cl), 0, "quantized checkpoints resampled")
 
+        # --- Round item 2: the checkpoint-level headline.
+        #
+        # The shipped headline was an exact Clopper-Pearson interval on rows.
+        # Two reviewers objected that the rows are not independent: 131 rows
+        # come from 19 quantization runs, up to 13 from one. The honest unit
+        # is the checkpoint, so the headline interval is now the standard
+        # cluster-robust (sandwich) one for a ratio estimator under cluster
+        # sampling. The row-level Clopper-Pearson keys above are kept and
+        # still computed, so the two can be compared and the old number
+        # reproduced.
+        #
+        # This interval comes out NARROWER than Clopper-Pearson, which looks
+        # like interval-shopping until you measure why, so the reason is
+        # registered beside it rather than asserted in prose: the coverage
+        # indicator is not clustered by checkpoint. Everything below is
+        # deterministic -- no seed, no resampling -- precisely because a
+        # published interval should not depend on a random stream.
+        _p = _k / _n
+        _n_cl = len(_cl)
+        # Cluster-robust SE of the ratio estimator sum(S_i)/sum(N_i).
+        _num = sum((_S[_j] - _p * _N[_j]) ** 2 for _j in range(_n_cl))
+        _se_cr = (_n_cl / (_n_cl - 1) * _num) ** 0.5 / _n
+        _se_naive = (_p * (1 - _p) / _n) ** 0.5
+        add("prosp_cr_lo", 100 * (_p - 1.96 * _se_cr), 0.05,
+            "cluster-robust (sandwich) 95% lower bound on prospective "
+            "coverage, resampling unit = quantized checkpoint [HEADLINE]")
+        add("prosp_cr_hi", 100 * (_p + 1.96 * _se_cr), 0.05,
+            "cluster-robust (sandwich) 95% upper bound [HEADLINE]")
+        add("prosp_cr_se_pp", 100 * _se_cr, 0.02,
+            "cluster-robust standard error of prospective coverage, in points")
+        add("prosp_naive_se_pp", 100 * _se_naive, 0.02,
+            "naive binomial standard error, in points, for comparison")
+        add("prosp_se_ratio", _se_cr / _se_naive, 0.005,
+            "cluster-robust SE divided by the naive binomial SE; below 1 "
+            "means clustering REDUCES the standard error on this statistic")
+
+        # Why: the intraclass correlation of the coverage INDICATOR, by a
+        # one-way ANOVA on the binary outcome. Negative means rows inside a
+        # checkpoint are no more alike than rows across checkpoints.
+        _msb = sum(len(_c) * (_c.mean() - _p) ** 2 for _c in _cl) / (_n_cl - 1)
+        _msw = sum(((_c - _c.mean()) ** 2).sum() for _c in _cl) / (_n - _n_cl)
+        _m0 = (_n - (_N ** 2).sum() / _n) / (_n_cl - 1)
+        _icc = (_msb - _msw) / (_msb + (_m0 - 1) * _msw)
+        add("prosp_icc", _icc, 0.002,
+            "intraclass correlation of the coverage indicator across "
+            "checkpoints; negative means no within-checkpoint clustering")
+        add("prosp_design_effect", 1 + (_N.mean() - 1) * max(0.0, _icc), 0.005,
+            "design effect 1 + (mbar-1)*ICC, clamped at ICC=0")
+        add("prosp_rows_per_ckpt_max", int(_N.max()), 0,
+            "most prospective rows contributed by a single checkpoint")
+
+        # The miss distribution, which is what shows the ICC is real.
+        _miss_by_ck = sorted(((len(_c) - _c.sum()) for _c in _cl), reverse=True)
+        add("prosp_ckpts_with_miss", sum(1 for _m in _miss_by_ck if _m > 0), 0,
+            "prospective checkpoints carrying at least one miss")
+        add("prosp_ckpts_clean", sum(1 for _m in _miss_by_ck if _m == 0), 0,
+            "prospective checkpoints with no miss")
+        add("prosp_worst_ckpt_misses", int(_miss_by_ck[0]), 0,
+            "misses held by the single worst prospective checkpoint")
+        add("prosp_total_misses", _n - _k, 0, "prospective misses in total")
+        _bm = _st.groupby("benchmark").inside.apply(lambda _c: int((~_c).sum()))
+        add("prosp_worst_bench_misses", int(_bm.max()), 0,
+            "misses held by the single worst benchmark; larger than the "
+            "worst checkpoint is the mechanism behind the negative ICC")
+        add("prosp_bench_with_miss", int((_bm > 0).sum()), 0,
+            "benchmarks carrying at least one prospective miss")
+
+        # The decomposition, so the narrowing cannot read as shopping.
+        # Analytic throughout, so it is reproducible: exact CP -> naive Wald
+        # isolates the estimator (CP is conservative); naive Wald ->
+        # cluster-robust Wald isolates the change of unit.
+        _w_cp = 100 * (_beta.ppf(0.975, _k + 1, _n - _k)
+                       - _beta.ppf(0.025, _k, _n - _k + 1))
+        _w_wald = 2 * 1.96 * 100 * _se_naive
+        _w_cr = 2 * 1.96 * 100 * _se_cr
+        add("prosp_width_cp", _w_cp, 0.05, "width of the row-level exact CP interval")
+        add("prosp_width_wald", _w_wald, 0.05,
+            "width of the row-level naive Wald interval")
+        add("prosp_width_cr", _w_cr, 0.05,
+            "width of the checkpoint-level cluster-robust interval [HEADLINE]")
+        add("prosp_narrowing_estimator", _w_cp - _w_wald, 0.05,
+            "points of the CP-to-headline narrowing attributable to the "
+            "estimator, i.e. Clopper-Pearson being exact-conservative")
+        add("prosp_narrowing_unit", _w_wald - _w_cr, 0.05,
+            "points attributable to changing the unit from row to checkpoint")
+
     if cc.get("pooled", {}).get("coverage_one_sided") is not None:
         _one_sided = 100 * cc["pooled"]["coverage_one_sided"]
         add("pooled_one_sided_pct", _one_sided,

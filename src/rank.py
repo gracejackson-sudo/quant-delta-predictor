@@ -59,6 +59,26 @@ REFUSE_BELOW = 0.85          # per-cell measured coverage below this -> no numbe
 # which already reflects how few rows there are.
 
 
+def degenerate_bootstrap(c):
+    """True when a cell's checkpoint bootstrap carries no information.
+
+    Round item 2: resampling whole checkpoints from a cell backed by one
+    checkpoint can only ever return that checkpoint, so the interval collapses
+    onto the point estimate -- `fp8|<2B` reports [100.00, 100.00] from a single
+    quantization run. The same happens with two checkpoints that both score
+    perfectly. That is an artifact of the resampling unit, not a measurement,
+    and printing it with a caveat still plants the number in the reader's head,
+    so the figure is suppressed and the checkpoint count printed instead.
+
+    The test is the collapsed interval rather than the checkpoint count,
+    because a collapsed interval is exactly the condition under which the
+    number means nothing: `w4a16|<2B` rests on 2 checkpoints but resamples to
+    [68.00, 83.33], so its figure is real and is still shown.
+    """
+    lo, hi = c.get("boot90_lo"), c.get("boot90_hi")
+    return lo is not None and hi is not None and lo == hi
+
+
 def classify_cell(v):
     """One shared classifier for a coverage record: 'trusted',
     'insufficient_evidence', or 'refused'. Used for every (scheme, size band)
@@ -326,6 +346,24 @@ def assess(e, risk_pp, band=None, moe=False, cell_cov=None):
                     f"evidence the tool cannot judge this cell; run "
                     f"`python src/cell_coverage.py` and retry, or query a "
                     f"different (scheme, size) combination")
+            elif degenerate_bootstrap(c):
+                # Round item 2: one checkpoint (or a tie across two) collapses
+                # the bootstrap onto the point estimate. Suppress the figure.
+                e["evidence_reason"] = "single quantization run"
+                e["evidence_coverage"] = None
+                e["evidence_boot90"] = None
+                flags.append("INSUFFICIENT_EVIDENCE")
+                notes.append(
+                    f"{e['scheme']} at {band} rests on {ckpts} distinct "
+                    f"checkpoint{'' if ckpts == 1 else 's'} "
+                    f"({c['distinct_rows']} rows), so no coverage figure is "
+                    f"shown for it. Resampling whole checkpoints from "
+                    f"{'a single quantization run' if ckpts == 1 else 'runs that all score alike'} "
+                    f"returns the same value every time, so the usual "
+                    f"interval carries no information and the point estimate "
+                    f"cannot be distinguished from an accident of which run "
+                    f"was published. Run your own evaluation for this "
+                    f"combination")
             else:
                 e["evidence_reason"] = (
                     "checkpoint floor" if thin_ckpts and not straddles else
@@ -577,6 +615,10 @@ def _band_text(v):
     lo, hi = v["boot90"]
     if st == "trusted":
         return f"trusted ({ckt}, {v['rows']} rows, {v['one_sided']*100:.0f}% at or above the lower bound)"
+    if lo is not None and hi is not None and lo == hi:
+        # degenerate bootstrap: no figure, just the support (round item 2)
+        return (f"insufficient evidence ({ckt}, {v['rows']} rows; no coverage "
+                f"figure -- resampling one run returns one value)")
     if ck is not None and ck < MIN_CELL_CHECKPOINTS:
         return f"insufficient evidence ({ckt}, {v['rows']} rows)"
     if st == "insufficient_evidence":

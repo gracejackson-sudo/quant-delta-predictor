@@ -193,10 +193,20 @@ def main():
             "boot90_lo": v(f"cell_boot_lo::{cell}"), "boot90_hi": v(f"cell_boot_hi::{cell}")})
         mark = {"trusted": "", "insufficient_evidence": " *insufficient evidence*",
                 "refused": " **refused**"}[state]
-        one = n(osk, "{:.1f}") + "%" if osk in REG else "n/a"
+        # Round item 2: a collapsed bootstrap means the figure is an
+        # artifact of the resampling unit, so print the support instead.
+        _blo, _bhi = v(f"cell_boot_lo::{cell}"), v(f"cell_boot_hi::{cell}")
+        if _blo == _bhi:
+            # Suppress BOTH figures: the two-sided number is the same
+            # artifact, and `fp8|<2B`'s 100% two-sided is exactly the value a
+            # reader would quote back. Print the support only.
+            one = f"n/a ({n(ckk) if ckk in REG else '?'} ckpt)"
+            two = "n/a"
+        else:
+            one = n(osk, "{:.1f}") + "%" if osk in REG else "n/a"
+            two = n(key, "{:.1f}") + "%"
         A(f"| `{esc(cell)}` | {n('cell_rows::' + cell)} | "
-          f"{n(ckk) if ckk in REG else '?'} | {one}{mark} | "
-          f"{n(key, '{:.1f}')}% |")
+          f"{n(ckk) if ckk in REG else '?'} | {one}{mark} | {two} |")
     A("")
     A("| size band | coverage |")
     A("|---|---|")
@@ -237,7 +247,12 @@ def main():
         if ck >= v("min_cell_checkpoints"):
             continue
         covk = f"cell_coverage_pct::{cell}"
-        cov = n(covk, "{:.1f}") + "%" if covk in REG else "n/a"
+        _blo2, _bhi2 = (v(f"cell_boot_lo::{cell}"), v(f"cell_boot_hi::{cell}")) \
+            if f"cell_boot_lo::{cell}" in REG else (None, None)
+        if _blo2 is not None and _blo2 == _bhi2:
+            cov = "n/a (collapsed bootstrap)"
+        else:
+            cov = n(covk, "{:.1f}") + "%" if covk in REG else "n/a"
         A(f"| `{esc(cell)}` | {n('cell_train_rows2::' + cell)} | "
           f"{n('cell_train_ckpt2::' + cell)} | {cov} | blocked |")
     A("")

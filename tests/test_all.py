@@ -1150,7 +1150,15 @@ def test_ranking_doc_labels_each_cell_with_the_tools_own_verdict():
     text = re.sub(r"<!--.*?-->", "", text)
     rows = {}
     # the per-cell COVERAGE table: cell | rows | checkpoints | one-sided (verdict) | two-sided
-    for m in re.finditer(r"^\| `([^`]+)` \| \d+ \| \d+ \| [\d.]+%[^|]*\| [\d.]+% \|$", text, re.M):
+    # Round item 2: three cells with a collapsed checkpoint bootstrap now
+    # print "n/a (k ckpt)" instead of a coverage figure, because resampling a
+    # single quantization run returns one value. They must still carry the
+    # tool's verdict label, so the row pattern accepts either form. The
+    # alternation stays narrow (`n/a (<digits> ckpt)`) so this does not start
+    # matching the training-support table below it.
+    _ROW = (r"^\| `([^`]+)` \| \d+ \| \d+ \| "
+            r"(?:[\d.]+%|n/a \(\d+ ckpt\))[^|]*\| (?:[\d.]+%|n/a) \|$")
+    for m in re.finditer(_ROW, text, re.M):
         rows[m.group(1).replace("\\|", "|")] = m.group(0)
     checked = 0
     for cell, line in rows.items():
@@ -1691,7 +1699,11 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
 # ---------------------------------------------------------------------------
 
 _REGISTRY_MANIFEST = {
-    "(scalar)": 259,
+    # +19 at round item 2: the cluster-robust headline interval, the ICC
+    # and design effect that explain why it is narrower than
+    # Clopper-Pearson, the per-checkpoint/per-benchmark miss
+    # distribution, and the three-way width decomposition.
+    "(scalar)": 278,
     "band_coverage_pct::": 3,
     "bias_after_correction::": 2,
     "bias_effective::": 6,

@@ -112,12 +112,12 @@ Two coverage figures are given. **One-sided** is how often the true result staye
 | `w8a16\|2-10B` | 43<!-- claim: cell_rows::w8a16\|2-10B = 43.0000 --> | 8<!-- claim: cell_ckpts::w8a16\|2-10B = 8.0000 --> | 97.2<!-- claim: cell_one_sided_pct::w8a16\|2-10B = 97.2093 -->% | 93.0<!-- claim: cell_coverage_pct::w8a16\|2-10B = 93.0233 -->% |
 | `nvfp4\|>10B` | 53<!-- claim: cell_rows::nvfp4\|>10B = 53.0000 --> | 4<!-- claim: cell_ckpts::nvfp4\|>10B = 4.0000 --> | 95.5<!-- claim: cell_one_sided_pct::nvfp4\|>10B = 95.4717 -->% | 93.2<!-- claim: cell_coverage_pct::nvfp4\|>10B = 93.2075 -->% |
 | `w8a8_int\|<2B` | 29<!-- claim: cell_rows::w8a8_int\|<2B = 29.0000 --> | 4<!-- claim: cell_ckpts::w8a8_int\|<2B = 4.0000 --> | 94.5<!-- claim: cell_one_sided_pct::w8a8_int\|<2B = 94.4828 -->% *insufficient evidence* | 93.8<!-- claim: cell_coverage_pct::w8a8_int\|<2B = 93.7931 -->% |
-| `nvfp4\|2-10B` | 13<!-- claim: cell_rows::nvfp4\|2-10B = 13.0000 --> | 1<!-- claim: cell_ckpts::nvfp4\|2-10B = 1.0000 --> | 98.5<!-- claim: cell_one_sided_pct::nvfp4\|2-10B = 98.4615 -->% *insufficient evidence* | 93.8<!-- claim: cell_coverage_pct::nvfp4\|2-10B = 93.8462 -->% |
+| `nvfp4\|2-10B` | 13<!-- claim: cell_rows::nvfp4\|2-10B = 13.0000 --> | 1<!-- claim: cell_ckpts::nvfp4\|2-10B = 1.0000 --> | n/a (1<!-- claim: cell_ckpts::nvfp4\|2-10B = 1.0000 --> ckpt) *insufficient evidence* | n/a |
 | `w4a16\|>10B` | 86<!-- claim: cell_rows::w4a16\|>10B = 86.0000 --> | 9<!-- claim: cell_ckpts::w4a16\|>10B = 9.0000 --> | 99.3<!-- claim: cell_one_sided_pct::w4a16\|>10B = 99.3023 -->% | 94.7<!-- claim: cell_coverage_pct::w4a16\|>10B = 94.6512 -->% |
 | `w8a8_int\|2-10B` | 93<!-- claim: cell_rows::w8a8_int\|2-10B = 93.0000 --> | 12<!-- claim: cell_ckpts::w8a8_int\|2-10B = 12.0000 --> | 98.7<!-- claim: cell_one_sided_pct::w8a8_int\|2-10B = 98.7097 -->% | 95.7<!-- claim: cell_coverage_pct::w8a8_int\|2-10B = 95.6989 -->% |
 | `fp8_dynamic\|<2B` | 19<!-- claim: cell_rows::fp8_dynamic\|<2B = 19.0000 --> | 3<!-- claim: cell_ckpts::fp8_dynamic\|<2B = 3.0000 --> | 97.9<!-- claim: cell_one_sided_pct::fp8_dynamic\|<2B = 97.8947 -->% | 97.9<!-- claim: cell_coverage_pct::fp8_dynamic\|<2B = 97.8947 -->% |
-| `w8a16\|<2B` | 12<!-- claim: cell_rows::w8a16\|<2B = 12.0000 --> | 2<!-- claim: cell_ckpts::w8a16\|<2B = 2.0000 --> | 100.0<!-- claim: cell_one_sided_pct::w8a16\|<2B = 100.0000 -->% *insufficient evidence* | 98.3<!-- claim: cell_coverage_pct::w8a16\|<2B = 98.3333 -->% |
-| `fp8\|<2B` | 6<!-- claim: cell_rows::fp8\|<2B = 6.0000 --> | 1<!-- claim: cell_ckpts::fp8\|<2B = 1.0000 --> | 100.0<!-- claim: cell_one_sided_pct::fp8\|<2B = 100.0000 -->% *insufficient evidence* | 100.0<!-- claim: cell_coverage_pct::fp8\|<2B = 100.0000 -->% |
+| `w8a16\|<2B` | 12<!-- claim: cell_rows::w8a16\|<2B = 12.0000 --> | 2<!-- claim: cell_ckpts::w8a16\|<2B = 2.0000 --> | n/a (2<!-- claim: cell_ckpts::w8a16\|<2B = 2.0000 --> ckpt) *insufficient evidence* | n/a |
+| `fp8\|<2B` | 6<!-- claim: cell_rows::fp8\|<2B = 6.0000 --> | 1<!-- claim: cell_ckpts::fp8\|<2B = 1.0000 --> | n/a (1<!-- claim: cell_ckpts::fp8\|<2B = 1.0000 --> ckpt) *insufficient evidence* | n/a |
 
 | size band | coverage |
 |---|---|
@@ -135,10 +135,10 @@ Measured coverage alone cannot earn Tier A. A size cell must also rest on at lea
 
 | cell | training rows | checkpoints | measured coverage | Tier A? |
 |---|---|---|---|---|
-| `fp8\|<2B` | 6<!-- claim: cell_train_rows2::fp8\|<2B = 6.0000 --> | 1<!-- claim: cell_train_ckpt2::fp8\|<2B = 1.0000 --> | 100.0<!-- claim: cell_coverage_pct::fp8\|<2B = 100.0000 -->% | blocked |
-| `nvfp4\|2-10B` | 13<!-- claim: cell_train_rows2::nvfp4\|2-10B = 13.0000 --> | 1<!-- claim: cell_train_ckpt2::nvfp4\|2-10B = 1.0000 --> | 93.8<!-- claim: cell_coverage_pct::nvfp4\|2-10B = 93.8462 -->% | blocked |
+| `fp8\|<2B` | 6<!-- claim: cell_train_rows2::fp8\|<2B = 6.0000 --> | 1<!-- claim: cell_train_ckpt2::fp8\|<2B = 1.0000 --> | n/a (collapsed bootstrap) | blocked |
+| `nvfp4\|2-10B` | 13<!-- claim: cell_train_rows2::nvfp4\|2-10B = 13.0000 --> | 1<!-- claim: cell_train_ckpt2::nvfp4\|2-10B = 1.0000 --> | n/a (collapsed bootstrap) | blocked |
 | `w4a16\|<2B` | 11<!-- claim: cell_train_rows2::w4a16\|<2B = 11.0000 --> | 2<!-- claim: cell_train_ckpt2::w4a16\|<2B = 2.0000 --> | 76.4<!-- claim: cell_coverage_pct::w4a16\|<2B = 76.3636 -->% | blocked |
-| `w8a16\|<2B` | 12<!-- claim: cell_train_rows2::w8a16\|<2B = 12.0000 --> | 2<!-- claim: cell_train_ckpt2::w8a16\|<2B = 2.0000 --> | 98.3<!-- claim: cell_coverage_pct::w8a16\|<2B = 98.3333 -->% | blocked |
+| `w8a16\|<2B` | 12<!-- claim: cell_train_rows2::w8a16\|<2B = 12.0000 --> | 2<!-- claim: cell_train_ckpt2::w8a16\|<2B = 2.0000 --> | n/a (collapsed bootstrap) | blocked |
 
 Three of these have excellent measured coverage. That is the point: high coverage on one checkpoint is not evidence that the interval generalises, only that it fitted one model.
 
