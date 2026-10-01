@@ -139,7 +139,14 @@ Their Figure~2 plots
 the same quantity we predict, \(\text{Acc}_{\text{compressed}} -
 \text{Acc}_{\text{dense}}\), but measures it. Their finding that compression
 decouples accuracy from uncertainty bounds what an accuracy-only estimate like
-ours can claim (\S\ref{sec:limits}).
+ours can claim (\S\ref{sec:limits}). Their design also leaves the question
+this paper measures open: in correspondence, an author of that work confirmed
+that each model and compression configuration was calibrated and tested
+separately, so no held-out-family transfer result is reported there. Whether a
+calibration fitted on one model family carries to an unseen one is therefore
+unaddressed in the closest prior work, which is the gap \S\ref{sec:results}
+measures. That is a difference in question asked, not a claim of novelty on
+mechanism.
 
 \paragraph{Quantization methods.} The checkpoints we harvest are produced with
 GPTQ~\cite{frantar2022gptq} and SmoothQuant~\cite{xiao2022smoothquant} via
@@ -450,7 +457,15 @@ at \ProspOutFamCov\%. Both point estimates land near the nominal 90\%
 two-sided level, but the checkpoint-cluster 95\% CI on the in-minus-out
 difference is [\ProspDiffLo, \ProspDiffHi]pp: at this sample size we
 cannot resolve whether in-family and out-of-family coverage are
-equivalent, and the paper does not claim they are. The aggregate
+equivalent, and the paper does not claim they are. There is independent
+support for reading small coverage movements this cautiously. In
+correspondence, an author of \citet{tong2026compression} described using a
+90\% coverage target as a validity check rather than an estimand, with
+prediction-set size carrying the uncertainty signal, and noted that small
+movements around that target can arise from calibration and test sampling
+alone. That is the same effect our noise-floor estimate quantifies for
+accuracy deltas (\S\ref{sec:negative}), arrived at independently and on a
+different estimand. The aggregate
 out-of-family figure carries the same Simpson caveat as the pooled
 headline: Gemma-3 alone (the only sub-group with more than 10 rows)
 covers at \ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows
@@ -563,6 +578,30 @@ instead of per-group.
 \paragraph{Scope, stated plainly.} This tail was measured only on models of
 \AdvMaxB{}B and below. It establishes that catastrophic damage is reachable; it
 is not a measured bound for larger models.
+
+The closest prior work points the other way on scale, which is worth stating
+because it cuts against our own framing. In correspondence, an author of
+\citet{tong2026compression} reported that in their experiments compression
+effects improved with model size---prediction-set inflation relative to the
+uncompressed model fell substantially as models grew---with task- and
+method-specific exceptions, and that they did not observe coverage worsening
+consistently with size; their takeaway is that scale helps without
+guaranteeing stability. If that pattern extends from uncertainty to accuracy
+damage, our small-model tail is plausibly a worst case rather than a floor on
+what larger models would show. We state that as a direction and not a result:
+we measured no large model under a faulted recipe, their result is on a
+different estimand, and a single counterexample at scale would overturn it.
+What does not change either way is the asymmetry the tail establishes---the
+published corpus cannot show damage it never published.
+
+\paragraph{The scoped next experiment.} The narrow test, suggested by an
+author of \citet{tong2026compression}, holds the family fixed and steps up one
+size: Qwen2.5-7B-Instruct, for which published W4A16 baselines already exist,
+under the standard setup plus the single worst-performing faulted recipe from
+this arm, at identical sample counts and seeds, escalating to larger models
+only if the pattern holds. That design answers the scale question with one GPU
+run rather than a sweep. It needs GPU time we have not spent, so it is scoped
+here and not run.
 
 \paragraph{A confound we found and did not resolve.} Re-running MMLU under
 the published protocol (5-shot, letter-scored) recovers accuracies in the
