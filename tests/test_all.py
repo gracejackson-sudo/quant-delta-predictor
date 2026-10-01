@@ -1679,7 +1679,13 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
     Failure mode this catches: someone edits the dataset and forgets to
     rerun run_final / diagnose / interval_shape / bias_correction /
     cell_coverage / build_envelope. The test says which artifact is
-    stale, so the fix is 'rerun the named script'."""
+    stale, so the fix is 'rerun the named script'.
+
+    Order matters and is not obvious: build_envelope.py embeds the
+    prospective validation block, so it must run AFTER
+    real_use_case.py. README's command order has them the other way
+    round, which bakes stale coverage into the shipped envelope.
+    test_the_shipped_envelope_matches_a_fresh_build catches that one."""
     import os as _os
     root = _os.path.join(_os.path.dirname(__file__), "..")
     dataset_mtime = _os.path.getmtime(_os.path.join(root, "data",
@@ -1697,6 +1703,18 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
         ("out/scheme_envelope.json",      "python src/build_envelope.py"),
         ("out/one_sided_audit.json",      "python src/one_sided_audit.py"),
         ("out/audit_ranking.json",        "python src/audit_ranking.py"),
+        # Added 2026-10-01. These four are corpus-derived and were outside
+        # this check, and all four had gone stale by the time somebody
+        # noticed by hand -- twice: once when the Definition B / A4 work
+        # landed and again when the GPQA protocol split did. out/
+        # real_use_case.csv is the worst of them, because the independent
+        # verifier diffs against it, so a stale copy makes the verifier
+        # agree with the pipeline for the wrong reason.
+        ("out/real_use_case.csv",         "python src/real_use_case.py"),
+        ("out/tuned_baselines.json",      "python src/tune_baselines.py "
+                                          "&& python src/tune_baseline_cis.py"),
+        ("out/adversarial_audit.json",    "python src/adversarial_audit.py"),
+        ("out/census.json",               "python src/census.py"),
     ]
     stale = []
     for rel, howto in artifacts:
