@@ -122,9 +122,9 @@
     "tables_excluded_by_window": 20,
     "rows_seen": 1255,
     "drop_header_or_nonnumeric": 156,
-    "kept_candidate": 874,
-    "drop_benchmark_not_whitelisted": 219,
-    "drop_duplicate_benchmark": 6
+    "kept_candidate": 866,
+    "drop_benchmark_not_whitelisted": 221,
+    "drop_duplicate_benchmark": 12
   },
   "stage2_silent_labels": [
     [
@@ -141,6 +141,11 @@
       "benchmark_not_whitelisted",
       "Recovery (%)",
       7
+    ],
+    [
+      "duplicate_benchmark",
+      "gpqa",
+      6
     ],
     [
       "benchmark_not_whitelisted",
@@ -239,6 +244,16 @@
     ],
     [
       "benchmark_not_whitelisted",
+      "mmlu_llama",
+      1
+    ],
+    [
+      "benchmark_not_whitelisted",
+      "mmlu_cot_llama (0-shot)",
+      1
+    ],
+    [
+      "benchmark_not_whitelisted",
       "",
       1
     ]
@@ -246,15 +261,15 @@
   "stage3_gate": {
     "aggregate_row_ignored": 144,
     "recovery_mismatch": 18,
-    "benchmark_not_whitelisted": 83,
+    "benchmark_not_whitelisted": 85,
     "duplicate_benchmark_discarded": 10,
     "unrecognized_family": 2
   },
   "stage4": {
-    "dataset_rows": 852,
+    "dataset_rows": 850,
     "dropped_low_acc": 33,
     "unverified_kept": 53,
-    "modelling_rows": 819
+    "modelling_rows": 817
   },
   "stage5_prospective_fates": {
     "KEPT": 24,
