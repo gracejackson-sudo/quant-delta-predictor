@@ -62,6 +62,7 @@ BENCH = [
     ("bbh", r"\bbbh\b|\bbig[\s\-_]*bench"),
     ("math_lvl5", r"\bmath[\s\-_]*(lvl|lv|vl|v|level)?[\s\-_]*5\b|"
                   r"\bmath[\s\-_]*hard\b"),
+    # Resolved further by gpqa_protocol() below; see the note there.
     ("gpqa", r"\bgpqa\b"),
     ("musr", r"\bmusr\b"),
     ("humaneval_plus", r"\bhumaneval\s*\+|\bhumaneval[\s\-_]*plus\b"),
@@ -104,6 +105,31 @@ def scheme_of(model_id):
     return None
 
 
+# A RedHatAI card's GPQA label varies along three independent axes, each of
+# which the label names explicitly: which question set (the 198-item Diamond
+# subset, or Main), how the answer is scored (length-normalized accuracy, or
+# plain), and how the model is prompted (chain-of-thought at five shots, or
+# zero-shot). Two GPQA tables in one card differ on at least one axis and are
+# therefore two measurements, not one reported twice. This resolves the axes
+# one at a time and composes the name, rather than matching whole protocol
+# names in a fixed order, so the two sides of the comparison reach the same
+# label by different routes. Deliberately silent on the one case the cards do
+# not resolve: a bare "GPQA (0-shot)" whose value contradicts the same
+# checkpoint's other cards reads as Main here, and the pipeline's cross-card
+# reconciliation parks it under a placeholder label. That is a known, reported
+# difference in label vocabulary, not in rows.
+def gpqa_protocol(t):
+    diamond = re.search(r"\bdiamond\b", t) is not None
+    cot = re.search(r"\bcot\b|chain[\s\-]*of[\s\-]*thought", t) is not None
+    norm = re.search(r"acc[\s\-_]*norm|normali[sz]ed", t) is not None
+    base = "gpqa_diamond" if diamond else "gpqa_main"
+    if cot:
+        return base + "_cot_5shot"
+    if norm and not diamond:
+        return base + "_norm"
+    return base
+
+
 def bench_of(label):
     t = label.lower().replace("|", " ")
     t = re.sub(r"<[^>]+>", " ", t)
@@ -113,7 +139,7 @@ def bench_of(label):
         return None
     for name, pat in BENCH:
         if re.search(pat, t):
-            return name
+            return gpqa_protocol(t) if name == "gpqa" else name
     return None
 
 

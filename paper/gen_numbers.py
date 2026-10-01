@@ -204,6 +204,16 @@ M = {
     # Round item 4: nested-CV tuned baselines, the grid-edge finding, and the
     # CIs that put the tuned-vs-lookup advantage inside noise.
     "MaeFloor": ("mae_floor_pp", "{:.3f}"),
+    # The S9 GPQA bullet enumerates the per-protocol row counts. They were
+    # hand-typed and passed the numeral gate only because those digits happen
+    # to be exempt, so a relabel could have desynced the one paragraph that
+    # documents the split. The registry already carries n_rows_<label> for
+    # every benchmark; these wire the bullet to it.
+    "NrowsGpqaMain": ("n_rows_gpqa_main", "{:.0f}"),
+    "NrowsGpqaMainNorm": ("n_rows_gpqa_main_norm", "{:.0f}"),
+    "NrowsGpqaMainCot": ("n_rows_gpqa_main_cot_5shot", "{:.0f}"),
+    "NrowsGpqaDiamond": ("n_rows_gpqa_diamond", "{:.0f}"),
+    "NrowsGpqaDiamondCot": ("n_rows_gpqa_diamond_cot_5shot", "{:.0f}"),
     "PredMaxGap": ("pred_max_abs_gap_pp", "{:.4f}"),
     "PredGapFloorRatio": ("pred_gap_vs_floor_ratio", "{:.0f}"),
     "GbSensNitems": ("gb_sens_nitems_pp", "{:.4f}"),

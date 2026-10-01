@@ -58,12 +58,17 @@ These came directly out of the audit and are the difference between honest and m
    floor is recomputed every run and printed in the tool footer.
 4. **"Trained only on checkpoints Red Hat chose to publish."** Outcome-truncated data, so it
    underpredicts damage from an untuned recipe.
-5. **The validation provenance**: 90.8% two-sided coverage on 131 held-out rows from 19 unseen
-   quantized checkpoints in 5 groups, 95% cluster-robust CI [86.4%, 95.3%] (the row-level
-   Clopper–Pearson interval, [84.5%, 95.2%], is also reported), with the 88.0%–91.1% bound from
+5. **The validation provenance**: 91.0% two-sided coverage on 133 held-out rows from 19 unseen
+   quantized checkpoints in 5 groups, 95% cluster-robust CI [86.6%, 95.4%] (the row-level
+   Clopper–Pearson interval, [84.8%, 95.3%], is also reported), with the 88.1%–91.2% bound from
    gate-rejected rows stated. Those rows are mostly W4A16, whose coverage is below 90%, and FP8 and NVFP4 have no prospective rows, so the figure says nothing about them (see the paper). (Before the 2026-09-27 A4 float-boundary fix this line read 90.1% / 118 / [83.6, 94.6]; the CSV was patched and PROVENANCE.md's "2026-09-27 A4 fix" section explains what changed.)
-6. **NVFP4 carries a warning**: 66 evaluations from 3 families, 13.6% of them losing >3pp, and
-   loss-side coverage that falls to 79% on the worst held-out family (70% inside the full interval).
+6. **NVFP4 carries a warning**: 68 evaluations from 3 families, 14.7% of them losing >3pp, and
+   loss-side coverage that falls to 85.7% on the worst held-out family, Llama-3 (78.6% inside the
+   full interval; 14 rows, leave-one-family-out with a per-scheme conformal band fitted on the other
+   five families). These two figures are hand-computed and not in the claims registry, unlike the
+   rest of this line; the previous values, 79% and 70%, were the same computation on the corpus
+   before the de-duplicated GPQA Diamond rows were admitted, and they moved because those rows
+   widened the NVFP4 band rather than because prediction improved.
 7. **Undercovered or thinly supported cells are flagged, not trusted**: a cell is marked
    `INSUFFICIENT_EVIDENCE` when it rests on too few checkpoints or its coverage estimate is too
    uncertain to judge (the range is still printed, demoted to Tier C), and is *refused* with

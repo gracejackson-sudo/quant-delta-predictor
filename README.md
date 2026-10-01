@@ -5,10 +5,17 @@ A small command-line tool that answers from published results.
 
 ## What it measured
 
-The shipped intervals were prospectively validated on 131<!-- claim: prosp_n = 131.0000 --> rows from 19<!-- claim: prosp_clus_n = 19.0000 --> unseen quantized checkpoints
+The shipped intervals were prospectively validated on 133<!-- claim: prosp_n = 133.0000 --> rows from 19<!-- claim: prosp_clus_n = 19.0000 --> unseen quantized checkpoints
 (Gemma-3, DeepSeek-R1-Distill, SmolLM, SmolLM3, NVIDIA-Nemotron-Nano) — none of which were used to
-build the tool. **Two-sided empirical coverage at a nominal 90% is 90.8<!-- claim: prosp_cov_pct = 90.8397 -->% (119<!-- claim: prosp_inside = 119.0000 -->/131<!-- claim: prosp_n = 131.0000 -->, 95% Clopper–Pearson
-CI [84.5<!-- claim: prosp_ci_lo = 84.5455 -->, 95.2<!-- claim: prosp_ci_hi = 95.1767 -->]).** The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
+build the tool. **Two-sided empirical coverage at a nominal 90% is 91.0<!-- claim: prosp_cov_pct = 90.9774 -->% (121<!-- claim: prosp_inside = 121.0000 -->/133<!-- claim: prosp_n = 133.0000 -->, 95% cluster-robust
+CI [86.6<!-- claim: prosp_cr_lo = 86.6008 -->, 95.4<!-- claim: prosp_cr_hi = 95.3541 -->]).** The rows come from 19<!-- claim: prosp_clus_n = 19.0000 --> quantization runs, up to 14<!-- claim: prosp_rows_per_ckpt_max = 14.0000 --> from one, so
+the checkpoint and not the row is the unit of independent evidence; the interval is the sandwich
+estimator for a ratio under cluster sampling. It is *narrower* than the row-level exact
+Clopper–Pearson interval it replaces ([84.8<!-- claim: prosp_ci_lo = 84.7698 -->, 95.3<!-- claim: prosp_ci_hi = 95.2507 -->], also reported) because the
+coverage indicator is not clustered by checkpoint — the intraclass correlation is
+−0.006<!-- claim: prosp_icc = -0.0061 --> and the design effect 1.000<!-- claim: prosp_design_effect = 1.0000 --> — misses track benchmark difficulty rather than
+which model was quantized. See the paper's §6 for why, and for the two-step decomposition of the
+narrowing. The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
 coverage, cluster bootstrap, tier and flag — is independently re-verified by a stdlib-only
 reimplementation (`verify/independent_rank.py`) that shares no code with the pipeline; zero field-level
 disagreements on the ranking, statistical equivalence within 1pp on the cluster-bootstrap CI, exact
@@ -167,7 +174,7 @@ python3 verify/independent_check.py
 
 ## Data
 
-850<!-- claim: n_raw_dataset_rows = 850.0000 --> rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102<!-- claim: n_rh_cards_harvested = 102.0000 -->
+856<!-- claim: n_raw_dataset_rows = 856.0000 --> rows of `(model, quant_config, benchmark, accuracy_before, accuracy_after)` scraped from 102<!-- claim: n_rh_cards_harvested = 102.0000 -->
 [RedHatAI](https://huggingface.co/RedHatAI) model cards, spanning 38<!-- claim: n_checkpoints = 38.0000 --> base checkpoints, 6<!-- claim: n_families = 6.0000 --> model
 families (Definition B, which collapses Llama-3.1/3.2/3.3 into one Llama-3 family on the mechanistic-shared-pretraining-base criterion; the earlier 8-family count read each generation as separate), 6<!-- claim: n_schemes = 6.0000 --> quantization schemes and 21<!-- claim: n_benchmarks = 21.0000 --> benchmarks (GPQA is split across six<!-- claim: n_gpqa_labels = 6.0000 --> card-verified protocol labels — gpqa_main, gpqa_main_norm, gpqa_main_cot_5shot, gpqa_diamond, gpqa_diamond_cot_5shot, gpqa_ambiguous_46 — because the raw RedHatAI cards report as many as five different GPQA protocols and two Llama-3.3 rows carry a card string that does not uniquely name a protocol; the earlier collapsed label conflated all of them; see the §9 audit note). Every three-column row is verified against
 the card's own printed Recovery percentage; internally inconsistent rows are rejected rather than

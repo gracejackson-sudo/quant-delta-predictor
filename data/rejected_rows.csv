@@ -104,14 +104,12 @@ RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,MBPP pass@1,benchma
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,MBPP+ pass@1,benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,MMMU (0-shot),benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,ChartQA (0-shot),benchmark_not_whitelisted
-RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,gpqa_diamond_cot_5shot,duplicate_benchmark_discarded
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,Average,aggregate_row_ignored
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,MBPP pass@1,benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,MBPP+ pass@1,benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,MMMU (0-shot),benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,ChartQA (0-shot),benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,gsm8k,recovery_mismatch
-RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,gpqa_diamond_cot_5shot,duplicate_benchmark_discarded
 RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,Small 3.1 24B Instruct,benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,Small 3.2 24B Instruct,benchmark_not_whitelisted
 RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,Small 3.1 24B Instruct,benchmark_not_whitelisted
@@ -196,7 +194,6 @@ RedHatAI/Qwen3-32B-NVFP4,Average,aggregate_row_ignored
 RedHatAI/Qwen3-32B-NVFP4,AIME24 (0-shot),benchmark_not_whitelisted
 RedHatAI/Qwen3-32B-NVFP4,AIME25 (0-shot),benchmark_not_whitelisted
 RedHatAI/Qwen3-32B-NVFP4,Average,aggregate_row_ignored
-RedHatAI/Qwen3-32B-NVFP4,gpqa_diamond,duplicate_benchmark_discarded
 RedHatAI/Qwen3-32B-quantized.w4a16,Average,aggregate_row_ignored
 RedHatAI/Qwen3-32B-quantized.w4a16,Average,aggregate_row_ignored
 RedHatAI/Qwen3-32B-quantized.w4a16,MGSM (0-shot),benchmark_not_whitelisted
@@ -217,7 +214,6 @@ RedHatAI/Qwen3-8B-NVFP4,Average,aggregate_row_ignored
 RedHatAI/Qwen3-8B-NVFP4,AIME24 (0-shot),benchmark_not_whitelisted
 RedHatAI/Qwen3-8B-NVFP4,AIME25 (0-shot),benchmark_not_whitelisted
 RedHatAI/Qwen3-8B-NVFP4,Average,aggregate_row_ignored
-RedHatAI/Qwen3-8B-NVFP4,gpqa_diamond,duplicate_benchmark_discarded
 RedHatAI/Qwen3-8B-quantized.w4a16,Average,aggregate_row_ignored
 RedHatAI/Qwen3-8B-quantized.w4a16,Average,aggregate_row_ignored
 RedHatAI/Qwen3-8B-quantized.w4a16,MGSM (0-shot),benchmark_not_whitelisted

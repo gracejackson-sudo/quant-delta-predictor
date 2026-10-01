@@ -6,36 +6,36 @@
   "target": "acc_after - acc_before, percentage points",
   "training_data": {
     "source": "RedHatAI model cards on Hugging Face",
-    "rows": 819,
+    "rows": 823,
     "checkpoints": 38,
     "families": 6,
     "benchmarks": 21
   },
   "validation": {
     "leave_one_family_out": {
-      "rows": 819,
+      "rows": 823,
       "calibration_families_per_row": 5.0,
-      "evaluations": 4095,
-      "coverage_two_sided": 0.9179,
-      "coverage_one_sided": 0.957,
+      "evaluations": 4115,
+      "coverage_two_sided": 0.9181,
+      "coverage_one_sided": 0.9572,
       "note": "each row is scored once per calibration family, so evaluations are not independent rows"
     },
     "prospective_all_rows": {
-      "n": 186,
-      "inside": 169,
-      "coverage": 0.909,
+      "n": 188,
+      "inside": 171,
+      "coverage": 0.91,
       "ci95": [
-        0.858,
+        0.859,
         0.946
       ]
     },
     "prospective_strict": {
-      "n": 131,
-      "inside": 119,
-      "coverage": 0.908,
+      "n": 133,
+      "inside": 121,
+      "coverage": 0.91,
       "ci95": [
-        0.845,
-        0.952
+        0.848,
+        0.953
       ]
     },
     "prospective_strict_note": "excludes rows whose family is in training, and Llama-4 (parser was adapted to that card family)",
@@ -56,7 +56,7 @@
   },
   "known_limitations": [
     "No interval excludes zero, so the tool can never say a config WILL cost accuracy -- only that damage is probably bounded.",
-    "19 of 25 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
+    "20 of 27 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
     "Trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from an untuned recipe (outcome-truncated training data).",
     "Reads exactly 2 inputs: quantization scheme, and size band via 6 size-dependent widths. It reads no family, benchmark or base accuracy.",
     "Coverage verdicts (rank.classify_cell): 0 size cells refused (none); 6 size cells and 1 schemes (w8a16) have insufficient evidence (fewer than 3 checkpoints or a checkpoint-bootstrap interval straddling 85%): fp8|<2B, nvfp4|2-10B, w4a16|<2B, w8a16|<2B, w8a16|>10B, w8a8_int|<2B. An interval is still shown for an insufficient-evidence cell but flagged; only a refused cell has its interval withheld.",
@@ -197,34 +197,34 @@
     },
     "nvfp4": {
       "label": "NVFP4 (4-bit float weights + activations)",
-      "n_observations": 66,
+      "n_observations": 68,
       "n_checkpoints": 5,
       "n_families": 3,
-      "mean_delta_pp": -1.138,
+      "mean_delta_pp": -1.157,
       "median_delta_pp": -0.86,
-      "conformal_half_width_pp": 3.008,
+      "conformal_half_width_pp": 3.027,
       "interval_90_pp": [
-        -4.15,
+        -4.18,
         1.87
       ],
       "empirical_band_90_pp": [
-        -4.15,
+        -5.08,
         1.87
       ],
       "worst_observed_delta_pp": -8.12,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9606,
-        "two_sided": 0.9333,
+        "one_sided": 0.9676,
+        "two_sided": 0.9382,
         "bootstrap_90_pct": [
-          89.41176470588236,
+          92.17391304347827,
           100.0
         ],
-        "rows": 66,
+        "rows": 68,
         "checkpoints": 5,
-        "scored_pairs": 330,
+        "scored_pairs": 340,
         "worst_family": "llama-3",
-        "worst_family_one_sided": 0.8286,
+        "worst_family_one_sided": 0.8714,
         "by_size_band": {
           "<2B": {
             "state": "not_measured"
@@ -232,36 +232,36 @@
           "2-10B": {
             "state": "insufficient_evidence",
             "checkpoints": 1,
-            "rows": 13,
-            "one_sided": 0.9846153846153847,
+            "rows": 14,
+            "one_sided": 0.9714285714285714,
             "boot90": [
-              98.46153846153847,
-              98.46153846153847
+              97.14285714285714,
+              97.14285714285714
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 4,
-            "rows": 53,
-            "one_sided": 0.9547169811320755,
+            "rows": 54,
+            "one_sided": 0.9666666666666667,
             "boot90": [
-              86.9090909090909,
+              90.35714285714286,
               100.0
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": "measured coverage falls to 83% on held-out family 'llama-3', over 3 families of evidence"
+      "warning": null
     },
     "w4a16": {
       "label": "W4A16 (4-bit weights, 16-bit activations, GPTQ)",
-      "n_observations": 193,
+      "n_observations": 194,
       "n_checkpoints": 23,
       "n_families": 6,
-      "mean_delta_pp": -0.735,
-      "median_delta_pp": -0.6,
-      "conformal_half_width_pp": 2.135,
+      "mean_delta_pp": -0.736,
+      "median_delta_pp": -0.61,
+      "conformal_half_width_pp": 2.136,
       "interval_90_pp": [
         -2.87,
         1.4
@@ -273,15 +273,15 @@
       "worst_observed_delta_pp": -8.86,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9565,
-        "two_sided": 0.9223,
+        "one_sided": 0.9567,
+        "two_sided": 0.9227,
         "bootstrap_90_pct": [
-          92.91666666666667,
-          97.92079207920791
+          92.94736842105263,
+          97.93427230046949
         ],
-        "rows": 193,
+        "rows": 194,
         "checkpoints": 23,
-        "scored_pairs": 965,
+        "scored_pairs": 970,
         "worst_family": "qwen2.5",
         "worst_family_one_sided": 0.9071,
         "by_size_band": {
@@ -308,8 +308,8 @@
           ">10B": {
             "state": "trusted",
             "checkpoints": 9,
-            "rows": 86,
-            "one_sided": 0.9930232558139535,
+            "rows": 87,
+            "one_sided": 0.993103448275862,
             "boot90": [
               98.46153846153847,
               100.0
@@ -388,34 +388,34 @@
     },
     "w8a8_int": {
       "label": "W8A8-INT (8-bit int weights + activations, SmoothQuant)",
-      "n_observations": 194,
+      "n_observations": 195,
       "n_checkpoints": 24,
       "n_families": 5,
-      "mean_delta_pp": -0.32,
-      "median_delta_pp": -0.29,
-      "conformal_half_width_pp": 1.39,
+      "mean_delta_pp": -0.339,
+      "median_delta_pp": -0.3,
+      "conformal_half_width_pp": 1.469,
       "interval_90_pp": [
-        -1.71,
-        1.07
-      ],
-      "empirical_band_90_pp": [
-        -1.97,
+        -1.81,
         1.13
       ],
-      "worst_observed_delta_pp": -3.32,
+      "empirical_band_90_pp": [
+        -2.13,
+        1.13
+      ],
+      "worst_observed_delta_pp": -4.04,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9619,
-        "two_sided": 0.933,
+        "one_sided": 0.96,
+        "two_sided": 0.9313,
         "bootstrap_90_pct": [
-          93.93617021276596,
-          98.2439024390244
+          93.46534653465348,
+          98.32402234636871
         ],
-        "rows": 194,
+        "rows": 195,
         "checkpoints": 24,
-        "scored_pairs": 970,
+        "scored_pairs": 975,
         "worst_family": "mistral",
-        "worst_family_one_sided": 0.8667,
+        "worst_family_one_sided": 0.8125,
         "by_size_band": {
           "<2B": {
             "state": "insufficient_evidence",
@@ -431,26 +431,26 @@
             "state": "trusted",
             "checkpoints": 12,
             "rows": 93,
-            "one_sided": 0.9870967741935484,
+            "one_sided": 0.9913978494623656,
             "boot90": [
-              97.01149425287356,
-              99.8
+              97.3913043478261,
+              100.0
             ]
           },
           ">10B": {
             "state": "trusted",
             "checkpoints": 8,
-            "rows": 72,
-            "one_sided": 0.9361111111111111,
+            "rows": 73,
+            "one_sided": 0.9260273972602739,
             "boot90": [
-              90.0,
-              97.31343283582089
+              88.16901408450704,
+              97.03703703703704
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": null
+      "warning": "measured coverage falls to 81% on held-out family 'mistral', over 5 families of evidence"
     }
   },
   "cells_refused": [],

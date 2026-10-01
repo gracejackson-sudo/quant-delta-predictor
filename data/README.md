@@ -2,7 +2,7 @@
 
 ## What is included
 
-- **`dataset.csv`** — the 850 extracted rows the tool is built on: model, scheme,
+- **`dataset.csv`** — the 856 extracted rows the tool is built on: model, scheme,
   benchmark, accuracy before, accuracy after, delta. These are numeric results
   transcribed from published model cards. `src/rank.py` needs only this file.
 - **`targets.txt`, `redhatai_models.json`** — the list of public model IDs the

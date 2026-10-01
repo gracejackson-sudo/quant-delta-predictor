@@ -72,17 +72,12 @@ BENCHMARKS = [
     # recorded as an open item rather than changed silently.
     ("gpqa_main_norm", r"^gpqa\b.*acc[\s\-_]*norm", 448),
     ("gpqa_diamond_cot_5shot",
-     r"^gpqa\b.*cot.*diamond|^gpqa\b.*diamond.*cot", 448),
+     r"^gpqa\b.*cot.*diamond|^gpqa\b.*diamond.*cot", 198),
     ("gpqa_main_cot_5shot", r"^gpqa\b.*cot.*main|^gpqa\b.*main.*cot", 448),
     # GPQA-Diamond is a 198-question subset; the collapsed `gpqa` label
     # carried Main's 448 and the split inherited it. Correcting it raises the
     # analytic noise floor on these rows by sqrt(448/198) = 1.504x, which is
     # the honest direction: their noise was understated by half.
-    #
-    # NOT corrected here: gpqa_diamond_cot_5shot, which measures the same
-    # subset and still carries 448. It is one row, the identical defect, and
-    # it is held for the de-duplicated-rows change rather than regenerating
-    # the whole chain twice. See PROVENANCE.md.
     ("gpqa_diamond", r"^gpqa\b.*diamond", 198),
     ("gpqa_main", r"^gpqa", 448),
     ("musr", r"^musr", 756),
@@ -97,14 +92,16 @@ BENCH_N = {k: n for k, _, n in BENCHMARKS}
 GPQA_AMBIGUOUS = "gpqa_ambiguous_46"
 BENCH_N[GPQA_AMBIGUOUS] = 448
 
-# Within one card, every GPQA protocol collapses to a single dedup slot, so
-# first-table-wins behaves exactly as it did when GPQA was one label. Three
-# Qwen3 NVFP4 cards and three Mistral-Small-3.1 cards carry two GPQA tables
-# each; under per-label dedup those second rows would be admitted and the
-# corpus would grow by 6 rows, moving every published figure. Keeping the
-# coarse key makes this port label-only. Admitting them is a data decision,
-# not a parser fix.
-DEDUP_FAMILY = {"gpqa": "gpqa"}
+# Dedup is per-benchmark-label. A card that reports GPQA twice under two
+# protocols -- say Diamond 0-shot in the OpenLLM table and Diamond CoT 5-shot
+# in a reasoning table -- is reporting two different measurements, and the
+# protocol split made that distinction visible in the label. Collapsing them
+# into one slot was the right conservative default while the split was being
+# ported (it guaranteed the port changed labels and nothing else), but it
+# discards real rows, so it is retired here. See PROVENANCE.md for the corpus
+# move. A label that genuinely appears twice in one card (e.g. `math_lvl5`)
+# is still first-table-wins, which is what this map no longer overrides.
+DEDUP_FAMILY = {}
 
 
 def dedup_key(bench: str) -> str:

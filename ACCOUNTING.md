@@ -358,7 +358,9 @@ Labels dropped because they fall outside the OpenLLM v1/v2 + HumanEval scope:
 
 ### Duplicate-benchmark discards
 
-12 rows. These are **not** true duplicates: the same benchmark name appears twice under different measurement conditions, e.g. `Qwen3-32B-NVFP4` reports GPQA at **30.12** in the OpenLLM-v2 table and **62.94** in a reasoning table. The pipeline keeps the first (OpenLLM-v1/v2 protocol), consistently — but the choice is arbitrary-looking and was previously unlogged. Every discarded value is now in `data/rejected_rows.csv` under `duplicate_benchmark_discarded`.
+6 rows, all `math_lvl5`. These are **not** true duplicates: the same benchmark name appears twice under different measurement conditions. The pipeline keeps the first (OpenLLM-v1/v2 protocol), consistently — but the choice is arbitrary-looking and was previously unlogged. Every discarded value is in `data/rejected_rows.csv` under `duplicate_benchmark_discarded`.
+
+This count was 12, then 10, and is now 6, because the GPQA rows that used to land here no longer do. `Qwen3-32B-NVFP4` reports GPQA at **30.12** in the OpenLLM-v2 table and **62.94** in a reasoning table; those are GPQA Main and GPQA Diamond, two different question sets, and the protocol split made the card's own distinction visible in the label. While the split was being ported, every GPQA protocol was deliberately collapsed into one de-duplication slot so that the port changed labels and nothing else. Retiring that collapse admitted 4 rows (two `gpqa_diamond`, two `gpqa_diamond_cot_5shot`) across 4 cards, each of which pairs a Main row with a Diamond row rather than repeating the same measurement. See `PROVENANCE.md` for the corpus move and the figures that followed.
 
 ---
 
@@ -372,7 +374,7 @@ Labels dropped because they fall outside the OpenLLM v1/v2 + HumanEval scope:
 
 | | rows |
 |---|---|
-| rows in `dataset.csv` | 850 |
+| rows in `dataset.csv` | 856 |
 | dropped by `acc_before < 20` (near-random baselines) | 33 |
 | kept but sign not machine-verified (2-column tables) | 53 |
-| **used for modelling** | **817** |
+| **used for modelling** | **823** |

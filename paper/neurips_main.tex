@@ -917,14 +917,16 @@ survived---would misrepresent how the result was obtained.
     text taken from the card itself rather than inferred from the
     value; the result is the following mapping (verbatim card string
     $\to$ corpus label, row counts in raw dataset.csv):
-    \texttt{GPQA (0-shot)} $\to$ \texttt{gpqa\_main} (15);
+    \texttt{GPQA (0-shot)} $\to$ \texttt{gpqa\_main}
+    (\NrowsGpqaMain);
     \texttt{GPQA (Acc-Norm, 0-shot)} $\to$ \texttt{gpqa\_main\_norm}
-    (8);
+    (\NrowsGpqaMainNorm);
     \texttt{GPQA CoT main (5-shot)} $\to$
-    \texttt{gpqa\_main\_cot\_5shot} (2);
-    \texttt{GPQA diamond} $\to$ \texttt{gpqa\_diamond} (6);
+    \texttt{gpqa\_main\_cot\_5shot} (\NrowsGpqaMainCot);
+    \texttt{GPQA diamond} $\to$ \texttt{gpqa\_diamond}
+    (\NrowsGpqaDiamond);
     \texttt{GPQA CoT diamond (5-shot)} $\to$
-    \texttt{gpqa\_diamond\_cot\_5shot} (1).
+    \texttt{gpqa\_diamond\_cot\_5shot} (\NrowsGpqaDiamondCot).
     Two Llama-3.3-70B-Instruct rows (FP8-dynamic and w8a8) at
     \texttt{acc\_before} $\approx$ 46.10 come from cards that carry
     only the string \texttt{GPQA (0-shot)} -- the same string used for
@@ -938,18 +940,40 @@ survived---would misrepresent how the result was obtained.
     was the first correction to it, which said no card carries that
     string at all. Three cards do: the Qwen3-8B, Qwen3-14B and
     Qwen3-32B NVFP4 cards each report both \texttt{GPQA (0-shot)} and
-    \texttt{GPQA (Diamond, 0-shot)}. Those Diamond rows are absent from
-    the corpus not because the string is absent from the cards but
-    because the harvester's first-table-wins rule discarded them as
-    duplicates of a label that was, at the time, collapsed. They are
-    logged in \texttt{data/rejected\_rows.csv} as
-    \texttt{duplicate\_benchmark\_discarded}. Admitting them is a data
-    decision we have not taken, and the harvester deliberately keeps a
-    coarse GPQA de-duplication slot so that porting the protocol split
-    changed labels only and not which rows survive. Four rows lie under the modeling-set filter's chance floor
+    \texttt{GPQA (Diamond, 0-shot)}. Those Diamond rows were initially
+    absent from the corpus not because the string is absent from the
+    cards but because the harvester's first-table-wins rule discarded
+    them as duplicates of a label that was, at the time, collapsed.
+    While the split was being ported we kept that coarse GPQA
+    de-duplication slot deliberately, so that the port changed labels
+    only and not which rows survive, and recorded admitting the rows as
+    a data decision still to be taken. We have since taken it. GPQA
+    Diamond is a different question set from GPQA Main, so a card
+    reporting both has reported two measurements and not one twice, and
+    de-duplication is now per protocol label. That admitted 4 rows
+    across 4 cards --- two \texttt{gpqa\_diamond} (Qwen3-8B and
+    Qwen3-32B NVFP4) and two \texttt{gpqa\_diamond\_cot\_5shot}
+    (the Mistral-Small-3.1 w4a16 and w8a8 cards) --- each of which pairs a
+    Main row with a Diamond row in the same card. The third Qwen3 NVFP4
+    Diamond row, Qwen3-14B, is \emph{not} admitted: with the
+    de-duplication slot out of the way it reaches the recovery-integrity
+    gate, which rejects it because the card's own printed Recovery
+    percentage cannot be reproduced from its own printed accuracies. It
+    is logged in \texttt{data/rejected\_rows.csv} as
+    \texttt{recovery\_mismatch} rather than
+    \texttt{duplicate\_benchmark\_discarded}. That is worth stating as a
+    general lesson and not only as a row disposition: a conservative
+    de-duplication rule had been withholding a row from the gate built to
+    catch exactly that row's defect, so one gate was masking another's input.
+    The row was never in the corpus and no published figure was ever wrong
+    because of it, but the ordering meant the integrity gate's pass rate was
+    reported over a set that quietly excluded a card error. We found it only
+    because retiring the first rule let the second one run. Four rows lie under the
+    modeling-set filter's chance floor
     (\texttt{acc\_before}$\geq$\MinAccBefore\%) and are excluded from the
-    fitted set exactly as before; the split does not add or remove
-    modelling-set rows. The harvester has since adopted this
+    fitted set exactly as before; the protocol split itself still adds
+    and removes no modelling-set rows, and the \Nrows{} figure moves
+    only because of the de-duplication decision above. The harvester has since adopted this
     split, so a re-harvest reproduces the committed labels instead of
     collapsing them; a test re-harvests the card corpus and fails if the
     result disagrees with the committed dataset on any column, label

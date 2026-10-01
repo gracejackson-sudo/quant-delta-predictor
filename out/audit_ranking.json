@@ -13,7 +13,7 @@
   },
   {
     "tag": "FINDING",
-    "finding": "the top-ranked scheme clears the thin-data test by ZERO margin: fp8 has exactly 80 evaluations against a 80 threshold and exactly 3 families against a 4 threshold. One row or one family fewer and rank 1 would be flagged. Knife-edge schemes: ['w8a8_int', 'fp8_dynamic', 'w8a16']"
+    "finding": "the top-ranked scheme clears the thin-data test by ZERO margin: fp8 has exactly 80 evaluations against a 80 threshold and exactly 3 families against a 4 threshold. One row or one family fewer and rank 1 would be flagged. Knife-edge schemes: ['fp8_dynamic', 'w8a8_int', 'w8a16']"
   },
   {
     "tag": "FINDING",
@@ -21,7 +21,7 @@
   },
   {
     "tag": "FINDING",
-    "finding": "only 4.4 of 12 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 496/4095 (12%) of scored rows. Where it does apply it over-covers at 93.3%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
+    "finding": "only 4.4 of 12 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 515/4115 (13%) of scored rows. Where it does apply it over-covers at 93.0%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
   },
   {
     "tag": "OK",
@@ -33,7 +33,7 @@
   },
   {
     "tag": "FINDING",
-    "finding": "2 Tier A schemes have lost more than 3pp at least once: w8a8_int (-3.32pp), fp8_dynamic (-8.72pp). The old Tier A wording, 'safe to adopt without running your own eval', was indefensible for a scheme with an 8.72pp loss in its history. Relabelled, and a severe-history line now prints on every such scheme regardless of rank."
+    "finding": "2 Tier A schemes have lost more than 3pp at least once: fp8_dynamic (-8.72pp), w8a8_int (-4.04pp). The old Tier A wording, 'safe to adopt without running your own eval', was indefensible for a scheme with an 8.72pp loss in its history. Relabelled, and a severe-history line now prints on every such scheme regardless of rank."
   },
   {
     "tag": "OK",
@@ -45,11 +45,11 @@
   },
   {
     "tag": "FINDING",
-    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_EVIDENCE', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 4 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
+    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_EVIDENCE', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 3 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
   },
   {
     "tag": "FINDING",
-    "finding": "4 cells are blocked from Tier A on support, and 3 of them have measured coverage at or above 90%: fp8|<2B (100.0%), nvfp4|2-10B (93.8%), w8a16|<2B (98.3%). Coverage alone would have called these safe."
+    "finding": "4 cells are blocked from Tier A on support, and 3 of them have measured coverage at or above 90%: fp8|<2B (100.0%), nvfp4|2-10B (92.9%), w8a16|<2B (98.3%). Coverage alone would have called these safe."
   },
   {
     "tag": "FINDING",

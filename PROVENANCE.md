@@ -384,3 +384,212 @@ generated file whose inputs moved and whose outputs did not. The gate covers
 the registry's reading artifacts against `data/dataset.csv`, and these files
 sit outside that check. Worth closing after Friday; recorded here because the
 numbers in question were quoted in `SCOPE.md` while stale.
+
+## 2026-10-01 — deferred item 2: the de-duplicated GPQA Diamond rows admitted
+
+The harvester kept a coarse GPQA de-duplication slot (`DEDUP_FAMILY = {"gpqa":
+"gpqa"}`) so that porting the five-way protocol split changed labels only and
+not which rows survive. That slot is retired here. GPQA Diamond is a
+198-question subset and GPQA Main is a different question set, so a card that
+publishes both has published two measurements, and the split made the card's
+own distinction visible in the label. De-duplication is now per protocol
+label; a label that genuinely repeats within one card (`math_lvl5`, 6 rows) is
+still first-table-wins.
+
+Folded into the same change: `gpqa_diamond_cot_5shot` 448 -> 198 item count,
+held from the 2026-09-30 entry above for exactly this moment because both
+changes need one regeneration of the artifact chain and one re-run of the
+tuning protocol.
+
+### Which rows were admitted
+
+Four, across four cards, each of which pairs a Main row with a Diamond row:
+
+| card | label | acc_before | delta |
+| --- | --- | --- | --- |
+| Qwen3-32B-NVFP4 | `gpqa_diamond` | 62.94 | +1.53 |
+| Qwen3-8B-NVFP4 | `gpqa_diamond` | 59.90 | -5.08 |
+| Mistral-Small-3.1-24B w4a16 | `gpqa_diamond_cot_5shot` | 45.96 | -1.01 |
+| Mistral-Small-3.1-24B w8a8 | `gpqa_diamond_cot_5shot` | 45.96 | -4.04 |
+
+Checked before landing: no admitted row duplicates a measurement already in
+the corpus. Each of the four cards carries a Main row as well, at a different
+baseline, so the pair is two protocols and not one value twice.
+
+The third Qwen3 NVFP4 card that publishes `GPQA (Diamond, 0-shot)`,
+Qwen3-14B, is *not* admitted. With the de-duplication slot out of the way its
+Diamond row reaches the recovery-integrity gate, which rejects it because the
+card's printed Recovery cannot be reproduced from its own printed accuracies.
+It moves from `duplicate_benchmark_discarded` to `recovery_mismatch` in
+`data/rejected_rows.csv`. Two independent gates, and the second one caught a
+row the first had been hiding.
+
+### The corpus move
+
+Raw 852 -> 856, modelling 819 -> 823. Checkpoints unchanged at 38, families
+unchanged at 6, so the cluster structure the bootstrap and the cluster-robust
+SE rest on is identical. All four rows clear the `acc_before >= 20` floor, so
+all four enter the modelling set.
+
+### What moved
+
+187 registry keys moved; none were added or removed, so the manifest
+composition pins are unchanged. The ones that matter:
+
+| figure | before | after |
+| --- | --- | --- |
+| `n_rows_raw` / `n_rows` | 852 / 819 | 856 / 823 |
+| `pred_mae::global_mean` | 0.757469 | 0.769393 |
+| `pred_mae::scheme_mean` | 0.725362 | 0.735402 |
+| `pred_mae::ridge` (untuned) | 0.780018 | 0.795546 |
+| `pred_mae::grad_boost` (untuned) | 0.785271 | 0.785679 |
+| `pred_mae::ridge_tuned` | 0.714143 | 0.724824 |
+| `pred_mae::grad_boost_tuned` | 0.717868 | 0.722838 |
+| `mae_gain_pp` | 0.032107 | 0.033991 |
+| `mae_floor_pp` | 0.507199 | **unchanged** |
+| `pred_max_abs_gap_pp` | 0.043325 | 0.046556 |
+| `pred_gap_vs_floor_ratio` | 11.71 | 10.89 |
+| prospective strict coverage | 119/131 = 90.84% | 121/133 = 90.98% |
+| prospective cluster-robust CI | [86.41, 95.26] | [86.60, 95.35] |
+| `prosp_icc` / design effect | -0.0090 / 1.000 | -0.0061 / 1.000 |
+| `lo::w8a8_int` / `hi::w8a8_int` | -1.710 / +1.069 | -1.809 / +1.130 |
+| `worst::w8a8_int` | -3.32 | -4.04 |
+| `severe_pct::w8a8_int` | 1.03% | 1.54% |
+| `lo::nvfp4` | -4.146 | -4.184 |
+| `severe_pct::nvfp4` | 13.64% | 14.71% |
+| `n_big_losses` / below floor | 25 / 19 | 27 / 20 |
+| mean analytic SE | 1.6621 | 1.6801pp |
+
+Every ordering claim survives. The per-scheme mean still beats the global mean
+and its CI still excludes zero ([0.0110, 0.0563]pp). Both untuned baselines
+still lose to the global mean. Both tuned baselines still beat it, and still
+beat the shipped lookup only by margins whose intervals contain zero
+(+0.0106 [-0.0049, +0.0247] for ridge, +0.0126 [-0.0117, +0.0388] for
+gradient boosting). `mae_floor_pp` does not move at all: the two new Diamond
+labels still carry fewer than four near-lossless rows each, so the eight
+benchmarks excluded from the noise floor are the same eight.
+
+The tuning protocol was re-run, not reused, for the same reason as in the
+`n_items` entry: the corpus changed, so recorded selections would be stale.
+Ridge still selects the top of the grid in 5 of 6 folds, and gradient boosting
+still selects the slowest learning rate and heaviest L2 in 6 of 6, so the
+grid-edge finding survives a second corpus correction. One non-edge
+hyperparameter moved on one fold (gemma-2's `min_samples_leaf`, 30 -> 15).
+
+### Two things worth flagging rather than burying
+
+**The headline interval moved in our favour, by mechanism and not by choice.**
+Both new prospective rows are inside their intervals, so strict coverage rose
+from 90.84% to 90.98%. We did not choose the rows; admitting them was a data
+decision taken before any of these numbers were computed, and the
+pre-registration for it named the corpus move, not an expected direction.
+Against that, the figures that moved *against* us: the w8a8 band widened by
+about 7% and its published worst case went from -3.32pp to -4.04pp, NVFP4's
+severe-loss rate rose a point, and the share of >3pp losses falling below the
+interval floor went from 3.2% to 3.4% of all rows. The admitted rows are
+high-magnitude, so they make the product more conservative and the predictors
+worse.
+
+**`pred_max_abs_gap_pp` is now 0.0466pp against a 0.05pp claim.** The abstract
+quotes the computed bound rather than the round number, so nothing is
+overstated, but the predictor-ordering gate asserts `< 0.05` and
+`ratio >= 10`, and the ratio has gone 11.71 -> 10.89 across two corpus
+corrections. One more correction of this size would put the 0.05 framing under
+pressure. The framing should be revisited on its own terms rather than
+defended by a tightening margin.
+
+### The verifier
+
+`verify/independent_check.py` had a single coarse `gpqa` label, which also
+de-duplicated coarsely. That made it agree with the pipeline for the wrong
+reason: `out/real_use_case.csv` was itself stale from before the protocol
+split, so two coarse views agreed and the comparison printed full agreement.
+Regenerating the prospective artifact exposed it.
+
+Changed from the specification on both sides rather than by copying. The
+pipeline resolves GPQA with an ordered table of whole protocol names. The
+verifier now resolves three independent axes the card label states --- question
+set, scoring, prompting --- and composes the name from them (`gpqa_protocol()`).
+Same labels, different route. After the change: 823 rows on both sides, 188
+prospective rows on both sides, zero rows found by only one side, zero delta
+disagreements, zero verdict disagreements, exit 0.
+
+### Stale hand-typed figures this surfaced
+
+`README.md`, `ACCOUNTING.md` and `data/README.md` each carried a raw row count
+of 850, two corpus changes behind, while `TOOL_SUMMARY.md` and the paper said
+852. None of the three is in the claim registry's `DOCS` list, so nothing
+checked them. `README.md`'s figures even carry `<!-- claim: ... -->` tags,
+which look verified and are not, because the registry only scans the generated
+docs. All three are corrected here. `ACCOUNTING.md`'s duplicate-discard
+section is rewritten, since its worked example is one of the rows now
+admitted.
+
+`SCOPE.md` item 6's "79% / 70%" worst-held-out-family NVFP4 coverage figures
+appear nowhere else in the repository and are computed by nothing. They
+reproduce as 78.6% one-sided and 71.4% two-sided on the pre-change corpus
+(Llama-3 held out, 14 rows, per-scheme conformal band fitted on the other five
+families), so they were real but loosely rounded. They are now 85.7% and
+78.6%, and the line says so, says they are hand-computed, and says they moved
+because the band widened rather than because prediction improved.
+
+Adding `README.md` and `ACCOUNTING.md` to the registry's `DOCS` list would
+close this class rather than these instances. Not done here: it is a separate
+change to the gate, and a gate change belongs in its own commit.
+
+### Four pre-existing problems this change surfaced
+
+None of these is an effect of admitting the rows. They were all true at
+`8d1b2be` and were found by running the chain and the audits end to end.
+
+**1. `src/publisher_census.py` re-samples Hugging Face live, and today's sample
+breaks the registry.** It queries the HF model API for each publisher and
+rewrites `out/publisher_census.json` and `out/publisher_cards/`. Run today it
+returns a different 260-card sample than the one behind the committed
+artifact: the publisher landscape has drifted. In that sample no
+non-RedHatAI publisher prints a Recovery figure, so `card_quality.py`
+recomputes `per_publisher` with RedHatAI alone and the registry raises
+`ValueError: max() iterable argument is empty` at `cq_rec_best_other`. Anyone
+following the regeneration commands in `README.md` in order breaks the
+registry. Neither this script nor `card_quality.py` reads `data/dataset.csv`,
+so neither belongs in a corpus-change chain run at all; the committed
+artifacts are a dated snapshot and should be labelled as one. This is the
+dangerous one of the four, because it fails for a reproducer and not for us.
+
+**2. `src/audit.py` prints `1 hard failures` and exits 0.** The hard failure is
+real: `every demo hold-out model comes from a family absent from both train and
+calibration`. Nothing gates on the exit code and the test suite does not run
+the script, so the audit has been reporting a failure nobody sees.
+
+**3. `src/demo_holdout.py` crashes on its own leak assertion.** Definition B
+merged Llama-3.1/3.2/3.3 into one `llama-3` family; two of the five hold-out
+models in `HOLDOUTS` (Llama-3.3-70B-Instruct w4a16 and Llama-3.2-3B-Instruct
+FP8-dynamic) are therefore in a training family, and the assertion fires
+correctly. The script is a casualty of Definition B that nobody re-ran. It is
+listed in `README.md`'s reproduce section, writes no artifact, and has no
+downstream consumer, so the damage is to reproducibility rather than to any
+figure. Problems 2 and 3 are one defect seen twice.
+
+**4. The artifact-staleness test covers eleven artifacts and misses the four
+that have actually gone stale.** `test_registry_reading_artifacts_are_not_older_than_dataset_csv`
+checks `predictor_comparison`, `diagnostics`, `final_results`,
+`interval_shape`, `interval_shape_finite`, `bias_correction`,
+`bias_correction_empirical`, `cell_coverage`, `scheme_envelope`,
+`one_sided_audit` and `audit_ranking`. It does not check
+`real_use_case.csv`, `tuned_baselines.json`, `adversarial_audit.json` or
+`census.json` --- the four whose staleness has now been caught by hand twice,
+in the 2026-09-30 entry and again here.
+
+**A fifth thing, found while landing.** `src/build_envelope.py` consumes
+`out/real_use_case.csv`: the shipped envelope embeds a `validation` block with
+the prospective row counts and coverage. Running the chain in README order
+puts `build_envelope.py` before `real_use_case.py`, so the first pass here
+baked the 186-row figures into a 188-row corpus.
+`test_the_shipped_envelope_matches_a_fresh_build` caught it, which is the
+system working, but the documented order produces the stale state and the
+dependency is written down nowhere. `build_envelope.py` must run after
+`real_use_case.py`.
+
+And a sixth, cosmetic: `paper/claims.json` is written by nothing, read by
+nothing, and committed with values from 2026-09-30. It is an orphan that a
+reader could mistake for the registry.

@@ -2,7 +2,7 @@
 
 *A negative result, with the measured noise floor, a low-rank transfer test, and a comparison to BenchPress.*
 
-Data: 819<!-- claim: n_rows = 819.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
+Data: 823<!-- claim: n_rows = 823.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
 
 ---
 
@@ -16,22 +16,22 @@ Leave-one-family-out, so the test family's checkpoints are never in training. Ro
 
 | predictor | MAE (pp) | beats global mean? |
 |---|---|---|
-| ridge, **nested-CV tuned** | 0.7141<!-- claim: pred_mae::ridge_tuned = 0.714143 --> | yes |
-| gradient boosting, **nested-CV tuned** | 0.7179<!-- claim: pred_mae::grad_boost_tuned = 0.717868 --> | yes |
-| per-scheme mean (shipped) | 0.7254<!-- claim: pred_mae::scheme_mean = 0.725362 --> | yes |
-| global mean (baseline) | 0.7575<!-- claim: pred_mae::global_mean = 0.757469 --> | -- |
-| per-(scheme x benchmark) mean | 0.7597<!-- claim: pred_mae::scheme_x_bench = 0.759665 --> | **no** |
-| per-benchmark mean | 0.7687<!-- claim: pred_mae::bench_mean = 0.768677 --> | **no** |
-| ridge, 38 features, **untuned** | 0.7800<!-- claim: pred_mae::ridge = 0.780018 --> | **no** |
-| gradient boosting, **untuned** | 0.7853<!-- claim: pred_mae::grad_boost = 0.785271 --> | **no** |
+| gradient boosting, **nested-CV tuned** | 0.7228<!-- claim: pred_mae::grad_boost_tuned = 0.722838 --> | yes |
+| ridge, **nested-CV tuned** | 0.7248<!-- claim: pred_mae::ridge_tuned = 0.724824 --> | yes |
+| per-scheme mean (shipped) | 0.7354<!-- claim: pred_mae::scheme_mean = 0.735402 --> | yes |
+| per-(scheme x benchmark) mean | 0.7685<!-- claim: pred_mae::scheme_x_bench = 0.768531 --> | yes |
+| global mean (baseline) | 0.7694<!-- claim: pred_mae::global_mean = 0.769393 --> | -- |
+| per-benchmark mean | 0.7783<!-- claim: pred_mae::bench_mean = 0.778298 --> | **no** |
+| gradient boosting, **untuned** | 0.7857<!-- claim: pred_mae::grad_boost = 0.785679 --> | **no** |
+| ridge, 38 features, **untuned** | 0.7955<!-- claim: pred_mae::ridge = 0.795546 --> | **no** |
 
 **Retraction.** An earlier version of this document said ridge regression and gradient boosting both do worse than predicting the average. That is true of the untuned models and **false** of tuned ones. It is retracted rather than reworded, because a reviewer correctly pointed out that an untuned model losing says nothing about whether the target is predictable.
 
-Tuned by nested cross-validation -- leave-one-family-out on the outside, a second leave-one-family-out over the training families only on the inside, so no fold's held-out family informs its own hyperparameters -- ridge reaches 0.7141<!-- claim: pred_mae::ridge_tuned = 0.714143 -->pp and gradient boosting 0.7179<!-- claim: pred_mae::grad_boost_tuned = 0.717868 -->pp. Tuning moves them by 0.0659<!-- claim: tune_shift_ridge = 0.065875 -->pp and 0.0674<!-- claim: tune_shift_gb = 0.067403 -->pp respectively, roughly twice the whole effect this document reports. Both beat the global mean. Both also edge past the shipped per-scheme mean, by +0.0112<!-- claim: tune_diff::scheme_vs_ridge_tuned = 0.011218 -->pp [-0.0041<!-- claim: tune_diff_lo::scheme_vs_ridge_tuned = -0.004142 -->, +0.0254<!-- claim: tune_diff_hi::scheme_vs_ridge_tuned = 0.025369 -->] and +0.0075<!-- claim: tune_diff::scheme_vs_gb_tuned = 0.007493 -->pp [-0.0186<!-- claim: tune_diff_lo::scheme_vs_gb_tuned = -0.018606 -->, +0.0349<!-- claim: tune_diff_hi::scheme_vs_gb_tuned = 0.034892 -->] on a checkpoint bootstrap -- both intervals contain zero.
+Tuned by nested cross-validation -- leave-one-family-out on the outside, a second leave-one-family-out over the training families only on the inside, so no fold's held-out family informs its own hyperparameters -- ridge reaches 0.7248<!-- claim: pred_mae::ridge_tuned = 0.724824 -->pp and gradient boosting 0.7228<!-- claim: pred_mae::grad_boost_tuned = 0.722838 -->pp. Tuning moves them by 0.0707<!-- claim: tune_shift_ridge = 0.070723 -->pp and 0.0628<!-- claim: tune_shift_gb = 0.062841 -->pp respectively, roughly twice the whole effect this document reports. Both beat the global mean. Both also edge past the shipped per-scheme mean, by +0.0106<!-- claim: tune_diff::scheme_vs_ridge_tuned = 0.010579 -->pp [-0.0049<!-- claim: tune_diff_lo::scheme_vs_ridge_tuned = -0.004937 -->, +0.0247<!-- claim: tune_diff_hi::scheme_vs_ridge_tuned = 0.024738 -->] and +0.0126<!-- claim: tune_diff::scheme_vs_gb_tuned = 0.012565 -->pp [-0.0117<!-- claim: tune_diff_lo::scheme_vs_gb_tuned = -0.011746 -->, +0.0388<!-- claim: tune_diff_hi::scheme_vs_gb_tuned = 0.038781 -->] on a checkpoint bootstrap -- both intervals contain zero.
 
 **What tuning selected is the actual result.** In 5<!-- claim: tune_ridge_folds_at_edge = 5.000000 --> of 6<!-- claim: tune_outer_folds = 6.000000 --> folds the inner cross-validation picked the largest ridge penalty in the grid (alpha = 1000<!-- claim: tune_ridge_alpha_max = 1000.000000 -->); in 6<!-- claim: tune_gb_folds_min_lr = 6.000000 --> of 6<!-- claim: tune_outer_folds = 6.000000 --> it picked the slowest learning rate offered and in 6<!-- claim: tune_gb_folds_max_l2 = 6.000000 --> the heaviest L2 penalty offered. Asked for the best card-feature model, nested CV answers *one shrunk almost to a constant*. The grid boundary is reported as a limitation; the grid was not extended after seeing which edge was hit.
 
-So the claim is narrower than "no signal" and harder to dismiss than the one it replaces. A sliver of card-feature signal exists, recovering it needs near-total shrinkage, and it is not distinguishable from the six-cell lookup at this sample size. Every card-feature predictor here, tuned or not, lands within 0.0433<!-- claim: pred_max_abs_gap_pp = 0.043325 -->pp of the global mean against an evaluation-noise floor of 0.507<!-- claim: mae_floor_pp = 0.507199 -->pp, a factor of 12<!-- claim: pred_gap_vs_floor_ratio = 11.706751 -->.
+So the claim is narrower than "no signal" and harder to dismiss than the one it replaces. A sliver of card-feature signal exists, recovering it needs near-total shrinkage, and it is not distinguishable from the six-cell lookup at this sample size. Every card-feature predictor here, tuned or not, lands within 0.0466<!-- claim: pred_max_abs_gap_pp = 0.046556 -->pp of the global mean against an evaluation-noise floor of 0.507<!-- claim: mae_floor_pp = 0.507199 -->pp, a factor of 11<!-- claim: pred_gap_vs_floor_ratio = 10.894409 -->.
 
 The shipped per-scheme mean is therefore **not** the best-scoring predictor tested -- tuned ridge scores better -- but it remains the best justifiable one, at a fraction of the parameters, with the better-scoring alternative's advantage sitting inside its own confidence interval. Both halves of that belong in the record.
 
@@ -43,17 +43,17 @@ Adding model size, benchmark identity, base accuracy and quantization method all
 
 Benchmark scores are sample proportions over finite item sets, so a delta is a difference of two noisy quantities. Estimating the noise floor directly from near-lossless schemes (W8A16 and FP8-dynamic, whose true delta should be ~0) gives an irreducible MAE of **0.507<!-- claim: mae_floor_pp = 0.507199 -->pp**.
 
-The global-mean baseline sits at 0.7575<!-- claim: mae_global_lofo = 0.757469 -->pp. So the entire headroom available to any predictor is about 0.250<!-- claim: headroom_pp = 0.2503 -->pp, and the best predictor we found captures roughly a tenth of it.
+The global-mean baseline sits at 0.7694<!-- claim: mae_global_lofo = 0.769393 -->pp. So the entire headroom available to any predictor is about 0.262<!-- claim: headroom_pp = 0.2622 -->pp, and the best predictor we found captures roughly a tenth of it.
 
 On GSM8K specifically, the observed spread for supposedly lossless schemes is nearly identical to the spread for 4-bit schemes: the measurement is louder than the effect.
 
-**A per-fold view of the same claim.** The MAE numbers above are weighted means across six leave-one-family-out folds of very different sizes and difficulty. Broken out, the per-scheme mean (the best predictor we found) ranges from 0.39<!-- claim: lofo_scheme_mean_min = 0.393734 -->pp on gemma-2 (the smallest fold, 59<!-- claim: gemma2_fold_rows = 59.000000 --> rows) to 1.40<!-- claim: lofo_scheme_mean_max = 1.403079 -->pp on qwen3 (the second-smallest, at 101<!-- claim: qwen3_fold_rows = 101.000000 --> rows), against a pooled 0.73<!-- claim: pred_mae::scheme_mean = 0.725362 -->pp. The predictor beats the global-mean baseline on 5<!-- claim: lofo_scheme_mean_wins_folds = 5.000000 --> of 6<!-- claim: n_families = 6.000000 --> folds but *loses to it on qwen3*: the one-family fold where the global mean is actually the better bet. That is the sharpest version of the negative result in the whole paper -- our best predictor is worse than guessing the average on one of six families. The pooled MAE hides it because the qwen3 fold is 12% of the corpus.
+**A per-fold view of the same claim.** The MAE numbers above are weighted means across six leave-one-family-out folds of very different sizes and difficulty. Broken out, the per-scheme mean (the best predictor we found) ranges from 0.39<!-- claim: lofo_scheme_mean_min = 0.394838 -->pp on gemma-2 (the smallest fold, 59<!-- claim: gemma2_fold_rows = 59.000000 --> rows) to 1.44<!-- claim: lofo_scheme_mean_max = 1.440152 -->pp on qwen3 (the second-smallest, at 103<!-- claim: qwen3_fold_rows = 103.000000 --> rows), against a pooled 0.74<!-- claim: pred_mae::scheme_mean = 0.735402 -->pp. The predictor beats the global-mean baseline on 5<!-- claim: lofo_scheme_mean_wins_folds = 5.000000 --> of 6<!-- claim: n_families = 6.000000 --> folds but *loses to it on qwen3*: the one-family fold where the global mean is actually the better bet. That is the sharpest version of the negative result in the whole paper -- our best predictor is worse than guessing the average on one of six families. The pooled MAE hides it because the qwen3 fold is 12% of the corpus.
 
 ## 4. Low-rank structure and paired deltas (Track 2, revised after external review)
 
 BenchPress (arXiv:2606.24020) predicts unseen benchmark scores by exploiting the fact that a frontier-model score matrix is roughly rank-2. We tested whether that structure helps on **paired** quantization deltas.
 
-> **Correction.** The first version of this section made three statements that a BenchPress author showed, on reviewing our code, to be wrong or unfair. (1) It said rank-2 explains 55.9<!-- claim: t2_var_explained_rank2_pct = 55.931459 -->% of the variance in our matrix, against over 90% for BenchPress. That figure was computed after filling 61.3<!-- claim: t2b_filled_global_mean_pct = 61.292517 -->% of the matrix with one global mean, which weakens any low-rank structure. Measured as the BenchPress paper does it, the structure is present (table below). (2) It tested a plain SVD-completion approximation, not BenchPress's method. (3) It called the resulting error gap 'an order of magnitude'; even our own numbers showed about 9<!-- claim: t2_mae_lowrank::2 = 8.746753 --> versus 1.4<!-- claim: t2_mae_scheme::2 = 1.385334 -->. What follows replaces it.
+> **Correction.** The first version of this section made three statements that a BenchPress author showed, on reviewing our code, to be wrong or unfair. (1) It said rank-2 explains 55.9<!-- claim: t2_var_explained_rank2_pct = 55.931459 -->% of the variance in our matrix, against over 90% for BenchPress. That figure was computed after filling 61.2<!-- claim: t2b_filled_global_mean_pct = 61.156463 -->% of the matrix with one global mean, which weakens any low-rank structure. Measured as the BenchPress paper does it, the structure is present (table below). (2) It tested a plain SVD-completion approximation, not BenchPress's method. (3) It called the resulting error gap 'an order of magnitude'; even our own numbers showed about 9<!-- claim: t2_mae_lowrank::2 = 8.746753 --> versus 1.4<!-- claim: t2_mae_scheme::2 = 1.385334 -->. What follows replaces it.
 
 ### 4a. Is the structure there?
 
@@ -127,18 +127,18 @@ So the excess-over-control figures measure **bad recipe against mediocre recipe*
 
 ## 7. The self-correction that mattered most
 
-Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (91.0<!-- claim: band_emp_coverage_pct = 90.999668 -->% vs 90.6<!-- claim: band_conf_coverage_pct = 90.567918 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
+Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (91.0<!-- claim: band_emp_coverage_pct = 90.972222 -->% vs 90.5<!-- claim: band_conf_coverage_pct = 90.476190 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
 
-Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 26<!-- claim: inf_share_pct = 25.838592 -->% of evaluations (778<!-- claim: inf_rows = 778.000000 --> of 3011<!-- claim: band_n_pairs = 3011.000000 -->; the 819<!-- claim: band_n_rows = 819.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
+Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 26<!-- claim: inf_share_pct = 25.925926 -->% of evaluations (784<!-- claim: inf_rows = 784.000000 --> of 3024<!-- claim: band_n_pairs = 3024.000000 -->; the 823<!-- claim: band_n_rows = 823.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
 
 On the rows where both bands are actually defined:
 
 | band | coverage | mean width |
 |---|---|---|
-| symmetric conformal (shipped) | **88.5<!-- claim: finite_conf_cov_pct = 88.535602 -->%** | **3.96<!-- claim: finite_conf_width = 3.958459 -->pp** |
-| asymmetric empirical | 87.9<!-- claim: finite_emp_cov_pct = 87.863860 -->% | 5.51<!-- claim: finite_emp_width = 5.514062 -->pp |
+| symmetric conformal (shipped) | **88.6<!-- claim: finite_conf_cov_pct = 88.571429 -->%** | **3.97<!-- claim: finite_conf_width = 3.970269 -->pp** |
+| asymmetric empirical | 87.8<!-- claim: finite_emp_cov_pct = 87.812500 -->% | 5.53<!-- claim: finite_emp_width = 5.528085 -->pp |
 
-Conformal wins on coverage AND width, on 2233<!-- claim: finite_n = 2233.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (90.1<!-- claim: band_hybrid_coverage_pct = 90.069744 -->%). **The shipped interval was right and the intuition was wrong.**
+Conformal wins on coverage AND width, on 2240<!-- claim: finite_n = 2240.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (89.9<!-- claim: band_hybrid_coverage_pct = 89.914021 -->%). **The shipped interval was right and the intuition was wrong.**
 
 Two conclusions, both uncomfortable and both kept:
 

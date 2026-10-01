@@ -2434,7 +2434,15 @@ def test_gpqa_corpus_label_matches_card_label_per_row():
         "gpqa_main":              {"GPQA (0-shot)"},
         "gpqa_main_norm":         {"GPQA (Acc-Norm, 0-shot)"},
         "gpqa_main_cot_5shot":    {"GPQA CoT main (5-shot)"},
-        "gpqa_diamond":           {"GPQA diamond"},
+        # Two card spellings name the same thing: the Diamond subset at
+        # zero shots. "GPQA diamond" is the Mistral-Small-3.1 spelling;
+        # "GPQA (Diamond, 0-shot)" is the Qwen3 NVFP4 one, and those rows
+        # only entered the corpus when the coarse GPQA de-duplication slot
+        # was retired (deferred item 2, PROVENANCE.md 2026-10-01). Both are
+        # verbatim card strings, so this widens the whitelist by one real
+        # spelling rather than relaxing the check.
+        "gpqa_diamond":           {"GPQA diamond",
+                                   "GPQA (Diamond, 0-shot)"},
         "gpqa_diamond_cot_5shot": {"GPQA CoT diamond (5-shot)"},
         "gpqa_ambiguous_46":      {"GPQA (0-shot)"},   # documented in §9
     }
@@ -2499,7 +2507,7 @@ def test_gpqa_corpus_label_matches_card_label_per_row():
 def test_dataset_row_count_pinned():
     """Tier 2.5 sweep (day-7 audit): pin the corpus size so a future
     row drop cannot silently apply to some downstream code paths and
-    not others. 852 raw rows minus 33 near-chance-baseline drops = 819
+    not others. 856 raw rows minus 33 near-chance-baseline drops = 823
     rows in the modeling set. If the count moves, this test fails
     loudly and the paper's macros, the abstract, §3 and §5, and every
     generated doc must all move together (see registry `n_rows` /
@@ -2507,14 +2515,14 @@ def test_dataset_row_count_pinned():
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
     d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
-    assert len(d) == 852, (
-        f"data/dataset.csv has {len(d)} raw rows; expected 852. A drop "
+    assert len(d) == 856, (
+        f"data/dataset.csv has {len(d)} raw rows; expected 856. A drop "
         f"went in without the sweep — check dataset.csv, the "
         f"MIN_ACC_BEFORE filter, and the registry `n_rows_raw` claim.")
     d2 = d[d.acc_before >= 20]
-    assert len(d2) == 819, (
+    assert len(d2) == 823, (
         f"dataset.csv has {len(d2)} rows after acc_before>=20; expected "
-        f"819. If a drop is intended, update paper/numbers.tex (Nrows), "
+        f"823. If a drop is intended, update paper/numbers.tex (Nrows), "
         f"the abstract, §3, §5, the supplement, README, and this pin "
         f"together.")
     # And the registry must agree.
@@ -2522,8 +2530,8 @@ def test_dataset_row_count_pinned():
     _sys.path.insert(0, os.path.join(root, "src"))
     from verify_claims import registry as _reg
     R = {k: v[0] for k, v in _reg().items()}
-    assert R["n_rows"] == 819, f"registry n_rows = {R['n_rows']}"
-    assert R["n_rows_raw"] == 852, f"registry n_rows_raw = {R['n_rows_raw']}"
+    assert R["n_rows"] == 823, f"registry n_rows = {R['n_rows']}"
+    assert R["n_rows_raw"] == 856, f"registry n_rows_raw = {R['n_rows_raw']}"
 
 
 def test_independent_check_benchmark_regex_handles_variants():
@@ -2945,8 +2953,8 @@ def test_gpqa_protocol_labels_survive_a_reharvest():
     n_amb = harvest.reconcile_gpqa_main(rows)
 
     counts = pd.Series([r["benchmark"] for r in rows]).value_counts().to_dict()
-    expected = {"gpqa_main": 15, "gpqa_main_norm": 8, "gpqa_diamond": 6,
-                "gpqa_main_cot_5shot": 2, "gpqa_diamond_cot_5shot": 1,
+    expected = {"gpqa_main": 15, "gpqa_main_norm": 8, "gpqa_diamond": 8,
+                "gpqa_main_cot_5shot": 2, "gpqa_diamond_cot_5shot": 3,
                 "gpqa_ambiguous_46": 2}
     for label, want_n in expected.items():
         assert counts.get(label, 0) == want_n, (

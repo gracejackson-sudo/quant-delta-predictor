@@ -247,14 +247,14 @@
     "aggregate_row_ignored": 144,
     "recovery_mismatch": 18,
     "benchmark_not_whitelisted": 83,
-    "duplicate_benchmark_discarded": 10,
+    "duplicate_benchmark_discarded": 6,
     "unrecognized_family": 2
   },
   "stage4": {
-    "dataset_rows": 852,
+    "dataset_rows": 856,
     "dropped_low_acc": 33,
     "unverified_kept": 53,
-    "modelling_rows": 819
+    "modelling_rows": 823
   },
   "stage5_prospective_fates": {
     "KEPT": 24,
