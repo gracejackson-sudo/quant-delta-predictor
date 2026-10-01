@@ -101,3 +101,38 @@ current state.
 The real fix is to generate `FINDINGS.md`'s data tables from `out/` the way `RANKING.md` is
 generated. The inputs exist (`holdout_demo.json`, `diagnostics.json`, `final_*.csv`). Estimated
 1-2 hours. Until then, treat every figure in `FINDINGS.md` as manual-checked-only.
+
+## Known gap: one gate can fail for reasons that are not defects
+
+`paper/audit_paper.py` section 2 checks every `\cite` key against arXiv's
+export API, comparing the bib entry's author surnames and title to arXiv's own
+record. That check exists for a good reason: an arXiv id that resolves says
+nothing about who wrote the paper, and a wrong author list in a bibliography is
+the kind of error a reviewer notices and an automated check should not miss.
+
+It is also the only gate step that depends on a third party being reachable and
+willing. Running the audit repeatedly — which a submission build does, once per
+paper variant — earns an `HTTP Error 429: Too Many Requests` from arXiv, and
+the step then reports a warning. Because
+`tests/test_all.py::test_both_paper_variants_pass_audit_paper_cleanly` requires
+zero warnings, a rate-limited network turns a green gate red without any
+change to the paper or the code.
+
+**Observed 2026-09-30:** both variants reported
+`could not compare bib authors against arXiv: HTTP Error 429`, reproducibly,
+and the failure persisted across a 90-second pause. Verified pre-existing by
+stashing the working changes and reproducing it at `HEAD`.
+
+**Deliberately not fixed during the methodological round.** The two obvious
+remedies are both decisions rather than repairs: caching the arXiv responses
+means the check can pass against a stale snapshot, and downgrading the step so
+a network failure is not a warning means the check can silently stop running.
+Either is defensible and neither should be chosen under deadline pressure.
+
+**What to do in the meantime.** Treat a 429 as a non-finding. The relevant
+distinction is between "the author comparison disagreed", which is a real
+failure and reports the mismatched surnames, and "the author comparison could
+not run", which is this. A submission build should not be blocked by the
+second, and the rest of the gate — claim verification, traceability, the doc
+check, both verifiers, and the other three sections of the paper audit — is
+unaffected and still runs.

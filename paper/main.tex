@@ -30,8 +30,9 @@ not test predictors that use checkpoint-derived features such as weight
 statistics or activation-outlier metrics.
 Second, a positive one: conditioning only on the quantization scheme yields
 per-scheme conformal-style intervals with \(\ProspCov\%\) two-sided empirical
-coverage (\(\ProspInside/\ProspN\), 95\% CI \([\ProspCILo,\ProspCIHi]\)) on
-unseen checkpoints. Under the family definition of \S\ref{sec:data} the
+coverage (\(\ProspInside/\ProspN\) rows from \ProspClusN{} unseen quantized
+checkpoints, 95\% cluster-robust CI \([\ProspCrLo,\ProspCrHi]\), clustered on
+the checkpoint because rows from one quantization run are not independent). Under the family definition of \S\ref{sec:data} the
 strict set splits into \ProspInFamCkpts{} in-family checkpoints
 (DeepSeek-R1-Distill of Llama or Qwen bases) at \ProspInFamCov\% and
 \ProspOutFamCkpts{} out-of-family at \ProspOutFamCov\%; the
@@ -412,8 +413,41 @@ family (Llama-3.* as one family under Definition B, and Qwen-3), or
 any card whose format informed a parser fix (Llama-4). The two grounds
 are separate; only Llama-4 is excluded for the parser reason. Under
 this protocol two-sided coverage
-is \(\ProspInside/\ProspN = \ProspCov\%\), 95\% Clopper--Pearson CI
-\([\ProspCILo, \ProspCIHi]\), against a nominal 90\% two-sided level.
+is \(\ProspInside/\ProspN = \ProspCov\%\) against a nominal 90\% two-sided
+level, with a 95\% cluster-robust CI of \([\ProspCrLo, \ProspCrHi]\).
+
+\paragraph{Why the interval is clustered, and why it is narrower.} The
+\ProspN{} rows come from \ProspClusN{} quantization runs, up to
+\ProspRowsPerCkptMax{} from one, so the row is not the unit of independent
+evidence and the headline interval is the cluster-robust (sandwich) one for a
+ratio estimator under cluster sampling. That interval is \emph{narrower} than
+the row-level exact Clopper--Pearson interval it replaces
+(\([\ProspCILo, \ProspCIHi]\)), which is the opposite of what clustering
+usually does, so the reason belongs here rather than in a later section.
+Clustering does not inflate this statistic because the coverage
+\emph{indicator} is not clustered by checkpoint: the intraclass correlation is
+\ProspIcc{} and the design effect is \ProspDeff{}, so the cluster-robust
+standard error (\ProspCrSe{}pp) is \emph{smaller} than the naive binomial one
+(\ProspNaiveSe{}pp), a ratio of \ProspSeRatio{}. The mechanism is visible in
+the miss distribution: of \ProspTotalMisses{} misses,
+\ProspWorstCkptMisses{} fall on the worst single checkpoint but
+\ProspWorstBenchMisses{} fall on the worst single benchmark (GSM8K), and
+\ProspCkptsWithMiss{} checkpoints carry a miss against
+\ProspCkptsClean{} that are clean. A checkpoint's rows span easy and hard
+benchmarks, so a run is a heterogeneous bundle rather than a correlated one,
+and misses track benchmark difficulty rather than which model was quantized.
+The deltas within a run certainly are correlated; the binary inside-or-outside
+indicator is not, because the interval is wide relative to within-run spread.
+
+To be explicit that the narrowing is not a choice of the most flattering
+interval, it decomposes into two independent steps, both analytic:
+Clopper--Pearson (\ProspWidthCp{}pp wide) to a naive Wald interval on the same
+rows (\ProspWidthWald{}pp) accounts for \ProspNarrowEst{}pp and reflects only
+that Clopper--Pearson is exact and therefore conservative; the change of unit
+from row to checkpoint accounts for the remaining \ProspNarrowUnit{}pp
+(\ProspWidthCr{}pp). Both the row-level and checkpoint-level figures are
+computed and reported, so a reader preferring the conservative row-level
+interval can use it.
 Note the layering: this filter runs by name-pattern regex and does not
 implement the mechanistic family definition of \S\ref{sec:data}. Under
 that definition, \ProspInFamCkpts{} of the \ProspClusN{} strict
@@ -501,8 +535,13 @@ Under Definition B it is folded into 92.2\% on the merged Llama-3 mean;
 we report the breakdown here so the merge does not hide it.
 
 \paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
-not \ProspN{} independent observations: a bootstrap that resamples checkpoints gives a 95\% interval of
-\([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level one. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4
+not \ProspN{} independent observations, which is why the headline interval is
+clustered on the checkpoint. A bootstrap that resamples whole checkpoints
+agrees with the sandwich estimator at \([\ProspClusLo, \ProspClusHi]\)\%.
+Neither is wider than the row-level interval, and the reason is measured
+rather than assumed: the coverage indicator has an intraclass correlation of
+\ProspIcc{} across checkpoints, so there is no within-run dependence left for
+a clustered interval to absorb. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4
 have no prospective rows, so the figure says nothing about them.
 
 \begin{center}
@@ -666,9 +705,16 @@ the working-stack question, let alone the answer, is directly
 consistent with the sparsity of documentation reported in \S\ref{sec:data}.
 
 \paragraph{Rows are not independent.} Up to \MaxBenchmarksPerRun{} benchmark rows come from a
-single quantization run. We mitigate with group-conditional calibration and the
-support floor, and note that a bootstrap over the \ProspClusN{} quantized checkpoints gives \([\ProspClusLo, \ProspClusHi]\)\%, close to the row-level interval,
-but the unit of analysis remains a row. The leave-family-out coverage measurement has the
+single quantization run. We mitigate with group-conditional calibration, the
+support floor, and a headline interval clustered on the checkpoint rather than
+the row (\S\ref{sec:results}). That clustered interval does not come out
+wider, and we report why rather than leaving it as a coincidence: the coverage
+indicator's intraclass correlation across checkpoints is \ProspIcc{}, because
+misses track benchmark difficulty (\ProspWorstBenchMisses{} of
+\ProspTotalMisses{} on one benchmark) rather than which run produced the row
+(\ProspWorstCkptMisses{} on the worst run). The dependence we were worried
+about is real for the deltas and absent for the indicator, and that is a
+property of this corpus rather than a general result. The leave-family-out coverage measurement has the
 same dependence: each row is scored once under each of \PairsPerRow{} calibration families, so
 the \PooledPairs{} evaluations are not independent, and every coverage judgment in this paper
 resamples whole checkpoints rather than counting evaluations.
