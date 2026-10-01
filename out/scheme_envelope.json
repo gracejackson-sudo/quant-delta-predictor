@@ -56,9 +56,9 @@
   },
   "known_limitations": [
     "No interval excludes zero, so the tool can never say a config WILL cost accuracy -- only that damage is probably bounded.",
-    "20 of 27 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
+    "15 of 27 observed losses worse than 3pp fall BELOW the interval floor. Large degradations are exactly where it fails.",
     "Trained only on checkpoints Red Hat chose to publish, so it underpredicts damage from an untuned recipe (outcome-truncated training data).",
-    "Reads exactly 2 inputs: quantization scheme, and size band via 6 size-dependent widths. It reads no family, benchmark or base accuracy.",
+    "Reads exactly 2 inputs: quantization scheme, and size band via 4 size-dependent widths. It reads no family, benchmark or base accuracy.",
     "Coverage verdicts (rank.classify_cell): 0 size cells refused (none); 6 size cells and 1 schemes (w8a16) have insufficient evidence (fewer than 3 checkpoints or a checkpoint-bootstrap interval straddling 85%): fp8|<2B, nvfp4|2-10B, w4a16|<2B, w8a16|<2B, w8a16|>10B, w8a8_int|<2B. An interval is still shown for an insufficient-evidence cell but flagged; only a refused cell has its interval withheld.",
     "MoE and reasoning-distilled models are not separately validated."
   ],

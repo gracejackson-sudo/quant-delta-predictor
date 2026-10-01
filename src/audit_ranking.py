@@ -21,7 +21,8 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 from model import load  # noqa: E402
-from strata import ConservativeStratified, annotate  # noqa: E402
+from strata import (ConservativeStratified, annotate,  # noqa: E402
+                    calibrated_fit)
 import rank as R  # noqa: E402
 
 HERE = os.path.dirname(__file__)
@@ -65,7 +66,7 @@ def r1_scope(d, table):
     print("R1 -- LEAKAGE AND SCOPE CREEP")
     print("=" * 74)
 
-    m = ConservativeStratified().fit(d)
+    m = calibrated_fit(d)
     widen = [(k, c) for k, c in m.by_stratum.items()
              if c["half_width"] > m.by_scheme[k[0]]["half_width"]]
     total = 2 * len(m.by_scheme) + len(widen)
@@ -130,7 +131,7 @@ def r2_sample_size(d, table):
          f"{knife}")
 
     print("\n[R2.2] how small do the STRATIFIED cells get?")
-    m = ConservativeStratified().fit(d)
+    m = calibrated_fit(d)
     print("   rejected as too thin (fall back to scheme level):")
     for (s, b), c in sorted(m.rejected.items()):
         print(f"      {s:<12}{b:<7} n={c['n']:<4} checkpoints={c['n_checkpoints']}")

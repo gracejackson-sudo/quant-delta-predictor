@@ -2,11 +2,37 @@
 """
 FULLY INDEPENDENT re-implementation of the scheme ranking.
 
-Shares nothing with src/rank.py or src/strata.py:
+Shares no CODE with src/rank.py or src/strata.py:
   * no project imports, no numpy/pandas/scipy -- standard library only
   * reads data/dataset.csv directly and recomputes every displayed number
   * re-derives the flag rules from RANKING.md's stated definitions rather than
     from the code
+
+ONE DECLARED INPUT, and the independence it costs. Since 2026-10-01 the
+shipped band is split conformal on a fixed partition of the checkpoints into
+a fit side (centres) and a disjoint calibration side (widths). That partition
+is drawn with numpy's default_rng, which the standard library cannot
+reproduce, so this file READS the membership from
+out/calibration_partition.json instead of deriving it.
+
+What that means precisely:
+  * DECLARED INPUT -- which 13 of the 38 checkpoints are the calibration set.
+    A list of names. If the pipeline published the wrong list, this file
+    cannot tell.
+  * STILL DERIVED HERE -- everything that list is used for: assigning each row
+    to the fit or calibration side, the per-scheme and per-cell centres from
+    the fit side, the conformal index ceil((n+1)(1-alpha)) and the quantile
+    from the calibration residuals, the widen-only stratification rule, the
+    support gates, the flags, the tiers and the rank order. Every published
+    number is still recomputed from the raw CSV by code that shares nothing
+    with the pipeline.
+
+So the check no longer covers "is this the partition they say it is", and
+still covers "given that partition, is every number they print correct". The
+partition is an arbitrary fixed design choice rather than a finding, and a
+13-name list is directly auditable by eye in a way a reimplemented RNG is
+not. The alternative -- having this file draw its own partition -- would have
+made every width legitimately different and the comparison vacuous.
 
 Then diffs its rank order and every number against `src/rank.py --json`.
 
@@ -419,7 +445,28 @@ def main():
     print("=" * 74)
     print(f"  rows: {len(rows)}   python {sys.version.split()[0]}")
 
-    bs, st = build_model(rows)
+    # Split conformal on the declared partition (see the module docstring for
+    # what is read versus derived). Centres from the fit side, widths from
+    # calibration residuals -- computed by this file's own build_model() and
+    # calibrate(), not imported.
+    part = json.load(open(os.path.join(
+        ROOT, "out", "calibration_partition.json")))
+    cal_ck = set(part["calibration_checkpoints"])
+    fit_rows = [r for r in rows if r["base_model"] not in cal_ck]
+    cal_rows = [r for r in rows if r["base_model"] in cal_ck]
+    bs, st = build_model(fit_rows)
+    bs, st = calibrate(bs, st, cal_rows)
+    # Support and descriptive fields describe the published evidence, not the
+    # partition, so they come from the whole corpus. The pipeline separates
+    # the same way (strata._DESCRIPTIVE); getting this wrong is what made the
+    # tool report 143 evaluations for a scheme that has 200.
+    full_bs, full_st = build_model(rows)
+    for k, c in bs.items():
+        if k in full_bs:
+            c.update({f: full_bs[k][f] for f in
+                      ("n", "n_checkpoints", "n_families", "worst", "best",
+                       "severe_rate", "n_severe", "p05", "p95")
+                      if f in full_bs[k]})
     cov = coverage_by_scheme(rows)
 
     mine = {}

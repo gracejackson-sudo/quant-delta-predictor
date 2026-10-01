@@ -14,10 +14,10 @@
     },
     "n_severe_3pp": 0,
     "label": "FP8 (8-bit float, static scales)",
-    "mean": -0.31675,
-    "half_width": 0.7932500000000001,
-    "lo": -1.11,
-    "hi": 0.47650000000000015,
+    "mean": -0.38227272727272726,
+    "half_width": 1.1277272727272727,
+    "lo": -1.51,
+    "hi": 0.7454545454545454,
     "worst_observed": -1.9,
     "p05": -1.1909999999999998,
     "n": 80,
@@ -62,10 +62,7 @@
         "checkpoints": 6
       }
     },
-    "widened_bands": [
-      "2-10B",
-      ">10B"
-    ]
+    "widened_bands": []
   },
   "fp8_dynamic": {
     "scheme": "fp8_dynamic",
@@ -82,10 +79,10 @@
     },
     "n_severe_3pp": 2,
     "label": "FP8-dynamic (8-bit float, dynamic scales)",
-    "mean": -0.04769999999999999,
-    "half_width": 1.3922999999999999,
-    "lo": -1.44,
-    "hi": 1.3445999999999998,
+    "mean": -0.02699300699300699,
+    "half_width": 1.193006993006993,
+    "lo": -1.22,
+    "hi": 1.1660139860139862,
     "worst_observed": -8.72,
     "p05": -1.1324999999999998,
     "n": 200,
@@ -133,7 +130,8 @@
       }
     },
     "widened_bands": [
-      "2-10B"
+      "2-10B",
+      ">10B"
     ]
   },
   "nvfp4": {
@@ -151,10 +149,10 @@
     },
     "n_severe_3pp": 10,
     "label": "NVFP4 (4-bit float weights + activations)",
-    "mean": -1.156764705882353,
-    "half_width": 3.026764705882353,
-    "lo": -4.183529411764706,
-    "hi": 1.87,
+    "mean": -1.23625,
+    "half_width": 6.40625,
+    "lo": -7.6425,
+    "hi": 5.17,
     "worst_observed": -8.12,
     "p05": -4.073,
     "n": 68,
@@ -210,10 +208,10 @@
     },
     "n_severe_3pp": 11,
     "label": "W4A16 (4-bit weights, 16-bit activations)",
-    "mean": -0.7363402061855668,
-    "half_width": 2.136340206185567,
-    "lo": -2.8726804123711336,
-    "hi": 1.4000000000000001,
+    "mean": -0.661418439716312,
+    "half_width": 2.558581560283688,
+    "lo": -3.22,
+    "hi": 1.897163120567376,
     "worst_observed": -8.86,
     "p05": -3.058,
     "n": 194,
@@ -280,10 +278,10 @@
     },
     "n_severe_3pp": 1,
     "label": "W8A16 (8-bit int weights, 16-bit activations)",
-    "mean": -0.08406976744186045,
-    "half_width": 0.8959302325581395,
-    "lo": -0.98,
-    "hi": 0.8118604651162791,
+    "mean": -0.2297777777777778,
+    "half_width": 0.7597777777777779,
+    "lo": -0.9895555555555557,
+    "hi": 0.53,
     "worst_observed": -3.04,
     "p05": -1.01,
     "n": 86,
@@ -330,7 +328,7 @@
       }
     },
     "widened_bands": [
-      ">10B"
+      "2-10B"
     ]
   },
   "w8a8_int": {
@@ -348,10 +346,10 @@
     },
     "n_severe_3pp": 3,
     "label": "W8A8-INT (8-bit int weights + activations)",
-    "mean": -0.3393333333333333,
-    "half_width": 1.4693333333333332,
-    "lo": -1.8086666666666664,
-    "hi": 1.13,
+    "mean": -0.33885714285714286,
+    "half_width": 1.318857142857143,
+    "lo": -1.657714285714286,
+    "hi": 0.9800000000000001,
     "worst_observed": -4.04,
     "p05": -1.7879999999999996,
     "n": 195,
@@ -398,18 +396,16 @@
         "checkpoints": 8
       }
     },
-    "widened_bands": [
-      ">10B"
-    ]
+    "widened_bands": []
   },
   "_meta": {
     "n_schemes": 6,
     "intervals_excluding_zero": 0,
     "n_big_losses": 27,
-    "n_big_losses_below_floor": 20,
-    "pct_big_losses_below_floor": 74.07407407407408,
-    "n_numbers_in_predictor": 18,
-    "n_size_dependent_widths": 6,
+    "n_big_losses_below_floor": 15,
+    "pct_big_losses_below_floor": 55.55555555555556,
+    "n_numbers_in_predictor": 16,
+    "n_size_dependent_widths": 4,
     "n_rows": 823,
     "n_checkpoints": 38,
     "n_families": 6,

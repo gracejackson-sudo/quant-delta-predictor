@@ -104,7 +104,13 @@ Our contributions:
     and a per-cell verdict for each (scheme, size-band) cell: \emph{trusted},
     or \emph{insufficient evidence}, where the interval is still shown but the
     scheme is demoted and the cell flagged as one the tool cannot judge.
-    \NCellsInsuff{} of \NCellsTotal{} cells are insufficient evidence. A
+    \NCellsInsuff{} of \NCellsTotal{} cells are insufficient evidence. The
+    interval is split conformal, with the centre and the width estimated on
+    disjoint sets of checkpoints; an earlier version of this artifact computed
+    both on the same rows, and \S\ref{sec:results} records what that cost.
+    Size enters only through a widen-only rule whose membership does not
+    survive calibration, so we report it and do not claim the size band as a
+    risk signal. A
     third verdict that withholds the interval outright is implemented and does
     not fire on this corpus; \S\ref{sec:audit} records that as a decision
     rather than an omission.
@@ -594,6 +600,95 @@ SmolLM/SmolLM3 and Nemotron-Nano contribute \ProspOutSmallRows{} rows at
 out-of-family aggregate up by \ProspOutSmallPullup{}pp above Gemma-3
 alone. The classification is enumerated for these \ProspClusN{}
 checkpoints, not a general algorithm (\S\ref{sec:audit}).
+
+\paragraph{The band is split conformal, and until this version it was not.}
+The interval this paper calls calibrated was, in the shipped tool, centred and
+widened on the same rows: the half-width was the conformal quantile of
+\(|\delta - \bar{\delta}|\) over the very rows \(\bar{\delta}\) was computed
+from. That is the split-conformal formula evaluated in-sample, which is a
+description of spread presented with the arithmetic of a guarantee. It is now
+genuine split conformal --- the \Nckpt{} checkpoints are partitioned once, by a
+fixed seed, into a fit side that supplies the centre and a disjoint
+calibration side that supplies the width, and the partition is over
+checkpoints rather than rows because rows from one quantization run share a
+model, a recipe and one harness invocation.
+
+The clearest evidence that the old path was wrong is NVFP4. Its published
+interval moves from \([\LoNvfpOld, \HiNvfpOld]\) to
+\([\LoNvfp, \HiNvfp]\)pp, a factor of \NvfpWidenX{} wider. The in-sample band
+was understating that scheme's spread by about half --- on the scheme with the
+highest severe-loss rate in the corpus (\SevNvfp\% of evaluations losing more
+than \(3\)pp) and the one the tool already warns about hardest. A reader who
+wants one number for whether in-sample calibration mattered should take that
+one, not the pooled coverage figure.
+
+Calibration corrects in both directions and is not a blanket widening. Three
+schemes get narrower. Across the corpus the pooled half-width grows from
+\InsampleHw{}pp to \CalibHw{}pp, and the number of \(>3\)pp losses falling
+below the interval floor drops from \BigLossBelowOld{} to
+\BigLossBelow{} of \BigLosses{}: the honest band catches five severe outcomes
+the optimistic one missed, which is the whole point of the exercise.
+
+Measured under leave-one-checkpoint-out over all \Nckpt{} checkpoints, so that
+every row is scored by a band that never saw its own checkpoint, two-sided
+coverage is \CalibCov\% against a nominal \(90\%\). Repeating the partition
+over twenty seeds gives a median of \CalibCovMedian\% and a range of
+\CalibCovMin{}--\CalibCovMax\%; every one of the twenty clears the threshold
+fixed in advance. The pre-registered partition is not the most flattering of
+them.
+Two consequences of that partition are worth stating because a reader will
+otherwise find them and think we did not. First, the centre and the width come
+from \emph{disjoint} sets of checkpoints, which is what makes the width a
+conformal quantile rather than a description of the rows it was fitted on. The
+centre therefore rests on the fit side only --- \CalibFitCkpt{} of the
+\Nckpt{} checkpoints --- and a reader who compares the shipped centre against
+the scheme mean over the whole corpus will find they differ, by up to
+\CentreMoveMax{}pp. That is the cost of the guarantee, not a discrepancy.
+Second, only the centre and the width are partitioned. Every support and
+descriptive figure the tool prints --- how many evaluations exist, how many
+checkpoints and families they span, the worst observed loss, the observed
+percentiles --- is computed on all \Nrows{} rows, because those describe the
+published evidence and not the construction.
+
+\paragraph{What the widths actually rest on, which is less than the coverage
+suggests.} We fixed in advance that a finite \(90\%\) conformal quantile needs
+nine calibration units, and that the unit is the checkpoint. After the
+partition, not one scheme meets that: the per-scheme widths rest on between
+two and eight independent checkpoints, and NVFP4's rests on \textbf{two}. The
+quantile index itself counts calibration rows, of which every scheme has
+enough, so the widths exist and the coverage above is measured rather than
+assumed. But the quantity that determines how much a conformal guarantee is
+worth is the number of exchangeable units behind it, and ours is below the
+floor we set ourselves before looking.
+
+This also explains the over-coverage. On a calibration set of \(n\) rows the
+\(90\%\) index \(\lceil (n+1)\cdot 0.9 \rceil\) falls within a few ranks of
+the largest residual --- second-largest on NVFP4's calibration set, fifth on
+the largest schemes --- so the width is effectively a near-maximum and the
+interval overshoots its nominal level. That is a correct conformal quantile at
+this sample size, and it is a statement about the corpus rather than about the
+construction. A reviewer should read the coverage figure as real and the
+guarantee behind it as thinner than a 90\% label normally implies.
+
+\paragraph{Size stratification does not survive calibration.} The envelope is
+conditioned on scheme alone; size enters only through a widen-only rule, where
+a (scheme, size-band) cell may raise the scheme's half-width and never lower
+it. The narrowing half was discarded earlier because it did not survive
+contact with unseen checkpoints. The widening half does not survive honest
+calibration either.
+
+Under the in-sample band, \SizeWidthsOld{} of \NCellsTotal{} cells actually
+raised their scheme's width. Under the calibrated band, \SizeWidths{} do --- and
+only two cells are the same in both. Two of the old widenings disappear, two
+new ones appear, and for W8A16 the two size bands exchange places: the
+in-sample band flags \(>\)10B as the wider-spread case, the calibrated band
+flags 2--10B instead. Membership and direction both move. We therefore report
+the per-cell verdicts, which are measured per cell and unaffected by this, and
+we do not claim that the size band identifies which models within a scheme
+carry more risk. Where a cell has no calibrated size-specific width the tool
+prints the scheme interval and says which of two reasons applies: the cell is
+below the support floor, or it has the rows but not enough held-out evidence
+to justify a separate width.
 
 \paragraph{Independent verification --- what and when.} The strict protocol
 above is implemented in \texttt{verify/independent\_check.py}, a from-scratch
@@ -1099,6 +1194,54 @@ behaviour we wanted, is the same move a second time. The honest position is
 that the state exists, that this corpus does not contain evidence thin enough
 in the right way to trigger it, and that wanting it to trigger is a reason for
 suspicion of any change that would make it.
+
+\paragraph{A pre-registration that was wrong, and how it was wrong.}
+Before running the calibration comparison we fixed a protocol in writing,
+including what to do about NVFP4, which has \CalibUnitsMin{} calibration
+checkpoints and therefore cannot support a per-scheme conformal quantile at
+the checkpoint unit under any construction. We decided in advance that NVFP4
+would back off to the pooled quantile. We decided wrong, and the mechanism is
+worth recording because it is not obvious in advance and is obvious
+afterwards.
+
+Pooling takes the quantile over all schemes' residuals together. NVFP4 is by
+far the widest-spread scheme in the corpus, and the other five are much
+tighter, so the pooled quantile sits well below what NVFP4 needs: under
+jackknife+ the backoff gave NVFP4 a half-width \emph{narrower} than its own
+in-sample width, and its coverage fell to \JackknifeNvfpCov\% against a
+nominal \(90\%\) --- the worst per-scheme figure anywhere in this work, and
+below the threshold we had pre-registered as a scheme-level failure. A backoff
+intended to be conservative was anti-conservative for the one scheme it was
+written for, because ``back off to the larger reference class'' and ``back off
+to a wider interval'' are not the same instruction, and we conflated them.
+
+We did not change the protocol after seeing this. The pre-registered primary
+construction, split conformal, does not have the defect --- NVFP4 keeps a
+per-scheme width there and over-covers --- so the shipped band is unaffected,
+and jackknife+ is reported as the secondary it was registered as. What we are
+recording is that the reasoning in the pre-registration was faulty on a point
+we had singled out as the one most at risk of being decided post-hoc. Deciding
+it in advance was right; the decision itself was wrong. The next version of
+this protocol should make a thin scheme's backoff the \emph{maximum} of the
+pooled and its own in-sample width, not the pooled alone.
+
+\paragraph{A pre-registration that contradicted itself.} The same
+document that got the NVFP4 backoff wrong was also internally inconsistent on
+a second point, and in a way that mattered. Its construction section specified
+centres from the fit partition and widths from a disjoint calibration
+partition, which is split conformal. Its ``what is held fixed'' section said
+the centre was the cell mean, unchanged. Those cannot both hold: estimating
+the centre on all rows means the calibration residuals are taken about a
+centre that has seen them, which is precisely the in-sample defect the item
+existed to remove. We resolved it in favour of the construction section,
+because it is the only reading under which the result is a split-conformal
+interval at all, and the consequence --- centres now resting on
+\CalibFitCkpt{} of \Nckpt{} checkpoints --- is reported in
+\S\ref{sec:results} rather than left for a reader to discover. The honest
+summary is that pre-registering a protocol stopped us choosing a construction
+after seeing results, and did not stop us writing two incompatible sentences
+about it; the fix is that a pre-registration needs the same internal-agreement
+check we apply to the paper.
 
 \paragraph{An overclaimed guarantee.} The artifact was described as carrying a
 coverage guarantee without qualification. Checking the method against the

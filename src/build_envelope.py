@@ -215,6 +215,24 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     art = build_artifact()
     schemes = art["schemes"]
+    # The shipped band is split conformal on a fixed checkpoint partition.
+    # The partition is published here as a plain list because
+    # verify/independent_rank.py is standard-library only and cannot
+    # reproduce numpy's default_rng. It takes this list as a declared input
+    # and recomputes every width from it; see that file's docstring for
+    # exactly what that costs in independence. A 13-name list is more
+    # auditable than a reimplemented RNG, and the partition is an arbitrary
+    # fixed design choice rather than a finding.
+    from strata import (checkpoint_partition, annotate as _ann,
+                        CAL_SEED, CAL_FRACTION)
+    _cal, _fit = checkpoint_partition(_ann(load(DATA)))
+    with open(os.path.join(OUT, "calibration_partition.json"), "w") as f:
+        json.dump({"seed": CAL_SEED, "fraction": CAL_FRACTION,
+                   "unit": "checkpoint (base_model)",
+                   "n_calibration": len(_cal), "n_fit": len(_fit),
+                   "calibration_checkpoints": sorted(_cal),
+                   "fit_checkpoints": sorted(_fit)}, f, indent=2)
+
     path = os.path.join(OUT, "scheme_envelope.json")
     with open(path, "w") as f:
         json.dump(art, f, indent=2)

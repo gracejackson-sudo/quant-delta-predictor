@@ -48,12 +48,12 @@ Input a quantization scheme, optionally a model size band. Output a 90% interval
 
 | scheme | 90% interval (pp) | worst observed | % losing >3pp | evals | tier |
 |---|---|---|---|---|---|
-| fp8_dynamic | [-1.44<!-- claim: lo::fp8_dynamic = -1.4400 -->, +1.34<!-- claim: hi::fp8_dynamic = 1.3446 -->] | -8.72<!-- claim: worst::fp8_dynamic = -8.7200 -->pp | 1.0<!-- claim: severe_pct::fp8_dynamic = 1.0000 -->% | 200<!-- claim: n::fp8_dynamic = 200.0000 --> | **A** |
-| w8a8_int | [-1.81<!-- claim: lo::w8a8_int = -1.8087 -->, +1.13<!-- claim: hi::w8a8_int = 1.1300 -->] | -4.04<!-- claim: worst::w8a8_int = -4.0400 -->pp | 1.5<!-- claim: severe_pct::w8a8_int = 1.5385 -->% | 195<!-- claim: n::w8a8_int = 195.0000 --> | **A** |
-| fp8 | [-1.11<!-- claim: lo::fp8 = -1.1100 -->, +0.48<!-- claim: hi::fp8 = 0.4765 -->] | -1.90<!-- claim: worst::fp8 = -1.9000 -->pp | 0.0<!-- claim: severe_pct::fp8 = 0.0000 -->% | 80<!-- claim: n::fp8 = 80.0000 --> | **B** |
-| w8a16 | [-0.98<!-- claim: lo::w8a16 = -0.9800 -->, +0.81<!-- claim: hi::w8a16 = 0.8119 -->] | -3.04<!-- claim: worst::w8a16 = -3.0400 -->pp | 1.2<!-- claim: severe_pct::w8a16 = 1.1628 -->% | 86<!-- claim: n::w8a16 = 86.0000 --> | **C** |
-| w4a16 | [-2.87<!-- claim: lo::w4a16 = -2.8727 -->, +1.40<!-- claim: hi::w4a16 = 1.4000 -->] | -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp | 5.7<!-- claim: severe_pct::w4a16 = 5.6701 -->% | 194<!-- claim: n::w4a16 = 194.0000 --> | **C** |
-| nvfp4 | [-4.18<!-- claim: lo::nvfp4 = -4.1835 -->, +1.87<!-- claim: hi::nvfp4 = 1.8700 -->] | -8.12<!-- claim: worst::nvfp4 = -8.1200 -->pp | 14.7<!-- claim: severe_pct::nvfp4 = 14.7059 -->% | 68<!-- claim: n::nvfp4 = 68.0000 --> | **C** |
+| fp8_dynamic | [-1.22<!-- claim: lo::fp8_dynamic = -1.2200 -->, +1.17<!-- claim: hi::fp8_dynamic = 1.1660 -->] | -8.72<!-- claim: worst::fp8_dynamic = -8.7200 -->pp | 1.0<!-- claim: severe_pct::fp8_dynamic = 1.0000 -->% | 200<!-- claim: n::fp8_dynamic = 200.0000 --> | **A** |
+| w8a8_int | [-1.66<!-- claim: lo::w8a8_int = -1.6577 -->, +0.98<!-- claim: hi::w8a8_int = 0.9800 -->] | -4.04<!-- claim: worst::w8a8_int = -4.0400 -->pp | 1.5<!-- claim: severe_pct::w8a8_int = 1.5385 -->% | 195<!-- claim: n::w8a8_int = 195.0000 --> | **A** |
+| fp8 | [-1.51<!-- claim: lo::fp8 = -1.5100 -->, +0.75<!-- claim: hi::fp8 = 0.7455 -->] | -1.90<!-- claim: worst::fp8 = -1.9000 -->pp | 0.0<!-- claim: severe_pct::fp8 = 0.0000 -->% | 80<!-- claim: n::fp8 = 80.0000 --> | **B** |
+| w8a16 | [-0.99<!-- claim: lo::w8a16 = -0.9896 -->, +0.53<!-- claim: hi::w8a16 = 0.5300 -->] | -3.04<!-- claim: worst::w8a16 = -3.0400 -->pp | 1.2<!-- claim: severe_pct::w8a16 = 1.1628 -->% | 86<!-- claim: n::w8a16 = 86.0000 --> | **C** |
+| w4a16 | [-3.22<!-- claim: lo::w4a16 = -3.2200 -->, +1.90<!-- claim: hi::w4a16 = 1.8972 -->] | -8.86<!-- claim: worst::w4a16 = -8.8600 -->pp | 5.7<!-- claim: severe_pct::w4a16 = 5.6701 -->% | 194<!-- claim: n::w4a16 = 194.0000 --> | **C** |
+| nvfp4 | [-7.64<!-- claim: lo::nvfp4 = -7.6425 -->, +5.17<!-- claim: hi::nvfp4 = 5.1700 -->] | -8.12<!-- claim: worst::nvfp4 = -8.1200 -->pp | 14.7<!-- claim: severe_pct::nvfp4 = 14.7059 -->% | 68<!-- claim: n::nvfp4 = 68.0000 --> | **C** |
 
 ## The flagged cells, in full
 
@@ -67,7 +67,7 @@ The two cells that first raised the question, with both figures behind each flag
 ## What it cannot do
 
 - 0<!-- claim: intervals_excluding_zero = 0.0000 --> of 6 intervals exclude zero: it can never say a scheme *will* cost accuracy.
-- 20<!-- claim: n_big_losses_below_floor = 20.0000 --> of 27<!-- claim: n_big_losses = 27.0000 --> observed losses worse than 3pp fell below their interval floor.
+- 15<!-- claim: n_big_losses_below_floor = 15.0000 --> of 27<!-- claim: n_big_losses = 27.0000 --> observed losses worse than 3pp fell below their interval floor.
 - It is built on configs that were published, i.e. that worked. See `BIAS_CORRECTION.md` for exactly how much that inflates the apparent coverage.
 - It reads 2 inputs and nothing else about your model.
 - It predicts an **accuracy** delta and nothing else. Whether a compressed model stays well calibrated -- whether it still knows what it does not know -- is a separate question this tool does not touch. See *What's next* below.

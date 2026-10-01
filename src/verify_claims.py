@@ -23,6 +23,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 from model import load  # noqa: E402
 from strata import (ConservativeStratified, SchemeOnlyBaseline,  # noqa: E402
+                    calibrated_fit,
                     StratifiedBaseline, annotate)
 import rank as R  # noqa: E402
 
@@ -55,7 +56,11 @@ def registry():
     d = annotate(load(DATA))
     t = R.build_table(d)
     meta = t["_meta"]
-    m = ConservativeStratified().fit(d)
+    # Must be the SHIPPED band, not a bare fit: lo::/hi:: and the meta
+    # counts are published figures, and the registry describing a different
+    # interval from the one rank.py prints is exactly the class of defect
+    # this gate exists to catch.
+    m = calibrated_fit(d)
     cc = json.load(open(CELLS))
     reg = {}
 
@@ -73,6 +78,83 @@ def registry():
     add("intervals_excluding_zero", meta["intervals_excluding_zero"], 0,
         "schemes where not (lo <= 0 <= hi)")
     add("n_big_losses", meta["n_big_losses"], 0, "rows with delta < -3pp")
+
+    # ---- Round item 1: the calibrated band, and what the in-sample band gave.
+    # The "insample_" figures are the retracted path, recomputed live rather
+    # than remembered, so S6's retraction cannot drift from what it retracts.
+    import numpy as _np1   # local, matching this module's convention
+    _ins = ConservativeStratified().fit(d)
+    _w = d.groupby("scheme").size()
+    add("insample_hw_pp",
+        float(sum(_w[k] * c["half_width"] for k, c in _ins.by_scheme.items())
+              / _w.sum()), 0.002,
+        "row-weighted mean half-width of the retracted in-sample band")
+    for _s in ("nvfp4",):
+        _c = _ins.by_scheme[_s]
+        add(f"lo_insample::{_s}", _c["mean"] - _c["half_width"], 0.005,
+            f"{_s} interval floor under the retracted in-sample band")
+        add(f"hi_insample::{_s}", _c["mean"] + _c["half_width"], 0.005,
+            f"{_s} interval ceiling under the retracted in-sample band")
+        add(f"widen_x::{_s}",
+            m.by_scheme[_s]["half_width"] / _c["half_width"], 0.01,
+            f"how much calibration widened {_s}, as a factor")
+    _ins_widen = sum(1 for k, c in _ins.by_stratum.items()
+                     if c["half_width"] > _ins.by_scheme[k[0]]["half_width"])
+    add("size_widths_insample", _ins_widen, 0,
+        "cells that raised their scheme's width under the in-sample band")
+    _bl = d[d.delta < -3]
+    _lo_ins = _np1.array([_ins.by_scheme.get(x, _ins.global_)["mean"]
+                         - _ins.by_scheme.get(x, _ins.global_)["half_width"]
+                         for x in _bl.scheme])
+    add("big_losses_below_floor_insample",
+        int((_bl.delta.to_numpy(float) < _lo_ins).sum()), 0,
+        "rows past -3pp that fell below the in-sample interval floor")
+
+    _cb = os.path.join(HERE, "..", "out", "calibrated_bands.json")
+    if os.path.exists(_cb):
+        _j = json.load(open(_cb))
+        add("calib_cov_pct", _j["split_conformal"]["coverage_pct"], 0.05,
+            "leave-one-checkpoint-out two-sided coverage of the calibrated "
+            "band, pre-registered partition")
+        add("calib_hw_pp", _j["split_conformal"]["mean_half_width_pp"], 0.002,
+            "mean half-width of the calibrated band")
+        add("jackknife_cov_pct", _j["jackknife_plus"]["coverage_pct"], 0.05,
+            "same measurement for jackknife+ (guarantee 1-2*alpha = 80%)")
+        add("jackknife_nvfp_cov_pct",
+            _j["jackknife_plus"]["per_scheme"]["nvfp4"]["coverage_pct"], 0.05,
+            "jackknife+ coverage on nvfp4 under the pre-registered pooled "
+            "backoff")
+        if _j.get("partition_sensitivity"):
+            _c = sorted(x["coverage_pct"] for x in _j["partition_sensitivity"])
+            add("calib_cov_min_pct", _c[0], 0.05, "lowest of 20 partitions")
+            add("calib_cov_max_pct", _c[-1], 0.05, "highest of 20 partitions")
+            add("calib_cov_median_pct",
+                float(_np1.median(_c)), 0.05, "median of 20 partitions")
+            add("calib_partitions", len(_c), 0, "partitions in the sensitivity")
+        _sup = _j.get("calibration_support", {})
+        _p = _j.get("partition", {})
+        if _p:
+            add("calib_fit_ckpt", len(_p.get("fit_checkpoints", [])), 0,
+                "checkpoints the shipped centre is estimated on")
+            add("calib_cal_ckpt", len(_p.get("calibration_checkpoints", [])),
+                0, "checkpoints the shipped width is estimated on")
+            _full = ConservativeStratified().fit(d)
+            add("centre_move_max_pp",
+                max(abs(m.by_scheme[k]["mean"] - _full.by_scheme[k]["mean"])
+                    for k in m.by_scheme), 0.002,
+                "largest gap between a shipped centre (fit partition) and the "
+                "same scheme's mean over the whole corpus")
+        if _sup:
+            add("calib_units_min",
+                min(v["checkpoints"] for v in _sup.values()), 0,
+                "fewest independent calibration checkpoints behind any "
+                "per-scheme width")
+            add("calib_units_max",
+                max(v["checkpoints"] for v in _sup.values()), 0,
+                "most independent calibration checkpoints behind any "
+                "per-scheme width")
+            add("calib_units_floor", 9, 0,
+                "calibration units a finite 90% conformal quantile needs")
     add("n_big_losses_below_floor", meta["n_big_losses_below_floor"], 0,
         "of those, delta below their scheme's interval floor")
     add("pooled_cell_coverage_pct", cc["pooled"]["coverage"] * 100, 0.05,
@@ -337,7 +419,12 @@ def registry():
                 f"mean near-lossless delta at {b}")
 
     # thin-cell support quoted in Part 1
-    for (s, b), c in list(m.rejected.items()) + list(m.by_stratum.items()):
+    # All 17 cells, whichever of the three buckets they land in: below the
+    # support floor, supported but not calibratable, or carrying a calibrated
+    # size-specific width. The support counts are full-corpus for all three,
+    # so dropping a cell out of by_stratum must not drop its claim.
+    for (s, b), c in (list(m.rejected.items()) + list(m.by_stratum.items())
+                      + list(getattr(m, "uncalibratable", {}).items())):
         add(f"cell_train_rows::{s}|{b}", c["n"], 0, f"training rows {s}|{b}")
         add(f"cell_train_ckpt::{s}|{b}", c["n_checkpoints"], 0,
             f"training checkpoints {s}|{b}")

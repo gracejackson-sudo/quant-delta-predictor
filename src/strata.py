@@ -58,6 +58,85 @@ def annotate(d: pd.DataFrame) -> pd.DataFrame:
     return d
 
 
+# The shipped band is split conformal: centres from a fit partition, widths
+# from the conformal quantile of residuals on a disjoint calibration
+# partition. The partition is over CHECKPOINTS, not rows, because rows within
+# one checkpoint share a model, a recipe and one harness invocation, so they
+# are not exchangeable with each other. One partition, one seed, no
+# reshuffling -- see CALIBRATION_PREREGISTRATION.md. Defined here rather than
+# in the research module so the shipped tool and the evaluation use the same
+# function and cannot drift apart.
+CAL_SEED = 0
+CAL_FRACTION = 1.0 / 3.0
+
+
+def checkpoint_partition(d, seed=CAL_SEED, fraction=CAL_FRACTION):
+    """-> (calibration checkpoints, fit checkpoints). Deterministic."""
+    ckpts = sorted(d.base_model.unique())
+    rng = np.random.default_rng(seed)
+    n_cal = int(round(len(ckpts) * fraction))
+    cal = set(rng.choice(ckpts, size=n_cal, replace=False).tolist())
+    return cal, [c for c in ckpts if c not in cal]
+
+
+# Two kinds of field live in a cell record and they must come from different
+# data. The CENTRE and the HALF-WIDTH carry the guarantee: the centre has to
+# be estimated without seeing the calibration rows, and the width has to come
+# from residuals on them. Everything else -- how many evaluations exist, how
+# many checkpoints and families they span, the worst and best observed, the
+# observed percentiles -- is a DESCRIPTION OF THE PUBLISHED EVIDENCE and must
+# be computed on the whole corpus. Taking those from the fit partition makes
+# the tool understate its own evidence base: on the first build of this change
+# it reported "143 evals" for fp8_dynamic, which has 200, and tripped its own
+# thin-data warning on the shortfall.
+_DESCRIPTIVE = ("n", "n_checkpoints", "n_families", "worst", "best",
+                "p05", "p95")
+
+
+def calibrated_fit(d, cls=None):
+    """The shipped band. Split conformal on the fixed checkpoint partition.
+
+    Replaces a bare `.fit(d)`, which put the centre and the width on the same
+    rows and therefore carried none of the guarantee its own arithmetic
+    implied. See CALIBRATION_PREREGISTRATION.md and PROVENANCE.md.
+
+    The centre comes from the fit partition and the width from the calibration
+    partition; the support and descriptive fields are restored from the full
+    corpus (see _DESCRIPTIVE above).
+    """
+    cls = cls or ConservativeStratified
+    cal, _ = checkpoint_partition(d)
+    m = cls().fit_calibrated(d[~d.base_model.isin(cal)],
+                             d[d.base_model.isin(cal)])
+    full = cls().fit(d)
+    for attr in ("by_scheme", "by_stratum"):
+        tgt, src = getattr(m, attr), getattr(full, attr)
+        for k, cell in tgt.items():
+            if k in src:
+                cell.update({f: src[k][f] for f in _DESCRIPTIVE
+                             if f in src[k]})
+    if full.global_:
+        m.global_.update({f: full.global_[f] for f in _DESCRIPTIVE
+                          if f in full.global_})
+    # `rejected` and the MoE record are descriptions of the published evidence
+    # too, and they live outside by_scheme/by_stratum, so the overlay above
+    # does not reach them. Missing this put fit-partition counts into the
+    # cell_train_rows / cell_train_ckpt claims (fp8|2-10B read 13 rows where
+    # the corpus has 37) -- the same defect as the "143 evals" one, in a third
+    # container.
+    m.rejected = full.rejected
+    m.moe_stats = full.moe_stats
+    m.n_moe_checkpoints = full.n_moe_checkpoints
+    # Two different reasons a cell has no size-specific width, kept apart
+    # because they are different things to tell a user: `rejected` is below
+    # the support floor (too few rows or checkpoints to stratify at all);
+    # `uncalibratable` has the support but not enough held-out evidence to
+    # justify a separate width. Both print the scheme interval.
+    m.uncalibratable = {k: v for k, v in full.by_stratum.items()
+                        if k not in m.by_stratum}
+    return m
+
+
 def conformal_q(vals, alpha=ALPHA):
     v = np.sort(np.asarray(vals, float))
     n = len(v)

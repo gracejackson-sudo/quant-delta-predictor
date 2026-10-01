@@ -1,7 +1,7 @@
 [
   {
     "tag": "FINDING",
-    "finding": "the artifact is 18 numbers, not the 12 claimed in FINDINGS.md and RANKING.md. Conservative stratification added 6 size-dependent widths, so the predictor now DOES read a model property (parameter count). The standing claim 'it ignores your model entirely' is no longer true."
+    "finding": "the artifact is 16 numbers, not the 12 claimed in FINDINGS.md and RANKING.md. Conservative stratification added 4 size-dependent widths, so the predictor now DOES read a model property (parameter count). The standing claim 'it ignores your model entirely' is no longer true."
   },
   {
     "tag": "OK",
@@ -21,7 +21,7 @@
   },
   {
     "tag": "FINDING",
-    "finding": "only 4.4 of 12 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 515/4115 (13%) of scored rows. Where it does apply it over-covers at 93.0%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
+    "finding": "only 4.4 of 7 stratified cells survive held-out calibration (a cell needs 9+ calibration rows), so the widening applies to just 515/4115 (13%) of scored rows. Where it does apply it over-covers at 93.0%. RANKING.md implies six cells widen in practice; under strict calibration most do not."
   },
   {
     "tag": "OK",
@@ -45,7 +45,7 @@
   },
   {
     "tag": "FINDING",
-    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_EVIDENCE', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 3 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
+    "finding": "the ranking DOES demote this to Tier C with flags ['INSUFFICIENT_EVIDENCE', 'TAIL_RISK', 'SIZE_RISK', 'THIN_CELL_SUPPORT'], so a user reading the verdict is warned. But the interval it still prints excludes 0 of the 6 real measurements. A user reading only the number is misled; only the flags save them."
   },
   {
     "tag": "FINDING",

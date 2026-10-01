@@ -1785,7 +1785,22 @@ _REGISTRY_MANIFEST = {
     # +2 when the abstract moved off the threshold framing: the share of
     # the global-mean-to-noise-floor headroom recovered by the best
     # card-feature predictor, and by the shipped per-scheme mean.
-    "(scalar)": 295,
+    # +14 at round item 1 (the calibrated band): the leave-one-checkpoint-out
+    # coverage and mean half-width of the split-conformal band, the four
+    # partition-sensitivity figures and the partition count, the three
+    # calibration-unit counts, the jackknife+ pooled and nvfp4 coverages, the
+    # in-sample band's row-weighted half-width, its size-widening cell count,
+    # and its below-floor severe-loss count.
+    # +3 for the method-section correction: the fit and calibration
+    # checkpoint counts, and the largest gap between a shipped centre and the
+    # same scheme's mean over the whole corpus.
+    "(scalar)": 312,
+    # The retracted in-sample band's nvfp4 bounds and the factor calibration
+    # widened it by, kept live so S6's retraction cannot drift from the thing
+    # it retracts.
+    "lo_insample::": 1,
+    "hi_insample::": 1,
+    "widen_x::": 1,
     # Round item 4: checkpoint-bootstrap CIs on the tuned-vs-lookup and
     # tuned-vs-global differences, one estimate and two bounds each.
     "tune_diff::": 3,

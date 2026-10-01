@@ -30,7 +30,8 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 from model import load  # noqa: E402
-from strata import ConservativeStratified, annotate, size_band  # noqa: E402
+from strata import (ConservativeStratified, annotate,  # noqa: E402
+                    calibrated_fit, size_band)
 import feedback  # noqa: E402
 import cell_coverage  # noqa: E402
 
@@ -192,7 +193,7 @@ def build_table(d=None):
     if d is None:
         d = load(DATA)
     d = annotate(d)
-    m = ConservativeStratified().fit(d)
+    m = calibrated_fit(d)
     cov = cell_coverage.scheme_records(cell_coverage.scored_pairs(d))
 
     table = {}

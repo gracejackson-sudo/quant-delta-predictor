@@ -1,0 +1,331 @@
+{
+  "alpha": 0.1,
+  "seed": 0,
+  "cal_fraction": 0.3333333333333333,
+  "n_rows": 823,
+  "n_checkpoints": 38,
+  "partition": {
+    "calibration_checkpoints": [
+      "Llama-3.2-1B-Instruct",
+      "Llama-3.2-3B-Instruct",
+      "Llama-3.3-70B-Instruct",
+      "Meta-Llama-3.1-70B",
+      "Meta-Llama-3.1-8B",
+      "Mistral-7B-Instruct-v0.3",
+      "Mixtral-8x22B-v0.1",
+      "Qwen2.5-0.5B",
+      "Qwen2.5-1.5B",
+      "Qwen2.5-32B",
+      "Qwen2.5-3B",
+      "Qwen3-32B",
+      "gemma-2-9b-it"
+    ],
+    "fit_checkpoints": [
+      "Meta-Llama-3.1-405B",
+      "Meta-Llama-3.1-405B-Instruct",
+      "Meta-Llama-3.1-70B-Instruct",
+      "Meta-Llama-3.1-8B-Instruct",
+      "Mistral-Small-24B-Instruct-2501",
+      "Mistral-Small-3.1-24B-Instruct-2503",
+      "Mistral-Small-3.2-24B-Instruct-2506",
+      "Mixtral-8x22B-Instruct-v0.1",
+      "Mixtral-8x7B-Instruct-v0.1",
+      "Mixtral-8x7B-v0.1",
+      "Qwen2.5-0.5B-Instruct",
+      "Qwen2.5-14B",
+      "Qwen2.5-14B-Instruct",
+      "Qwen2.5-72B",
+      "Qwen2.5-7B",
+      "Qwen2.5-7B-Instruct",
+      "Qwen3-14B",
+      "Qwen3-8B",
+      "gemma-2-27b-it",
+      "gemma-2-2b",
+      "gemma-2-2b-it",
+      "granite-3.1-2b-base",
+      "granite-3.1-2b-instruct",
+      "granite-3.1-8b-base",
+      "granite-3.1-8b-instruct"
+    ]
+  },
+  "in_sample_half_width_pp": {
+    "fp8": 0.7932500000000001,
+    "fp8_dynamic": 1.3922999999999999,
+    "nvfp4": 3.026764705882353,
+    "w4a16": 2.136340206185567,
+    "w8a16": 0.8959302325581395,
+    "w8a8_int": 1.4693333333333332
+  },
+  "calibration_support": {
+    "fp8": {
+      "rows": 36,
+      "checkpoints": 6
+    },
+    "fp8_dynamic": {
+      "rows": 57,
+      "checkpoints": 7
+    },
+    "nvfp4": {
+      "rows": 28,
+      "checkpoints": 2
+    },
+    "w4a16": {
+      "rows": 53,
+      "checkpoints": 8
+    },
+    "w8a16": {
+      "rows": 41,
+      "checkpoints": 7
+    },
+    "w8a8_int": {
+      "rows": 55,
+      "checkpoints": 8
+    }
+  },
+  "split_conformal": {
+    "label": "split conformal (checkpoint-blocked)",
+    "rows": 823,
+    "checkpoints": 38,
+    "coverage_pct": 93.56014580801944,
+    "mean_half_width_pp": 2.682724816103503,
+    "per_scheme": {
+      "fp8": {
+        "rows": 80,
+        "checkpoints": 13,
+        "coverage_pct": 93.75,
+        "mean_half_width_pp": 1.0392257590678644,
+        "observed_delta_range_pp": 3.16,
+        "levels": [
+          "scheme"
+        ]
+      },
+      "fp8_dynamic": {
+        "rows": 200,
+        "checkpoints": 22,
+        "coverage_pct": 97.5,
+        "mean_half_width_pp": 3.0262255251687513,
+        "observed_delta_range_pp": 13.27,
+        "levels": [
+          "scheme",
+          "stratum-widened"
+        ]
+      },
+      "nvfp4": {
+        "rows": 68,
+        "checkpoints": 5,
+        "coverage_pct": 97.05882352941177,
+        "mean_half_width_pp": 5.793634154516506,
+        "observed_delta_range_pp": 13.29,
+        "levels": [
+          "scheme"
+        ]
+      },
+      "w4a16": {
+        "rows": 194,
+        "checkpoints": 23,
+        "coverage_pct": 95.87628865979381,
+        "mean_half_width_pp": 3.988130010526741,
+        "observed_delta_range_pp": 13.329999999999998,
+        "levels": [
+          "scheme",
+          "stratum-widened"
+        ]
+      },
+      "w8a16": {
+        "rows": 86,
+        "checkpoints": 15,
+        "coverage_pct": 87.20930232558139,
+        "mean_half_width_pp": 1.0959340954503134,
+        "observed_delta_range_pp": 4.86,
+        "levels": [
+          "scheme",
+          "stratum-widened"
+        ]
+      },
+      "w8a8_int": {
+        "rows": 195,
+        "checkpoints": 24,
+        "coverage_pct": 88.71794871794872,
+        "mean_half_width_pp": 1.3209470827485437,
+        "observed_delta_range_pp": 6.05,
+        "levels": [
+          "scheme",
+          "stratum-widened"
+        ]
+      }
+    },
+    "vacuous_cells": []
+  },
+  "jackknife_plus": {
+    "label": "jackknife+ (leave-one-checkpoint-out)",
+    "rows": 823,
+    "checkpoints": 38,
+    "coverage_pct": 88.09234507897933,
+    "mean_half_width_pp": 1.5224761235670259,
+    "per_scheme": {
+      "fp8": {
+        "rows": 80,
+        "checkpoints": 13,
+        "coverage_pct": 90.0,
+        "mean_half_width_pp": 0.8651593029895281,
+        "observed_delta_range_pp": 3.16,
+        "levels": [
+          "scheme"
+        ]
+      },
+      "fp8_dynamic": {
+        "rows": 200,
+        "checkpoints": 22,
+        "coverage_pct": 90.0,
+        "mean_half_width_pp": 1.4088514668076155,
+        "observed_delta_range_pp": 13.27,
+        "levels": [
+          "scheme"
+        ]
+      },
+      "nvfp4": {
+        "rows": 68,
+        "checkpoints": 5,
+        "coverage_pct": 66.17647058823529,
+        "mean_half_width_pp": 1.7498227557608108,
+        "observed_delta_range_pp": 13.29,
+        "levels": [
+          "pooled"
+        ]
+      },
+      "w4a16": {
+        "rows": 194,
+        "checkpoints": 23,
+        "coverage_pct": 90.20618556701031,
+        "mean_half_width_pp": 2.203010875480304,
+        "observed_delta_range_pp": 13.329999999999998,
+        "levels": [
+          "scheme"
+        ]
+      },
+      "w8a16": {
+        "rows": 86,
+        "checkpoints": 15,
+        "coverage_pct": 89.53488372093024,
+        "mean_half_width_pp": 0.8749025452389579,
+        "observed_delta_range_pp": 4.86,
+        "levels": [
+          "scheme"
+        ]
+      },
+      "w8a8_int": {
+        "rows": 195,
+        "checkpoints": 24,
+        "coverage_pct": 90.25641025641026,
+        "mean_half_width_pp": 1.4379545434333965,
+        "observed_delta_range_pp": 6.05,
+        "levels": [
+          "scheme"
+        ]
+      }
+    },
+    "vacuous_cells": []
+  },
+  "partition_sensitivity": [
+    {
+      "seed": 0,
+      "coverage_pct": 93.56014580801944,
+      "mean_half_width_pp": 2.682724816103503
+    },
+    {
+      "seed": 1,
+      "coverage_pct": 90.40097205346294,
+      "mean_half_width_pp": 1.7746772841808023
+    },
+    {
+      "seed": 2,
+      "coverage_pct": 93.681652490887,
+      "mean_half_width_pp": 3.1254258049134385
+    },
+    {
+      "seed": 3,
+      "coverage_pct": 94.89671931956258,
+      "mean_half_width_pp": 3.2213766796542975
+    },
+    {
+      "seed": 4,
+      "coverage_pct": 90.76549210206562,
+      "mean_half_width_pp": 2.100686608073756
+    },
+    {
+      "seed": 5,
+      "coverage_pct": 93.92466585662211,
+      "mean_half_width_pp": 2.269303600402989
+    },
+    {
+      "seed": 6,
+      "coverage_pct": 95.26123936816525,
+      "mean_half_width_pp": 2.7544795658000027
+    },
+    {
+      "seed": 7,
+      "coverage_pct": 90.40097205346294,
+      "mean_half_width_pp": 1.812954549073324
+    },
+    {
+      "seed": 8,
+      "coverage_pct": 89.6719319562576,
+      "mean_half_width_pp": 1.824745790434543
+    },
+    {
+      "seed": 9,
+      "coverage_pct": 92.10206561360876,
+      "mean_half_width_pp": 1.9120470977114943
+    },
+    {
+      "seed": 10,
+      "coverage_pct": 92.34507897934387,
+      "mean_half_width_pp": 2.2101559059222735
+    },
+    {
+      "seed": 11,
+      "coverage_pct": 90.76549210206562,
+      "mean_half_width_pp": 1.8537201681380724
+    },
+    {
+      "seed": 12,
+      "coverage_pct": 91.00850546780073,
+      "mean_half_width_pp": 2.098068155267564
+    },
+    {
+      "seed": 13,
+      "coverage_pct": 88.21385176184691,
+      "mean_half_width_pp": 1.8576399134779407
+    },
+    {
+      "seed": 14,
+      "coverage_pct": 93.681652490887,
+      "mean_half_width_pp": 2.3819426314982075
+    },
+    {
+      "seed": 15,
+      "coverage_pct": 90.64398541919806,
+      "mean_half_width_pp": 1.8876363562807943
+    },
+    {
+      "seed": 16,
+      "coverage_pct": 94.2891859052248,
+      "mean_half_width_pp": 2.5307657072576175
+    },
+    {
+      "seed": 17,
+      "coverage_pct": 89.55042527339003,
+      "mean_half_width_pp": 1.7787054787074903
+    },
+    {
+      "seed": 18,
+      "coverage_pct": 89.91494532199272,
+      "mean_half_width_pp": 1.9792642818638488
+    },
+    {
+      "seed": 19,
+      "coverage_pct": 93.80315917375455,
+      "mean_half_width_pp": 2.2350162818612374
+    }
+  ]
+}

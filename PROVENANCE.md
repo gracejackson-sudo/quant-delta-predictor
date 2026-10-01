@@ -649,3 +649,70 @@ together. Only `audit_paper.py` section 4 would catch it, and only because the
 pipeline artifact is the fresher of the two. It is now in the staleness test,
 with the planted condition verified. This is the third time the same class has
 produced a real defect, and the first time it reached a headline figure.
+
+## 2026-10-01 — round item 1: the band is split conformal
+
+`src/rank.py` called `ConservativeStratified().fit(d)`, which put the centre
+and the half-width on the same rows. It now calls `strata.calibrated_fit`,
+which partitions the 38 checkpoints once (seed 0, one third to calibration),
+takes centres from the fit side and widths from the calibration side, and is
+the path `fit_calibrated`'s own docstring already said anything quoted to a
+user must come from. Protocol fixed in advance in
+`CALIBRATION_PREREGISTRATION.md`; outcome 1, split conformal succeeds.
+
+Leave-one-checkpoint-out coverage 93.56% against nominal 90%; 20 of 20
+partition draws clear the pre-registered 87.9% threshold (median 91.56%).
+NVFP4's published interval goes [-4.18, +1.87] -> [-7.64, +5.17], 2.12x wider:
+the in-sample band had been understating the spread of the highest
+severe-loss scheme by about half. Severe losses falling below the interval
+floor drop from 20 of 27 to 15 of 27. Three schemes get *narrower*;
+calibration is not a blanket widening.
+
+### One mechanism produced four defects, and will produce more
+
+**`fit_calibrated` returns fit-partition data in every field, when only the
+centre and the width should be partitioned.** Everything else in a cell record
+— `n`, `n_checkpoints`, `n_families`, `worst`, `best`, `p05`, `p95` — describes
+the published evidence, not the construction, and must come from the whole
+corpus. Four defects in one afternoon, all this:
+
+1. The tool printed "143 evals" for `fp8_dynamic`, which has 200, and tripped
+   its own thin-data warning on the shortfall. Found by reading the output.
+2. `cell_train_rows::fp8|2-10B` read 13 where the corpus has 37 — the same
+   defect in `rejected`, a third container the first fix did not reach. Found
+   by the claim gate, 20 mismatches.
+3. The five cells that lost a calibrated width lost their claims entirely,
+   because the registry iterated `by_stratum` alone. Found by the claim gate.
+4. `verify/independent_rank.py` disagreed on `p05` for all six schemes, having
+   restored every descriptive field except that one.
+
+Anyone extending this will hit it again. The separation is now explicit as
+`strata._DESCRIPTIVE`, with the same list duplicated deliberately in the
+stdlib verifier, and `calibrated_fit` restores `rejected`, `moe_stats` and
+`n_moe_checkpoints` as well as the two cell dictionaries. A fifth container
+added later will reintroduce the bug; the test that catches it is
+`test_verifiers_exit_zero`, because the stdlib reimplementation has to make
+the same choice independently.
+
+### A fifth defect, different mechanism
+
+An earlier scripted edit asserted on a string that did not match
+`verify_claims.py`'s parenthesised `from strata import (...)`, raised, and
+exited before writing the file. `calibrated_fit` ended up imported there and
+unused, so the registry kept publishing in-sample `meta` counts while
+`lo::`/`hi::` came through `rank.build_table` and were calibrated. Caught
+because `widen_x::nvfp4` computed to exactly 1.0. After a scripted multi-part
+edit, verify that each intended change is present; a script that printed
+something is not evidence that it wrote anything.
+
+### What the independent ranking verifier gives up
+
+`verify/independent_rank.py` is standard-library only and cannot reproduce
+numpy's `default_rng`, so it reads the calibration membership from
+`out/calibration_partition.json` as a declared input. It still derives
+everything that list is used for: row assignment, centres, the conformal index
+and quantile, the widen-only rule, the support gates, flags, tiers and rank
+order. The check no longer covers "is this the partition they say it is" and
+still covers "given that partition, is every printed number right". A 13-name
+list is auditable by eye; a reimplemented RNG is not. Its docstring states the
+split.
