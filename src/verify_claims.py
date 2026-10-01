@@ -1119,6 +1119,32 @@ def registry():
         add("pred_gap_vs_floor_ratio", reg["mae_floor_pp"][0] / _gap, 0.05,
             "evaluation-noise floor divided by that largest gap")
 
+    # The quantity a reader actually wants, and the one the abstract quotes.
+    # The floor is irreducible, so what a predictor can recover is not the
+    # floor but the HEADROOM: the global mean's MAE minus the floor. Defined
+    # as the best IMPROVEMENT, not the largest absolute gap -- the two
+    # coincide on the current corpus but need not, and "recovers x% of the
+    # headroom" is only meaningful for a predictor that improves on the
+    # baseline. pred_max_abs_gap_pp stays two-sided for the ordering gate,
+    # where a predictor much worse than the global mean is also notable.
+    if "headroom_pp" in reg and "pred_mae::global_mean" in reg:
+        _g2 = reg["pred_mae::global_mean"][0]
+        _h = reg["headroom_pp"][0]
+        _imp = [_g2 - reg[f"pred_mae::{_m}"][0] for _m in
+                ("scheme_mean", "scheme_x_bench", "bench_mean", "ridge",
+                 "grad_boost", "ridge_tuned", "grad_boost_tuned")
+                if f"pred_mae::{_m}" in reg]
+        if _imp and _h > 0:
+            add("pred_best_headroom_recovered_pct",
+                100 * max(_imp) / _h, 0.2,
+                "share of the global-mean-to-noise-floor headroom recovered "
+                "by the best card-feature predictor, tuned or not")
+        if "pred_mae::scheme_mean" in reg and _h > 0:
+            add("scheme_headroom_recovered_pct",
+                100 * (_g2 - reg["pred_mae::scheme_mean"][0]) / _h, 0.2,
+                "share of that headroom recovered by the shipped per-scheme "
+                "mean")
+
     if "pred_mae::global_mean" in reg:
         # Tier 2.7: registered here (after pred_mae is populated) so the
         # stale literal 0.7545 cannot come back.

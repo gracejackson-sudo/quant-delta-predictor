@@ -1782,7 +1782,10 @@ _REGISTRY_MANIFEST = {
     # +4 when the gpqa_diamond n_items correction landed: the two
     # measured gradient-boosting sensitivity instances, each with its
     # row count, so the S5 caveat is macro-backed rather than recalled.
-    "(scalar)": 293,
+    # +2 when the abstract moved off the threshold framing: the share of
+    # the global-mean-to-noise-floor headroom recovered by the best
+    # card-feature predictor, and by the shipped per-scheme mean.
+    "(scalar)": 295,
     # Round item 4: checkpoint-bootstrap CIs on the tuned-vs-lookup and
     # tuned-vs-global differences, one estimate and two bounds each.
     "tune_diff::": 3,

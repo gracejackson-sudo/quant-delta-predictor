@@ -204,6 +204,9 @@ M = {
     # Round item 4: nested-CV tuned baselines, the grid-edge finding, and the
     # CIs that put the tuned-vs-lookup advantage inside noise.
     "MaeFloor": ("mae_floor_pp", "{:.3f}"),
+    "HeadroomPp": ("headroom_pp", "{:.3f}"),
+    "PredBestHeadroomPct": ("pred_best_headroom_recovered_pct", "{:.1f}"),
+    "SchemeHeadroomPct": ("scheme_headroom_recovered_pct", "{:.1f}"),
     # The S9 GPQA bullet enumerates the per-protocol row counts. They were
     # hand-typed and passed the numeral gate only because those digits happen
     # to be exempt, so a relabel could have desynced the one paragraph that
@@ -214,8 +217,12 @@ M = {
     "NrowsGpqaMainCot": ("n_rows_gpqa_main_cot_5shot", "{:.0f}"),
     "NrowsGpqaDiamond": ("n_rows_gpqa_diamond", "{:.0f}"),
     "NrowsGpqaDiamondCot": ("n_rows_gpqa_diamond_cot_5shot", "{:.0f}"),
-    "PredMaxGap": ("pred_max_abs_gap_pp", "{:.4f}"),
-    "PredGapFloorRatio": ("pred_gap_vs_floor_ratio", "{:.0f}"),
+    # pred_max_abs_gap_pp and pred_gap_vs_floor_ratio deliberately have no
+    # macro. The abstract moved to the headroom framing on 2026-10-01 and
+    # nothing in either .tex references them any more. The registry keys stay:
+    # the predictor-ordering gate asserts on both, and NEGATIVE_RESULT.md
+    # quotes them from the registry rather than through a macro. Emitting
+    # LaTeX that no document uses is how a stale macro survives a rewrite.
     "GbSensNitems": ("gb_sens_nitems_pp", "{:.4f}"),
     "GbSensNitemsRows": ("gb_sens_nitems_rows", "{:.0f}"),
     "GbSensMmluPct": ("gb_sens_mmlu_pct", "{:.0f}"),
