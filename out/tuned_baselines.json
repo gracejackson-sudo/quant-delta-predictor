@@ -5,9 +5,9 @@
       "n_test": 59,
       "ridge_alpha_selected": 1000,
       "ridge_alpha_on_grid_edge": true,
-      "ridge_inner_mae": 0.739255957734119,
-      "ridge_tuned_mae": 0.3887017981667177,
-      "ridge_fixed_mae": 0.39473349065483876,
+      "ridge_inner_mae": 0.7391064939888105,
+      "ridge_tuned_mae": 0.3887620254544358,
+      "ridge_fixed_mae": 0.3947385756356376,
       "gb_params_selected": {
         "learning_rate": 0.01,
         "max_depth": 3,
@@ -15,71 +15,71 @@
         "l2_regularization": 10.0
       },
       "gb_inner_mae": 0.7406034597678279,
-      "gb_tuned_mae": 0.36193607824904983,
-      "gb_fixed_mae": 0.42384473070570583
+      "gb_tuned_mae": 0.361860201185438,
+      "gb_fixed_mae": 0.4314829258853813
     },
     {
       "held_out_family": "granite",
       "n_test": 114,
       "ridge_alpha_selected": 1000,
       "ridge_alpha_on_grid_edge": true,
-      "ridge_inner_mae": 0.7029243174075577,
-      "ridge_tuned_mae": 0.767572666765527,
-      "ridge_fixed_mae": 0.8350915599630903,
+      "ridge_inner_mae": 0.7027134846516271,
+      "ridge_tuned_mae": 0.7676614120148875,
+      "ridge_fixed_mae": 0.8350850076839271,
       "gb_params_selected": {
         "learning_rate": 0.01,
         "max_depth": 3,
         "min_samples_leaf": 15,
         "l2_regularization": 10.0
       },
-      "gb_inner_mae": 0.7150412231244809,
+      "gb_inner_mae": 0.7145173438892373,
       "gb_tuned_mae": 0.7765158513545538,
-      "gb_fixed_mae": 0.9282733239096906
+      "gb_fixed_mae": 0.9237031517072337
     },
     {
       "held_out_family": "llama-3",
       "n_test": 275,
       "ridge_alpha_selected": 1000,
       "ridge_alpha_on_grid_edge": true,
-      "ridge_inner_mae": 0.7799358551999014,
-      "ridge_tuned_mae": 0.6041855232672126,
-      "ridge_fixed_mae": 0.6991119624606494,
+      "ridge_inner_mae": 0.7795933566002446,
+      "ridge_tuned_mae": 0.604239086987616,
+      "ridge_fixed_mae": 0.6991306796749184,
       "gb_params_selected": {
         "learning_rate": 0.01,
         "max_depth": 3,
         "min_samples_leaf": 15,
         "l2_regularization": 10.0
       },
-      "gb_inner_mae": 0.7556525400676918,
-      "gb_tuned_mae": 0.6057224027323767,
-      "gb_fixed_mae": 0.6475198917992202
+      "gb_inner_mae": 0.756250518271906,
+      "gb_tuned_mae": 0.6061028906952699,
+      "gb_fixed_mae": 0.6583726831549392
     },
     {
       "held_out_family": "mistral",
       "n_test": 108,
       "ridge_alpha_selected": 1000,
       "ridge_alpha_on_grid_edge": true,
-      "ridge_inner_mae": 0.6967882690897621,
-      "ridge_tuned_mae": 0.8184300798447921,
-      "ridge_fixed_mae": 0.8320104031479235,
+      "ridge_inner_mae": 0.6966185153940572,
+      "ridge_tuned_mae": 0.8183069884871559,
+      "ridge_fixed_mae": 0.8320095822553059,
       "gb_params_selected": {
         "learning_rate": 0.01,
         "max_depth": 3,
         "min_samples_leaf": 15,
         "l2_regularization": 10.0
       },
-      "gb_inner_mae": 0.6960878499039881,
-      "gb_tuned_mae": 0.805236692861837,
-      "gb_fixed_mae": 0.8471221686725324
+      "gb_inner_mae": 0.695942967886763,
+      "gb_tuned_mae": 0.8057290801079257,
+      "gb_fixed_mae": 0.8605754007759298
     },
     {
       "held_out_family": "qwen2.5",
       "n_test": 162,
       "ridge_alpha_selected": 1000,
       "ridge_alpha_on_grid_edge": true,
-      "ridge_inner_mae": 0.770256706909239,
-      "ridge_tuned_mae": 0.5054985368702566,
-      "ridge_fixed_mae": 0.5660805154597421,
+      "ridge_inner_mae": 0.7701182820373065,
+      "ridge_tuned_mae": 0.5055435909407028,
+      "ridge_fixed_mae": 0.5660782108222657,
       "gb_params_selected": {
         "learning_rate": 0.01,
         "max_depth": 2,
@@ -88,7 +88,7 @@
       },
       "gb_inner_mae": 0.7672118868284891,
       "gb_tuned_mae": 0.5435446726301073,
-      "gb_fixed_mae": 0.6051512904948492
+      "gb_fixed_mae": 0.6226675216640697
     },
     {
       "held_out_family": "qwen3",
@@ -96,8 +96,8 @@
       "ridge_alpha_selected": 300,
       "ridge_alpha_on_grid_edge": false,
       "ridge_inner_mae": 0.629621325300726,
-      "ridge_tuned_mae": 1.3683204920673917,
-      "ridge_fixed_mae": 1.4533812106430506,
+      "ridge_tuned_mae": 1.3662581047229312,
+      "ridge_fixed_mae": 1.4507237840231741,
       "gb_params_selected": {
         "learning_rate": 0.01,
         "max_depth": 3,
@@ -106,17 +106,17 @@
       },
       "gb_inner_mae": 0.6241311675038338,
       "gb_tuned_mae": 1.349604868074324,
-      "gb_fixed_mae": 1.3571981864653508
+      "gb_fixed_mae": 1.3614939771231138
     }
   ],
   "grid_sizes": {
     "ridge": 11,
     "grad_boost": 81
   },
-  "weighted_mae::ridge_tuned": 0.7143703178224854,
-  "weighted_mae::ridge_fixed": 0.7803408703058712,
-  "weighted_mae::grad_boost_tuned": 0.7176808154983874,
-  "weighted_mae::grad_boost_fixed": 0.7759446744712167,
+  "weighted_mae::ridge_tuned": 0.7141433387779316,
+  "weighted_mae::ridge_fixed": 0.7800183284153767,
+  "weighted_mae::grad_boost_tuned": 0.7178680380449318,
+  "weighted_mae::grad_boost_fixed": 0.7852714447769042,
   "ridge_any_grid_edge": true,
   "ridge_alphas": [
     1000,
@@ -126,24 +126,24 @@
     1000,
     300
   ],
-  "seconds": 486.22507309913635,
+  "seconds": 495.1288061141968,
   "differences": {
     "scheme_vs_ridge_tuned": {
-      "estimate": 0.010991214670873495,
-      "lo": -0.004215167347008014,
-      "hi": 0.02502686034816006,
+      "estimate": 0.011218193715427205,
+      "lo": -0.004141703705280056,
+      "hi": 0.025368651943504208,
       "excludes_zero": false
     },
     "scheme_vs_gb_tuned": {
-      "estimate": 0.007680716994971637,
-      "lo": -0.018487877502334864,
-      "hi": 0.03510389837996781,
+      "estimate": 0.007493494448426841,
+      "lo": -0.018605836088422915,
+      "hi": 0.03489154295326053,
       "excludes_zero": false
     },
     "global_vs_ridge_tuned": {
-      "estimate": 0.04309835438373144,
-      "lo": 0.02483934866213546,
-      "hi": 0.06255347856069919,
+      "estimate": 0.04332533342828515,
+      "lo": 0.02510165808937494,
+      "hi": 0.06271846985813143,
       "excludes_zero": true
     },
     "global_vs_scheme": {

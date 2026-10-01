@@ -14,8 +14,6 @@ training,RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,benchmark_not_whitelisted,G
 training,RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,benchmark_not_whitelisted,French MMLU (5-shot),3
 training,RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,benchmark_not_whitelisted,Hindi MMLU (5-shot),3
 training,RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,benchmark_not_whitelisted,Thai MMLU (5-shot),3
-training,RedHatAI/Llama-3.3-70B-Instruct-NVFP4,benchmark_not_whitelisted,mmlu_llama,3
-training,RedHatAI/Llama-3.3-70B-Instruct-NVFP4,benchmark_not_whitelisted,mmlu_cot_llama (0-shot),3
 training,RedHatAI/Llama-3.3-70B-Instruct-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Llama-3.3-70B-Instruct-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,benchmark_not_whitelisted,Average,3
@@ -92,17 +90,14 @@ training,RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w4a16,benchmark_not_
 training,RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w8a8,benchmark_not_whitelisted,Average Score,2
 training,RedHatAI/Mistral-Small-24B-Instruct-2501-quantized.w8a8,benchmark_not_whitelisted,Recovery (%),2
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,benchmark_not_whitelisted,Average,3
-training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,duplicate_benchmark,gpqa,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,benchmark_not_whitelisted,MBPP pass@1,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-FP8-dynamic,benchmark_not_whitelisted,MBPP+ pass@1,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,benchmark_not_whitelisted,Average,3
-training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,duplicate_benchmark,gpqa,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,benchmark_not_whitelisted,MBPP pass@1,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,benchmark_not_whitelisted,MBPP+ pass@1,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,benchmark_not_whitelisted,MMMU (0-shot),3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w4a16,benchmark_not_whitelisted,ChartQA (0-shot),3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,benchmark_not_whitelisted,Average,3
-training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,duplicate_benchmark,gpqa,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,benchmark_not_whitelisted,MBPP pass@1,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,benchmark_not_whitelisted,MBPP+ pass@1,3
 training,RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8,benchmark_not_whitelisted,MMMU (0-shot),3
@@ -156,7 +151,6 @@ training,RedHatAI/Qwen3-14B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-14B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-14B-NVFP4,benchmark_not_whitelisted,AIME24 (0-shot),3
 training,RedHatAI/Qwen3-14B-NVFP4,benchmark_not_whitelisted,AIME25 (0-shot),3
-training,RedHatAI/Qwen3-14B-NVFP4,duplicate_benchmark,gpqa,3
 training,RedHatAI/Qwen3-14B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-14B-quantized.w4a16,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-14B-quantized.w4a16,benchmark_not_whitelisted,Average,3
@@ -175,7 +169,6 @@ training,RedHatAI/Qwen3-32B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-32B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-32B-NVFP4,benchmark_not_whitelisted,AIME24 (0-shot),3
 training,RedHatAI/Qwen3-32B-NVFP4,benchmark_not_whitelisted,AIME25 (0-shot),3
-training,RedHatAI/Qwen3-32B-NVFP4,duplicate_benchmark,gpqa,3
 training,RedHatAI/Qwen3-32B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-32B-quantized.w4a16,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-32B-quantized.w4a16,benchmark_not_whitelisted,Average,3
@@ -195,7 +188,6 @@ training,RedHatAI/Qwen3-8B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-8B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-8B-NVFP4,benchmark_not_whitelisted,AIME24 (0-shot),3
 training,RedHatAI/Qwen3-8B-NVFP4,benchmark_not_whitelisted,AIME25 (0-shot),3
-training,RedHatAI/Qwen3-8B-NVFP4,duplicate_benchmark,gpqa,3
 training,RedHatAI/Qwen3-8B-NVFP4,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-8B-quantized.w4a16,benchmark_not_whitelisted,Average,3
 training,RedHatAI/Qwen3-8B-quantized.w4a16,benchmark_not_whitelisted,Average,3

@@ -74,7 +74,16 @@ BENCHMARKS = [
     ("gpqa_diamond_cot_5shot",
      r"^gpqa\b.*cot.*diamond|^gpqa\b.*diamond.*cot", 448),
     ("gpqa_main_cot_5shot", r"^gpqa\b.*cot.*main|^gpqa\b.*main.*cot", 448),
-    ("gpqa_diamond", r"^gpqa\b.*diamond", 448),
+    # GPQA-Diamond is a 198-question subset; the collapsed `gpqa` label
+    # carried Main's 448 and the split inherited it. Correcting it raises the
+    # analytic noise floor on these rows by sqrt(448/198) = 1.504x, which is
+    # the honest direction: their noise was understated by half.
+    #
+    # NOT corrected here: gpqa_diamond_cot_5shot, which measures the same
+    # subset and still carries 448. It is one row, the identical defect, and
+    # it is held for the de-duplicated-rows change rather than regenerating
+    # the whole chain twice. See PROVENANCE.md.
+    ("gpqa_diamond", r"^gpqa\b.*diamond", 198),
     ("gpqa_main", r"^gpqa", 448),
     ("musr", r"^musr", 756),
     ("humaneval_plus", r"^humaneval\+|^humaneval[\s\-_]*plus", 164),

@@ -298,3 +298,67 @@ to this corpus. Neither is read by the claims registry. Regenerating
 `adversarial_audit.json` moves the gate-rejected coverage range quoted in
 `SCOPE.md` item 5, and that artifact and that document are to be corrected
 together rather than separately; see the deferred-decisions list above.
+
+## 2026-10-01, gpqa_diamond n_items: 448 corrected to 198
+
+GPQA-Diamond is a 198-question subset. The collapsed `gpqa` label carried
+Main's 448 items, and the protocol split inherited it, so six `gpqa_diamond`
+rows claimed an item count more than twice the real one. `model.noise_scale`
+is `100*sqrt(2*p*(1-p)/n)`, so their analytic noise floor was understated by
+`sqrt(448/198) = 1.504`x.
+
+`n_items` has exactly two downstream paths: the `analytic_noise_pp` column of
+`model.featurize`, which only the ridge and gradient-boosting predictors
+consume, and the `normalized=True` conformal variant. No registry key reads
+`out/final_results.json` or `out/diagnostics.json`, so the normalised-conformal
+figures are computed but unpublished; `nvfp_marginal_coverage_pct` reads the
+marginal predictions and is unaffected. Every empirical noise figure
+(`mae_floor_pp`, the `noise_*` keys, `GsmNoiseSd`) is estimated from the spread
+of near-lossless deltas rather than from `n_items`, and none moved.
+
+Measured before landing, confirmed after:
+
+| figure | before | after |
+|---|---|---|
+| mean analytic SE, corpus | 1.6501 | 1.6621pp |
+| `pred_mae::grad_boost` | 0.775945 | **0.785271** |
+| `pred_mae::ridge` | 0.780341 | 0.780018 |
+| `pred_mae::ridge_tuned` | 0.714370 | 0.714143 |
+| `pred_mae::grad_boost_tuned` | 0.717681 | 0.717868 |
+| `pred_max_abs_gap_pp` | 0.043098 | 0.043325 |
+| normalised-conformal regime-C coverage (unpublished) | 90.155% | 90.336% |
+| `mae_gain_pp`, `mae_floor_pp`, `n_rows`, all `noise_*` | — | unchanged |
+
+**The tuning protocol was re-run, not reused.** `n_items` feeds a feature, so
+the hyperparameters selected under the old value would have been stale. The
+pre-registered protocol in `TUNING_PREREGISTRATION.md` was executed again
+unchanged — same grids, same folds, same seeds — which is running the
+registered protocol on corrected data rather than retuning. All six outer
+folds selected identical hyperparameters, so the grid-edge finding survives
+intact: ridge at the grid top in 5 of 6 folds, gradient boosting at the
+slowest learning rate and heaviest L2 in 6 of 6.
+
+All six assertions of the predictor-ordering gate still hold. The untuned
+gradient-boosting losing margin *widens* from +0.0185 to +0.0278pp, so the
+retraction's "true of untuned models" clause strengthens.
+
+### A sensitivity now recorded in the paper
+
+`pred_mae::grad_boost` moved +0.0093pp on six rows of 819 — about forty times
+any other predictor's movement and roughly a third of the headline effect. It
+had already moved 23% on the two rows the `mmlu_llama` fix added. Twice is a
+property of the estimator, not a coincidence, so §5 now carries a caveat
+naming both instances and stating that only the sign of that figure is
+claimed. The two measurements are registered (`gb_sens_*`) so the sentence is
+macro-backed.
+
+### Not corrected here, and why
+
+`gpqa_diamond_cot_5shot` measures the same 198-question subset and still
+carries 448. It is one row (Mistral-Small-3.1-24B-Instruct-2503 FP8-dynamic,
+baseline 45.96), and its analytic SE would move 3.3298 -> 5.0088pp. The defect
+is identical and the fix is one constant. It is held for the de-duplicated-rows
+change rather than regenerating the artifact chain and re-running the tuning
+protocol a third time for a single row. Leaving two Diamond labels with
+different item counts is a known inconsistency in the interim, recorded here so
+it cannot be mistaken for a judgement that the second label is correct.

@@ -1743,7 +1743,10 @@ _REGISTRY_MANIFEST = {
     # Round item 4 added, as scalars: how far tuning moved each model
     # class, the four grid-edge counts, the grid sizes, the outer-fold
     # count, and the noise-floor / largest-gap framing keys.
-    "(scalar)": 289,
+    # +4 when the gpqa_diamond n_items correction landed: the two
+    # measured gradient-boosting sensitivity instances, each with its
+    # row count, so the S5 caveat is macro-backed rather than recalled.
+    "(scalar)": 293,
     # Round item 4: checkpoint-bootstrap CIs on the tuned-vs-lookup and
     # tuned-vs-global differences, one estimate and two bounds each.
     "tune_diff::": 3,

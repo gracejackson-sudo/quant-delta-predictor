@@ -58,8 +58,10 @@ These came directly out of the audit and are the difference between honest and m
    floor is recomputed every run and printed in the tool footer.
 4. **"Trained only on checkpoints Red Hat chose to publish."** Outcome-truncated data, so it
    underpredicts damage from an untuned recipe.
-5. **The validation provenance**: 90.8% two-sided coverage (95% CI [84.5%, 95.2%]) on 131 held-out rows
-   from 5 unseen checkpoint groups, with the 87.5%–90.6% bound from gate-rejected rows stated. Those rows are mostly W4A16, whose coverage is below 90%, and FP8 and NVFP4 have no prospective rows, so the figure says nothing about them (see the paper). (Before the 2026-09-27 A4 float-boundary fix this line read 90.1% / 118 / [83.6, 94.6]; the CSV was patched and PROVENANCE.md's "2026-09-27 A4 fix" section explains what changed.)
+5. **The validation provenance**: 90.8% two-sided coverage on 131 held-out rows from 19 unseen
+   quantized checkpoints in 5 groups, 95% cluster-robust CI [86.4%, 95.3%] (the row-level
+   Clopper–Pearson interval, [84.5%, 95.2%], is also reported), with the 88.0%–91.1% bound from
+   gate-rejected rows stated. Those rows are mostly W4A16, whose coverage is below 90%, and FP8 and NVFP4 have no prospective rows, so the figure says nothing about them (see the paper). (Before the 2026-09-27 A4 float-boundary fix this line read 90.1% / 118 / [83.6, 94.6]; the CSV was patched and PROVENANCE.md's "2026-09-27 A4 fix" section explains what changed.)
 6. **NVFP4 carries a warning**: 66 evaluations from 3 families, 13.6% of them losing >3pp, and
    loss-side coverage that falls to 79% on the worst held-out family (70% inside the full interval).
 7. **Undercovered or thinly supported cells are flagged, not trusted**: a cell is marked

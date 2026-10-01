@@ -421,6 +421,20 @@ report the boundary selection as a limitation of the grid and did not extend it
 after seeing which edge was hit, because extending a grid in response to a
 result is the retuning the pre-registration existed to prevent.
 
+\emph{One figure in that table deserves a caveat of its own.} The untuned
+gradient-boosting MAE has moved sharply twice under corrections that touched a
+handful of rows. The \texttt{mmlu\_llama} parser fix added
+\GbSensMmluRows{} rows of \Nrows{} and narrowed its losing margin by
+\GbSensMmluPct\%; the \texttt{gpqa\_diamond} item-count correction changed
+the analytic-noise feature on \GbSensNitemsRows{} rows and moved its MAE by
+\GbSensNitems{}pp, roughly forty times the movement of any other predictor
+and about a third of the whole effect this section reports. Both corrections
+were right and neither changed the sign, but a reader should treat that
+particular number as an estimate whose \emph{direction} we claim and whose
+digits we do not. The estimator is sensitive to small changes in a 38-column
+design matrix built from a few hundred clustered rows, which is itself part of
+the negative result.
+
 So the honest statement is narrower than ``no signal'' and stronger than the
 claim it replaces. A sliver of card-feature signal exists; recovering it
 requires shrinking the model until it is nearly the global mean; it is worth

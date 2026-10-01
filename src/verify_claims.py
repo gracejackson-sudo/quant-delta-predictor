@@ -1061,6 +1061,19 @@ def registry():
             "gradient-boosting settings per inner fold")
         add("tune_ridge_grid", _tb["grid_sizes"]["ridge"], 0,
             "ridge settings per inner fold")
+        # Round item 1 / deferred item 1: the untuned gradient-boosting
+        # figure has now moved sharply twice on small corpus corrections,
+        # which is a property of the estimator worth stating rather than a
+        # one-off. Both instances are measured, not recalled.
+        add("gb_sens_nitems_pp", 0.009327, 0.0002,
+            "pp the untuned gradient-boosting LOFO MAE moved when the "
+            "gpqa_diamond n_items correction changed 6 of 819 rows")
+        add("gb_sens_nitems_rows", 6, 0,
+            "rows whose feature changed in that correction")
+        add("gb_sens_mmlu_pct", 23, 1,
+            "percent the untuned gradient-boosting losing margin narrowed "
+            "when the mmlu_llama fix added 2 of 819 rows")
+        add("gb_sens_mmlu_rows", 2, 0, "rows added by that fix")
         # Checkpoint-bootstrap CIs on the differences (src/tune_baseline_cis.py).
         # The tuned models beat the GLOBAL mean resolvably; they beat the
         # per-scheme mean by an amount whose interval includes zero, and the

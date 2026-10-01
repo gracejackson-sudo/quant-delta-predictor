@@ -1,7 +1,7 @@
 {
   "artifact": "per-scheme quantization accuracy-delta envelope",
   "what_it_is": "the observed distribution of (quantized - original) accuracy in percentage points on OpenLLM-style benchmarks, per quantization scheme, with a conformal-style 90% interval (an in-sample residual-quantile band; the split-conformal guarantee applies only to the explicit calibration-set variant used inside the LOFO audit). It is a calibrated historical baseline, NOT a per-model predictor.",
-  "built": "2026-09-30",
+  "built": "2026-10-01",
   "alpha": 0.1,
   "target": "acc_after - acc_before, percentage points",
   "training_data": {

@@ -7188,7 +7188,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.22369230769230772,-2.5598903252444725,2.1125057098598568,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.22369230769230772,-1.2221776566806475,0.774793041296032,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.22369230769230772,-2.471995008693565,2.0246103933089494,False,True,test=qwen3|cal=gemma-2+granite
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.22369230769230772,-3.9961645869012834,3.5487799715166677,False,True,test=qwen3|cal=gemma-2+granite
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.22369230769230772,-5.898255922665724,5.450871307281108,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.448888888888889,-3.5160511451473786,0.6182733673696008,True,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.448888888888889,-2.764125619387165,-0.13365215839061273,True,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.448888888888889,-2.055385478212934,-0.8423922995648437,True,True,test=qwen3|cal=gemma-2+granite
@@ -7210,7 +7210,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.7369911504424779,-2.243611962506814,0.7696296616218582,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.7369911504424779,-2.7588462487627066,1.284863947877751,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.7369911504424779,-5.289629086684863,3.815646785799908,False,True,test=qwen3|cal=gemma-2+granite
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.7369911504424779,-8.37595382397438,6.901971523089424,False,True,test=qwen3|cal=gemma-2+granite
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.7369911504424779,-12.227540698616622,10.753558397731666,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.22369230769230772,-0.7677011633406853,0.3203165479560698,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.22369230769230772,-2.441262960417443,1.9938783450328275,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.22369230769230772,-1.7116471601552468,1.2642625447706315,False,True,test=qwen3|cal=gemma-2+granite
@@ -7221,7 +7221,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.22369230769230772,-2.656172220665195,2.2087876052805795,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.22369230769230772,-1.2344505783607163,0.7870659629761009,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.22369230769230772,-2.4702828128765244,2.0228981974919087,False,False,test=qwen3|cal=gemma-2+granite
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.22369230769230772,-3.8804451648086373,3.4330605494240216,False,True,test=qwen3|cal=gemma-2+granite
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.22369230769230772,-5.724190436281192,5.276805820896576,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.448888888888889,-3.4557699059788614,0.5579921282010836,True,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.448888888888889,-3.2677048160150015,0.3699270382372235,True,False,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.448888888888889,-2.0008580585688214,-0.8969197192089563,True,False,test=qwen3|cal=gemma-2+granite
@@ -7244,7 +7244,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.7369911504424779,-5.66257360249227,4.188591301607315,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.7369911504424779,-2.7836979597019544,1.309715658816999,False,False,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.7369911504424779,-5.2861620234520235,3.812179722567068,False,True,test=qwen3|cal=gemma-2+granite
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.7369911504424779,-8.141631003144067,6.667648702259111,False,True,test=qwen3|cal=gemma-2+granite
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.7369911504424779,-11.875071639912118,10.401089339027163,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.22369230769230772,-0.8461632453085131,0.39877862992389757,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.22369230769230772,-2.5552780303080067,2.107893414923391,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.22369230769230772,-2.1553371678847157,1.7079525525001003,False,False,test=qwen3|cal=gemma-2+granite
@@ -7255,7 +7255,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.22369230769230772,-2.760129675076842,2.3127450596922263,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.22369230769230772,-1.1102518679863778,0.6628672526017624,False,False,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.22369230769230772,-2.4793955340658242,2.0320109186812085,False,True,test=qwen3|cal=gemma-2+granite
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.22369230769230772,-4.044692761355647,3.597308145971032,False,True,test=qwen3|cal=gemma-2+granite
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.22369230769230772,-5.9712521417704965,5.523867526385881,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.448888888888889,-3.5542803588717233,0.6565025810939455,True,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.448888888888889,-2.834033815092212,-0.06374396268556537,True,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.448888888888889,-2.085567868555807,-0.8122099092219709,True,True,test=qwen3|cal=gemma-2+granite
@@ -7279,7 +7279,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.7369911504424779,-5.873079354453019,4.399097053568063,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.7369911504424779,-2.5322052402248194,1.0582229393398639,False,False,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.7369911504424779,-5.3046145744231765,3.830632273538221,False,True,test=qwen3|cal=gemma-2+granite
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.7369911504424779,-8.474219599263062,7.0002372983781065,False,True,test=qwen3|cal=gemma-2+granite
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.7369911504424779,-12.375352359453329,10.901370058568373,False,True,test=qwen3|cal=gemma-2+granite
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.30939393939393944,-0.7303682958256013,0.11158041703772242,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.30939393939393944,-1.988596282517324,1.369808403729445,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.30939393939393944,-1.832147118252649,1.2133592394647699,False,True,test=qwen3|cal=gemma-2+llama-3
@@ -7289,7 +7289,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.30939393939393944,-1.991172408802461,1.3723845300145823,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.30939393939393944,-1.0281819656366458,0.40939408684876677,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.30939393939393944,-1.9278984697670847,1.309110590979206,False,True,test=qwen3|cal=gemma-2+llama-3
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.30939393939393944,-3.0251152129963317,2.4063273342084526,False,False,test=qwen3|cal=gemma-2+llama-3
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.30939393939393944,-4.394389662894585,3.7756017841067058,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.2515384615384615,-20.533344809374597,18.030267886297672,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.2515384615384615,-13.519632009710195,11.016555086633273,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.2515384615384615,-6.908738205082448,4.405661282005525,False,True,test=qwen3|cal=gemma-2+llama-3
@@ -7311,7 +7311,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.9420388349514563,-1.8800883506089492,-0.0039893192939634,False,False,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.9420388349514563,-2.2008825868243957,0.31680491692148305,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.9420388349514563,-3.776594004280774,1.8925163343778613,False,True,test=qwen3|cal=gemma-2+llama-3
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.9420388349514563,-5.698195910874204,3.8141182409712906,False,True,test=qwen3|cal=gemma-2+llama-3
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.9420388349514563,-8.096263940560117,6.212186270657204,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.30939393939393944,-0.701014158965751,0.08222628017787215,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.30939393939393944,-1.905775132308833,1.2869872535209543,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.30939393939393944,-1.380540484131656,0.7617526053437772,False,True,test=qwen3|cal=gemma-2+llama-3
@@ -7322,7 +7322,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.30939393939393944,-2.0604836647387526,1.4416957859508734,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.30939393939393944,-1.0370169767458082,0.4182290979579293,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.30939393939393944,-1.926665896997621,1.3078780182097418,False,False,test=qwen3|cal=gemma-2+llama-3
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.30939393939393944,-2.941811301638799,2.3230234228509197,False,True,test=qwen3|cal=gemma-2+llama-3
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.30939393939393944,-4.2690836806665216,3.6502958018786424,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.2515384615384615,-19.971061332818316,17.46798440974139,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.2515384615384615,-18.21685232745706,15.713775404380138,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.2515384615384615,-6.400124455464189,3.8970475323872655,False,True,test=qwen3|cal=gemma-2+llama-3
@@ -7345,7 +7345,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.9420388349514563,-4.0087960418597675,2.1247183719568543,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.9420388349514563,-2.2163557139862857,0.332278044083373,False,False,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.9420388349514563,-3.774435347663079,1.8903576777601667,False,True,test=qwen3|cal=gemma-2+llama-3
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.9420388349514563,-5.552302261438817,3.668224591535904,False,True,test=qwen3|cal=gemma-2+llama-3
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.9420388349514563,-7.876810294921845,5.992732625018932,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.30939393939393944,-0.7574973162696517,0.13870943748177272,False,False,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.30939393939393944,-1.9878521173458155,1.3690642385579368,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.30939393939393944,-1.699943332899145,1.0811554541112658,False,False,test=qwen3|cal=gemma-2+llama-3
@@ -7356,7 +7356,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.30939393939393944,-2.135320389729733,1.516532510941854,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.30939393939393944,-0.9476090089851287,0.3288211301972498,False,False,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.30939393939393944,-1.9332259480629603,1.3144380692750812,False,True,test=qwen3|cal=gemma-2+llama-3
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.30939393939393944,-3.060049597129815,2.441261718341936,False,False,test=qwen3|cal=gemma-2+llama-3
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.30939393939393944,-4.44693806363643,3.8281501848485506,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.2515384615384615,-20.889934280583805,18.38685735750688,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.2515384615384615,-14.171712555216631,11.66863563213971,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.2515384615384615,-7.1902695671920815,4.687192644115158,False,True,test=qwen3|cal=gemma-2+llama-3
@@ -7380,7 +7380,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.9420388349514563,-4.1398607511009295,2.2557830811980173,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.9420388349514563,-2.0597717734168794,0.17569410351396697,False,False,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.9420388349514563,-3.7859242414594005,1.901846571556488,False,True,test=qwen3|cal=gemma-2+llama-3
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.9420388349514563,-5.759377969542938,3.875300299640025,False,True,test=qwen3|cal=gemma-2+llama-3
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.9420388349514563,-8.188294168568463,6.304216498665551,False,True,test=qwen3|cal=gemma-2+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.09744966442953021,-1.2618221641155956,1.0669228352565352,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.09744966442953021,-4.741953539474161,4.547054210615101,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.09744966442953021,-4.309230971732135,4.114331642873075,False,True,test=qwen3|cal=gemma-2+mistral
@@ -7390,7 +7390,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.09744966442953021,-4.749078844273146,4.554179515414086,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.09744966442953021,-2.085544658991261,1.8906453301322006,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.09744966442953021,-4.574069527353947,4.3791701984948865,False,True,test=qwen3|cal=gemma-2+mistral
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.09744966442953021,-7.608860085240656,7.413960756381596,False,True,test=qwen3|cal=gemma-2+mistral
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.09744966442953021,-11.396134748473278,11.201235419614216,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.632142857142857,-5.719364663787297,2.4550789495015826,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.632142857142857,-4.232647113408692,0.9683613991229787,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.632142857142857,-2.831316302785887,-0.4329694114998264,False,True,test=qwen3|cal=gemma-2+mistral
@@ -7412,7 +7412,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.8752631578947369,-1.6643438129467187,-0.08618250284275497,False,False,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.8752631578947369,-1.9341936682311283,0.18366735244165444,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.8752631578947369,-3.259671030252763,1.5091447144632895,False,True,test=qwen3|cal=gemma-2+mistral
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.8752631578947369,-4.876109039008712,3.125582723219239,False,True,test=qwen3|cal=gemma-2+mistral
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.8752631578947369,-6.893346999413666,5.142820683624192,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.09744966442953021,-1.1806315899406121,0.9857322610815518,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.09744966442953021,-4.512878613123415,4.3179792842643545,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.09744966442953021,-3.060132689586221,2.8652333607271605,False,True,test=qwen3|cal=gemma-2+mistral
@@ -7423,7 +7423,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.09744966442953021,-4.940786769228478,4.745887440369418,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.09744966442953021,-2.109981406296081,1.9150820774370207,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.09744966442953021,-4.570660355715106,4.375761026856046,False,True,test=qwen3|cal=gemma-2+mistral
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.09744966442953021,-7.378449890369933,7.183550561510873,False,True,test=qwen3|cal=gemma-2+mistral
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.09744966442953021,-11.049551072951482,10.85465174409242,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.632142857142857,-5.600175763876237,2.335890049590523,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.632142857142857,-5.228330866630436,1.9640451523447215,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.632142857142857,-2.7235039344269323,-0.5407817798587815,False,True,test=qwen3|cal=gemma-2+mistral
@@ -7446,7 +7446,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.8752631578947369,-3.454997751133601,1.7044714353441277,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.8752631578947369,-1.9472095539736296,0.19668323818415578,False,False,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.8752631578947369,-3.2578551834882887,1.5073288676988152,False,True,test=qwen3|cal=gemma-2+mistral
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.8752631578947369,-4.753384327207429,3.0028580114179553,False,True,test=qwen3|cal=gemma-2+mistral
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.8752631578947369,-6.708744136170975,4.958217820381502,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.09744966442953021,-1.3368582912949978,1.1419589624359374,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.09744966442953021,-4.7398952538620085,4.544995925002948,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.09744966442953021,-3.943568670292146,3.748669341433086,False,False,test=qwen3|cal=gemma-2+mistral
@@ -7457,7 +7457,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.09744966442953021,-5.147777582836889,4.952878253977828,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.09744966442953021,-1.8626880086749529,1.6677886798158925,False,False,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.09744966442953021,-4.588804793589572,4.393905464730512,False,True,test=qwen3|cal=gemma-2+mistral
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.09744966442953021,-7.705485059082978,7.510585730223918,False,True,test=qwen3|cal=gemma-2+mistral
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.09744966442953021,-11.541478311071536,11.346578982212474,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.632142857142857,-5.794951993960315,2.530666279674601,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.632142857142857,-4.370870564946551,1.1065848506608373,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.632142857142857,-2.890993342463134,-0.3732923718225798,False,True,test=qwen3|cal=gemma-2+mistral
@@ -7481,7 +7481,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.8752631578947369,-3.5652484627388676,1.8147221469493942,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.8752631578947369,-1.8154922444576982,0.06496592866822448,False,False,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.8752631578947369,-3.2675195601457085,1.516993244356235,False,True,test=qwen3|cal=gemma-2+mistral
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.8752631578947369,-4.927574956453289,3.1770486406638154,False,True,test=qwen3|cal=gemma-2+mistral
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.8752631578947369,-6.970762179944418,5.220235864154945,False,True,test=qwen3|cal=gemma-2+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.14087301587301587,-0.42823662959004816,0.1464905978440164,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.14087301587301587,-1.2871225346614037,1.005376502915372,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.14087301587301587,-1.1803279128056072,0.8985818810595756,False,False,test=qwen3|cal=gemma-2+qwen2.5
@@ -7491,7 +7491,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.14087301587301587,-1.2888810383502352,1.0071350066042035,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.14087301587301587,-0.631528851702217,0.3497828199561852,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.14087301587301587,-1.2456892678836449,0.9639432361376132,False,True,test=qwen3|cal=gemma-2+qwen2.5
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.14087301587301587,-1.9946664052033454,1.7129203734573137,False,False,test=qwen3|cal=gemma-2+qwen2.5
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.14087301587301587,-2.92935434541055,2.6476083136645183,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.448888888888889,-2.9257960654719404,0.02801828769416259,True,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.448888888888889,-2.388574470075136,-0.5092033077026418,True,False,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.448888888888889,-1.8822071553355153,-1.0155706224422625,True,True,test=qwen3|cal=gemma-2+qwen2.5
@@ -7513,7 +7513,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.6847967479674797,-2.3305183062400285,0.9609248103050692,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.6847967479674797,-2.8933222750041905,1.5237287790692309,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.6847967479674797,-5.6577629639443225,4.288169468009364,False,True,test=qwen3|cal=gemma-2+qwen2.5
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.6847967479674797,-9.02903668810573,7.65944319217077,False,True,test=qwen3|cal=gemma-2+qwen2.5
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.6847967479674797,-13.236226382022991,11.86663288608803,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.14087301587301587,-0.4081990412744752,0.12645300952844346,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.14087301587301587,-1.2305875351952864,0.9488415034492548,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.14087301587301587,-0.872054232053129,0.5903082003070974,False,False,test=qwen3|cal=gemma-2+qwen2.5
@@ -7524,7 +7524,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.14087301587301587,-1.3361939748101832,1.0544479430641516,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.14087301587301587,-0.6375597670792946,0.3558137353332629,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.14087301587301587,-1.2448478946270771,0.9631018628810455,False,False,test=qwen3|cal=gemma-2+qwen2.5
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.14087301587301587,-1.9378018655022202,1.6560558337561886,False,False,test=qwen3|cal=gemma-2+qwen2.5
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.14087301587301587,-2.843818541808071,2.5620725100620394,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.448888888888889,-2.8827274604450452,-0.015050317332732543,True,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.448888888888889,-2.748362255105484,-0.14941552267229374,True,False,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.448888888888889,-1.843249430972501,-1.0545283468052769,True,False,test=qwen3|cal=gemma-2+qwen2.5
@@ -7547,7 +7547,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.6847967479674797,-6.065140072231314,4.695546576296355,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.6847967479674797,-2.9204684528116234,1.5508749568766638,False,False,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.6847967479674797,-5.65397579954271,4.284382303607751,False,True,test=qwen3|cal=gemma-2+qwen2.5
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.6847967479674797,-8.773079704936688,7.403486209001728,False,True,test=qwen3|cal=gemma-2+qwen2.5
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.6847967479674797,-12.85121515432115,11.481621658386189,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.14087301587301587,-0.4467553189883442,0.16500928724231245,False,False,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.14087301587301587,-1.2866145559932978,1.0048685242472661,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.14087301587301587,-1.0900835619898566,0.8083375302438247,False,False,test=qwen3|cal=gemma-2+qwen2.5
@@ -7558,7 +7558,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.14087301587301587,-1.3872786819986291,1.1055326502525975,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.14087301587301587,-0.5765285039672492,0.2947824722212174,False,False,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.14087301587301587,-1.249325887054652,0.9675798553086203,False,True,test=qwen3|cal=gemma-2+qwen2.5
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.14087301587301587,-2.018513156707808,1.7367671249617762,False,False,test=qwen3|cal=gemma-2+qwen2.5
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.14087301587301587,-2.9652246973726615,2.68347866562663,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.448888888888889,-2.9531093544668763,0.055331576689098494,True,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.448888888888889,-2.4385211617903924,-0.4592566159873853,True,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.448888888888889,-1.903771301434285,-0.9940064763434929,True,True,test=qwen3|cal=gemma-2+qwen2.5
@@ -7582,7 +7582,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.6847967479674797,-6.2950810443512335,4.925487548416275,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.6847967479674797,-2.645756337541549,1.2761628416065893,False,False,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.6847967479674797,-5.674132006529351,4.304538510594392,False,True,test=qwen3|cal=gemma-2+qwen2.5
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.6847967479674797,-9.136374980221428,7.766781484286468,False,True,test=qwen3|cal=gemma-2+qwen2.5
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.6847967479674797,-13.397684948674364,12.028091452739403,False,True,test=qwen3|cal=gemma-2+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.4762295081967214,-1.021731124848071,0.06927210845462817,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.4762295081967214,-2.6521520527976987,1.6996930364042557,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.4762295081967214,-2.449424093894133,1.4969650775006904,False,True,test=qwen3|cal=granite+llama-3
@@ -7592,7 +7592,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.4762295081967214,-2.6554902158752602,1.7030311994818172,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.4762295081967214,-1.4076402327563295,0.4551812163628868,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.4762295081967214,-2.57349938791066,1.621040371517217,False,True,test=qwen3|cal=granite+llama-3
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.4762295081967214,-3.9952807817273275,3.0428217653338843,False,True,test=qwen3|cal=granite+llama-3
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.4762295081967214,-5.769596520078336,4.817137503684894,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.2515384615384615,-20.533344809374597,18.030267886297672,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.2515384615384615,-13.519632009710195,11.016555086633273,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.2515384615384615,-6.908738205082448,4.405661282005525,False,True,test=qwen3|cal=granite+llama-3
@@ -7614,7 +7614,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.8158441558441558,-1.9034309885231813,0.27174267683486963,False,False,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.8158441558441558,-2.2753640064329033,0.6436756947445916,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.8158441558441558,-4.102264357771379,2.4705760460830666,False,True,test=qwen3|cal=granite+llama-3
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.8158441558441558,-6.330194649699599,4.6985063380112875,False,True,test=qwen3|cal=granite+llama-3
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.8158441558441558,-9.110545973826527,7.478857662138216,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.4762295081967214,-0.9836938219392115,0.03123480554576874,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.4762295081967214,-2.544831807178438,1.5923727907849952,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.4762295081967214,-1.864228950200227,0.9117699338067842,False,True,test=qwen3|cal=granite+llama-3
@@ -7625,7 +7625,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.4762295081967214,-2.7453042427577268,1.7928452263642838,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.4762295081967214,-1.4190887040694822,0.4666296876760394,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.4762295081967214,-2.5719022111987995,1.6194431948053565,False,False,test=qwen3|cal=granite+llama-3
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.4762295081967214,-3.8873349707185474,2.934875954325105,False,True,test=qwen3|cal=granite+llama-3
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.4762295081967214,-5.607224121766729,4.654765105373286,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.2515384615384615,-19.971061332818316,17.46798440974139,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.2515384615384615,-18.21685232745706,15.713775404380138,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.2515384615384615,-6.400124455464189,3.8970475323872655,False,True,test=qwen3|cal=granite+llama-3
@@ -7648,7 +7648,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.8158441558441558,-4.3714824260895995,2.7397941144012874,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.8158441558441558,-2.2933037517030073,0.6616154400146954,False,False,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.8158441558441558,-4.099761583158212,2.4680732714699003,False,True,test=qwen3|cal=granite+llama-3
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.8158441558441558,-6.161043651325914,4.529355339637603,False,True,test=qwen3|cal=granite+llama-3
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.8158441558441558,-8.856108557255501,7.22442024556719,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.4762295081967214,-1.0568851058074773,0.10442608941403442,False,False,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.4762295081967214,-2.65118775818471,1.6987287417912673,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.4762295081967214,-2.2781134723896344,1.3256544559961914,False,False,test=qwen3|cal=granite+llama-3
@@ -7659,7 +7659,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.4762295081967214,-2.8422782124158985,1.8898191960224555,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.4762295081967214,-1.3032332126130097,0.35077419621956696,False,False,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.4762295081967214,-2.580402772828707,1.6279437564352646,False,True,test=qwen3|cal=granite+llama-3
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.4762295081967214,-4.040549009424299,3.088089993030856,False,True,test=qwen3|cal=granite+llama-3
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.4762295081967214,-5.837689117927042,4.885230101533599,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.2515384615384615,-20.889934280583805,18.38685735750688,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.2515384615384615,-14.171712555216631,11.66863563213971,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.2515384615384615,-7.1902695671920815,4.687192644115158,False,True,test=qwen3|cal=granite+llama-3
@@ -7683,7 +7683,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.8158441558441558,-4.523440557958237,2.8917522462699257,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.8158441558441558,-2.1117582904776304,0.48006997878931856,False,False,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.8158441558441558,-4.1130819563435965,2.4813936446552853,False,True,test=qwen3|cal=granite+llama-3
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.8158441558441558,-6.40112992581631,4.769441614127999,False,True,test=qwen3|cal=granite+llama-3
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.8158441558441558,-9.217247019474604,7.5855587077862925,False,True,test=qwen3|cal=granite+llama-3
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.1165765765765766,-0.7212375760982919,0.48808442294513865,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.1165765765765766,-2.5284768543005396,2.2953237011473866,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.1165765765765766,-2.3037631476499256,2.0706099944967726,False,True,test=qwen3|cal=granite+mistral
@@ -7693,7 +7693,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.1165765765765766,-2.5321770395271854,2.2990238863740324,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.1165765765765766,-1.1489983375507735,0.9158451843976204,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.1165765765765766,-2.441294346469331,2.208141193316178,False,True,test=qwen3|cal=granite+mistral
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.1165765765765766,-4.017267235356345,3.784114082203191,False,True,test=qwen3|cal=granite+mistral
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.1165765765765766,-5.984006645597425,5.750853492444271,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.632142857142857,-5.719364663787297,2.4550789495015826,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.632142857142857,-4.232647113408692,0.9683613991229787,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.632142857142857,-2.831316302785887,-0.4329694114998264,False,True,test=qwen3|cal=granite+mistral
@@ -7715,7 +7715,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.7451136363636365,-2.0291572576026673,0.5389299848753942,False,False,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.7451136363636365,-2.4682745812270754,0.9780473084998026,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.7451136363636365,-4.625177986353004,3.134950713625731,False,True,test=qwen3|cal=granite+mistral
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.7451136363636365,-7.255551574886442,5.765324302159169,False,True,test=qwen3|cal=granite+mistral
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.7451136363636365,-10.538133043581274,9.047905770854,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.1165765765765766,-0.6790751463383794,0.4459219931852262,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.1165765765765766,-2.409517780662206,2.176364627509053,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.1165765765765766,-1.6551038775393359,1.4219507243861829,False,True,test=qwen3|cal=granite+mistral
@@ -7726,7 +7726,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.1165765765765766,-2.631731353589892,2.398578200436739,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.1165765765765766,-1.1616883899647354,0.9285352368115823,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.1165765765765766,-2.4395239567261533,2.2063708035730003,False,False,test=qwen3|cal=granite+mistral
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.1165765765765766,-3.8976147540687083,3.6644616009155553,False,True,test=qwen3|cal=granite+mistral
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.1165765765765766,-5.80402504029893,5.570871887145776,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.632142857142857,-5.600175763876237,2.335890049590523,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.632142857142857,-5.228330866630436,1.9640451523447215,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.632142857142857,-2.7235039344269323,-0.5407817798587815,False,True,test=qwen3|cal=granite+mistral
@@ -7749,7 +7749,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.7451136363636365,-4.943026394369108,3.452799121641835,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.7451136363636365,-2.489454881308484,0.9992276085812107,False,False,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.7451136363636365,-4.62222312180254,3.131995849075267,False,True,test=qwen3|cal=granite+mistral
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.7451136363636365,-7.055845901774413,5.56561862904714,False,True,test=qwen3|cal=granite+mistral
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.7451136363636365,-10.237735197693613,8.747507924966339,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.1165765765765766,-0.7602039890570047,0.5270508359038515,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.1165765765765766,-2.527407982409559,2.2942548292564062,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.1165765765765766,-2.113873973235615,1.8807208200824619,False,False,test=qwen3|cal=granite+mistral
@@ -7760,7 +7760,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.1165765765765766,-2.7392221027118606,2.5060689495587076,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.1165765765765766,-1.0332684272629131,0.8001152741097599,False,False,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.1165765765765766,-2.448946400097061,2.215793246943908,False,True,test=qwen3|cal=granite+mistral
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.1165765765765766,-4.06744478015237,3.834291626999217,False,True,test=qwen3|cal=granite+mistral
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.1165765765765766,-6.059483852297518,5.826330699144364,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.632142857142857,-5.794951993960315,2.530666279674601,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.632142857142857,-4.370870564946551,1.1065848506608373,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.632142857142857,-2.890993342463134,-0.3732923718225798,False,True,test=qwen3|cal=granite+mistral
@@ -7784,7 +7784,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.7451136363636365,-5.122433558982059,3.632206286254786,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.7451136363636365,-2.2751158653817063,0.7848885926544332,False,False,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.7451136363636365,-4.637949627224718,3.1477223544974455,False,True,test=qwen3|cal=granite+mistral
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.7451136363636365,-7.339300279892484,5.849073007165211,False,True,test=qwen3|cal=granite+mistral
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.7451136363636365,-10.664108085690286,9.173880812963011,False,True,test=qwen3|cal=granite+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.18374999999999997,-0.4825129963670525,0.11501299636705259,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.18374999999999997,-1.3754699132758996,1.0079699132759,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.18374999999999997,-1.2644388721193032,0.8969388721193033,False,False,test=qwen3|cal=granite+qwen2.5
@@ -7794,7 +7794,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.18374999999999997,-1.377298174774988,1.0097981747749882,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.18374999999999997,-0.6938695861270735,0.32636958612707356,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.18374999999999997,-1.3323930366606578,0.9648930366606577,False,True,test=qwen3|cal=granite+qwen2.5
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.18374999999999997,-2.1110812319462124,1.7435812319462123,False,False,test=qwen3|cal=granite+qwen2.5
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.18374999999999997,-3.0828471631730907,2.715347163173091,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.448888888888889,-3.2885826060133274,0.39080482823554963,True,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.448888888888889,-2.619398239232988,-0.2783795385447898,True,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.448888888888889,-1.9886471790080003,-0.9091305987697776,True,True,test=qwen3|cal=granite+qwen2.5
@@ -7816,7 +7816,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.5156701030927835,-2.3423359801607715,1.3109957739752045,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.5156701030927835,-2.967019299190171,1.9356790930046042,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.5156701030927835,-6.035405594722295,5.004065388536729,False,True,test=qwen3|cal=granite+qwen2.5
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.5156701030927835,-9.777345197582925,8.746004991397356,False,True,test=qwen3|cal=granite+qwen2.5
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.5156701030927835,-14.447108325859352,13.415768119673784,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.18374999999999997,-0.4616805400664962,0.09418054006649629,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.18374999999999997,-1.3166922356791142,0.9491922356791144,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.18374999999999997,-0.9439363305087206,0.5764363305087207,False,False,test=qwen3|cal=granite+qwen2.5
@@ -7827,7 +7827,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.18374999999999997,-1.4264879607776697,1.05898796077767,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.18374999999999997,-0.7001397409514282,0.33263974095142823,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.18374999999999997,-1.3315182870987914,0.9640182870987913,False,False,test=qwen3|cal=granite+qwen2.5
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.18374999999999997,-2.0519609416339164,1.6844609416339162,False,False,test=qwen3|cal=granite+qwen2.5
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.18374999999999997,-2.9939182530359,2.6264182530359004,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.448888888888889,-3.234934656210141,0.3371568784323631,True,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.448888888888889,-3.0675640671964004,0.16978628941862284,True,False,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.448888888888889,-1.9401199039832293,-0.9576578737945485,True,False,test=qwen3|cal=granite+qwen2.5
@@ -7850,7 +7850,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.5156701030927835,-6.487573131245043,5.456232925059476,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.5156701030927835,-2.997150153613509,1.9658099474279418,False,False,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.5156701030927835,-6.03120203796113,4.999861831775563,False,True,test=qwen3|cal=granite+qwen2.5
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.5156701030927835,-9.493246174390373,8.461905968204805,False,True,test=qwen3|cal=granite+qwen2.5
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.5156701030927835,-14.019765760893977,12.988425554708408,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.18374999999999997,-0.501766300784618,0.13426630078461804,False,False,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.18374999999999997,-1.3749417836807472,1.0074417836807474,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.18374999999999997,-1.1706146321392814,0.8031146321392815,False,False,test=qwen3|cal=granite+qwen2.5
@@ -7861,7 +7861,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.18374999999999997,-1.479599139297238,1.1120991392972384,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.18374999999999997,-0.6366874381230833,0.2691874381230833,False,False,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.18374999999999997,-1.3361739163138688,0.968673916313869,False,True,test=qwen3|cal=granite+qwen2.5
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.18374999999999997,-2.135873956539762,1.7683739565397625,False,False,test=qwen3|cal=granite+qwen2.5
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.18374999999999997,-3.120140450567138,2.7526404505671382,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.448888888888889,-3.322605113964193,0.4248273361864152,True,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.448888888888889,-2.6816138045688516,-0.21616397320892622,True,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.448888888888889,-2.015508328254253,-0.8822694495235246,True,True,test=qwen3|cal=granite+qwen2.5
@@ -7885,7 +7885,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.5156701030927835,-6.74279572670778,5.711455520522214,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.5156701030927835,-2.6922339030736904,1.6608936968881232,False,False,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.5156701030927835,-6.053574386022404,5.022234179836837,False,True,test=qwen3|cal=granite+qwen2.5
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.5156701030927835,-9.896485154475942,8.865144948290373,False,True,test=qwen3|cal=granite+qwen2.5
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.5156701030927835,-14.626318990494473,13.594978784308905,False,True,test=qwen3|cal=granite+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.181125,-0.5971254176667247,0.23487541766672462,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.181125,-1.840487061878152,1.478237061878152,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.181125,-1.6858863915917661,1.3236363915917662,False,True,test=qwen3|cal=llama-3+mistral
@@ -7895,7 +7895,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.181125,-1.84303275045563,1.4807827504556301,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.181125,-0.8914203293055194,0.5291703293055194,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.181125,-1.780506412059984,1.418256412059984,False,True,test=qwen3|cal=llama-3+mistral
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.181125,-2.8647592091264626,2.5025092091264622,False,False,test=qwen3|cal=llama-3+mistral
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.181125,-4.217855269148627,3.855605269148627,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-0.3622089552238806,-11.239024543054372,10.51460663260661,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-0.3622089552238806,-7.282607839568646,6.558189929120886,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-0.3622089552238806,-3.553420257942687,2.8290023474949253,False,True,test=qwen3|cal=llama-3+mistral
@@ -7917,7 +7917,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-1.016923076923077,-2.064382059871078,0.030535906024923953,False,False,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-1.016923076923077,-2.422592153041151,0.38874599919499686,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-1.016923076923077,-4.1820867758719675,2.148240622025814,False,True,test=qwen3|cal=llama-3+mistral
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-1.016923076923077,-6.327814847913551,4.293968694067397,False,True,test=qwen3|cal=llama-3+mistral
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-1.016923076923077,-9.005581700822495,6.9717355469763405,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.181125,-0.5681181087715895,0.20586810877158954,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.181125,-1.7586444684945246,1.3963944684945246,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.181125,-1.2396156258191389,0.8773656258191389,False,True,test=qwen3|cal=llama-3+mistral
@@ -7928,7 +7928,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.181125,-1.9115250730353384,1.5492750730353384,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.181125,-0.9001509520984505,0.5379009520984506,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.181125,-1.7792884025088846,1.4170384025088847,False,False,test=qwen3|cal=llama-3+mistral
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.181125,-2.7824395585621153,2.420189558562115,False,True,test=qwen3|cal=llama-3+mistral
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.181125,-4.094029814826742,3.7317798148267416,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-0.3622089552238806,-10.921841932034466,10.197424021586704,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-0.3622089552238806,-9.932297305891742,9.20787939544398,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-0.3622089552238806,-3.2665125968949638,2.5420946864472023,False,True,test=qwen3|cal=llama-3+mistral
@@ -7951,7 +7951,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-1.016923076923077,-4.441371713459157,2.4075255596130023,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-1.016923076923077,-2.4398699894127827,0.40602383556662835,False,False,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-1.016923076923077,-4.17967634419692,2.1458301903507655,False,True,test=qwen3|cal=llama-3+mistral
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-1.016923076923077,-6.164904883028542,4.131058729182388,False,True,test=qwen3|cal=llama-3+mistral
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-1.016923076923077,-8.760532064713065,6.726685910866911,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.181125,-0.6239339005664332,0.2616839005664331,False,False,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.181125,-1.8397516892421926,1.4775016892421926,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.181125,-1.555244633765105,1.192994633765105,False,False,test=qwen3|cal=llama-3+mistral
@@ -7962,7 +7962,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.181125,-1.9854775795892892,1.6232275795892892,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.181125,-0.8117993663951216,0.44954936639512166,False,False,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.181125,-1.7857709445958379,1.423520944595838,False,True,test=qwen3|cal=llama-3+mistral
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.181125,-2.8992808329936355,2.537030832993635,False,True,test=qwen3|cal=llama-3+mistral
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.181125,-4.269782794714841,3.907532794714841,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-0.3622089552238806,-11.440175713693518,10.715757803245756,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-0.3622089552238806,-7.650444737934828,6.9260268274870675,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-0.3622089552238806,-3.712231349217901,2.9878134387701394,False,True,test=qwen3|cal=llama-3+mistral
@@ -7986,7 +7986,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-1.016923076923077,-4.587723163729773,2.553877009883619,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-1.016923076923077,-2.2650228705804043,0.23117671673425044,False,False,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-1.016923076923077,-4.192505245880918,2.1586590920347644,False,True,test=qwen3|cal=llama-3+mistral
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-1.016923076923077,-6.396132880040991,4.362286726194837,False,True,test=qwen3|cal=llama-3+mistral
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-1.016923076923077,-9.108345880560414,7.074499726714261,False,True,test=qwen3|cal=llama-3+mistral
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.3108771929824562,-0.7160932850335742,0.09433889906866172,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.3108771929824562,-1.927222228844507,1.3054678428795947,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.3108771929824562,-1.7766294006129701,1.1548750146480575,False,True,test=qwen3|cal=llama-3+qwen2.5
@@ -7996,7 +7996,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.3108771929824562,-1.9297019234148411,1.3079475374499285,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.3108771929824562,-1.0027589443463012,0.3810045583813889,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.3108771929824562,-1.8687965074129567,1.2470421214480445,False,True,test=qwen3|cal=llama-3+qwen2.5
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.3108771929824562,-2.924941315360624,2.3031869293957112,False,False,test=qwen3|cal=llama-3+qwen2.5
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.3108771929824562,-4.242959938243858,3.621205552278945,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.2515384615384615,-20.533344809374597,18.030267886297672,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.2515384615384615,-13.519632009710195,11.016555086633273,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.2515384615384615,-6.908738205082448,4.405661282005525,False,True,test=qwen3|cal=llama-3+qwen2.5
@@ -8018,7 +8018,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.7329885057471265,-1.8999052687116245,0.4339282572173714,False,False,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.7329885057471265,-2.2989675414956112,0.8329905300013584,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.7329885057471265,-4.259124266629261,2.793147255135008,False,True,test=qwen3|cal=llama-3+qwen2.5
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.7329885057471265,-6.649562552796613,5.18358554130236,False,True,test=qwen3|cal=llama-3+qwen2.5
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.7329885057471265,-9.632716145289367,8.166739133795113,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.3108771929824562,-0.6878379567881514,0.06608357082323901,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.3108771929824562,-1.847501309235212,1.2257469232702993,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.3108771929824562,-1.3419276839240237,0.7201732979591114,False,True,test=qwen3|cal=llama-3+qwen2.5
@@ -8029,7 +8029,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.3108771929824562,-1.9964186624193894,1.3746642764544768,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.3108771929824562,-1.0112632359265041,0.38950884996159174,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.3108771929824562,-1.8676100733388141,1.2458556873739015,False,False,test=qwen3|cal=llama-3+qwen2.5
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.3108771929824562,-2.8447557057215915,2.223001319756679,False,True,test=qwen3|cal=llama-3+qwen2.5
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.3108771929824562,-4.122344514398378,3.500590128433466,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.2515384615384615,-19.971061332818316,17.46798440974139,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.2515384615384615,-18.21685232745706,15.713775404380138,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.2515384615384615,-6.400124455464189,3.8970475323872655,False,True,test=qwen3|cal=llama-3+qwen2.5
@@ -8052,7 +8052,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.7329885057471265,-4.54797943421124,3.082002422716987,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.7329885057471265,-2.3182158339996963,0.8522388225054432,False,False,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.7329885057471265,-4.256438936536737,2.7904619250424845,False,True,test=qwen3|cal=llama-3+qwen2.5
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.7329885057471265,-6.468073471149477,5.002096459655224,False,True,test=qwen3|cal=llama-3+qwen2.5
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.7329885057471265,-9.359719748495241,7.893742737000988,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.3108771929824562,-0.7422067892828466,0.12045240331793416,False,False,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.3108771929824562,-1.9265059198864147,1.3047515339215021,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.3108771929824562,-1.649374377980711,1.027619992015799,False,False,test=qwen3|cal=llama-3+qwen2.5
@@ -8063,7 +8063,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.3108771929824562,-2.0684540364972688,1.4466996505323562,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.3108771929824562,-0.925202062031471,0.30344767606655865,False,False,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.3108771929824562,-1.8739245630832366,1.2521701771183245,False,True,test=qwen3|cal=llama-3+qwen2.5
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.3108771929824562,-2.9585680063941924,2.3368136204292798,False,False,test=qwen3|cal=llama-3+qwen2.5
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.3108771929824562,-4.293541303276725,3.6717869173118123,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.2515384615384615,-20.889934280583805,18.38685735750688,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.2515384615384615,-14.171712555216631,11.66863563213971,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.2515384615384615,-7.1902695671920815,4.687192644115158,False,True,test=qwen3|cal=llama-3+qwen2.5
@@ -8087,7 +8087,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.7329885057471265,-4.711021580381297,3.245044568887044,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.7329885057471265,-2.12342822203296,0.657451210538707,False,False,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.7329885057471265,-4.270730914236283,2.80475390274203,False,True,test=qwen3|cal=llama-3+qwen2.5
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.7329885057471265,-6.725671935789239,5.259694924294986,False,True,test=qwen3|cal=llama-3+qwen2.5
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.7329885057471265,-9.74720009733012,8.281223085835867,False,True,test=qwen3|cal=llama-3+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,mmlu,76.81,76.47,-0.34,-0.015046728971962615,-0.46255545391283104,0.4324619959689058,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,arc_challenge,61.6,61.95,0.35,-0.015046728971962615,-1.8000906111183823,1.769997153174457,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gsm8k,67.63,66.19,-1.44,-0.015046728971962615,-1.633780324165038,1.6036868662211126,False,True,test=qwen3|cal=mistral+qwen2.5
@@ -8097,7 +8097,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,truthfulqa,55.39,55.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,ifeval,87.48,87.78,0.3,-0.015046728971962615,-1.802829112814591,1.7727356548706656,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,bbh,40.4,40.37,-0.03,-0.015046728971962615,-0.7791405703479126,0.7490471124039875,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,math_lvl5,54.18,54.31,0.13,-0.015046728971962615,-1.7355669640706115,1.7054735061266861,False,True,test=qwen3|cal=mistral+qwen2.5
-RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.015046728971962615,-2.9019422034279767,2.8718487454840513,False,True,test=qwen3|cal=mistral+qwen2.5
+RedHatAI/Qwen3-14B-FP8-dynamic,qwen3,Qwen3-14B,fp8_dynamic,gpqa_diamond,61.62,64.14,2.52,-0.015046728971962615,-4.357523176012819,4.327429718068894,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,arc_challenge,67.32,67.06,-0.26,-1.632142857142857,-5.719364663787297,2.4550789495015826,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,gsm8k,88.7,88.25,-0.45,-1.632142857142857,-4.232647113408692,0.9683613991229787,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-NVFP4,qwen3,Qwen3-14B,nvfp4,hellaswag,79.62,78.24,-1.38,-1.632142857142857,-2.831316302785887,-0.4329694114998264,False,True,test=qwen3|cal=mistral+qwen2.5
@@ -8119,7 +8119,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,truthfulqa,55.39,56.3,0
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,mmlu_pro,44.59,42.39,-2.2,-0.6787755102040816,-2.1882632934658455,0.8307122730576824,False,False,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,bbh,40.4,38.74,-1.66,-0.6787755102040816,-2.7044780267239266,1.3469270063157635,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,math_lvl5,54.18,55.05,0.87,-0.6787755102040816,-5.24007672902627,3.8825257086181066,False,True,test=qwen3|cal=mistral+qwen2.5
-RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.6787755102040816,-8.33227447965588,6.974723459247716,False,True,test=qwen3|cal=mistral+qwen2.5
+RedHatAI/Qwen3-14B-quantized.w4a16,qwen3,Qwen3-14B,w4a16,gpqa_diamond,61.62,61.11,-0.51,-0.6787755102040816,-12.191190596364585,10.833639575956422,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu,80.96,80.89,-0.07,-0.015046728971962615,-0.43135110106521574,0.4012576431212905,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,arc_challenge,69.03,68.0,-1.03,-0.015046728971962615,-1.712049174005444,1.6819557160615186,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gsm8k,87.64,88.32,0.68,-0.015046728971962615,-1.153708543253295,1.1236150853093696,False,True,test=qwen3|cal=mistral+qwen2.5
@@ -8130,7 +8130,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,mmlu_pro,54.24,54.78,
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,ifeval,86.23,86.23,0.0,-0.015046728971962615,-1.8765091156323757,1.8464156576884503,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,bbh,44.29,43.7,-0.59,-0.015046728971962615,-0.7885324596539814,0.7584390017100563,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,math_lvl5,54.61,57.26,2.65,-0.015046728971962615,-1.7342567012005994,1.704163243256674,False,False,test=qwen3|cal=mistral+qwen2.5
-RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.015046728971962615,-2.8133875763238714,2.783294118379946,False,True,test=qwen3|cal=mistral+qwen2.5
+RedHatAI/Qwen3-32B-FP8-dynamic,qwen3,Qwen3-32B,fp8_dynamic,gpqa_diamond,66.67,68.69,2.02,-0.015046728971962615,-4.22431905210926,4.194225594165335,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,arc_challenge,70.65,70.22,-0.43,-1.632142857142857,-5.600175763876237,2.335890049590523,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,gsm8k,74.15,74.68,0.53,-1.632142857142857,-5.228330866630436,1.9640451523447215,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-NVFP4,qwen3,Qwen3-32B,nvfp4,hellaswag,84.0,83.33,-0.67,-1.632142857142857,-2.7235039344269323,-0.5407817798587815,False,True,test=qwen3|cal=mistral+qwen2.5
@@ -8153,7 +8153,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,mmlu_pro,54.24,52.63,-1
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,ifeval,86.23,85.53,-0.7,-0.6787755102040816,-5.613730926511041,4.2561799061028776,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,bbh,44.29,41.07,-3.22,-0.6787755102040816,-2.7293770283543015,1.3718260079461384,False,False,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,math_lvl5,54.61,55.38,0.77,-0.6787755102040816,-5.236603068267132,3.879052047858969,False,True,test=qwen3|cal=mistral+qwen2.5
-RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.6787755102040816,-8.097505762437542,6.73995474202938,False,True,test=qwen3|cal=mistral+qwen2.5
+RedHatAI/Qwen3-32B-quantized.w4a16,qwen3,Qwen3-32B,w4a16,gpqa_diamond,66.67,66.67,0.0,-0.6787755102040816,-11.838050819035198,10.480499798627035,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu,71.95,72.3,0.35,-0.015046728971962615,-0.4913944393814922,0.4613009814375669,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,arc_challenge,61.69,61.6,-0.09,-0.015046728971962615,-1.7992995405888854,1.76920608264496,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gsm8k,75.97,80.52,4.55,-0.015046728971962615,-1.4932436227911459,1.4631501648472205,False,False,test=qwen3|cal=mistral+qwen2.5
@@ -8164,7 +8164,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,mmlu_pro,34.57,37.82,3.
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,ifeval,84.77,84.56,-0.21,-0.015046728971962615,-1.9560628624765748,1.9259694045326494,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,bbh,25.47,27.2,1.73,-0.015046728971962615,-0.6934890323267613,0.6633955743828361,False,False,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,math_lvl5,51.05,51.9,0.85,-0.015046728971962615,-1.7412302378138054,1.71113677986988,False,True,test=qwen3|cal=mistral+qwen2.5
-RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.015046728971962615,-2.9390785312382612,2.908985073294336,False,True,test=qwen3|cal=mistral+qwen2.5
+RedHatAI/Qwen3-8B-FP8-dynamic,qwen3,Qwen3-8B,fp8_dynamic,gpqa_diamond,58.59,61.11,2.52,-0.015046728971962615,-4.413383746744476,4.38329028880055,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,arc_challenge,64.76,63.91,-0.85,-1.632142857142857,-5.794951993960315,2.530666279674601,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,gsm8k,87.26,86.73,-0.53,-1.632142857142857,-4.370870564946551,1.1065848506608373,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-NVFP4,qwen3,Qwen3-8B,nvfp4,hellaswag,76.68,75.34,-1.34,-1.632142857142857,-2.890993342463134,-0.3732923718225798,False,True,test=qwen3|cal=mistral+qwen2.5
@@ -8188,4 +8188,4 @@ RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,mmlu_pro,34.57,25.71,-8.8
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,ifeval,84.77,85.44,0.67,-0.6787755102040816,-5.824637253004499,4.467086232596336,False,True,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,bbh,25.47,21.17,-4.3,-0.6787755102040816,-2.477405739633114,1.119854719224951,False,False,test=qwen3|cal=mistral+qwen2.5
 RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,math_lvl5,51.05,51.38,0.33,-0.6787755102040816,-5.255090732872538,3.8975397124643747,False,True,test=qwen3|cal=mistral+qwen2.5
-RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.6787755102040816,-8.430727246352877,7.073176225944715,False,True,test=qwen3|cal=mistral+qwen2.5
+RedHatAI/Qwen3-8B-quantized.w4a16,qwen3,Qwen3-8B,w4a16,gpqa_diamond,58.59,55.56,-3.03,-0.6787755102040816,-12.339283530213631,10.981732509805468,False,True,test=qwen3|cal=mistral+qwen2.5
