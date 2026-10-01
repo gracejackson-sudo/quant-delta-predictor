@@ -1,23 +1,23 @@
 {
   "artifact": "per-scheme quantization accuracy-delta envelope",
   "what_it_is": "the observed distribution of (quantized - original) accuracy in percentage points on OpenLLM-style benchmarks, per quantization scheme, with a conformal-style 90% interval (an in-sample residual-quantile band; the split-conformal guarantee applies only to the explicit calibration-set variant used inside the LOFO audit). It is a calibrated historical baseline, NOT a per-model predictor.",
-  "built": "2026-09-27",
+  "built": "2026-09-30",
   "alpha": 0.1,
   "target": "acc_after - acc_before, percentage points",
   "training_data": {
     "source": "RedHatAI model cards on Hugging Face",
-    "rows": 817,
+    "rows": 819,
     "checkpoints": 38,
     "families": 6,
     "benchmarks": 21
   },
   "validation": {
     "leave_one_family_out": {
-      "rows": 817,
+      "rows": 819,
       "calibration_families_per_row": 5.0,
-      "evaluations": 4085,
-      "coverage_two_sided": 0.9177,
-      "coverage_one_sided": 0.9569,
+      "evaluations": 4095,
+      "coverage_two_sided": 0.9179,
+      "coverage_one_sided": 0.957,
       "note": "each row is scored once per calibration family, so evaluations are not independent rows"
     },
     "prospective_all_rows": {
@@ -197,14 +197,14 @@
     },
     "nvfp4": {
       "label": "NVFP4 (4-bit float weights + activations)",
-      "n_observations": 64,
+      "n_observations": 66,
       "n_checkpoints": 5,
       "n_families": 3,
-      "mean_delta_pp": -1.115,
-      "median_delta_pp": -0.845,
-      "conformal_half_width_pp": 2.985,
+      "mean_delta_pp": -1.138,
+      "median_delta_pp": -0.86,
+      "conformal_half_width_pp": 3.008,
       "interval_90_pp": [
-        -4.1,
+        -4.15,
         1.87
       ],
       "empirical_band_90_pp": [
@@ -214,17 +214,17 @@
       "worst_observed_delta_pp": -8.12,
       "coverage": {
         "state": "trusted",
-        "one_sided": 0.9594,
-        "two_sided": 0.9313,
+        "one_sided": 0.9606,
+        "two_sided": 0.9333,
         "bootstrap_90_pct": [
-          88.38709677419355,
+          89.41176470588236,
           100.0
         ],
-        "rows": 64,
+        "rows": 66,
         "checkpoints": 5,
-        "scored_pairs": 320,
+        "scored_pairs": 330,
         "worst_family": "llama-3",
-        "worst_family_one_sided": 0.8,
+        "worst_family_one_sided": 0.8286,
         "by_size_band": {
           "<2B": {
             "state": "not_measured"
@@ -242,17 +242,17 @@
           ">10B": {
             "state": "trusted",
             "checkpoints": 4,
-            "rows": 51,
-            "one_sided": 0.9529411764705882,
+            "rows": 53,
+            "one_sided": 0.9547169811320755,
             "boot90": [
-              85.3061224489796,
+              86.9090909090909,
               100.0
             ]
           }
         }
       },
       "excludes_zero": false,
-      "warning": "measured coverage falls to 80% on held-out family 'llama-3', over 3 families of evidence"
+      "warning": "measured coverage falls to 83% on held-out family 'llama-3', over 3 families of evidence"
     },
     "w4a16": {
       "label": "W4A16 (4-bit weights, 16-bit activations, GPTQ)",

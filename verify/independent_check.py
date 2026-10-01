@@ -40,13 +40,18 @@ MIN_ACC = 20.0
 _LLAMA_SUFFIX = r"(?:[\s\-_]*llama|[\s\-_]*meta)?"
 BENCH = [
     ("mmlu_pro", r"\bmmlu[\s\-_]*pro\b"),
-    ("mmlu_cot", r"\bmmlu\b[^a-z]*\(?\s*cot"),
+    # C6: the MMLU family tolerates the harness task-name suffix, the same
+    # convention arc_challenge and gsm8k already used below. The cards carry
+    # `mmlu_cot_llama (0-shot)` and `mmlu_llama`; both name the Meta
+    # prompt-matched template of a task we already whitelist.
+    ("mmlu_cot", r"\bmmlu\b[^a-z]*\(?\s*cot|^mmlu[_-]cot"
+                 + _LLAMA_SUFFIX + r"\b"),
     # plain MMLU: ANCHORED at start of label, matching src/harvest.py:29's
     # `^mmlu\b`. C5: the previous negative-lookbehind enumeration missed
     # "Italian MMLU", "Hindi MMLU", "Thai MMLU", "Portuguese MMLU" (space
     # instead of hyphen, name not in the enumeration). Anchoring inherits
     # the pipeline's inclusion boundary and needs no enumeration.
-    ("mmlu", r"^mmlu(?:_llama)?\b"),
+    ("mmlu", r"^mmlu" + _LLAMA_SUFFIX + r"\b"),
     ("arc_challenge",
      r"\barc[\s\-_]*(?:challenge|c)" + _LLAMA_SUFFIX + r"\b"),
     ("gsm8k", r"\bgsm[\s\-_]*8?k" + _LLAMA_SUFFIX + r"\b"),

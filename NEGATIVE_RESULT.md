@@ -2,7 +2,7 @@
 
 *A negative result, with the measured noise floor, a low-rank transfer test, and a comparison to BenchPress.*
 
-Data: 817<!-- claim: n_rows = 817.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
+Data: 819<!-- claim: n_rows = 819.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
 
 ---
 
@@ -16,30 +16,30 @@ Leave-one-family-out, so the test family's checkpoints are never in training. Ro
 
 | predictor | MAE (pp) | beats global mean? |
 |---|---|---|
-| per-scheme mean (shipped) | 0.7244<!-- claim: pred_mae::scheme_mean = 0.724380 --> | yes |
-| global mean (baseline) | 0.7553<!-- claim: pred_mae::global_mean = 0.755276 --> | -- |
-| per-(scheme x benchmark) mean | 0.7598<!-- claim: pred_mae::scheme_x_bench = 0.759832 --> | **no** |
-| per-benchmark mean | 0.7668<!-- claim: pred_mae::bench_mean = 0.766822 --> | **no** |
-| ridge, 38 features | 0.7789<!-- claim: pred_mae::ridge = 0.778898 --> | **no** |
-| gradient boosting | 0.7794<!-- claim: pred_mae::grad_boost = 0.779362 --> | **no** |
+| per-scheme mean (shipped) | 0.7254<!-- claim: pred_mae::scheme_mean = 0.725362 --> | yes |
+| global mean (baseline) | 0.7575<!-- claim: pred_mae::global_mean = 0.757469 --> | -- |
+| per-(scheme x benchmark) mean | 0.7597<!-- claim: pred_mae::scheme_x_bench = 0.759665 --> | **no** |
+| per-benchmark mean | 0.7687<!-- claim: pred_mae::bench_mean = 0.768677 --> | **no** |
+| gradient boosting | 0.7759<!-- claim: pred_mae::grad_boost = 0.775945 --> | **no** |
+| ridge, 38 features | 0.7803<!-- claim: pred_mae::ridge = 0.780341 --> | **no** |
 
 Ridge regression and gradient boosting both do **worse than predicting the average**. Adding model size, benchmark identity, base accuracy and quantization method all degraded out-of-family accuracy.
 
 ## 3. Why: the target is mostly measurement noise
 
-Benchmark scores are sample proportions over finite item sets, so a delta is a difference of two noisy quantities. Estimating the noise floor directly from near-lossless schemes (W8A16 and FP8-dynamic, whose true delta should be ~0) gives an irreducible MAE of **0.508<!-- claim: mae_floor_pp = 0.507523 -->pp**.
+Benchmark scores are sample proportions over finite item sets, so a delta is a difference of two noisy quantities. Estimating the noise floor directly from near-lossless schemes (W8A16 and FP8-dynamic, whose true delta should be ~0) gives an irreducible MAE of **0.507<!-- claim: mae_floor_pp = 0.507199 -->pp**.
 
-The global-mean baseline sits at 0.7553<!-- claim: mae_global_lofo = 0.755276 -->pp. So the entire headroom available to any predictor is about 0.248<!-- claim: headroom_pp = 0.2478 -->pp, and the best predictor we found captures roughly a tenth of it.
+The global-mean baseline sits at 0.7575<!-- claim: mae_global_lofo = 0.757469 -->pp. So the entire headroom available to any predictor is about 0.250<!-- claim: headroom_pp = 0.2503 -->pp, and the best predictor we found captures roughly a tenth of it.
 
 On GSM8K specifically, the observed spread for supposedly lossless schemes is nearly identical to the spread for 4-bit schemes: the measurement is louder than the effect.
 
-**A per-fold view of the same claim.** The MAE numbers above are weighted means across six leave-one-family-out folds of very different sizes and difficulty. Broken out, the per-scheme mean (the best predictor we found) ranges from 0.39<!-- claim: lofo_scheme_mean_min = 0.393734 -->pp on gemma-2 (the smallest fold, 59<!-- claim: gemma2_fold_rows = 59.000000 --> rows) to 1.40<!-- claim: lofo_scheme_mean_max = 1.397897 -->pp on qwen3 (the second-smallest, at 101<!-- claim: qwen3_fold_rows = 101.000000 --> rows), against a pooled 0.72<!-- claim: pred_mae::scheme_mean = 0.724380 -->pp. The predictor beats the global-mean baseline on 5<!-- claim: lofo_scheme_mean_wins_folds = 5.000000 --> of 6<!-- claim: n_families = 6.000000 --> folds but *loses to it on qwen3*: the one-family fold where the global mean is actually the better bet. That is the sharpest version of the negative result in the whole paper -- our best predictor is worse than guessing the average on one of six families. The pooled MAE hides it because the qwen3 fold is 12% of the corpus.
+**A per-fold view of the same claim.** The MAE numbers above are weighted means across six leave-one-family-out folds of very different sizes and difficulty. Broken out, the per-scheme mean (the best predictor we found) ranges from 0.39<!-- claim: lofo_scheme_mean_min = 0.393734 -->pp on gemma-2 (the smallest fold, 59<!-- claim: gemma2_fold_rows = 59.000000 --> rows) to 1.40<!-- claim: lofo_scheme_mean_max = 1.403079 -->pp on qwen3 (the second-smallest, at 101<!-- claim: qwen3_fold_rows = 101.000000 --> rows), against a pooled 0.73<!-- claim: pred_mae::scheme_mean = 0.725362 -->pp. The predictor beats the global-mean baseline on 5<!-- claim: lofo_scheme_mean_wins_folds = 5.000000 --> of 6<!-- claim: n_families = 6.000000 --> folds but *loses to it on qwen3*: the one-family fold where the global mean is actually the better bet. That is the sharpest version of the negative result in the whole paper -- our best predictor is worse than guessing the average on one of six families. The pooled MAE hides it because the qwen3 fold is 12% of the corpus.
 
 ## 4. Low-rank structure and paired deltas (Track 2, revised after external review)
 
 BenchPress (arXiv:2606.24020) predicts unseen benchmark scores by exploiting the fact that a frontier-model score matrix is roughly rank-2. We tested whether that structure helps on **paired** quantization deltas.
 
-> **Correction.** The first version of this section made three statements that a BenchPress author showed, on reviewing our code, to be wrong or unfair. (1) It said rank-2 explains 55.9<!-- claim: t2_var_explained_rank2_pct = 55.931459 -->% of the variance in our matrix, against over 90% for BenchPress. That figure was computed after filling 61.4<!-- claim: t2b_filled_global_mean_pct = 61.360544 -->% of the matrix with one global mean, which weakens any low-rank structure. Measured as the BenchPress paper does it, the structure is present (table below). (2) It tested a plain SVD-completion approximation, not BenchPress's method. (3) It called the resulting error gap 'an order of magnitude'; even our own numbers showed about 9<!-- claim: t2_mae_lowrank::2 = 8.746753 --> versus 1.4<!-- claim: t2_mae_scheme::2 = 1.385334 -->. What follows replaces it.
+> **Correction.** The first version of this section made three statements that a BenchPress author showed, on reviewing our code, to be wrong or unfair. (1) It said rank-2 explains 55.9<!-- claim: t2_var_explained_rank2_pct = 55.931459 -->% of the variance in our matrix, against over 90% for BenchPress. That figure was computed after filling 61.3<!-- claim: t2b_filled_global_mean_pct = 61.292517 -->% of the matrix with one global mean, which weakens any low-rank structure. Measured as the BenchPress paper does it, the structure is present (table below). (2) It tested a plain SVD-completion approximation, not BenchPress's method. (3) It called the resulting error gap 'an order of magnitude'; even our own numbers showed about 9<!-- claim: t2_mae_lowrank::2 = 8.746753 --> versus 1.4<!-- claim: t2_mae_scheme::2 = 1.385334 -->. What follows replaces it.
 
 ### 4a. Is the structure there?
 
@@ -47,10 +47,10 @@ Largest fully observed submatrix with k benchmarks, each column mean-centred, no
 
 | benchmarks | rows (base + quantized) | rank-2 variance | base rows only |
 |---|---|---|---|
-| 3 | 135<!-- claim: t2b_fair_rows_k3 = 135.000000 --> | 98.76<!-- claim: t2b_fair_rank2_k3_pct = 98.761183 -->% | 94.93<!-- claim: t2b_fair_base_rank2_k3_pct = 94.931590 -->% |
-| 4 | 131<!-- claim: t2b_fair_rows_k4 = 131.000000 --> | 92.25<!-- claim: t2b_fair_rank2_k4_pct = 92.252280 -->% | 89.46<!-- claim: t2b_fair_base_rank2_k4_pct = 89.463647 -->% |
-| 5 | 128<!-- claim: t2b_fair_rows_k5 = 128.000000 --> | 90.55<!-- claim: t2b_fair_rank2_k5_pct = 90.550015 -->% | 89.35<!-- claim: t2b_fair_base_rank2_k5_pct = 89.348106 -->% |
-| 6 | 125<!-- claim: t2b_fair_rows_k6 = 125.000000 --> | 88.32<!-- claim: t2b_fair_rank2_k6_pct = 88.321052 -->% | 88.55<!-- claim: t2b_fair_base_rank2_k6_pct = 88.553301 -->% |
+| 3 | 135<!-- claim: t2b_fair_rows_k3 = 135.000000 --> | 98.96<!-- claim: t2b_fair_rank2_k3_pct = 98.955497 -->% | 94.93<!-- claim: t2b_fair_base_rank2_k3_pct = 94.931590 -->% |
+| 4 | 132<!-- claim: t2b_fair_rows_k4 = 132.000000 --> | 91.09<!-- claim: t2b_fair_rank2_k4_pct = 91.087088 -->% | 89.46<!-- claim: t2b_fair_base_rank2_k4_pct = 89.463647 -->% |
+| 5 | 129<!-- claim: t2b_fair_rows_k5 = 129.000000 --> | 90.21<!-- claim: t2b_fair_rank2_k5_pct = 90.205021 -->% | 89.35<!-- claim: t2b_fair_base_rank2_k5_pct = 89.348106 -->% |
+| 6 | 126<!-- claim: t2b_fair_rows_k6 = 126.000000 --> | 88.00<!-- claim: t2b_fair_rank2_k6_pct = 88.002244 -->% | 88.55<!-- claim: t2b_fair_base_rank2_k6_pct = 88.547830 -->% |
 
 Yes: rank-2 explains 88% to 99% here, as the reviewer said. Two cautions on reading it. With only 3 to 6 columns, two factors can explain a large share almost by construction, so this is a weak test next to BenchPress's 133 benchmarks. And each quantized checkpoint sits next to its own base, so the rows are not independent; the base-only column removes that and gives the same picture. What it establishes is that cross-model variation is low-rank. It says nothing yet about whether that helps predict a one-point paired delta.
 
@@ -113,18 +113,18 @@ So the excess-over-control figures measure **bad recipe against mediocre recipe*
 
 ## 7. The self-correction that mattered most
 
-Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (91.0<!-- claim: band_emp_coverage_pct = 90.987695 -->% vs 90.6<!-- claim: band_conf_coverage_pct = 90.555371 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
+Late in the work we believed we had found a product bug: the tool shows a *symmetric* interval, and an earlier audit had measured a raw asymmetric empirical band covering better (91.0<!-- claim: band_emp_coverage_pct = 90.999668 -->% vs 90.6<!-- claim: band_conf_coverage_pct = 90.567918 -->%). Real quantization damage is left-skewed, so a symmetric band is obviously the wrong shape. We were about to switch the product over.
 
-Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 26<!-- claim: inf_share_pct = 25.806452 -->% of evaluations (776<!-- claim: inf_rows = 776.000000 --> of 3007<!-- claim: band_n_pairs = 3007.000000 -->; the 817<!-- claim: band_n_rows = 817.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
+Measuring it properly first killed the change. The empirical band returns an INFINITE interval on 26<!-- claim: inf_share_pct = 25.838592 -->% of evaluations (778<!-- claim: inf_rows = 778.000000 --> of 3011<!-- claim: band_n_pairs = 3011.000000 -->; the 819<!-- claim: band_n_rows = 819.000000 --> distinct rows are each scored under several calibration families), because a two-sided empirical index needs n >= 2/alpha - 1 = 19 calibration points and often has fewer. An infinite interval covers 100% of the time by construction. That was the entire source of its apparent advantage.
 
 On the rows where both bands are actually defined:
 
 | band | coverage | mean width |
 |---|---|---|
-| symmetric conformal (shipped) | **88.5<!-- claim: finite_conf_cov_pct = 88.525325 -->%** | **3.96<!-- claim: finite_conf_width = 3.956189 -->pp** |
-| asymmetric empirical | 87.9<!-- claim: finite_emp_cov_pct = 87.852981 -->% | 5.51<!-- claim: finite_emp_width = 5.513805 -->pp |
+| symmetric conformal (shipped) | **88.5<!-- claim: finite_conf_cov_pct = 88.535602 -->%** | **3.96<!-- claim: finite_conf_width = 3.958459 -->pp** |
+| asymmetric empirical | 87.9<!-- claim: finite_emp_cov_pct = 87.863860 -->% | 5.51<!-- claim: finite_emp_width = 5.514062 -->pp |
 
-Conformal wins on coverage AND width, on 2231<!-- claim: finite_n = 2231.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (90.1<!-- claim: band_hybrid_coverage_pct = 90.056535 -->%). **The shipped interval was right and the intuition was wrong.**
+Conformal wins on coverage AND width, on 2233<!-- claim: finite_n = 2233.000000 --> rows. A hybrid that falls back when the empirical band is undefined does no better (90.1<!-- claim: band_hybrid_coverage_pct = 90.069744 -->%). **The shipped interval was right and the intuition was wrong.**
 
 Two conclusions, both uncomfortable and both kept:
 

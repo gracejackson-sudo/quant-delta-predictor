@@ -248,3 +248,53 @@ none was taken two days before submission.
    fixed together. Three other artifacts regenerate with changes from the same
    run and were likewise left alone: `out/census.json`,
    `out/census_rows.csv`, `out/adversarial_passfail_193.csv`.
+
+## 2026-09-30, MMLU family: the harness task-name suffix was silently dropping rows
+
+`canon_benchmark` accepted `arc_challenge_llama` and `gsm8k_llama` but rejected
+`mmlu_llama`, because the MMLU pattern anchored a trailing word boundary
+(`^mmlu\b`) and `_` is a word character. ARC and GSM8K had no such boundary, so
+the same convention worked for them and not for MMLU. `verify/independent_check.py`
+caught it: its training-row cross-check reported 818 rows against the pipeline's
+817, and the per-benchmark breakdown named `mmlu`. The verifier was right.
+
+Two rows were being dropped, both from `RedHatAI/Llama-3.3-70B-Instruct-NVFP4`,
+the only card in the corpus that uses the harness task-name form for MMLU:
+
+| card label | before -> after | delta | resolves to |
+|---|---|---|---|
+| `mmlu_llama` | 83.40 -> 81.28 | -2.12 | `mmlu` |
+| `mmlu_cot_llama (0-shot)` | 86.42 -> 84.77 | -1.65 | `mmlu_cot` |
+
+Both sides were changed from the card convention rather than by copying one
+into the other: `src/harvest.py` gained a named `_HARNESS_SUFFIX` applied across
+the MMLU family, and `verify/independent_check.py` now applies its own
+pre-existing `_LLAMA_SUFFIX` constant to `mmlu` and `mmlu_cot` as it already
+did to `arc_challenge` and `gsm8k`. The two implementations agree on all 21
+real MMLU-family labels found on the cards, including rejecting the seven
+localised variants (Portuguese, Spanish, Italian, German, French, Hindi, Thai),
+which are different benchmarks and stay out.
+
+Corpus: 850 -> 852 raw rows, 817 -> 819 in the modelling set. 102 of 736
+registry keys moved. No verdict flipped (refused stays 0, insufficient
+evidence stays 6 of 17). **The prospective headline is unchanged** at
+119/131 = 90.8%: all 47 `prosp_*` keys are byte-identical.
+
+### Interaction worth knowing about: the name-gate hides a third row
+
+`RedHatAI/Phi-4-mini-instruct-FP8-dynamic` also uses `mmlu_llama`. It does not
+appear in the corpus because it is one of the nine pre-registered prospective
+repositories rejected by the `parse_params_b` name-gate (no `<n>B` token in the
+checkpoint name; see the S9 bullet on the name-gate). **If that gate is ever
+removed or relaxed, that card gains an MMLU row too**, on top of the rows the
+gate currently withholds. Anyone revisiting the name-gate should expect the
+prospective row count to move by more than the gated-card count alone would
+suggest, and should re-measure rather than assume.
+
+### What was deliberately NOT regenerated
+
+`out/adversarial_audit.json` and `out/census.json` are now stale with respect
+to this corpus. Neither is read by the claims registry. Regenerating
+`adversarial_audit.json` moves the gate-rejected coverage range quoted in
+`SCOPE.md` item 5, and that artifact and that document are to be corrected
+together rather than separately; see the deferred-decisions list above.

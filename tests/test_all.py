@@ -2436,10 +2436,10 @@ def test_gpqa_corpus_label_matches_card_label_per_row():
         + "\n".join(f"  * {f}" for f in failures))
 
 
-def test_dataset_row_count_pinned_at_817():
+def test_dataset_row_count_pinned():
     """Tier 2.5 sweep (day-7 audit): pin the corpus size so a future
     row drop cannot silently apply to some downstream code paths and
-    not others. 850 raw rows minus 33 near-chance-baseline drops = 817
+    not others. 852 raw rows minus 33 near-chance-baseline drops = 819
     rows in the modeling set. If the count moves, this test fails
     loudly and the paper's macros, the abstract, §3 and §5, and every
     generated doc must all move together (see registry `n_rows` /
@@ -2447,14 +2447,14 @@ def test_dataset_row_count_pinned_at_817():
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
     d = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
-    assert len(d) == 850, (
-        f"data/dataset.csv has {len(d)} raw rows; expected 850. A drop "
+    assert len(d) == 852, (
+        f"data/dataset.csv has {len(d)} raw rows; expected 852. A drop "
         f"went in without the sweep — check dataset.csv, the "
         f"MIN_ACC_BEFORE filter, and the registry `n_rows_raw` claim.")
     d2 = d[d.acc_before >= 20]
-    assert len(d2) == 817, (
+    assert len(d2) == 819, (
         f"dataset.csv has {len(d2)} rows after acc_before>=20; expected "
-        f"817. If a drop is intended, update paper/numbers.tex (Nrows), "
+        f"819. If a drop is intended, update paper/numbers.tex (Nrows), "
         f"the abstract, §3, §5, the supplement, README, and this pin "
         f"together.")
     # And the registry must agree.
@@ -2462,8 +2462,8 @@ def test_dataset_row_count_pinned_at_817():
     _sys.path.insert(0, os.path.join(root, "src"))
     from verify_claims import registry as _reg
     R = {k: v[0] for k, v in _reg().items()}
-    assert R["n_rows"] == 817, f"registry n_rows = {R['n_rows']}"
-    assert R["n_rows_raw"] == 850, f"registry n_rows_raw = {R['n_rows_raw']}"
+    assert R["n_rows"] == 819, f"registry n_rows = {R['n_rows']}"
+    assert R["n_rows_raw"] == 852, f"registry n_rows_raw = {R['n_rows_raw']}"
 
 
 def test_independent_check_benchmark_regex_handles_variants():
@@ -2898,3 +2898,86 @@ def test_gpqa_protocol_labels_survive_a_reharvest():
     assert n_amb == 2, (
         f"reconcile_gpqa_main parked {n_amb} rows, expected 2 "
         f"(Llama-3.3-70B-Instruct FP8-dynamic and w8a8 at 46.10)")
+
+
+# ---------------------------------------------------------------------------
+# The paper's first headline result is a NEGATIVE one: per-model prediction
+# carries almost no signal, and both ridge and gradient boosting are worse
+# than guessing the global average. Nothing in this suite asserted that
+# ordering, so a change that inverted it -- a corpus change, or tuning the
+# baselines -- would have left every gate green while the abstract silently
+# became false.
+#
+# What this test READS: pred_mae::* from the live claims registry, which
+# verify_claims populates from out/predictor_comparison.json (written by
+# src/diagnose.py under leave-one-family-out).
+#
+# This is not here to stop the ordering changing. It is here so that if it
+# changes we find out immediately and report it, rather than shipping a
+# stale claim. If a tuned baseline legitimately beats the global mean, this
+# test SHOULD fail, and the abstract, S5 and NEGATIVE_RESULT.md all have to
+# be rewritten before it is re-pinned.
+# ---------------------------------------------------------------------------
+def test_predictor_ordering_matches_the_papers_negative_claim():
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    from verify_claims import registry
+    R = {k: v[0] for k, v in registry().items()}
+
+    need = ["pred_mae::scheme_mean", "pred_mae::global_mean",
+            "pred_mae::scheme_x_bench", "pred_mae::bench_mean",
+            "pred_mae::ridge", "pred_mae::grad_boost"]
+    missing = [k for k in need if k not in R]
+    assert not missing, (
+        f"the registry no longer exports {missing}; the negative-result "
+        f"ordering cannot be checked. Re-run src/diagnose.py, or if a "
+        f"predictor was removed, update this test and the S5 MAE table.")
+
+    glob = R["pred_mae::global_mean"]
+    scheme = R["pred_mae::scheme_mean"]
+    margins = {k.split("::")[1]: R[k] - glob for k in need
+               if k != "pred_mae::global_mean"}
+    detail = ("  global mean (baseline) = %.4f\n" % glob) + "\n".join(
+        "  %-16s %.4f  margin %+.4f" % (n, R["pred_mae::" + n], m)
+        for n, m in sorted(margins.items(), key=lambda kv: kv[1]))
+
+    # (1) the shipped predictor must beat the baseline -- this is the paper's
+    #     one positive claim about prediction, and it is small.
+    assert scheme < glob, (
+        "the per-scheme mean no longer beats the global mean under "
+        "leave-one-family-out. The paper's MaeGain and its CI, the abstract's "
+        "'beats a global mean by' clause and NEGATIVE_RESULT.md all rest on "
+        "this.\n" + detail)
+
+    # (2) ridge and gradient boosting must both LOSE to the baseline -- the
+    #     abstract says 'both ridge regression and gradient boosting are
+    #     worse than guessing the average'.
+    inverted = [n for n in ("ridge", "grad_boost") if margins[n] <= 0]
+    assert not inverted, (
+        f"{inverted} now beat(s) the global-mean baseline under "
+        f"leave-one-family-out. The abstract's central negative claim is "
+        f"that both are WORSE than guessing the average, so this inversion "
+        f"must be reported and the abstract, S5 and NEGATIVE_RESULT.md "
+        f"rewritten -- not re-pinned away.\n" + detail)
+
+    # (3) the two weaker card-feature baselines must also lose, which is what
+    #     'no signal beyond the per-scheme average' means.
+    for n in ("scheme_x_bench", "bench_mean"):
+        assert margins[n] > 0, (
+            f"{n} now beats the global mean; NEGATIVE_RESULT.md's table and "
+            f"its ordering claim need revisiting.\n" + detail)
+
+    # (4) margin-thinness tripwire. These margins are small in absolute terms
+    #     (order 0.02pp against a headline effect of order 0.03pp) and move on
+    #     a two-row corpus change. If one falls below a third of the shipped
+    #     predictor's own advantage, 'worse than guessing' is no longer a
+    #     comfortable description and the prose should be softened before the
+    #     ordering actually flips.
+    gain = glob - scheme
+    thin = {n: m for n, m in margins.items()
+            if n in ("ridge", "grad_boost") and m < gain / 3.0}
+    assert not thin, (
+        f"the losing margin for {sorted(thin)} has fallen below a third of "
+        f"the per-scheme mean's own advantage ({gain:.4f}pp). The ordering "
+        f"still holds, but 'worse than guessing the average' is now a thin "
+        f"claim; soften the wording in the abstract and S5 rather than "
+        f"waiting for an outright flip.\n" + detail)

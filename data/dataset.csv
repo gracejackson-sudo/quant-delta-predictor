@@ -49,9 +49,12 @@ RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,mmlu_pro,12032,51.89,51.5,-0.39,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,ifeval,541,90.89,90.92,0.03,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,bbh,6511,63.15,62.84,-0.31,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,gpqa_ambiguous_46,448,46.1,46.3,0.2,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,musr,756,44.35,43.96,-0.39,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,humaneval,164,83.2,83.7,0.5,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,humaneval_plus,164,78.4,78.7,0.3,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,mmlu,14042,83.4,81.28,-2.12,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,mmlu_cot,14042,86.42,84.77,-1.65,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,arc_challenge,1172,93.39,92.62,-0.77,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,gsm8k,1319,85.22,77.1,-8.12,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,hellaswag,10042,70.23,75.4,5.17,arith,1
@@ -61,6 +64,7 @@ RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,ifeval,541,92.45,91.49,-0.96,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,bbh,6511,69.05,66.31,-2.74,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,math_lvl5,1324,47.96,43.81,-4.15,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,gpqa_main,448,31.63,32.21,0.58,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,musr,756,44.18,44.18,0.0,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,humaneval,164,88.69,84.77,-3.92,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16,Llama-3.3-70B-Instruct,llama-3,70.0,1,w4a16,4,16,int,gptq,mmlu,14042,81.6,80.62,-0.98,arith,1
@@ -80,6 +84,7 @@ RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,winogrande,1267,84.77,83.74,-1.03,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,truthfulqa,817,63.09,62.75,-0.34,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,bbh,6511,63.15,62.54,-0.61,arith,1
+RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,gpqa_ambiguous_46,448,46.1,46.44,0.34,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,musr,756,44.35,44.34,-0.01,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,humaneval,164,83.2,83.3,0.1,arith,1
 RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,humaneval_plus,164,78.4,78.6,0.2,arith,1
@@ -575,6 +580,7 @@ RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,tru
 RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,ifeval,541,87.48,87.78,0.3,arith,1
 RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,bbh,6511,40.4,40.37,-0.03,arith,1
 RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,math_lvl5,1324,54.18,54.31,0.13,arith,1
+RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,61.62,64.14,2.52,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,arc_challenge,1172,67.32,67.06,-0.26,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,gsm8k,1319,88.7,88.25,-0.45,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,hellaswag,10042,79.62,78.24,-1.38,arith,1
@@ -585,6 +591,7 @@ RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,bbh,6511,59.45,
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,mmlu_pro,12032,44.39,41.15,-3.24,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,musr,756,38.62,37.83,-0.79,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,ifeval,541,89.45,90.41,0.96,arith,1
+RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,gpqa_main,448,27.43,26.59,-0.84,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,math_lvl5,1324,57.33,53.4,-3.93,arith,1
 RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,humaneval,164,90.74,89.87,-0.87,arith,1
 RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,mmlu,14042,76.81,75.9,-0.91,arith,1
@@ -595,6 +602,7 @@ RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,tr
 RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,mmlu_pro,12032,44.59,42.39,-2.2,arith,1
 RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,bbh,6511,40.4,38.74,-1.66,arith,1
 RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,math_lvl5,1324,54.18,55.05,0.87,arith,1
+RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,61.62,61.11,-0.51,arith,1
 RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,mmlu,14042,80.96,80.89,-0.07,arith,1
 RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,arc_challenge,1172,69.03,68.0,-1.03,arith,1
 RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,gsm8k,1319,87.64,88.32,0.68,arith,1
@@ -605,6 +613,7 @@ RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,mml
 RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,ifeval,541,86.23,86.23,0.0,arith,1
 RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,bbh,6511,44.29,43.7,-0.59,arith,1
 RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,math_lvl5,1324,54.61,57.26,2.65,arith,1
+RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,66.67,68.69,2.02,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,arc_challenge,1172,70.65,70.22,-0.43,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,gsm8k,1319,74.15,74.68,0.53,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,hellaswag,10042,84.0,83.33,-0.67,arith,1
@@ -615,6 +624,7 @@ RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,bbh,6511,62.35,
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,mmlu_pro,12032,54.39,51.13,-3.26,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,musr,756,39.29,41.01,1.72,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,ifeval,541,88.97,87.29,-1.68,arith,1
+RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,gpqa_main,448,30.12,30.29,0.17,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,math_lvl5,1324,58.99,56.27,-2.72,arith,1
 RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,humaneval,164,90.14,90.4,0.26,arith,1
 RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,mmlu,14042,80.96,80.36,-0.6,arith,1
@@ -626,6 +636,7 @@ RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,mm
 RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,ifeval,541,86.23,85.53,-0.7,arith,1
 RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,bbh,6511,44.29,41.07,-3.22,arith,1
 RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,math_lvl5,1324,54.61,55.38,0.77,arith,1
+RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,66.67,66.67,0.0,arith,1
 RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,mmlu,14042,71.95,72.3,0.35,arith,1
 RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,arc_challenge,1172,61.69,61.6,-0.09,arith,1
 RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,gsm8k,1319,75.97,80.52,4.55,arith,1
@@ -636,6 +647,7 @@ RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,mmlu_p
 RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,ifeval,541,84.77,84.56,-0.21,arith,1
 RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,bbh,6511,25.47,27.2,1.73,arith,1
 RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,math_lvl5,1324,51.05,51.9,0.85,arith,1
+RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,58.59,61.11,2.52,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,arc_challenge,1172,64.76,63.91,-0.85,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,gsm8k,1319,87.26,86.73,-0.53,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,hellaswag,10042,76.68,75.34,-1.34,arith,1
@@ -646,6 +658,7 @@ RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,bbh,6511,4
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,mmlu_pro,12032,34.64,27.49,-7.15,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,musr,756,40.61,42.86,2.25,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,ifeval,541,87.89,87.65,-0.24,arith,1
+RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,gpqa_main,448,25.17,26.34,1.17,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,math_lvl5,1324,53.55,50.83,-2.72,arith,1
 RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,humaneval,164,86.51,85.32,-1.19,arith,1
 RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,mmlu,14042,71.95,69.74,-2.21,arith,1
@@ -658,6 +671,7 @@ RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,mmlu_
 RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,ifeval,541,84.77,85.44,0.67,arith,1
 RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,bbh,6511,25.47,21.17,-4.3,arith,1
 RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,math_lvl5,1324,51.05,51.38,0.33,arith,1
+RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,58.59,55.56,-3.03,arith,1
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2-27b-it,gemma-2,27.0,1,w8a16,8,16,int,gptq,mmlu,14042,76.34,76.34,0.0,arith,1
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2-27b-it,gemma-2,27.0,1,w8a16,8,16,int,gptq,arc_challenge,1172,74.49,74.49,0.0,arith,1
 RedHatAI/gemma-2-27b-it-quantized.w8a16,gemma-2-27b-it,gemma-2,27.0,1,w8a16,8,16,int,gptq,gsm8k,1319,21.0,20.32,-0.68,arith,1
@@ -837,15 +851,3 @@ RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,8.0,1,w8a8_int,8,8,int,smoothquant,musr,756,46.01,44.3,-1.71,arith,1
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,8.0,1,w8a8_int,8,8,int,smoothquant,mmlu_pro,12032,35.81,35.41,-0.4,arith,1
 RedHatAI/granite-3.1-8b-instruct-quantized.w8a8,granite-3.1-8b-instruct,granite,8.0,1,w8a8_int,8,8,int,smoothquant,humaneval,164,71.0,70.5,-0.5,arith,1
-RedHatAI/Llama-3.3-70B-Instruct-FP8-dynamic,Llama-3.3-70B-Instruct,llama-3,70.0,1,fp8_dynamic,8,8,fp,rtn,gpqa_ambiguous_46,448,46.1,46.3,0.2,arith,1
-RedHatAI/Llama-3.3-70B-Instruct-NVFP4,Llama-3.3-70B-Instruct,llama-3,70.0,1,nvfp4,4,4,fp,rtn,gpqa_main,448,31.63,32.21,0.58,arith,1
-RedHatAI/Llama-3.3-70B-Instruct-quantized.w8a8,Llama-3.3-70B-Instruct,llama-3,70.0,1,w8a8_int,8,8,int,unknown,gpqa_ambiguous_46,448,46.1,46.44,0.34,arith,1
-RedHatAI/Qwen3-14B-FP8-dynamic,Qwen3-14B,qwen3,14.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,61.62,64.14,2.52,arith,1
-RedHatAI/Qwen3-14B-NVFP4,Qwen3-14B,qwen3,14.0,0,nvfp4,4,4,fp,rtn,gpqa_main,448,27.43,26.59,-0.84,arith,1
-RedHatAI/Qwen3-14B-quantized.w4a16,Qwen3-14B,qwen3,14.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,61.62,61.11,-0.51,arith,1
-RedHatAI/Qwen3-32B-FP8-dynamic,Qwen3-32B,qwen3,32.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,66.67,68.69,2.02,arith,1
-RedHatAI/Qwen3-32B-NVFP4,Qwen3-32B,qwen3,32.0,0,nvfp4,4,4,fp,rtn,gpqa_main,448,30.12,30.29,0.17,arith,1
-RedHatAI/Qwen3-32B-quantized.w4a16,Qwen3-32B,qwen3,32.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,66.67,66.67,0.0,arith,1
-RedHatAI/Qwen3-8B-FP8-dynamic,Qwen3-8B,qwen3,8.0,0,fp8_dynamic,8,8,fp,rtn,gpqa_diamond,448,58.59,61.11,2.52,arith,1
-RedHatAI/Qwen3-8B-NVFP4,Qwen3-8B,qwen3,8.0,0,nvfp4,4,4,fp,smoothquant,gpqa_main,448,25.17,26.34,1.17,arith,1
-RedHatAI/Qwen3-8B-quantized.w4a16,Qwen3-8B,qwen3,8.0,0,w4a16,4,16,int,gptq,gpqa_diamond,448,58.59,55.56,-3.03,arith,1

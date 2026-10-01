@@ -23,10 +23,24 @@ REJECT_CSV = os.path.join(os.path.dirname(__file__), "..", "data", "rejected_row
 # ---------------------------------------------------------------- benchmarks
 # n_items = number of scored items, used for the analytic noise floor
 # (RESEARCH.md thread D). Order matters: more specific patterns first.
+# lm-eval-harness task names may carry a prompt-variant suffix: the RedHatAI
+# Llama-3.3-70B-Instruct NVFP4 card reports `mmlu_llama`, `mmlu_cot_llama`,
+# `arc_challenge_llama` and `gsm8k_llama`. Those name Meta's prompt-matched
+# template for the same task, not a different benchmark, so the suffix must
+# not change the resolved label. This is the card convention, read off the
+# cards; `verify/independent_check.py` expresses the same convention in its
+# own idiom rather than importing this one.
+_HARNESS_SUFFIX = r"(?:[_-](?:llama|meta))?"
+
 BENCHMARKS = [
     ("mmlu_pro", r"^mmlu[\s\-_]*pro", 12032),
-    ("mmlu_cot", r"^mmlu\b.*\bcot", 14042),
-    ("mmlu", r"^mmlu\b", 14042),
+    # The MMLU family must tolerate the harness task-name suffix; see
+    # _HARNESS_SUFFIX below. `^mmlu\b` alone silently dropped `mmlu_llama`
+    # and `mmlu_cot_llama` because "_" is a word character, while
+    # arc_challenge and gsm8k accepted their `_llama` forms all along.
+    ("mmlu_cot", r"^mmlu\b.*\bcot|^mmlu[_-]cot" + _HARNESS_SUFFIX + r"\b",
+     14042),
+    ("mmlu", r"^mmlu" + _HARNESS_SUFFIX + r"\b", 14042),
     ("arc_challenge", r"^arc[\s\-_]*(challenge|c\b)", 1172),
     ("gsm8k", r"^gsm[\s\-_]*8?k", 1319),
     ("hellaswag", r"^hellaswag", 10042),

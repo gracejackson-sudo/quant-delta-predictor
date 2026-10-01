@@ -1,12 +1,12 @@
 {
   "nominal": 0.9,
   "pooled": {
-    "coverage": 0.9177478580171359,
-    "coverage_one_sided": 0.9569155446756425,
-    "below_lo": 0.0430844553243574,
-    "above_hi": 0.03916768665850673,
-    "scored_pairs": 4085,
-    "distinct_rows": 817,
+    "coverage": 0.9179487179487179,
+    "coverage_one_sided": 0.9570207570207571,
+    "below_lo": 0.04297924297924298,
+    "above_hi": 0.03907203907203907,
+    "scored_pairs": 4095,
+    "distinct_rows": 819,
     "pairs_per_row": 5.0
   },
   "cells": {
@@ -104,14 +104,14 @@
     "nvfp4|>10B": {
       "scheme": "nvfp4",
       "band": ">10B",
-      "coverage": 0.9294117647058824,
-      "coverage_one_sided": 0.9529411764705882,
-      "scored_pairs": 255,
-      "distinct_rows": 51,
+      "coverage": 0.9320754716981132,
+      "coverage_one_sided": 0.9547169811320755,
+      "scored_pairs": 265,
+      "distinct_rows": 53,
       "distinct_checkpoints": 4,
       "distinct_families": 3,
       "pct_widened": 0.0,
-      "boot90_lo": 85.3061224489796,
+      "boot90_lo": 86.9090909090909,
       "boot90_hi": 100.0
     },
     "w4a16|2-10B": {
@@ -281,24 +281,24 @@
     },
     "nvfp4": {
       "scheme": "nvfp4",
-      "scored_pairs": 320,
-      "distinct_rows": 64,
+      "scored_pairs": 330,
+      "distinct_rows": 66,
       "distinct_checkpoints": 5,
       "distinct_families": 3,
-      "coverage_one_sided": 0.959375,
-      "coverage": 0.93125,
-      "boot90_lo": 88.38709677419355,
+      "coverage_one_sided": 0.9606060606060606,
+      "coverage": 0.9333333333333333,
+      "boot90_lo": 89.41176470588236,
       "boot90_hi": 100.0,
-      "boot90_two_sided_lo": 83.54838709677419,
+      "boot90_two_sided_lo": 85.0,
       "boot90_two_sided_hi": 99.38461538461539,
       "by_family_one_sided": {
-        "llama-3": 0.8,
+        "llama-3": 0.8285714285714286,
         "mistral": 1.0,
         "qwen3": 0.9948717948717949
       },
-      "worst_family_one_sided": 0.8,
+      "worst_family_one_sided": 0.8285714285714286,
       "worst_family_name": "llama-3",
-      "spread_one_sided": 0.19999999999999996,
+      "spread_one_sided": 0.17142857142857137,
       "n_families_tested": 3
     },
     "w4a16": {
@@ -386,9 +386,9 @@
       "distinct_rows": 77
     },
     ">10B": {
-      "coverage": 0.9035040431266846,
-      "scored_pairs": 1855,
-      "distinct_rows": 371
+      "coverage": 0.9040214477211796,
+      "scored_pairs": 1865,
+      "distinct_rows": 373
     }
   },
   "support": {
@@ -428,7 +428,7 @@
       "train_families": 1
     },
     "nvfp4|>10B": {
-      "train_rows": 51,
+      "train_rows": 53,
       "train_checkpoints": 4,
       "train_families": 3
     },
@@ -484,8 +484,8 @@
   },
   "widening": {
     "pairs_widened": 496,
-    "pairs_total": 4085,
-    "share": 0.12141982864137087,
+    "pairs_total": 4095,
+    "share": 0.12112332112332112,
     "coverage_where_applied": 0.9334677419354839
   }
 }
