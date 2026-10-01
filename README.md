@@ -148,25 +148,84 @@ The research scripts need two more packages than the tool does:
 ./.venv/bin/pip install scikit-learn pytest
 ```
 
+**The order below is load-bearing.** Several artifacts feed others and the
+dependencies are not visible from the filenames, so running a subset or
+reordering produces a silently stale result rather than an error. The three
+that have actually bitten us:
+`src/build_envelope.py` embeds the prospective validation block, so it must
+run after `src/real_use_case.py`; `verify/independent_check.py` diffs against
+`out/real_use_case.csv` and its own output feeds five headline registry keys,
+so it must run after `src/real_use_case.py` and before
+`src/verify_claims.py`; and the test suite checks artifact freshness, so it
+runs last and not in the middle.
+`tests/test_all.py::test_registry_reading_artifacts_are_not_older_than_dataset_csv`
+will name any artifact you left behind.
+
 ```bash
-./.venv/bin/python src/harvest.py          # rebuild dataset.csv from cards (needs the cards; see data/README.md)
-./.venv/bin/python src/run_final.py        # all three split regimes and calibration variants
-./.venv/bin/python src/demo_holdout.py     # train on 2 families, predict unseen models
-./.venv/bin/python src/real_use_case.py    # prospective test on unseen checkpoints (needs network)
-./.venv/bin/python src/diagnose.py         # which failure mode this is
-./.venv/bin/python src/validate_strata.py  # does size stratification help? mostly not - see RANKING.md
-./.venv/bin/python src/build_envelope.py && ./.venv/bin/python src/cli.py --list
-./.venv/bin/python -m pytest tests -q      # the test suite
+# 1. the corpus
+./.venv/bin/python src/harvest.py              # rebuild dataset.csv from cards (needs the cards; see data/README.md)
+
+# 2. modelling and calibration
+./.venv/bin/python src/run_final.py            # all three split regimes and calibration variants
+./.venv/bin/python src/diagnose.py             # which failure mode this is
+./.venv/bin/python src/cell_coverage.py        # per-(scheme, size) coverage and the verdict inputs
+./.venv/bin/python src/bias_correction.py
+./.venv/bin/python src/bias_correction_empirical.py
+./.venv/bin/python src/interval_shape.py
+./.venv/bin/python src/one_sided_audit.py
+./.venv/bin/python src/audit_ranking.py
+./.venv/bin/python src/validate_strata.py      # does size stratification help? mostly not - see RANKING.md
+
+# 3. the prospective arm, then everything that reads it
+./.venv/bin/python src/real_use_case.py        # prospective test on unseen checkpoints (needs network)
+./.venv/bin/python src/build_envelope.py       # AFTER real_use_case.py: embeds the validation block
+python3 verify/independent_check.py            # AFTER real_use_case.py, BEFORE verify_claims.py
+./.venv/bin/python src/cli.py --list
+
+# 4. audits and the exclusion census
+./.venv/bin/python src/adversarial_audit.py
+./.venv/bin/python src/census.py
+
+# 5. the tuned baselines (slow: ~8 min single-threaded; set OMP_NUM_THREADS=1)
+./.venv/bin/python src/tune_baselines.py
+./.venv/bin/python src/tune_baseline_cis.py
+
+# 6. generated docs, then the paper macros, then the gate
+./.venv/bin/python src/gen_ranking_doc.py
+./.venv/bin/python src/gen_negative_result.py
+./.venv/bin/python src/gen_bias_doc.py
+./.venv/bin/python src/gen_one_sided_doc.py
+./.venv/bin/python src/gen_feedback_doc.py
+./.venv/bin/python paper/gen_numbers.py
+./.venv/bin/python src/verify_claims.py        # re-verify every tagged number
+./.venv/bin/python -m pytest tests -q          # LAST: the suite checks artifact freshness
 ```
 
-The audits, and the full exclusion census:
+**Do not run `src/publisher_census.py` or `src/card_quality.py` as part of
+this.** Neither reads `data/dataset.csv`, so neither is affected by a corpus
+change, and `publisher_census.py` re-samples the Hugging Face model API live.
+The publisher landscape has drifted since the committed artifact was made, and
+today's sample contains no non-RedHatAI card printing a Recovery figure, which
+makes `card_quality.py` produce a `per_publisher` table with one entry and the
+registry raise `ValueError: max() iterable argument is empty`. The committed
+`out/publisher_census.json` and `out/card_quality.json` are a dated snapshot.
+See `PROVENANCE.md`.
 
-```bash
-./.venv/bin/python src/audit.py && ./.venv/bin/python src/adversarial_audit.py && ./.venv/bin/python src/census.py
-```
+`src/audit.py` and `src/demo_holdout.py` are left out of the block above
+because both currently fail, for one reason: Definition B merged
+Llama-3.1/3.2/3.3 into one `llama-3` family, so two of the five hold-out
+models in `src/demo_holdout.py` are now in a training family and its leak
+assertion fires correctly. `src/audit.py` reports the same thing as a hard
+failure — and exits 0 while doing so, which is its own defect. Neither writes
+an artifact anything else consumes. Both are recorded in `PROVENANCE.md`.
 
-Independent re-verification — stdlib only, no project imports. Regenerates the headline coverage
-from the raw cards and diffs it against the pipeline row by row:
+Independent re-verification — stdlib only, no project imports. It regenerates
+the headline coverage from the raw cards and diffs it against the pipeline row
+by row. Note that it is not only a check: the registry takes `prosp_n`,
+`prosp_inside`, `prosp_cov_pct` and the two Clopper–Pearson bounds from its
+output, so the prospective coverage quoted above was computed by the
+reimplementation and not by the pipeline. `paper/audit_paper.py` section 4 is
+where the pipeline's own figure is compared against it.
 
 ```bash
 python3 verify/independent_check.py

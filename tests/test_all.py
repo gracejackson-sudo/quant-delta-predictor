@@ -1681,11 +1681,15 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
     cell_coverage / build_envelope. The test says which artifact is
     stale, so the fix is 'rerun the named script'.
 
-    Order matters and is not obvious: build_envelope.py embeds the
+    Order matters and is not obvious. build_envelope.py embeds the
     prospective validation block, so it must run AFTER
-    real_use_case.py. README's command order has them the other way
-    round, which bakes stale coverage into the shipped envelope.
-    test_the_shipped_envelope_matches_a_fresh_build catches that one."""
+    real_use_case.py, and verify/independent_check.py must run after
+    real_use_case.py (it diffs against it) and before
+    verify_claims.py (five headline keys come from its output).
+    README's block now states both and runs the suite last; it
+    previously omitted several steps entirely, which is the state in
+    which a reasonable person reorders and gets a stale artifact
+    instead of an error."""
     import os as _os
     root = _os.path.join(_os.path.dirname(__file__), "..")
     dataset_mtime = _os.path.getmtime(_os.path.join(root, "data",
@@ -1715,6 +1719,20 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
                                           "&& python src/tune_baseline_cis.py"),
         ("out/adversarial_audit.json",    "python src/adversarial_audit.py"),
         ("out/census.json",               "python src/census.py"),
+        # Added after the five-failure event of 2026-10-01. This one is the
+        # most load-bearing artifact in the repository and was the last to be
+        # checked. It is also the reason that event happened: a stale copy of
+        # it against a fresh out/real_use_case.csv is precisely a divergence
+        # between the verifier's arm and the pipeline's. The registry derives prosp_n, prosp_inside,
+        # prosp_cov_pct, prosp_ci_lo and prosp_ci_hi from it -- the headline
+        # prospective coverage the abstract, README.md and SCOPE.md all
+        # quote. A stale copy makes the paper quote a previous corpus's
+        # coverage while every other check passes. It is also an ORDERING
+        # constraint and not only a freshness one: the verifier diffs against
+        # out/real_use_case.csv, so it must run after real_use_case.py, and
+        # verify_claims.py and paper/gen_numbers.py read its output, so it
+        # must run before them. README's block now says so explicitly.
+        ("out/independent_check.csv",     "python verify/independent_check.py"),
     ]
     stale = []
     for rel, howto in artifacts:
@@ -3098,17 +3116,53 @@ def test_predictor_ordering_matches_the_papers_negative_claim():
             f"distinguishable from the shipped lookup at this sample size. "
             f"That claim is now false and must be rewritten.")
 
-    # (5) the framing that survives any reordering
-    assert R["pred_max_abs_gap_pp"] < 0.05, (
-        f"the furthest card-feature predictor is now "
-        f"{R['pred_max_abs_gap_pp']:.4f}pp from the global mean, past the "
-        f"0.05pp the abstract and NEGATIVE_RESULT.md quote as the band every "
-        f"such predictor falls inside.\n" + detail)
-    assert R["pred_gap_vs_floor_ratio"] >= 10, (
-        f"the noise floor is only {R['pred_gap_vs_floor_ratio']:.1f}x the "
-        f"largest predictor gap, so 'the spread between predictors is small "
-        f"against evaluation noise' is weakening. Check the wording in the "
-        f"abstract and S5 before re-pinning.")
+    # (5) the framing that survives any reordering.
+    #
+    # This pair replaced an `< 0.05pp` and a `ratio >= 10` on 2026-10-01.
+    # Those restated a threshold the abstract used to quote, and the gap had
+    # moved 0.0431 -> 0.0433 -> 0.0466pp across two corpus corrections while
+    # the ratio fell 12 -> 11.7 -> 10.9. A claim we expected to break is not
+    # one to ship, so the paper now quotes the measured ratio with no
+    # threshold in it, and these assertions were rebuilt to match.
+    #
+    # First: the claim itself, with no constant in it at all. The largest gap
+    # any card-feature predictor opens on the global mean is smaller than the
+    # evaluation-noise floor. That is the negative result, and this breaks
+    # exactly when the negative result reverses.
+    assert R["pred_max_abs_gap_pp"] < R["mae_floor_pp"], (
+        f"the furthest card-feature predictor is "
+        f"{R['pred_max_abs_gap_pp']:.4f}pp from the global mean, which now "
+        f"EXCEEDS the {R['mae_floor_pp']:.4f}pp evaluation-noise floor. The "
+        f"negative result has reversed and the paper's framing is no longer "
+        f"true, not merely narrow.\n" + detail)
+
+    # Second: a tripwire for "almost no signal" becoming the wrong
+    # description while the first assertion still holds. The constant here is
+    # derived, not chosen. The floor is irreducible, so the distance a
+    # predictor could in principle recover is not the floor but the HEADROOM:
+    # the global mean's MAE minus the floor (registered as headroom_pp,
+    # currently 0.2622pp). A predictor that closed half of that would have
+    # recovered half the available signal, and "per-model prediction carries
+    # almost no signal" would be the wrong sentence regardless of how the gap
+    # compares to the floor. So the line is half the headroom. The present
+    # gap is 17.8% of the headroom, i.e. 35.5% of this tripwire.
+    #
+    # Note what this is NOT: it is not floor/gap >= 4. Half the headroom
+    # happens to sit at a floor/gap ratio of 3.87 on the current corpus, so a
+    # constant 4 would have been very nearly right and entirely unjustified
+    # -- it would be frozen while the quantity it approximates moves with
+    # every corpus change. The 0.5 below is the one judgement, and it is a
+    # judgement about what "almost no signal" means, stated in the units the
+    # question is actually about.
+    assert R["pred_max_abs_gap_pp"] < 0.5 * R["headroom_pp"], (
+        f"the largest card-feature predictor gap is "
+        f"{R['pred_max_abs_gap_pp']:.4f}pp against a headroom of "
+        f"{R['headroom_pp']:.4f}pp, i.e. "
+        f"{100 * R['pred_max_abs_gap_pp'] / R['headroom_pp']:.0f}% of the "
+        f"distance between the global mean and the noise floor. Past half, "
+        f"'almost no signal' is the wrong description even if the gap is "
+        f"still under the floor. Rewrite S5 and the abstract before "
+        f"re-pinning this.\n" + detail)
 
     # (6) tuning still selects the grid edge, which S5's reading depends on
     if "tune_ridge_folds_at_edge" in R and "tune_outer_folds" in R:

@@ -99,10 +99,13 @@ def main():
       f"than the one it replaces. A sliver of card-feature signal exists, "
       f"recovering it needs near-total shrinkage, and it is not "
       f"distinguishable from the six-cell lookup at this sample size. Every "
-      f"card-feature predictor here, tuned or not, lands within "
-      f"{n('pred_max_abs_gap_pp','{:.4f}')}pp of the global mean against an "
-      f"evaluation-noise floor of {n('mae_floor_pp','{:.3f}')}pp, a factor "
-      f"of {n('pred_gap_vs_floor_ratio')}.\n")
+      f"card-feature predictor here, tuned or not, sits closer to the "
+      f"global mean than the evaluation-noise floor by a factor of "
+      f"{n('pred_gap_vs_floor_ratio')}: the largest gap any of them opens "
+      f"is {n('pred_max_abs_gap_pp','{:.4f}')}pp against a floor of "
+      f"{n('mae_floor_pp','{:.3f}')}pp. The factor is the claim and the two "
+      f"figures are the evidence for it; there is no threshold in the "
+      f"sentence, so it stays true at whatever the measured factor is.\n")
     A("The shipped per-scheme mean is therefore **not** the best-scoring "
       "predictor tested -- tuned ridge scores better -- but it remains the "
       "best justifiable one, at a fraction of the parameters, with the "

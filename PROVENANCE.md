@@ -582,14 +582,70 @@ in the 2026-09-30 entry and again here.
 
 **A fifth thing, found while landing.** `src/build_envelope.py` consumes
 `out/real_use_case.csv`: the shipped envelope embeds a `validation` block with
-the prospective row counts and coverage. Running the chain in README order
-puts `build_envelope.py` before `real_use_case.py`, so the first pass here
-baked the 186-row figures into a 188-row corpus.
-`test_the_shipped_envelope_matches_a_fresh_build` caught it, which is the
-system working, but the documented order produces the stale state and the
-dependency is written down nowhere. `build_envelope.py` must run after
-`real_use_case.py`.
+the prospective row counts and coverage. My chain run put
+`build_envelope.py` before `real_use_case.py` and baked the 186-row figures
+into an 823-row corpus; `test_the_shipped_envelope_matches_a_fresh_build`
+caught it, which is the system working.
 
-And a sixth, cosmetic: `paper/claims.json` is written by nothing, read by
-nothing, and committed with values from 2026-09-30. It is an orphan that a
-reader could mistake for the registry.
+To correct something I first wrote here: README's order was *not* wrong about
+these two --- it already had `real_use_case.py` before `build_envelope.py`,
+and the mistake was mine. Checking it properly turned up a larger problem.
+README's reproduce block omitted `cell_coverage.py`, `bias_correction*.py`,
+`interval_shape.py`, `one_sided_audit.py`, `audit_ranking.py`,
+`tune_baselines.py`, `tune_baseline_cis.py`, every `gen_*_doc.py` and
+`paper/gen_numbers.py`, and it ran `pytest` in the middle rather than last ---
+so a first-time reproducer would hit the freshness test against artifacts the
+documented chain never regenerates. The dependencies were also written down
+nowhere, which is the state in which a reasonable person reorders and gets a
+stale artifact instead of an error. README now carries one complete ordered
+block, states the three dependencies that have actually bitten, and says which
+two scripts not to run.
+
+And a sixth: `paper/claims.json` was written by nothing, read by nothing, and
+committed with values from 2026-09-30. An orphan that looks like the registry
+is worse than a missing file, so it is deleted. The registry is
+`src/verify_claims.py` and the generated macros are `paper/numbers.tex`.
+
+### The five-failure event, explained
+
+`paper/audit_paper.py` reported five simultaneous failures once on 2026-10-01
+and zero on every run after. Five at once in one check family is not a flake
+shape, so it was chased rather than filed. It reproduces exactly and it was
+correct.
+
+Section 4 of that audit is labelled "independent re-derivation from raw
+source". For checks (c) and (d) it is: the adversarial GPU run file and
+`data/dataset.csv`. For checks (a) and (b) --- which are exactly five, and
+exactly the five that failed --- it is not. The registry derives `prosp_n`,
+`prosp_inside`, `prosp_cov_pct`, `prosp_ci_lo` and `prosp_ci_hi` from
+`out/independent_check.csv`, the *independent verifier's* per-row output.
+Checks (a) and (b) recompute the same five from `out/real_use_case.csv`, the
+*pipeline's* output. The section is a cross-check between the two arms, not a
+re-derivation from raw data.
+
+At that moment `out/real_use_case.csv` had been regenerated and
+`out/independent_check.csv` had not. The check detected a genuine divergence
+between the two arms and said so five times. Reproduced by restoring the
+`8d1b2be` copy of `out/independent_check.csv`: the same five failures with the
+same values, 90.98 vs 90.84, 121 vs 119, 133 vs 131, and both CP bounds.
+
+Two things follow, and the second is the one that matters.
+
+**The headline prospective coverage is the verifier's number, not the
+pipeline's.** Everything the abstract, `README.md` and `SCOPE.md` quote for
+prospective coverage comes through `out/independent_check.csv`. That is
+defensible and arguably the stronger choice --- the figure a reader sees was
+computed by a stdlib-only reimplementation that shares no code with the
+pipeline --- but it was not written down anywhere, and it makes
+`audit_paper.py` section 4 the only place the pipeline's own figure is
+checked against it. Both facts are now stated, in `audit_paper.py` and in
+`README.md`.
+
+**`out/independent_check.csv` was not in the artifact-staleness test**, and it
+is the input to the five most-quoted numbers in the paper. A stale copy makes
+the paper quote a previous corpus's coverage while `verify_claims` passes at
+667/667, because the registry and the docs would be consistently wrong
+together. Only `audit_paper.py` section 4 would catch it, and only because the
+pipeline artifact is the fresher of the two. It is now in the staleness test,
+with the planted condition verified. This is the third time the same class has
+produced a real defect, and the first time it reached a headline figure.

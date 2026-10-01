@@ -213,8 +213,24 @@ print(f"   banned patterns matched: {hits}")
 # ---------------------------------------------------------------- 4
 head("4. INDEPENDENT RE-DERIVATION (from raw source, versus the LIVE registry)")
 # What this section verifies, and what it does not:
-#   * "recomputed" comes from raw source files (data/*.csv and out/*.csv),
-#     using the same tolerance the code uses.
+#   * "recomputed" comes from source files (data/*.csv and out/*.csv),
+#     using the same tolerance the code uses. Checks (c) and (d) really are
+#     raw: the GPU run file and the dataset. Checks (a) and (b) are not, and
+#     the distinction matters. The registry derives prosp_n, prosp_inside,
+#     prosp_cov_pct, prosp_ci_lo and prosp_ci_hi from
+#     out/independent_check.csv -- the INDEPENDENT VERIFIER's per-row output.
+#     (a) and (b) recompute the same five from out/real_use_case.csv, the
+#     PIPELINE's own output. So this is a cross-check between the two arms,
+#     which is worth having, but it is only meaningful when both artifacts
+#     are current: on 2026-10-01 a stale independent_check.csv against a
+#     fresh real_use_case.csv produced five simultaneous failures here, all
+#     of them correct. Both files are now in the artifact-staleness test.
+#   * Note the consequence for how the headline is sourced: the prospective
+#     coverage the abstract quotes is the verifier's figure, not the
+#     pipeline's. That is the stronger choice -- the number a reader sees was
+#     computed by the reimplementation that shares no code with the pipeline
+#     -- but it means this section is the ONLY place the pipeline's own
+#     figure is checked against it. Do not weaken it.
 #   * "paper" comes from the LIVE claims registry (src/verify_claims.registry()),
 #     which is the same source that drives paper/numbers.tex. A hard-coded
 #     literal here would let the audit pass while the paper says something

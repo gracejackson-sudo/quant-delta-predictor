@@ -32,9 +32,10 @@ nested cross-validation inside each training fold, ridge and gradient boosting
 reach \MaeRidgeTuned{} and \MaeGradboostTuned{}pp---past the global mean, but
 past the per-scheme mean only by margins whose checkpoint-bootstrap intervals
 contain zero (\([\TuneSchemeVsRidgeLo, \TuneSchemeVsRidgeHi]\)pp for ridge).
-Every card-feature predictor, tuned or not, lands within \PredMaxGap{}pp of
-the global mean against a \MaeFloor{}pp noise floor, a factor of
-\PredGapFloorRatio{}. What the tuning \emph{selects} is the result: in
+Every card-feature predictor, tuned or not, sits closer to the global mean
+than the evaluation-noise floor by a factor of \PredGapFloorRatio{}: the
+largest gap any of them opens is \PredMaxGap{}pp against a floor of
+\MaeFloor{}pp. What the tuning \emph{selects} is the result: in
 \TuneRidgeFoldsEdge{} of \TuneOuterFolds{} folds it drives ridge to the
 largest penalty in the grid, and in every fold gradient boosting to the
 slowest learning rate and heaviest regularisation on offer. Asked for the best
