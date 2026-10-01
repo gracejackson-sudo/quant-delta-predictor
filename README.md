@@ -216,8 +216,8 @@ because both currently fail, for one reason: Definition B merged
 Llama-3.1/3.2/3.3 into one `llama-3` family, so two of the five hold-out
 models in `src/demo_holdout.py` are now in a training family and its leak
 assertion fires correctly. `src/audit.py` reports the same thing as a hard
-failure — and exits 0 while doing so, which is its own defect. Neither writes
-an artifact anything else consumes. Both are recorded in `PROVENANCE.md`.
+failure, and exits 1 as it should. Neither writes an artifact anything else
+consumes. Both are recorded in `PROVENANCE.md`.
 
 Independent re-verification — stdlib only, no project imports. It regenerates
 the headline coverage from the raw cards and diffs it against the pipeline row

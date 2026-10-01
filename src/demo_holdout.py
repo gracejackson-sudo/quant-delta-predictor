@@ -27,12 +27,20 @@ TRAIN_FAMILIES = ["llama-3", "qwen2.5"]   # the 2 biggest families under Def B
 CAL_FAMILY = "granite"                       # held out for calibration only
 
 # real held-out (model, config) pairs from families the predictor never saw
+# Every hold-out must come from a family that is in neither TRAIN_FAMILIES nor
+# CAL_FAMILY, which leaves mistral, gemma-2 and qwen3. Definition B merged
+# Llama-3.1/3.2/3.3 into one `llama-3` family and this list was not revisited,
+# so Llama-3.3-70B-Instruct-quantized.w4a16 and
+# Llama-3.2-3B-Instruct-FP8-dynamic became in-family. The leak assertion below
+# fired correctly and the script stopped running; the two Llama entries are
+# replaced here with checkpoints from the three eligible families, chosen for
+# row count and scheme spread rather than for their results.
 HOLDOUTS = [
     "RedHatAI/Mistral-Small-24B-Instruct-2501-FP8-dynamic",
-    "RedHatAI/Llama-3.3-70B-Instruct-quantized.w4a16",
+    "RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-NVFP4",
     "RedHatAI/gemma-2-9b-it-quantized.w4a16",
     "RedHatAI/Qwen3-8B-quantized.w4a16",
-    "RedHatAI/Llama-3.2-3B-Instruct-FP8-dynamic",
+    "RedHatAI/Qwen3-32B-FP8-dynamic",
 ]
 
 

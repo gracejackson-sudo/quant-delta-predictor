@@ -556,10 +556,32 @@ so neither belongs in a corpus-change chain run at all; the committed
 artifacts are a dated snapshot and should be labelled as one. This is the
 dangerous one of the four, because it fails for a reproducer and not for us.
 
-**2. `src/audit.py` prints `1 hard failures` and exits 0.** The hard failure is
-real: `every demo hold-out model comes from a family absent from both train and
-calibration`. Nothing gates on the exit code and the test suite does not run
-the script, so the audit has been reporting a failure nobody sees.
+**2. `src/audit.py` reports a real hard failure that nothing watches.** The
+failure is `every demo hold-out model comes from a family absent from both
+train and calibration`, and it is item 3 below seen from the other side.
+
+Correcting what this entry first said: it claimed `audit.py` exits 0 while
+reporting the failure. That was wrong. It does `return 1 if FAILS else 0`
+under `sys.exit(main())` and exits 1, correctly. The error was in the
+measurement, not the script -- the exit code was read with `echo $?` after a
+pipeline ending in `tail`, which reports `tail`'s status and not Python's. A
+second measurement with the output redirected to a file gives exit 1.
+
+The real defect is narrower and still worth fixing: nothing runs `audit.py`.
+It is not in the test suite and not in CI, so a correct non-zero exit reaches
+nobody. A check that fails properly into an empty room is the same class as a
+check that passes while verifying nothing.
+
+**Both fixed 2026-10-01.** `HOLDOUTS` now contains only models from the three
+families that are in neither `TRAIN_FAMILIES` nor `CAL_FAMILY` --- mistral,
+gemma-2 and qwen3 --- replacing the two Llama entries with
+Mistral-Small-3.2-24B NVFP4 and Qwen3-32B FP8-dynamic, chosen on row count and
+scheme spread rather than on what they produced. `demo_holdout.py` exits 0,
+and `audit.py` then reports `0 hard failures`. A new test,
+`test_the_audit_scripts_exit_zero`, runs both, so the next time either breaks
+somebody hears about it. Planted the condition rather than trusting the pass:
+putting a training-family model back into `HOLDOUTS` fails the test with
+`src/demo_holdout.py exited 1`.
 
 **3. `src/demo_holdout.py` crashes on its own leak assertion.** Definition B
 merged Llama-3.1/3.2/3.3 into one `llama-3` family; two of the five hold-out

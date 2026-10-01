@@ -1262,6 +1262,44 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
 # and the field-level disagreement re-appears, main() returns 2, this test fires.
 # ---------------------------------------------------------------------------
 
+def test_the_audit_scripts_exit_zero():
+    """src/audit.py and src/demo_holdout.py both failed, and nothing noticed.
+
+    audit.py exits 1 on a hard failure, which is correct -- an earlier note in
+    PROVENANCE.md claimed it exited 0 and that was a measurement error, `echo
+    $?` after a pipeline ending in `tail`. The defect was that nothing ran it.
+    It is listed in README's reproduce section, it is not in the test suite and
+    not in CI, so its correct non-zero exit reached nobody for as long as the
+    failure stood. A check that fails properly into an empty room is the same
+    class as a check that passes while verifying nothing, so it is now run
+    here.
+
+    The failure it was reporting: Definition B merged Llama-3.1/3.2/3.3 into
+    one `llama-3` family, which put two of demo_holdout.py's five hold-out
+    models into a training family. Its leak assertion fired correctly and both
+    scripts stopped running.
+
+    What this test READS: the exit status and tail of each script. A planted
+    failure -- putting a training-family model back into HOLDOUTS -- makes
+    demo_holdout.py raise its leak assertion and audit.py report a hard
+    failure, and this test fails on both.
+    """
+    import subprocess
+    root = os.path.join(os.path.dirname(__file__), "..")
+    for name in ("demo_holdout.py", "audit.py"):
+        path = os.path.join(root, "src", name)
+        if not os.path.exists(path):
+            continue
+        r = subprocess.run([sys.executable, path], capture_output=True,
+                           text=True, cwd=root,
+                           env={**os.environ, "OMP_NUM_THREADS": "1"})
+        assert r.returncode == 0, (
+            f"src/{name} exited {r.returncode}. It is in README's reproduce "
+            f"section, so a reader runs it.\n"
+            f"--- last 25 lines ---\n"
+            + "\n".join((r.stdout + r.stderr).strip().split("\n")[-25:]))
+
+
 def test_verifiers_exit_zero():
     import subprocess
     root = os.path.join(os.path.dirname(__file__), "..")
