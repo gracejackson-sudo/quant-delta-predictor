@@ -43,20 +43,77 @@ def main():
     LABEL = {"scheme_mean": "per-scheme mean (shipped)",
              "global_mean": "global mean (baseline)",
              "scheme_x_bench": "per-(scheme x benchmark) mean",
-             "ridge": "ridge, 38 features",
+             "ridge": "ridge, 38 features, **untuned**",
+             "ridge_fixed": "ridge, 38 features, **untuned**",
              "bench_mean": "per-benchmark mean",
-             "grad_boost": "gradient boosting"}
+             "grad_boost": "gradient boosting, **untuned**",
+             "grad_boost_fixed": "gradient boosting, **untuned**",
+             "ridge_tuned": "ridge, **nested-CV tuned**",
+             "grad_boost_tuned": "gradient boosting, **nested-CV tuned**"}
     base = v("pred_mae::global_mean")
-    for key in sorted((k for k in REG if k.startswith("pred_mae::")),
-                      key=v):
+    # `*_fixed` duplicate `ridge`/`grad_boost`: same folds, same settings,
+    # computed independently by src/tune_baselines.py as a cross-check on
+    # src/diagnose.py. They agree to machine precision, so the table shows
+    # each predictor once and the agreement is noted below instead.
+    for key in sorted((k for k in REG if k.startswith("pred_mae::")
+                       and not k.endswith("_fixed")), key=v):
         name = key.split("::", 1)[1]
         mark = ("--" if name == "global_mean"
                 else ("yes" if v(key) < base else "**no**"))
         A(f"| {LABEL.get(name, name)} | {n(key, '{:.4f}')} | {mark} |")
     A("")
-    A("Ridge regression and gradient boosting both do **worse than predicting "
-      "the average**. Adding model size, benchmark identity, base accuracy "
+    A("**Retraction.** An earlier version of this document said ridge "
+      "regression and gradient boosting both do worse than predicting the "
+      "average. That is true of the untuned models and **false** of tuned "
+      "ones. It is retracted rather than reworded, because a reviewer "
+      "correctly pointed out that an untuned model losing says nothing about "
+      "whether the target is predictable.\n")
+    A(f"Tuned by nested cross-validation -- leave-one-family-out on the "
+      f"outside, a second leave-one-family-out over the training families "
+      f"only on the inside, so no fold's held-out family informs its own "
+      f"hyperparameters -- ridge reaches "
+      f"{n('pred_mae::ridge_tuned','{:.4f}')}pp and gradient boosting "
+      f"{n('pred_mae::grad_boost_tuned','{:.4f}')}pp. Tuning moves them by "
+      f"{n('tune_shift_ridge','{:.4f}')}pp and "
+      f"{n('tune_shift_gb','{:.4f}')}pp respectively, roughly twice the "
+      f"whole effect this document reports. Both beat the global mean. Both "
+      f"also edge past the shipped per-scheme mean, by "
+      f"{n('tune_diff::scheme_vs_ridge_tuned','{:+.4f}')}pp "
+      f"[{n('tune_diff_lo::scheme_vs_ridge_tuned','{:+.4f}')}, "
+      f"{n('tune_diff_hi::scheme_vs_ridge_tuned','{:+.4f}')}] and "
+      f"{n('tune_diff::scheme_vs_gb_tuned','{:+.4f}')}pp "
+      f"[{n('tune_diff_lo::scheme_vs_gb_tuned','{:+.4f}')}, "
+      f"{n('tune_diff_hi::scheme_vs_gb_tuned','{:+.4f}')}] on a "
+      f"checkpoint bootstrap -- both intervals contain zero.\n")
+    A(f"**What tuning selected is the actual result.** In "
+      f"{n('tune_ridge_folds_at_edge')} of {n('tune_outer_folds')} folds the "
+      f"inner cross-validation picked the largest ridge penalty in the grid "
+      f"(alpha = {n('tune_ridge_alpha_max')}); in "
+      f"{n('tune_gb_folds_min_lr')} of {n('tune_outer_folds')} it picked the "
+      f"slowest learning rate offered and in {n('tune_gb_folds_max_l2')} the "
+      f"heaviest L2 penalty offered. Asked for the best card-feature model, "
+      f"nested CV answers *one shrunk almost to a constant*. The grid "
+      f"boundary is reported as a limitation; the grid was not extended "
+      f"after seeing which edge was hit.\n")
+    A(f"So the claim is narrower than \"no signal\" and harder to dismiss "
+      f"than the one it replaces. A sliver of card-feature signal exists, "
+      f"recovering it needs near-total shrinkage, and it is not "
+      f"distinguishable from the six-cell lookup at this sample size. Every "
+      f"card-feature predictor here, tuned or not, lands within "
+      f"{n('pred_max_abs_gap_pp','{:.4f}')}pp of the global mean against an "
+      f"evaluation-noise floor of {n('mae_floor_pp','{:.3f}')}pp, a factor "
+      f"of {n('pred_gap_vs_floor_ratio')}.\n")
+    A("The shipped per-scheme mean is therefore **not** the best-scoring "
+      "predictor tested -- tuned ridge scores better -- but it remains the "
+      "best justifiable one, at a fraction of the parameters, with the "
+      "better-scoring alternative's advantage sitting inside its own "
+      "confidence interval. Both halves of that belong in the record.\n")
+    A("Adding model size, benchmark identity, base accuracy "
       "and quantization method all degraded out-of-family accuracy.\n")
+    A("*Cross-check:* the untuned figures above are computed twice over the "
+      "same folds, once by `src/diagnose.py` and once inside "
+      "`src/tune_baselines.py`, and agree to machine precision. The tuning "
+      "run therefore reproduces the numbers it is being compared against.\n")
 
     A("## 3. Why: the target is mostly measurement noise\n")
     A(f"Benchmark scores are sample proportions over finite item sets, so a "

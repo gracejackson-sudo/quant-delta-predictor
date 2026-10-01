@@ -21,10 +21,22 @@ is the expense quantization was meant to avoid. We ask whether the accuracy
 delta can be predicted instead. Using \Nrows{} published evaluations spanning
 \Nckpt{} base checkpoints, \Nfam{} model families and \Nsch{} quantization
 schemes, we report three results. First, a \emph{negative} one: per-model
-prediction carries almost no signal. Under leave-one-family-out validation the
-best predictor, a per-scheme mean, beats a global mean by \(\MaeGain\)pp of MAE (95\% checkpoint-bootstrap CI \([\MaeGainLo, \MaeGainHi]\)), and both ridge
-regression and gradient boosting are \emph{worse} than guessing the average,
-because evaluation noise accounts for at least a third of the variance on \NoiseNThird{} of \NoiseNBench{} benchmarks. The features we tested are
+prediction carries almost no signal. Under leave-one-family-out validation a
+per-scheme mean beats a global mean by \(\MaeGain\)pp of MAE (95\%
+checkpoint-bootstrap CI \([\MaeGainLo, \MaeGainHi]\)). Ridge and gradient
+boosting, tuned by nested cross-validation inside each training fold, reach
+\MaeRidgeTuned{} and \MaeGradboostTuned{}pp: both beat the global mean, and
+both beat the per-scheme mean by an amount whose checkpoint-bootstrap interval
+includes zero (\([\TuneSchemeVsRidgeLo, \TuneSchemeVsRidgeHi]\)pp for ridge).
+What tuning selects is the finding: in \TuneRidgeFoldsEdge{} of
+\TuneOuterFolds{} folds it drives ridge to the largest penalty in the grid,
+and in every fold it drives gradient boosting to the slowest learning rate and
+the heaviest regularisation available, so the best card-feature model is one
+shrunk almost to a constant. Every card-feature predictor we tested, tuned or not,
+lands within \PredMaxGap{}pp of the global mean against an evaluation-noise
+floor of \MaeFloor{}pp---a factor of \PredGapFloorRatio{}---and noise
+accounts for at least a third of the variance on \NoiseNThird{} of
+\NoiseNBench{} benchmarks. The features we tested are
 card-level (bit-width, scheme, size, benchmark identity, headroom); we did
 not test predictors that use checkpoint-derived features such as weight
 statistics or activation-outlier metrics.
@@ -74,7 +86,12 @@ Our contributions:
 \begin{enumerate}
   \item \textbf{A negative result} (\S\ref{sec:negative}). Per-model
     prediction of the accuracy delta \emph{from card-level features} does
-    not work, and we show why: the target is dominated by evaluation noise.
+    not work usefully, and we show why: the target is dominated by evaluation
+    noise. Tuned by nested cross-validation, ridge and gradient boosting do
+    edge past both the global mean and the shipped per-scheme lookup, but by
+    an amount whose interval includes zero and only by shrinking almost to a
+    constant, which is itself the evidence. The shipped artifact is therefore
+    the best \emph{justifiable} predictor rather than the best-scoring one.
     Checkpoint-derived features (weight statistics, activation-outlier
     metrics) were not tested. We report this as the primary finding rather
     than burying it.
@@ -310,12 +327,14 @@ Under leave-one-family-out validation, row-weighted MAE:
 \toprule
 predictor & MAE (pp) & beats global mean? \\
 \midrule
+ridge, nested-CV tuned      & \MaeRidgeTuned      & yes \\
+gradient boosting, nested-CV tuned & \MaeGradboostTuned & yes \\
 per-scheme mean (shipped) & \MaeSchememean & yes \\
 global mean (baseline)    & \MaeGlobalmean & --- \\
 per-(scheme \(\times\) benchmark) & \MaeSchemebench & \textbf{no} \\
-ridge regression        & \MaeRidge      & \textbf{no} \\
 per-benchmark mean        & \MaeBenchmean  & \textbf{no} \\
-gradient boosting         & \MaeGradboost  & \textbf{no} \\
+gradient boosting, untuned & \MaeGradboost  & \textbf{no} \\
+ridge, untuned            & \MaeRidge      & \textbf{no} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -350,13 +369,62 @@ global mean's per-fold MAE on the same fold). Within the merged
 Llama-3 fold, subgroup coverage varies too---Llama-3.3 alone sits
 5--10pp below Llama-3.1 and Llama-3.2 across every calibration family;
 the \S\ref{sec:results} subgroup table keeps that visible.
-Ridge regression (\(\alpha=3.0\), standardised features, no cross-validated
-tuning) and histogram gradient boosting (\texttt{max\_depth=3},
-\texttt{max\_iter=300}, \texttt{learning\_rate=0.05},
-\texttt{min\_samples\_leaf=15}, \texttt{l2\_regularization=1.0},
-\texttt{random\_state=0}, no cross-validated tuning) are both \emph{worse}
-than predicting the global average. Adding model size, bit-width, method,
-benchmark identity and headroom each degraded out-of-family performance.
+Ridge regression (\(\alpha=3.0\), standardised features) and histogram
+gradient boosting (\texttt{max\_depth=3}, \texttt{max\_iter=300},
+\texttt{learning\_rate=0.05}, \texttt{min\_samples\_leaf=15},
+\texttt{l2\_regularization=1.0}, \texttt{random\_state=0}), both at fixed
+hyperparameters, are \emph{worse} than predicting the global average. Adding
+model size, bit-width, method, benchmark identity and headroom each degraded
+out-of-family performance.
+
+\paragraph{What tuning does, and the retraction it forces.} An earlier version
+of this paper said that ridge and gradient boosting are worse than guessing the
+average, full stop. That was true of the fixed-hyperparameter models above and
+is \textbf{false} of tuned ones; we retract it rather than reword it. A
+reviewer noted, correctly, that an untuned model losing says nothing about
+predictability, so we tuned both by nested cross-validation under a protocol
+fixed in advance: leave-one-family-out on the outside, and inside each outer
+training fold a second leave-one-family-out over the \(\Nfam - 1\) training
+families only, selecting over \TuneRidgeGrid{} ridge settings and
+\TuneGbGrid{} gradient-boosting settings. No row of a fold's held-out family
+enters any inner fit, inner score or selection for that fold, so
+hyperparameters are chosen \TuneOuterFolds{} separate times and never against
+the number being reported.
+
+Tuning moves ridge by \TuneShiftRidge{}pp and gradient boosting by
+\TuneShiftGb{}pp, roughly twice the entire effect the paper reports, to
+\MaeRidgeTuned{} and \MaeGradboostTuned{}pp. Both now beat the global mean
+resolvably (for ridge, \([\TuneGlobalVsRidgeLo, \TuneGlobalVsRidgeHi]\)pp on
+a checkpoint bootstrap), and both edge past the shipped per-scheme mean by an
+amount that does not clear noise: \TuneSchemeVsRidge{}pp for ridge
+(\([\TuneSchemeVsRidgeLo, \TuneSchemeVsRidgeHi]\)) and
+\TuneSchemeVsGb{}pp for gradient boosting
+(\([\TuneSchemeVsGbLo, \TuneSchemeVsGbHi]\)), both intervals containing
+zero.
+
+\emph{What tuning selected is the result.} In \TuneRidgeFoldsEdge{} of
+\TuneOuterFolds{} folds the inner cross-validation chose the largest ridge
+penalty in the grid (\(\alpha = \TuneRidgeAlphaMax\)); in
+\TuneGbFoldsMinLr{} of \TuneOuterFolds{} it chose the slowest learning rate
+offered and in \TuneGbFoldsMaxLtwo{} of \TuneOuterFolds{} the heaviest L2
+penalty offered. Both model classes converged on the edge of the grid in the
+direction of maximum shrinkage: asked what the best card-feature model is,
+nested cross-validation answers \emph{one shrunk almost to a constant}. We
+report the boundary selection as a limitation of the grid and did not extend it
+after seeing which edge was hit, because extending a grid in response to a
+result is the retuning the pre-registration existed to prevent.
+
+So the honest statement is narrower than ``no signal'' and stronger than the
+claim it replaces. A sliver of card-feature signal exists; recovering it
+requires shrinking the model until it is nearly the global mean; it is worth
+about a third of what the \NpredNums-number shipped artifact already achieves;
+and at this sample size it is not distinguishable from that artifact. The
+shipped per-scheme mean is therefore \emph{not} unambiguously the
+best-scoring predictor we tested---tuned ridge scores better---but it remains
+the best \emph{justifiable} one: \NpredNums{} numbers against a tuned
+38-feature model whose advantage sits inside its own confidence interval. We
+state both halves because only stating the second would be the flattering
+version.
 All features tested are card-level; we did not compute any checkpoint-level
 statistic (weight kurtosis, activation outliers, singular-value structure)
 and feed it in as a predictor. Those directions are open.

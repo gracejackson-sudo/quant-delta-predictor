@@ -1012,6 +1012,87 @@ def registry():
         add("mae_gain_pp",
             reg["pred_mae::global_mean"][0] - reg["pred_mae::scheme_mean"][0],
             0.0005, "LOFO MAE gain of the per-scheme mean over the global mean")
+    # --- Round item 4: nested-CV tuned baselines.
+    #
+    # Protocol pre-registered in TUNING_PREREGISTRATION.md and committed before
+    # the run. Outcome 4 fired: both tuned baselines beat the per-scheme mean,
+    # so the paper's claim that ridge and gradient boosting are worse than
+    # guessing the average is retracted rather than reworded. The untuned
+    # figures stay registered beside the tuned ones, because running the
+    # obvious objection and reporting what it did is what makes the result
+    # credible.
+    _tbp = os.path.join(HERE, "..", "out", "tuned_baselines.json")
+    if os.path.exists(_tbp):
+        _tb = json.load(open(_tbp))
+        for _k in ("ridge_tuned", "grad_boost_tuned",
+                   "ridge_fixed", "grad_boost_fixed"):
+            add(f"pred_mae::{_k}", _tb[f"weighted_mae::{_k}"], 0.0005,
+                f"leave-one-family-out MAE for {_k}, nested-CV tuned"
+                if _k.endswith("tuned") else
+                f"leave-one-family-out MAE for {_k}, fixed hyperparameters")
+        # How far tuning moved each model class.
+        add("tune_shift_ridge", _tb["weighted_mae::ridge_fixed"]
+            - _tb["weighted_mae::ridge_tuned"], 0.0005,
+            "points of MAE that nested-CV tuning recovered for ridge")
+        add("tune_shift_gb", _tb["weighted_mae::grad_boost_fixed"]
+            - _tb["weighted_mae::grad_boost_tuned"], 0.0005,
+            "points of MAE that nested-CV tuning recovered for gradient boosting")
+        # The grid-edge finding: nested CV's answer is maximum regularisation.
+        _ra = _tb["ridge_alphas"]
+        add("tune_ridge_alpha_max", max(_ra), 0,
+            "largest ridge alpha selected by any outer fold")
+        add("tune_ridge_folds_at_edge",
+            sum(1 for _a in _ra if float(_a) >= 1000), 0,
+            "outer folds whose selected ridge alpha sat at the top of the "
+            "pre-registered grid")
+        add("tune_gb_folds_min_lr",
+            sum(1 for _o in _tb["outer_folds"]
+                if float(_o["gb_params_selected"]["learning_rate"]) <= 0.01), 0,
+            "outer folds whose selected gradient-boosting learning rate sat "
+            "at the bottom of the grid")
+        add("tune_gb_folds_max_l2",
+            sum(1 for _o in _tb["outer_folds"]
+                if float(_o["gb_params_selected"]["l2_regularization"]) >= 10.0), 0,
+            "outer folds whose selected L2 regularisation sat at the top of "
+            "the grid")
+        add("tune_outer_folds", len(_tb["outer_folds"]), 0,
+            "outer leave-one-family-out folds in the tuning run")
+        add("tune_gb_grid", _tb["grid_sizes"]["grad_boost"], 0,
+            "gradient-boosting settings per inner fold")
+        add("tune_ridge_grid", _tb["grid_sizes"]["ridge"], 0,
+            "ridge settings per inner fold")
+        # Checkpoint-bootstrap CIs on the differences (src/tune_baseline_cis.py).
+        # The tuned models beat the GLOBAL mean resolvably; they beat the
+        # per-scheme mean by an amount whose interval includes zero, and the
+        # paper says so.
+        for _dk, _label in (("scheme_vs_ridge_tuned", "per-scheme mean minus tuned ridge"),
+                            ("scheme_vs_gb_tuned", "per-scheme mean minus tuned gradient boosting"),
+                            ("global_vs_ridge_tuned", "global mean minus tuned ridge")):
+            _dv = _tb.get("differences", {}).get(_dk)
+            if _dv:
+                add(f"tune_diff::{_dk}", _dv["estimate"], 0.0008, _label)
+                add(f"tune_diff_lo::{_dk}", _dv["lo"], 0.003,
+                    f"checkpoint-bootstrap 95% lower bound, {_label}")
+                add(f"tune_diff_hi::{_dk}", _dv["hi"], 0.003,
+                    f"checkpoint-bootstrap 95% upper bound, {_label}")
+
+    # The framing that survives any reordering: how far the furthest
+    # card-feature predictor sits from the global mean, against the noise
+    # floor. Computed rather than hand-rounded, so the abstract quotes the
+    # real bound instead of a generous one.
+    if "pred_mae::global_mean" in reg and "mae_floor_pp" in reg:
+        _g = reg["pred_mae::global_mean"][0]
+        _cands = [reg[f"pred_mae::{_m}"][0] for _m in
+                  ("scheme_mean", "scheme_x_bench", "bench_mean", "ridge",
+                   "grad_boost", "ridge_tuned", "grad_boost_tuned")
+                  if f"pred_mae::{_m}" in reg]
+        _gap = max(abs(_v - _g) for _v in _cands)
+        add("pred_max_abs_gap_pp", _gap, 0.0005,
+            "largest absolute MAE gap between any card-feature predictor and "
+            "the global mean, tuned and untuned")
+        add("pred_gap_vs_floor_ratio", reg["mae_floor_pp"][0] / _gap, 0.05,
+            "evaluation-noise floor divided by that largest gap")
+
     if "pred_mae::global_mean" in reg:
         # Tier 2.7: registered here (after pred_mae is populated) so the
         # stale literal 0.7545 cannot come back.

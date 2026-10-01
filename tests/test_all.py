@@ -1703,7 +1703,15 @@ _REGISTRY_MANIFEST = {
     # and design effect that explain why it is narrower than
     # Clopper-Pearson, the per-checkpoint/per-benchmark miss
     # distribution, and the three-way width decomposition.
-    "(scalar)": 278,
+    # Round item 4 added, as scalars: how far tuning moved each model
+    # class, the four grid-edge counts, the grid sizes, the outer-fold
+    # count, and the noise-floor / largest-gap framing keys.
+    "(scalar)": 289,
+    # Round item 4: checkpoint-bootstrap CIs on the tuned-vs-lookup and
+    # tuned-vs-global differences, one estimate and two bounds each.
+    "tune_diff::": 3,
+    "tune_diff_lo::": 3,
+    "tune_diff_hi::": 3,
     "band_coverage_pct::": 3,
     "bias_after_correction::": 2,
     "bias_effective::": 6,
@@ -1749,7 +1757,7 @@ _REGISTRY_MANIFEST = {
     "os_one_sided_pct::": 2,
     "os_scored_pairs::": 2,
     "os_two_sided_pct::": 2,
-    "pred_mae::": 6,
+    "pred_mae::": 10,
     "prosp_scheme_ckpts::": 4,
     "prosp_scheme_cov_pct::": 4,
     "prosp_scheme_rows::": 4,
@@ -2931,65 +2939,117 @@ def test_gpqa_protocol_labels_survive_a_reharvest():
 # be rewritten before it is re-pinned.
 # ---------------------------------------------------------------------------
 def test_predictor_ordering_matches_the_papers_negative_claim():
+    """The paper's first headline result, gated.
+
+    HISTORY. This test was added before round item 4 to catch an inversion of
+    the claim "both ridge and gradient boosting are worse than guessing the
+    average". It then caught exactly that: nested-CV tuning
+    (TUNING_PREREGISTRATION.md) moved both models past the global mean AND past
+    the shipped per-scheme mean. Per the pre-registered response to that
+    outcome the claim was retracted and the paper rewritten, and this test was
+    rewritten to gate the new, narrower claims rather than re-pinned to make
+    the old one pass.
+
+    What this test READS: pred_mae::* and tune_* from the live claims registry.
+
+    What it now asserts, and what each assertion protects:
+      1. the per-scheme mean beats the global mean -- the paper's one positive
+         claim about prediction;
+      2. UNTUNED ridge and gradient boosting still lose -- the retraction says
+         the old claim was true of untuned models, so if that stops being
+         true the retraction itself is misworded;
+      3. TUNED ridge and gradient boosting beat the global mean -- the fact
+         that forced the retraction;
+      4. the tuned advantage over the per-scheme mean still has a
+         checkpoint-bootstrap interval containing zero -- the paper says it is
+         "not distinguishable at this sample size", which is a falsifiable
+         claim;
+      5. every card-feature predictor stays within 0.05pp of the global mean
+         against the noise floor -- the framing that survives any reordering;
+      6. tuning still selects the grid edge -- S5's "shrunk almost to a
+         constant" rests on it.
+
+    Any of these failing means a paper claim is now false. The fix is to
+    rewrite the claim and then this test, in that order, never the reverse.
+    """
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
     from verify_claims import registry
     R = {k: v[0] for k, v in registry().items()}
 
     need = ["pred_mae::scheme_mean", "pred_mae::global_mean",
             "pred_mae::scheme_x_bench", "pred_mae::bench_mean",
-            "pred_mae::ridge", "pred_mae::grad_boost"]
+            "pred_mae::ridge", "pred_mae::grad_boost",
+            "pred_mae::ridge_tuned", "pred_mae::grad_boost_tuned",
+            "pred_max_abs_gap_pp", "pred_gap_vs_floor_ratio"]
     missing = [k for k in need if k not in R]
     assert not missing, (
         f"the registry no longer exports {missing}; the negative-result "
-        f"ordering cannot be checked. Re-run src/diagnose.py, or if a "
-        f"predictor was removed, update this test and the S5 MAE table.")
+        f"claims cannot be checked. Re-run src/diagnose.py and "
+        f"src/tune_baselines.py.")
 
     glob = R["pred_mae::global_mean"]
-    scheme = R["pred_mae::scheme_mean"]
-    margins = {k.split("::")[1]: R[k] - glob for k in need
-               if k != "pred_mae::global_mean"}
+    margin = {k.split("::")[1]: R[k] - glob
+              for k in need if k.startswith("pred_mae::")
+              and k != "pred_mae::global_mean"}
     detail = ("  global mean (baseline) = %.4f\n" % glob) + "\n".join(
-        "  %-16s %.4f  margin %+.4f" % (n, R["pred_mae::" + n], m)
-        for n, m in sorted(margins.items(), key=lambda kv: kv[1]))
+        "  %-20s %.4f  margin %+.4f" % (n, R["pred_mae::" + n], m)
+        for n, m in sorted(margin.items(), key=lambda kv: kv[1]))
 
-    # (1) the shipped predictor must beat the baseline -- this is the paper's
-    #     one positive claim about prediction, and it is small.
-    assert scheme < glob, (
+    # (1) the shipped predictor beats the baseline
+    assert margin["scheme_mean"] < 0, (
         "the per-scheme mean no longer beats the global mean under "
-        "leave-one-family-out. The paper's MaeGain and its CI, the abstract's "
-        "'beats a global mean by' clause and NEGATIVE_RESULT.md all rest on "
-        "this.\n" + detail)
+        "leave-one-family-out. MaeGain, its CI, the abstract and "
+        "NEGATIVE_RESULT.md all rest on this.\n" + detail)
 
-    # (2) ridge and gradient boosting must both LOSE to the baseline -- the
-    #     abstract says 'both ridge regression and gradient boosting are
-    #     worse than guessing the average'.
-    inverted = [n for n in ("ridge", "grad_boost") if margins[n] <= 0]
-    assert not inverted, (
-        f"{inverted} now beat(s) the global-mean baseline under "
-        f"leave-one-family-out. The abstract's central negative claim is "
-        f"that both are WORSE than guessing the average, so this inversion "
-        f"must be reported and the abstract, S5 and NEGATIVE_RESULT.md "
-        f"rewritten -- not re-pinned away.\n" + detail)
+    # (2) the UNTUNED models still lose, which is what the retraction says
+    for n in ("ridge", "grad_boost"):
+        assert margin[n] > 0, (
+            f"untuned {n} now beats the global mean. The retraction in S5 and "
+            f"NEGATIVE_RESULT.md says the old claim was true of UNTUNED "
+            f"models; if that is no longer so, the retraction is misworded "
+            f"and must be rewritten.\n" + detail)
 
-    # (3) the two weaker card-feature baselines must also lose, which is what
-    #     'no signal beyond the per-scheme average' means.
-    for n in ("scheme_x_bench", "bench_mean"):
-        assert margins[n] > 0, (
-            f"{n} now beats the global mean; NEGATIVE_RESULT.md's table and "
-            f"its ordering claim need revisiting.\n" + detail)
+    # (3) the TUNED models beat it, which is why the claim was retracted
+    for n in ("ridge_tuned", "grad_boost_tuned"):
+        assert margin[n] < 0, (
+            f"tuned {n} no longer beats the global mean. The retraction was "
+            f"made BECAUSE it did; if this reverses, the old claim may be "
+            f"restorable and the abstract, S5, contribution 1 and "
+            f"NEGATIVE_RESULT.md must be revisited rather than this test "
+            f"adjusted.\n" + detail)
 
-    # (4) margin-thinness tripwire. These margins are small in absolute terms
-    #     (order 0.02pp against a headline effect of order 0.03pp) and move on
-    #     a two-row corpus change. If one falls below a third of the shipped
-    #     predictor's own advantage, 'worse than guessing' is no longer a
-    #     comfortable description and the prose should be softened before the
-    #     ordering actually flips.
-    gain = glob - scheme
-    thin = {n: m for n, m in margins.items()
-            if n in ("ridge", "grad_boost") and m < gain / 3.0}
-    assert not thin, (
-        f"the losing margin for {sorted(thin)} has fallen below a third of "
-        f"the per-scheme mean's own advantage ({gain:.4f}pp). The ordering "
-        f"still holds, but 'worse than guessing the average' is now a thin "
-        f"claim; soften the wording in the abstract and S5 rather than "
-        f"waiting for an outright flip.\n" + detail)
+    # (4) and the paper's "not distinguishable" claim is falsifiable
+    for key, label in (("scheme_vs_ridge_tuned", "tuned ridge"),
+                       ("scheme_vs_gb_tuned", "tuned gradient boosting")):
+        lo = R.get(f"tune_diff_lo::{key}")
+        hi = R.get(f"tune_diff_hi::{key}")
+        if lo is None or hi is None:
+            continue
+        assert lo <= 0 <= hi, (
+            f"the checkpoint-bootstrap interval on (per-scheme mean minus "
+            f"{label}) is [{lo:+.4f}, {hi:+.4f}] and no longer contains "
+            f"zero. The paper claims the tuned advantage is not "
+            f"distinguishable from the shipped lookup at this sample size. "
+            f"That claim is now false and must be rewritten.")
+
+    # (5) the framing that survives any reordering
+    assert R["pred_max_abs_gap_pp"] < 0.05, (
+        f"the furthest card-feature predictor is now "
+        f"{R['pred_max_abs_gap_pp']:.4f}pp from the global mean, past the "
+        f"0.05pp the abstract and NEGATIVE_RESULT.md quote as the band every "
+        f"such predictor falls inside.\n" + detail)
+    assert R["pred_gap_vs_floor_ratio"] >= 10, (
+        f"the noise floor is only {R['pred_gap_vs_floor_ratio']:.1f}x the "
+        f"largest predictor gap, so 'the spread between predictors is small "
+        f"against evaluation noise' is weakening. Check the wording in the "
+        f"abstract and S5 before re-pinning.")
+
+    # (6) tuning still selects the grid edge, which S5's reading depends on
+    if "tune_ridge_folds_at_edge" in R and "tune_outer_folds" in R:
+        assert R["tune_ridge_folds_at_edge"] >= R["tune_outer_folds"] / 2, (
+            f"ridge now selects the top of the grid in only "
+            f"{R['tune_ridge_folds_at_edge']:.0f} of "
+            f"{R['tune_outer_folds']:.0f} folds. S5 reads the boundary "
+            f"selection as evidence that the best card-feature model is one "
+            f"shrunk almost to a constant; if tuning has moved off the edge "
+            f"that reading needs revisiting.")
