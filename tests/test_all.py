@@ -2858,18 +2858,33 @@ def test_corpus_has_six_families_under_definition_b():
 
 
 def test_paper_audit_reads_the_live_registry_not_hard_coded_literals():
-    """The day-7 external audit found paper/audit_paper.py section 4 was
-    verifying against hard-coded literals (90.1, 118, 131, 83.6, 94.6) while
-    the paper itself had moved to 90.8 / 119 after the A4 fix, so the audit
-    was passing while the paper disagreed with it. Guard against that by
-    grepping the source for the pre-A4 literals inside section 4 and by
-    requiring the section to import from src.verify_claims."""
+    """The day-7 external audit found paper/audit_paper.py's re-derivation
+    section was verifying against hard-coded literals (90.1, 118, 131, 83.6,
+    94.6) while the paper itself had moved to 90.8 / 119 after the A4 fix, so
+    the audit was passing while the paper disagreed with it. Guard against
+    that by grepping the source for the pre-A4 literals and by requiring the
+    section to import from src.verify_claims.
+
+    The anchor moved on 2026-10-01. What was one section labelled
+    "4. INDEPENDENT RE-DERIVATION (from raw source...)" is now two: section 4
+    cross-checks the verifier's artifact against the pipeline's, and section 5
+    is the part that really is from raw source. The old label was true of one
+    half and false of the other. This test anchors on section 4's heading and
+    scans to the end of the file, so it still covers both."""
     root = os.path.join(os.path.dirname(__file__), "..")
     src = open(os.path.join(root, "paper", "audit_paper.py")).read()
-    # anchor: only care about what happens after the section-4 heading
-    marker = 'head("4. INDEPENDENT RE-DERIVATION'
+    marker = 'head("4. CROSS-ARM CHECK'
+    assert marker in src, (
+        "paper/audit_paper.py no longer has a section-4 heading this test "
+        "can anchor on. If the sections were renamed again, update the "
+        "marker here -- do not delete the check.")
     i = src.index(marker)
     section = src[i:]
+    assert 'head("5. INDEPENDENT RE-DERIVATION FROM RAW SOURCE' in section, (
+        "the raw-source re-derivation section is gone from "
+        "paper/audit_paper.py. Sections 4 and 5 check different things and "
+        "both must exist: 4 compares the two arms, 5 recomputes from the GPU "
+        "run file and the dataset.")
     for literal in ("90.1", "118.0", "83.6", "94.6"):
         assert literal not in section, (
             f"paper/audit_paper.py section 4 still contains the pre-A4 "

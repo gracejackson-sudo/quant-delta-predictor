@@ -509,6 +509,22 @@ this protocol two-sided coverage
 is \(\ProspInside/\ProspN = \ProspCov\%\) against a nominal 90\% two-sided
 level, with a 95\% cluster-robust CI of \([\ProspCrLo, \ProspCrHi]\).
 
+\paragraph{Where these figures are computed, which is not where a reader
+would assume.} Every prospective figure in this section --- the row count, the
+covered count, the coverage percentage and both Clopper--Pearson bounds ---
+is computed by \texttt{verify/independent\_check.py}, a standard-library
+reimplementation that parses the raw cards itself and imports nothing from
+the pipeline. They are not the pipeline's own numbers. The pipeline computes
+the same five independently, and \texttt{paper/audit\_paper.py} compares the
+two arms row by row on every build; they agree exactly, and a disagreement
+fails the build. We report it this way round deliberately: a headline
+validation figure produced by the code under test is worth less than one
+produced by a second implementation, and if the two ever diverge we would
+rather the published number be the independent one. The cost is that the
+cross-check in \texttt{audit\_paper.py} is the only place the pipeline's own
+figure is held against it, so that check is load-bearing rather than
+decorative.
+
 \paragraph{Why the interval is clustered, and why it is narrower.} The
 \ProspN{} rows come from \ProspClusN{} quantization runs, up to
 \ProspRowsPerCkptMax{} from one, so the row is not the unit of independent

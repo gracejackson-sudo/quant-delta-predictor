@@ -211,26 +211,42 @@ for pat, why in BANNED:
 print(f"   banned patterns matched: {hits}")
 
 # ---------------------------------------------------------------- 4
-head("4. INDEPENDENT RE-DERIVATION (from raw source, versus the LIVE registry)")
-# What this section verifies, and what it does not:
-#   * "recomputed" comes from source files (data/*.csv and out/*.csv),
-#     using the same tolerance the code uses. Checks (c) and (d) really are
-#     raw: the GPU run file and the dataset. Checks (a) and (b) are not, and
-#     the distinction matters. The registry derives prosp_n, prosp_inside,
-#     prosp_cov_pct, prosp_ci_lo and prosp_ci_hi from
-#     out/independent_check.csv -- the INDEPENDENT VERIFIER's per-row output.
-#     (a) and (b) recompute the same five from out/real_use_case.csv, the
-#     PIPELINE's own output. So this is a cross-check between the two arms,
-#     which is worth having, but it is only meaningful when both artifacts
-#     are current: on 2026-10-01 a stale independent_check.csv against a
-#     fresh real_use_case.csv produced five simultaneous failures here, all
-#     of them correct. Both files are now in the artifact-staleness test.
-#   * Note the consequence for how the headline is sourced: the prospective
-#     coverage the abstract quotes is the verifier's figure, not the
-#     pipeline's. That is the stronger choice -- the number a reader sees was
-#     computed by the reimplementation that shares no code with the pipeline
-#     -- but it means this section is the ONLY place the pipeline's own
-#     figure is checked against it. Do not weaken it.
+head("4. CROSS-ARM CHECK (verifier's artifact versus the pipeline's, "
+     "both against the LIVE registry)")
+# This section used to be numbered with the one below it under the single
+# label "INDEPENDENT RE-DERIVATION (from raw source)". That label was true of
+# section 5 and false of this one, which is half a section mislabelled, so
+# they are split.
+#
+# What THIS section verifies. The registry derives prosp_n, prosp_inside,
+# prosp_cov_pct, prosp_ci_lo and prosp_ci_hi from out/independent_check.csv
+# -- the INDEPENDENT VERIFIER's per-row output, stdlib only, no project
+# imports. The checks below recompute the same five from
+# out/real_use_case.csv, the PIPELINE's own output, with a separate
+# implementation of the inside-the-interval test. So this is not a
+# re-derivation from raw data: it is a cross-check between the two arms,
+# which is worth having and is worth not mistaking for something else.
+#
+# It is only meaningful when both artifacts are current. On 2026-10-01 a
+# stale independent_check.csv against a fresh real_use_case.csv produced five
+# simultaneous failures here, all of them correct. Both files are now in the
+# artifact-staleness test (tests/test_all.py).
+#
+# The consequence for how the headline is sourced, stated here because it is
+# easy to miss: the prospective coverage the abstract quotes is the
+# verifier's figure, not the pipeline's. That is the stronger choice -- the
+# number a reader sees was computed by a reimplementation sharing no code
+# with the pipeline -- but it means this section is the ONLY place the
+# pipeline's own figure is checked against it. Do not weaken it. The paper
+# says so in S6 and README.md says so too.
+#
+# "paper" in every line below comes from the LIVE claims registry
+# (src/verify_claims.registry()), the same source that drives
+# paper/numbers.tex. A hard-coded literal here would let the audit pass while
+# the paper said something different -- the pre-2026-09-27 failure mode this
+# rewrite fixed. Tolerances are rounding-scale. If the registry does not
+# export a key we fail rather than skip, so a rename cannot make the audit
+# vacuous.
 #   * "paper" comes from the LIVE claims registry (src/verify_claims.registry()),
 #     which is the same source that drives paper/numbers.tex. A hard-coded
 #     literal here would let the audit pass while the paper says something
@@ -288,6 +304,12 @@ chk("CP lower bound", 100 * beta.ppf(0.025, k, n - k + 1),
     "prosp_ci_lo", 0.05)
 chk("CP upper bound", 100 * beta.ppf(0.975, k + 1, n - k),
     "prosp_ci_hi", 0.05)
+
+head("5. INDEPENDENT RE-DERIVATION FROM RAW SOURCE "
+     "(versus the LIVE registry)")
+# These two are raw in the sense the old label claimed: the figures are
+# recomputed from the GPU run file and from data/dataset.csv, not from any
+# artifact a pipeline script wrote.
 
 # (c) adversarial tail, from the raw GPU run file
 a = pd.read_csv(os.path.join(ROOT, "data", "adversarial", "adversarial_runs.csv"))

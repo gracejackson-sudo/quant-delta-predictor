@@ -225,7 +225,8 @@ by row. Note that it is not only a check: the registry takes `prosp_n`,
 `prosp_inside`, `prosp_cov_pct` and the two Clopper–Pearson bounds from its
 output, so the prospective coverage quoted above was computed by the
 reimplementation and not by the pipeline. `paper/audit_paper.py` section 4 is
-where the pipeline's own figure is compared against it.
+where the pipeline's own figure is compared against it, and the paper's §6 says
+so as well.
 
 ```bash
 python3 verify/independent_check.py
