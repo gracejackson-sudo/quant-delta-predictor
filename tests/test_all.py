@@ -1262,6 +1262,61 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
 # and the field-level disagreement re-appears, main() returns 2, this test fires.
 # ---------------------------------------------------------------------------
 
+def test_prose_scanner_catches_its_own_plants():
+    """src/check_prose.py must satisfy its own contract before it is trusted.
+
+    An ad-hoc version of this scan failed its own planted defects three times
+    in one day: re.I defeated the case-sensitivity the patterns depended on so
+    it flagged 249 normal sentence boundaries, the dangling-conjunction
+    pattern did not match the defect it was written for, and a plant was
+    miscalibrated against a pattern that had been removed. So DEFECTS is the
+    primary artifact and the patterns are subordinate: every plant must be
+    caught, and every string in CLEAN must not be.
+
+    What this test READS: check_prose.self_check(), which is that contract.
+    A planted failure -- adding a defect no pattern matches, or widening a
+    pattern until it flags real prose -- fails here. This is deliberately a
+    separate test from the one that scans the papers, so "the scanner is
+    broken" and "the papers have a defect" cannot be confused.
+    """
+    import importlib
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    cp = importlib.import_module("check_prose")
+    importlib.reload(cp)
+    bad = cp.self_check()
+    assert not bad, (
+        "src/check_prose.py does not satisfy its own plants. Fix the "
+        "patterns to match the plants, never the plants to match the "
+        "patterns -- a pattern invented to make a clean run is a pattern "
+        "nobody has seen fire.\n" + "\n".join("  " + b for b in bad))
+    assert len(cp.DEFECTS) >= 10 and len(cp.CLEAN) >= 8, (
+        f"the plant set has shrunk to {len(cp.DEFECTS)} defects and "
+        f"{len(cp.CLEAN)} clean strings. Plants are the artifact; deleting "
+        f"one to make the scanner pass is the failure mode this guards.")
+
+
+def test_both_paper_variants_have_no_mangled_prose():
+    """Both .tex variants must scan clean. Separate from the scanner's own
+    self-check so a red here means the paper, not the tool."""
+    import importlib
+    import sys as _sys
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _sys.path.insert(0, os.path.join(root, "src"))
+    cp = importlib.import_module("check_prose")
+    importlib.reload(cp)
+    assert not cp.self_check(), "scanner is untrustworthy; see its own test"
+    for name in ("neurips_main.tex", "main.tex"):
+        path = os.path.join(root, "paper", name)
+        if not os.path.exists(path):
+            continue
+        h = cp.hits(open(path, encoding="utf-8").read())
+        assert not h, (
+            f"paper/{name} has {len(h)} mangled-prose candidate(s):\n"
+            + "\n".join(f"  [{w}] {g!r}\n     ...{c}..." for w, g, c in h))
+
+
 def test_the_audit_scripts_exit_zero():
     """src/audit.py and src/demo_holdout.py both failed, and nothing noticed.
 

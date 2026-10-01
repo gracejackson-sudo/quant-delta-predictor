@@ -762,3 +762,36 @@ them iterates corpus-derived data, which is non-empty whenever the corpus is,
 and that is already pinned by the row-count tests. The one that broke was the
 only reduction sourced from a live-sampled artifact. That is the boundary, not
 "we got lucky with the rest".
+
+### Fix: the prose scanner is now a check rather than a habit
+
+`src/check_prose.py`. The ad-hoc version of this scan failed its own planted
+defects three times in one day: `re.I` defeated the case-sensitivity the
+patterns depended on and it flagged all 249 normal sentence boundaries; the
+dangling-conjunction pattern did not match the contribution-2 defect it had
+been written for; and a plant was miscalibrated against a pattern that had
+been removed. A scanner that needs recalibrating every time it runs is not a
+check.
+
+So the plants are the primary artifact and the patterns are subordinate to
+them. `DEFECTS` holds eleven real defects, verbatim, most of which reached a
+paper variant. `CLEAN` holds ten strings of real prose that an over-broad
+pattern flagged at some point. The contract is that every defect is caught and
+no clean string is, and `test_prose_scanner_catches_its_own_plants` enforces
+both halves; a second test scans the two variants, kept separate so "the
+scanner is broken" and "the paper has a defect" cannot be confused.
+
+Writing it this way round immediately found three flaws in patterns that had
+looked fine: a repeated *phrase* is not a repeated word (the plant's repeated
+unit was three words, "and the width"); the decimal exemption was matched
+against a 140-character window and blanketed a real comma defect sitting near
+"2.68pp"; and stripping `\paragraph{...}` titles before scanning made the
+"prose running into a heading" pattern unable to fire at all. Each pattern now
+carries `strip_headings` and `honour_exempt` flags because one uniform
+pipeline provably cannot catch all eleven.
+
+Both failure directions planted: adding a defect no pattern matches fails with
+`PLANT NOT CAUGHT`, and widening a pattern until it flags real prose fails
+with `FALSE POSITIVE on clean text`. The test also refuses to let the plant
+set shrink below ten defects and eight clean strings, because deleting a plant
+to make the scanner pass is the failure mode it exists to guard.
