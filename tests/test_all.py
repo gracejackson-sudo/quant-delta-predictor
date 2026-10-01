@@ -124,7 +124,10 @@ def test_recovery_first_column_order():
           "| GPQA<br>0-shot | 100.0 | 31.88 | 31.88 |\n")
     got = {b: (before, after) for b, before, after, _ in H.extract(md)}
     assert got["arc_challenge"] == (69.37, 68.34)
-    assert got["gpqa"] == (31.88, 31.88)
+    # "GPQA<br>0-shot" carries no Acc-Norm, CoT or diamond qualifier, so the
+    # protocol split resolves it to gpqa_main (it was plain "gpqa" before the
+    # split was ported into src/harvest.py).
+    assert got["gpqa_main"] == (31.88, 31.88)
     assert all(v[0] <= 100 for v in got.values())
 
 
@@ -2792,3 +2795,106 @@ def test_every_src_and_verify_module_parses_and_compiles():
                     f"{sub}/{name} does not parse: {e.__class__.__name__} "
                     f"at line {e.lineno}: {e.msg}"
                 )
+
+
+# ---------------------------------------------------------------------------
+# The GPQA protocol split was applied as a direct CSV patch and the harvester
+# was never taught it, so a re-harvest collapsed 34 rows back to a single
+# "gpqa" label. The split is now ported into src/harvest.py (the five
+# card-verified protocol labels plus the gpqa_ambiguous_46 placeholder, and
+# a coarse GPQA dedup slot so the split did not change which rows survive).
+#
+# This test is the gate on that port. It re-harvests data/cards/ with the
+# shipped parser and demands agreement with the committed data/dataset.csv on
+# EVERY column, not just the numeric ones -- a label-only regression is
+# exactly what the previous numeric-only comparison missed.
+#
+# It skips when data/cards/ is absent, because the corpus is not in git.
+# ---------------------------------------------------------------------------
+def test_reharvest_reproduces_committed_dataset_on_every_column():
+    import pandas as pd
+    root = os.path.join(os.path.dirname(__file__), "..")
+    cards = os.path.join(root, "data", "cards")
+    if not os.path.isdir(cards) or not os.listdir(cards):
+        return  # corpus not present in this checkout; nothing to compare
+
+    sys.path.insert(0, os.path.join(root, "src"))
+    import harvest
+
+    rows = []
+    for fn in sorted(f for f in os.listdir(cards) if f.endswith(".md")):
+        r, _ = harvest.harvest_card(os.path.join(cards, fn),
+                                    fn[:-3].replace("_", "/", 1))
+        rows += r
+    harvest.reconcile_gpqa_main(rows)
+
+    got = pd.DataFrame(rows)
+    want = pd.read_csv(os.path.join(root, "data", "dataset.csv"))
+
+    assert len(got) == len(want), (
+        f"re-harvest produced {len(got)} rows, committed dataset.csv has "
+        f"{len(want)}. A row-count change means the parser now admits or "
+        f"drops rows the committed corpus does not -- check the GPQA dedup "
+        f"slot (harvest.DEDUP_FAMILY) before regenerating anything.")
+
+    cols = list(want.columns)
+    got = got[cols].sort_values(["model", "benchmark"]).reset_index(drop=True)
+    want = want[cols].sort_values(["model", "benchmark"]).reset_index(drop=True)
+
+    problems = []
+    for c in cols:
+        a, b = got[c], want[c]
+        if a.dtype.kind in "fc" and b.dtype.kind in "fc":
+            mism = ~((a - b).abs() < 1e-9)
+        else:
+            mism = a.astype(str) != b.astype(str)
+        if mism.any():
+            ex = [(got.loc[i, "model"].split("/")[-1], got.loc[i, "benchmark"],
+                   a[i], b[i]) for i in list(mism[mism].index)[:4]]
+            problems.append(f"column {c!r}: {int(mism.sum())} mismatches, "
+                            f"e.g. {ex}")
+
+    assert not problems, (
+        "a re-harvest of data/cards/ no longer reproduces the committed "
+        "data/dataset.csv. Either the parser changed or the CSV carries a "
+        "manual patch that was never ported into src/harvest.py:\n  "
+        + "\n  ".join(problems))
+
+
+def test_gpqa_protocol_labels_survive_a_reharvest():
+    """The specific regression the port exists to prevent.
+
+    A re-harvest must emit all five card-verified GPQA protocol labels plus
+    the placeholder, with the audited row counts. Before the port it emitted
+    a single collapsed 'gpqa' for all 34 rows.
+    """
+    import pandas as pd
+    root = os.path.join(os.path.dirname(__file__), "..")
+    cards = os.path.join(root, "data", "cards")
+    if not os.path.isdir(cards) or not os.listdir(cards):
+        return
+
+    sys.path.insert(0, os.path.join(root, "src"))
+    import harvest
+
+    rows = []
+    for fn in sorted(f for f in os.listdir(cards) if f.endswith(".md")):
+        r, _ = harvest.harvest_card(os.path.join(cards, fn),
+                                    fn[:-3].replace("_", "/", 1))
+        rows += r
+    n_amb = harvest.reconcile_gpqa_main(rows)
+
+    counts = pd.Series([r["benchmark"] for r in rows]).value_counts().to_dict()
+    expected = {"gpqa_main": 15, "gpqa_main_norm": 8, "gpqa_diamond": 6,
+                "gpqa_main_cot_5shot": 2, "gpqa_diamond_cot_5shot": 1,
+                "gpqa_ambiguous_46": 2}
+    for label, want_n in expected.items():
+        assert counts.get(label, 0) == want_n, (
+            f"re-harvest emitted {counts.get(label, 0)} {label} rows, "
+            f"expected {want_n} per the card audit (paper S9)")
+    assert "gpqa" not in counts, (
+        "a re-harvest emitted the collapsed 'gpqa' label; the protocol "
+        "split has regressed out of src/harvest.py")
+    assert n_amb == 2, (
+        f"reconcile_gpqa_main parked {n_amb} rows, expected 2 "
+        f"(Llama-3.3-70B-Instruct FP8-dynamic and w8a8 at 46.10)")

@@ -757,13 +757,26 @@ survived---would misrepresent how the result was obtained.
     \texttt{gpqa\_ambiguous\_46}: the card does not resolve which
     protocol they measure, and we do not infer from the value. An
     earlier version of this paragraph asserted that 8 rows carried
-    the string \texttt{GPQA (Diamond, 0-shot)}. That was wrong: no row
-    in the corpus carries that exact string. Corrected here from the
-    cards. Four rows lie under the modeling-set filter's chance floor
+    the string \texttt{GPQA (Diamond, 0-shot)}. That was wrong, but so
+    was the first correction to it, which said no card carries that
+    string at all. Three cards do: the Qwen3-8B, Qwen3-14B and
+    Qwen3-32B NVFP4 cards each report both \texttt{GPQA (0-shot)} and
+    \texttt{GPQA (Diamond, 0-shot)}. Those Diamond rows are absent from
+    the corpus not because the string is absent from the cards but
+    because the harvester's first-table-wins rule discarded them as
+    duplicates of a label that was, at the time, collapsed. They are
+    logged in \texttt{data/rejected\_rows.csv} as
+    \texttt{duplicate\_benchmark\_discarded}. Admitting them is a data
+    decision we have not taken, and the harvester deliberately keeps a
+    coarse GPQA de-duplication slot so that porting the protocol split
+    changed labels only and not which rows survive. Four rows lie under the modeling-set filter's chance floor
     (\texttt{acc\_before}$\geq$\MinAccBefore\%) and are excluded from the
     fitted set exactly as before; the split does not add or remove
-    modelling-set rows. The harvester should adopt this split so
-    future corpora do not re-introduce the conflation.
+    modelling-set rows. The harvester has since adopted this
+    split, so a re-harvest reproduces the committed labels instead of
+    collapsing them; a test re-harvests the card corpus and fails if the
+    result disagrees with the committed dataset on any column, label
+    columns included.
   \item \emph{Nine pre-registered prospective repos were dropped by a
     name-gate.} The prospective set was pre-registered as
     \ProspRegisteredRepos{} repositories. The harvester requires a

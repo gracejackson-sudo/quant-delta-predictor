@@ -213,9 +213,12 @@ This is enforced mechanically, not by discipline:
 This repository is MIT licensed (see `LICENSE`); data provenance is recorded in `NOTICE`. The raw Hugging Face model
 cards the dataset was extracted from are **not redistributed** here — they are
 RedHatAI's content under several different licences. `data/dataset.csv` (the
-extracted numbers) is included and is all the tool needs. See
-[data/README.md](data/README.md) for what that costs you and how to fetch the
-cards yourself.
+extracted numbers) is included and is all the tool needs. One card set **is**
+included: `data/rh_card_scan_2026_09_26/`, the dated snapshot behind the
+recipe-documentation scan in the paper's Data section, because that claim is
+not checkable without it. See
+[data/README.md](data/README.md) for what that costs you, why the two are
+treated differently, and how to fetch the harvest caches yourself.
 
 Source data: evaluation results published by RedHatAI on Hugging Face —
 <https://huggingface.co/RedHatAI>.

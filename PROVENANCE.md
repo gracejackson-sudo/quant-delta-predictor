@@ -193,3 +193,58 @@ enforces that the committed CSV agrees with a from-scratch tolerance-based
 recomputation of `inside` from its own `lo`, `hi`, and `delta` -- so a future
 regeneration that produces a different `inside` value will fail the local gate
 rather than silently overwriting the audited result.
+
+## 2026-09-30, GPQA protocol split ported into the harvester
+
+The five card-verified GPQA protocol labels, plus the `gpqa_ambiguous_46`
+placeholder, were applied to `data/dataset.csv` as a direct CSV patch and were
+never taught to `src/harvest.py`. A re-harvest therefore collapsed all 34 rows
+back to a single `gpqa`. Since the methodological round forces a regeneration,
+that would have silently reverted the split.
+
+The split is now in the parser: four labels resolve from the card's own label
+text, and the fifth needs a cross-card pass (`harvest.reconcile_gpqa_main`),
+because three Llama-3.3-70B-Instruct cards carry the identical string
+`GPQA (0-shot)` with baselines that disagree by 14pp. A re-harvest now
+reproduces the committed CSV on every column, and
+`tests/test_all.py::test_reharvest_reproduces_committed_dataset_on_every_column`
+fails if that stops being true — on label columns, not only numeric ones,
+which is the comparison that let the original divergence through.
+
+**Row order is not reproducible, content is.** `harvest.main()` writes rows in
+card-iteration order, which does not match the committed file's order. This
+predates the port (checked against the pre-port parser). The test sorts before
+comparing. Anyone diffing a regenerated `dataset.csv` byte-for-byte against the
+committed one will see a reordering and no content change.
+
+### Three decisions deliberately deferred to the methodological round
+
+These were found while porting the split. All three move published numbers, so
+none was taken two days before submission.
+
+1. **Whether to admit 4 rows the de-duplication currently discards.** The
+   harvester keeps a coarse GPQA slot (`harvest.DEDUP_FAMILY`) so that one card
+   contributes at most one GPQA row, exactly as when the label was collapsed.
+   Three Qwen3 NVFP4 cards and three Mistral-Small-3.1 cards each publish two
+   GPQA tables under what are now distinct labels. Removing the coarse slot
+   admits them and takes the raw corpus from 850 rows to 854, moving `n_rows`
+   and every figure downstream of it. The plant test
+   `test_reharvest_reproduces_committed_dataset_on_every_column` guards this
+   boundary: it reports the row-count change and names the slot.
+
+2. **`n_items` is wrong for `gpqa_diamond`.** Every GPQA variant carries
+   `n_items` = 448, which is the Main item count. GPQA-Diamond has 198
+   questions, so the 6 diamond rows carry an item count that is too large and
+   their analytic noise floor (`model.noise_scale`) is correspondingly
+   understated. Correcting it moves every normalized-conformal figure, so it
+   belongs with the other changes that move numbers.
+
+3. **`out/adversarial_audit.json` is stale, and regenerating it moves a figure
+   quoted in `SCOPE.md`.** Re-running `src/adversarial_audit.py` moves the
+   gate-rejected coverage range from 87.5%–90.6% to 88.0%–91.1%. `SCOPE.md`
+   item 5 quotes the old range as current provenance, and `SCOPE.md` carries no
+   claim tags and sits outside `src/audit_traceability.py`'s outward-document
+   list, so no gate catches the drift. The artifact and the document have to be
+   fixed together. Three other artifacts regenerate with changes from the same
+   run and were likewise left alone: `out/census.json`,
+   `out/census_rows.csv`, `out/adversarial_passfail_193.csv`.

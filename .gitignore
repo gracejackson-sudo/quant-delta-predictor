@@ -11,3 +11,10 @@ OVERNIGHT_RESEARCH.md
 out/publisher_cards/
 OUTREACH_POST_DRAFT.md
 out/qwen35_cards/
+
+# Raw Hugging Face model cards. Cached locally, never redistributed: the
+# project publishes aggregate counts only (see src/publisher_census.py and
+# src/qwen35_published.py). These two were untracked but NOT ignored, so a
+# `git add -A` would have committed 178 cards against that policy.
+data/cards
+data/prospective_cards

@@ -41,13 +41,94 @@ BENCHMARKS = [
     ("math_lvl5",
      r"^math[\s\-_]*(lvl|lv|vl|v|level)?[\s\-_]*5(?!\d)|^math[\s\-_]*hard",
      1324),
-    ("gpqa", r"^gpqa", 448),
+    # GPQA is five distinct protocols on the RedHatAI cards, plus one
+    # placeholder. Ported from the manual relabel recorded in paper S9 and
+    # PROVENANCE.md so that a re-harvest reproduces the committed labels
+    # instead of collapsing them back to a single "gpqa".
+    #
+    # Order is load-bearing: the first matching pattern wins, so
+    # Acc-Norm and the two CoT variants must precede bare "diamond",
+    # and bare "diamond" must precede the catch-all main.
+    #
+    # n_items is 448 for every variant, matching the committed corpus.
+    # GPQA-Diamond actually has 198 questions, so the diamond rows carry
+    # an item count that is too large and their analytic noise floor is
+    # correspondingly understated. Correcting it moves `noise_scale` and
+    # every normalized-conformal figure, so it is left alone here and
+    # recorded as an open item rather than changed silently.
+    ("gpqa_main_norm", r"^gpqa\b.*acc[\s\-_]*norm", 448),
+    ("gpqa_diamond_cot_5shot",
+     r"^gpqa\b.*cot.*diamond|^gpqa\b.*diamond.*cot", 448),
+    ("gpqa_main_cot_5shot", r"^gpqa\b.*cot.*main|^gpqa\b.*main.*cot", 448),
+    ("gpqa_diamond", r"^gpqa\b.*diamond", 448),
+    ("gpqa_main", r"^gpqa", 448),
     ("musr", r"^musr", 756),
     ("humaneval_plus", r"^humaneval\+|^humaneval[\s\-_]*plus", 164),
     ("humaneval", r"^humaneval", 164),
     ("arena_hard", r"^arena[\s\-_]*hard", 500),
 ]
 BENCH_N = {k: n for k, _, n in BENCHMARKS}
+
+# Placeholder label for a "GPQA (0-shot)" row whose value the card does not
+# resolve; see reconcile_gpqa_main(). Not matchable from a label.
+GPQA_AMBIGUOUS = "gpqa_ambiguous_46"
+BENCH_N[GPQA_AMBIGUOUS] = 448
+
+# Within one card, every GPQA protocol collapses to a single dedup slot, so
+# first-table-wins behaves exactly as it did when GPQA was one label. Three
+# Qwen3 NVFP4 cards and three Mistral-Small-3.1 cards carry two GPQA tables
+# each; under per-label dedup those second rows would be admitted and the
+# corpus would grow by 6 rows, moving every published figure. Keeping the
+# coarse key makes this port label-only. Admitting them is a data decision,
+# not a parser fix.
+DEDUP_FAMILY = {"gpqa": "gpqa"}
+
+
+def dedup_key(bench: str) -> str:
+    """The slot `bench` occupies for within-card duplicate detection."""
+    for prefix, slot in DEDUP_FAMILY.items():
+        if bench.startswith(prefix):
+            return slot
+    return bench
+
+
+GPQA_CONFLICT_PP = 5.0
+
+
+def reconcile_gpqa_main(rows):
+    """Flag `gpqa_main` rows whose own card does not resolve the protocol.
+
+    Three Llama-3.3-70B-Instruct cards carry the identical string
+    "GPQA (0-shot)": the NVFP4 card reports 31.63 and the FP8-dynamic and
+    w8a8 cards report 46.10. One label, two protocols, 14pp apart, so the
+    label alone cannot say which protocol the high rows measure.
+
+    Rule: within one base checkpoint, if the `gpqa_main` baselines disagree
+    by more than GPQA_CONFLICT_PP, the lowest is retained as `gpqa_main`
+    and the others are relabelled GPQA_AMBIGUOUS. The lowest is retained
+    because unnormalised GPQA main 0-shot sits at or near four-way chance on
+    every unconflicted checkpoint in this corpus (3.70 to 33.14), so a 46.10
+    reading is the one that does not fit the label. We do not infer that the
+    high rows are Diamond; the card does not say, so they are parked.
+
+    This is a cross-card rule and cannot live in harvest_card(), which sees
+    one card at a time. Returns the number of rows relabelled.
+    """
+    by_base = {}
+    for r in rows:
+        if r["benchmark"] == "gpqa_main":
+            by_base.setdefault(r["base_model"], []).append(r)
+    n = 0
+    for rs in by_base.values():
+        befores = sorted({r["acc_before"] for r in rs})
+        if len(befores) > 1 and befores[-1] - befores[0] > GPQA_CONFLICT_PP:
+            keep = befores[0]
+            for r in rs:
+                if r["acc_before"] != keep:
+                    r["benchmark"] = GPQA_AMBIGUOUS
+                    r["n_items"] = BENCH_N[GPQA_AMBIGUOUS]
+                    n += 1
+    return n
 
 # a cell that is ENTIRELY a number: "73.5", "**73.5**", "105.4%",
 # "25.8 (25.1 / 26.5)".  Deliberately rejects "MMLU (5-shot)".
@@ -546,15 +627,18 @@ def harvest_card(path, model_id, allow_unknown_family=False):
         if before is None:
             rejects.append([model_id, bench, "recovery_mismatch"])
             continue
-        if bench in seen:
+        slot = dedup_key(bench)
+        if slot in seen:
             # First table wins. This is a CHOICE, not a no-op: some cards
             # report the same benchmark twice under different conditions
             # (e.g. GPQA 30.12 in OpenLLM-v2 vs 62.94 in a reasoning table).
             # Keeping the first preserves the OpenLLM-v1/v2 protocol
-            # consistently, but the discarded value is logged.
+            # consistently, but the discarded value is logged. The slot is
+            # coarse for GPQA (see DEDUP_FAMILY) so that splitting the label
+            # into five protocols did not change which rows survive.
             rejects.append([model_id, bench, "duplicate_benchmark_discarded"])
             continue
-        seen.add(bench)
+        seen.add(slot)
         if not (0 < before <= 100 and 0 <= after <= 100):
             rejects.append([model_id, bench, "out_of_range"])
             continue
@@ -591,6 +675,10 @@ def main():
         if kept:
             n_cards_used += 1
 
+    # Cross-card pass: a "GPQA (0-shot)" label that disagrees with itself
+    # across cards of the same checkpoint cannot be asserted as main.
+    n_ambig = reconcile_gpqa_main(rows)
+
     cols = list(rows[0].keys())
     os.makedirs(os.path.dirname(OUT_CSV), exist_ok=True)
     with open(OUT_CSV, "w", newline="") as f:
@@ -609,6 +697,7 @@ def main():
     print(f"  magnitude verified, sign from header (|delta|~0)  : {osrc['header']}")
     print(f"  2-column table, no recovery to check against      : {osrc['header_only']}")
     print(f"rejected rows      : {len(rejects)}")
+    print(f"  GPQA rows parked as {GPQA_AMBIGUOUS}: {n_ambig}")
     print(f"distinct base models: {len({r['base_model'] for r in rows})}")
     print(f"families           : {sorted({r['family'] for r in rows})}")
     return 0

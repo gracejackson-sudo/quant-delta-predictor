@@ -8,11 +8,28 @@
 - **`targets.txt`, `redhatai_models.json`** — the list of public model IDs the
   harvest was run over.
 - **`adversarial/`** — our own GPU measurements. Ours to publish.
+- **`rh_card_scan_2026_09_26/`** — a dated snapshot of the RedHatAI quantized
+  model cards as published on that date. This **is** redistributed, and it is
+  the one card set that is. It backs the recipe-documentation scan reported in
+  the paper's Data section (how many cards pin a library version, mention
+  activation reordering or dampening, or report no recipe at all), and it is
+  the evidence a reader needs to check that scan rather than take it on trust.
+  It also backs the test that verifies every GPQA row's protocol label against
+  the card it came from. The derived counts live in
+  `out/rh_card_scan_2026_09_26.json`, which is what the claims registry reads;
+  the cards themselves are here so the scan is reproducible.
 
 ## What is deliberately NOT included
 
 **`cards/` and `prospective_cards/`** — the 178 raw Hugging Face model cards the
 dataset was extracted from — are **not redistributed here.**
+
+To state the policy precisely, because the two directories above and this one
+pull in opposite directions: we redistribute the **dated recipe-scan
+snapshot**, because a documentation claim nobody can check is not worth making,
+and we do not redistribute the **harvest caches** that `dataset.csv` was
+extracted from. That is a judgement about which cards earn their licence risk,
+not a blanket rule, and it is worth knowing that it is a judgement.
 
 Those cards are RedHatAI's published content, not ours, and they carry at least
 five different licenses: Apache-2.0, MIT, the Llama 2/3.1/3.2/3.3/4 community
