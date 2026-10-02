@@ -1797,7 +1797,13 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
         ("out/bias_correction_empirical.json",
                                           "python src/bias_correction_empirical.py"),
         ("out/cell_coverage.json",        "python src/cell_coverage.py"),
-        ("out/scheme_envelope.json",      "python src/build_envelope.py"),
+        # Already covered, and worth naming its consumers: src/cli.py reads
+        # it to answer queries, this file diffs it against a fresh build, and
+        # it embeds the prospective validation block -- so it is downstream of
+        # src/real_use_case.py and went stale once during round item 1 when
+        # the chain ran in the other order.
+        ("out/scheme_envelope.json",      "python src/build_envelope.py "
+                                          "(AFTER src/real_use_case.py)"),
         ("out/one_sided_audit.json",      "python src/one_sided_audit.py"),
         ("out/audit_ranking.json",        "python src/audit_ranking.py"),
         # Added 2026-10-01. These four are corpus-derived and were outside
@@ -1826,6 +1832,16 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
         # verify_claims.py and paper/gen_numbers.py read its output, so it
         # must run before them. README's block now says so explicitly.
         ("out/independent_check.csv",     "python verify/independent_check.py"),
+        # out/calibration_partition.json is the one artifact an mtime check
+        # cannot guard, and it is excluded here deliberately rather than
+        # forgotten. verify/independent_rank.py and verify/independent_check.py
+        # take it as a DECLARED INPUT precisely so they do not have to
+        # reproduce numpy's RNG, so requiring it to postdate dataset.csv
+        # would couple the audit tools to the regeneration order they exist
+        # to be independent of. Its guard is different in kind:
+        # test_verifiers_exit_zero fails if the partition it declares no
+        # longer reproduces the bands the pipeline prints, which is the
+        # property that actually matters.
     ]
     stale = []
     for rel, howto in artifacts:
@@ -1887,7 +1903,13 @@ _REGISTRY_MANIFEST = {
     # +3 for the method-section correction: the fit and calibration
     # checkpoint counts, and the largest gap between a shipped centre and the
     # same scheme's mean over the whole corpus.
-    "(scalar)": 312,
+    # +9 when the prospective arms moved onto the shipped band: the three
+    # composition groups (DeepSeek-R1-Distill, Gemma-3, and the three
+    # single-checkpoint tail groups) with rows, checkpoints and coverage each.
+    # The in-family/out-of-family difference keys stay registered but are no
+    # longer quoted -- the composition behind that split does not support a
+    # claim, see S6 and PROVENANCE.md.
+    "(scalar)": 321,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

@@ -25,6 +25,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 from harvest import harvest_card, parse_family  # noqa: E402
 from model import load  # noqa: E402
+from strata import calibrated_fit  # noqa: E402
 from predictor import Conformal, GlobalMean, SchemeMean  # noqa: E402
 
 HERE = os.path.dirname(__file__)
@@ -96,20 +97,28 @@ def main():
     # ---- freeze the predictor on everything we had during development
     d = load(DATA)
     train = d
-    m = SchemeMean().fit(train)
-    conf = Conformal(alpha=ALPHA, mondrian_by="scheme").fit(m, train)
+    # The band under test must be the band that SHIPS. Until 2026-10-02 this
+    # was SchemeMean + Mondrian Conformal calibrated on `train` -- the same
+    # rows the centre came from. The note below said so plainly, and the
+    # script was honest about it; what was not honest was the paper quoting
+    # this figure as the prospective validation of the shipped interval. Two
+    # separate problems: the calibration was in-sample, and the band was a
+    # different object from ConservativeStratified, which is what rank.py
+    # prints. Both are fixed by measuring strata.calibrated_fit directly.
+    m = calibrated_fit(train)
     gm = GlobalMean().fit(train)
     print(f"FROZEN predictor: fitted on {len(train)} rows / "
           f"{train.family.nunique()} families / {train.base_model.nunique()} "
           f"base models")
-    print("  scheme-mean table (pp):", {k: round(v, 3)
+    print("  scheme centres (pp)   :", {k: round(v["mean"], 3)
                                         for k, v in m.by_scheme.items()})
-    print("  90% half-widths (pp)  :", {k: round(v, 2)
-                                        for k, v in conf.q_group.items()})
-    print("\nNOTE: calibration reuses the training rows here, which is the "
-          "in-sample\n      variant. The honest out-of-family numbers are in "
-          "run_final.py;\n      this script tests whether the frozen artifact "
-          "generalizes at all.")
+    print("  90% half-widths (pp)  :", {k: round(v["half_width"], 2)
+                                        for k, v in m.by_scheme.items()})
+    print("\nThe band under test is the SHIPPED one (strata.calibrated_fit): "
+          "split\n      conformal on the fixed checkpoint partition, centres "
+          "from the fit\n      side and widths from the disjoint calibration "
+          "side. These rows are\n      prospective -- no checkpoint here is "
+          "in the training corpus at all.")
 
     # ---- now go get data the project has never seen
     fetch()
@@ -140,7 +149,7 @@ def main():
         return parse_family(mid)
     p["group"] = p.model.map(group_of)
 
-    yhat, lo, hi, fb = conf.predict_interval(p)
+    yhat, lo, hi, fb = m.predict_interval(p)
     p["pred"], p["lo"], p["hi"] = yhat, lo, hi
     _EPS = 1e-9
     p["inside_90"] = (p.delta >= p.lo - _EPS) & (p.delta <= p.hi + _EPS)

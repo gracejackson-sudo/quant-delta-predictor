@@ -58,10 +58,15 @@ These came directly out of the audit and are the difference between honest and m
    floor is recomputed every run and printed in the tool footer.
 4. **"Trained only on checkpoints Red Hat chose to publish."** Outcome-truncated data, so it
    underpredicts damage from an untuned recipe.
-5. **The validation provenance**: 91.0% two-sided coverage on 133 held-out rows from 19 unseen
-   quantized checkpoints in 5 groups, 95% cluster-robust CI [86.6%, 95.4%] (the row-level
-   Clopper–Pearson interval, [84.8%, 95.3%], is also reported), with the 88.1%–91.2% bound from
-   gate-rejected rows stated. Those rows are mostly W4A16, whose coverage is below 90%, and FP8 and NVFP4 have no prospective rows, so the figure says nothing about them (see the paper). (Before the 2026-09-27 A4 float-boundary fix this line read 90.1% / 118 / [83.6, 94.6]; the CSV was patched and PROVENANCE.md's "2026-09-27 A4 fix" section explains what changed.)
+5. **The validation provenance**: 94.7% two-sided coverage on 133 held-out rows from 19 unseen
+   quantized checkpoints in 5 groups, 95% cluster-robust CI [90.6%, 98.9%] (the row-level
+   Clopper–Pearson interval, [89.5%, 97.9%], is also reported), with the 90.7%–93.8% bound from
+   gate-rejected rows stated. These figures measure the band the tool **ships** (split conformal,
+   centre and width on disjoint checkpoint partitions). Until 2026-10-02 this line read 90.8% and
+   then 91.0%, measured on an in-sample band the tool had stopped using; the paper's §9 records
+   that retraction. The coverage is over-, not under-nominal, and the per-scheme reversal matters
+   more than the headline: W4A16 moved from 89.0% to 97.6% and is no longer the below-nominal
+   scheme, and w8a8_int at 86.1% now is. Those rows are mostly W4A16, whose coverage is below 90%, and FP8 and NVFP4 have no prospective rows, so the figure says nothing about them (see the paper). (Before the 2026-09-27 A4 float-boundary fix this line read 90.1% / 118 / [83.6, 94.6]; the CSV was patched and PROVENANCE.md's "2026-09-27 A4 fix" section explains what changed.)
 6. **NVFP4 carries a warning**: 68 evaluations from 3 families, 14.7% of them losing >3pp, and
    loss-side coverage that falls to 85.7% on the worst held-out family, Llama-3 (78.6% inside the
    full interval; 14 rows, leave-one-family-out with a per-scheme conformal band fitted on the other

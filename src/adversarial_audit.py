@@ -23,7 +23,8 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 from harvest import base_model_name, harvest_card, parse_family  # noqa: E402
 from model import load  # noqa: E402
-from predictor import Conformal, SchemeMean  # noqa: E402
+from predictor import Conformal, SchemeMean  # noqa: E402,F401
+from strata import calibrated_fit  # noqa: E402
 
 HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
@@ -177,9 +178,17 @@ def a1_leakage(d, p):
 
 # ===================================================================== A2
 def frozen_predictor(d):
-    m = SchemeMean().fit(d)
-    c = Conformal(alpha=ALPHA, mondrian_by="scheme").fit(m, d)
-    return c, m
+    """The band that SHIPS, not a re-derivation of it.
+
+    This was SchemeMean + Mondrian Conformal calibrated on `d`, the same rows
+    the centre came from -- the third place in the repository doing that, after
+    src/real_use_case.py and verify/independent_check.py. Every figure this
+    audit derives from the envelope (the gate-rejected coverage range, the
+    count of >3pp losses falling below the floor) was therefore computed on a
+    construction the tool had stopped using.
+    """
+    m = calibrated_fit(d)
+    return m, m
 
 
 def build_prospective(filter_acc=True):
@@ -231,23 +240,60 @@ def a2_recompute(d, p):
     print("=" * 72)
 
     # Rebuild the scheme table and the conformal quantiles FROM SCRATCH here,
-    # without calling predictor.py, so a bug there cannot hide.
+    # without calling strata.py or predictor.py, so a bug there cannot hide.
+    #
+    # This must reimplement the SHIPPED construction, which is split conformal
+    # on a fixed checkpoint partition: centre from the fit side, width from
+    # the conformal quantile of residuals on the disjoint calibration side.
+    # It previously reimplemented an in-sample band, and reported exact
+    # agreement -- with the two other arms that were also in-sample. Rebuilt
+    # against the shipped construction, it fails if they diverge again.
+    from strata import checkpoint_partition as _cp, annotate as _an
     print("\n[A2.1] reimplementing the interval math from first principles")
+    _d = _an(d)
+    _cal_ck, _ = _cp(_d)
+    _fit = _d[~_d.base_model.isin(_cal_ck)]
+    _calr = _d[_d.base_model.isin(_cal_ck)]
     sm, qh, nc = {}, {}, {}
-    for s, g in d.groupby("scheme"):
+    for s, g in _fit.groupby("scheme"):
         mu = float(g.delta.mean())
-        res = np.sort(np.abs(g.delta.to_numpy(float) - mu))
+        gc = _calr[_calr.scheme == s]
+        src = gc if len(gc) >= 9 else g
+        res = np.sort(np.abs(src.delta.to_numpy(float) - mu))
         n = len(res)
         k = int(np.ceil((n + 1) * (1 - ALPHA)))
         sm[s] = mu
         qh[s] = float(res[k - 1]) if k <= n else float("inf")
-        nc[s] = n
+        nc[s] = int((_d.scheme == s).sum())
+    # widen-only size stratification, also from first principles
+    _bands = {}
+    # The support gate is applied to the FIT partition, which is what
+    # fit_calibrated does (it calls fit() on dtr). That matters: 9 of the 12
+    # cells clear >=20 rows and >=3 checkpoints on the fit side and all 12
+    # clear it on the whole corpus, so 3 cells are unusable because the
+    # partition took their support away rather than because the corpus lacks
+    # it. Reimplemented here to match the shipped behaviour, not to improve
+    # on it; S6 states the distinction.
+    for (s, b), g in _fit.groupby(["scheme", "band"]):
+        if len(g) < 20 or g.base_model.nunique() < 3 or s not in sm:
+            continue
+        gc = _calr[(_calr.scheme == s) & (_calr.band == b)]
+        if len(gc) < 9:
+            continue
+        res = np.sort(np.abs(gc.delta.to_numpy(float) - sm[s]))
+        n2 = len(res)
+        k2 = int(np.ceil((n2 + 1) * (1 - ALPHA)))
+        if k2 <= n2 and float(res[k2 - 1]) > qh[s]:
+            _bands[(s, b)] = float(res[k2 - 1])
     print(f"   {'scheme':<14}{'mean(pp)':>10}{'qhat(pp)':>10}{'n':>6}")
     for s in sorted(sm):
         print(f"   {s:<14}{sm[s]:>10.4f}{qh[s]:>10.4f}{nc[s]:>6}")
 
+    _pa = _an(p)
     ind_pred = p.scheme.map(sm).to_numpy(float)
-    ind_q = p.scheme.map(qh).to_numpy(float)
+    ind_q = np.array([max(qh.get(sc, float("inf")),
+                          _bands.get((sc, bd), 0.0))
+                      for sc, bd in zip(_pa.scheme, _pa.band)])
     ind_lo, ind_hi = ind_pred - ind_q, ind_pred + ind_q
     _EPS = 1e-9  # tolerance; see audit note on shared assumption
     ind_inside = (p.delta.to_numpy(float) >= ind_lo - _EPS) & \
@@ -304,7 +350,9 @@ def a2_recompute(d, p):
               f"{str(bool(r.inside_90)):>5}{'ok' if ok else 'BAD':>6}")
     note("OK" if allok else "FINDING",
          "all 18 sampled rows: both accuracies appear verbatim in the source "
-         "card, delta = after-before, interval = scheme mean +/- scheme qhat, "
+         "card, delta = after-before, interval = fit-side scheme mean +/- "
+         "the calibration-side conformal quantile, widened by the size cell "
+         "where that applies, "
          "and the pass/fail flag matches the interval test"
          if allok else "at least one sampled row failed manual re-derivation")
 

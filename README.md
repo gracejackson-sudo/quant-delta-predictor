@@ -7,15 +7,19 @@ A small command-line tool that answers from published results.
 
 The shipped intervals were prospectively validated on 133<!-- claim: prosp_n = 133.0000 --> rows from 19<!-- claim: prosp_clus_n = 19.0000 --> unseen quantized checkpoints
 (Gemma-3, DeepSeek-R1-Distill, SmolLM, SmolLM3, NVIDIA-Nemotron-Nano) — none of which were used to
-build the tool. **Two-sided empirical coverage at a nominal 90% is 91.0<!-- claim: prosp_cov_pct = 90.9774 -->% (121<!-- claim: prosp_inside = 121.0000 -->/133<!-- claim: prosp_n = 133.0000 -->, 95% cluster-robust
-CI [86.6<!-- claim: prosp_cr_lo = 86.6008 -->, 95.4<!-- claim: prosp_cr_hi = 95.3541 -->]).** The rows come from 19<!-- claim: prosp_clus_n = 19.0000 --> quantization runs, up to 14<!-- claim: prosp_rows_per_ckpt_max = 14.0000 --> from one, so
+build the tool, and the band under test is the one the tool ships: split conformal, with the
+centre and the width estimated on disjoint sets of checkpoints. **Two-sided empirical coverage at a
+nominal 90% is 94.7<!-- claim: prosp_cov_pct = 94.7368 -->% (126<!-- claim: prosp_inside = 126.0000 -->/133<!-- claim: prosp_n = 133.0000 -->, 95% cluster-robust
+CI [90.6<!-- claim: prosp_cr_lo = 90.6223 -->, 98.9<!-- claim: prosp_cr_hi = 98.8514 -->]).** The rows come from 19<!-- claim: prosp_clus_n = 19.0000 --> quantization runs, up to 14<!-- claim: prosp_rows_per_ckpt_max = 14.0000 --> from one, so
 the checkpoint and not the row is the unit of independent evidence; the interval is the sandwich
-estimator for a ratio under cluster sampling. It is *narrower* than the row-level exact
-Clopper–Pearson interval it replaces ([84.8<!-- claim: prosp_ci_lo = 84.7698 -->, 95.3<!-- claim: prosp_ci_hi = 95.2507 -->], also reported) because the
-coverage indicator is not clustered by checkpoint — the intraclass correlation is
-−0.006<!-- claim: prosp_icc = -0.0061 --> and the design effect 1.000<!-- claim: prosp_design_effect = 1.0000 --> — misses track benchmark difficulty rather than
-which model was quantized. See the paper's §6 for why, and for the two-step decomposition of the
-narrowing. The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
+estimator for a ratio under cluster sampling. It is *wider* than the row-level exact
+Clopper–Pearson interval ([89.5<!-- claim: prosp_ci_lo = 89.4565 -->, 97.9<!-- claim: prosp_ci_hi = 97.8580 -->], also reported), which is what
+clustering normally does: the coverage indicator carries a small positive intraclass correlation of
+0.019<!-- claim: prosp_icc = 0.0186 --> and a design effect of 1.112<!-- claim: prosp_design_effect = 1.1120 -->.
+Earlier versions of this file reported a lower figure from an in-sample band and described the
+clustered interval as *narrower*; both were artefacts of measuring a construction the tool no longer
+uses. The paper's §9 records the retraction and the figures it replaced.
+See the paper's §6. The whole ranking chain — every mean, half-width, worst, severe rate, per-scheme
 coverage, cluster bootstrap, tier and flag — is independently re-verified by a stdlib-only
 reimplementation (`verify/independent_rank.py`) that shares no code with the pipeline; zero field-level
 disagreements on the ranking, statistical equivalence within 1pp on the cluster-bootstrap CI, exact
@@ -136,7 +140,7 @@ The rest:
 Each `(scheme, size band)` cell gets one of three verdicts. A cell with adequately supported coverage
 is *trusted*. A cell whose coverage is measurably poor is *refused*: the tool prints
 `INSUFFICIENT CALIBRATION` and **no interval**. A cell resting on fewer than three checkpoints, or
-whose checkpoint-bootstrap interval straddles the 85% line, is *insufficient evidence*: the interval
+whose checkpoint-bootstrap interval straddles the 85<!-- claim: refuse_below_pct = 85.0000 -->% line, is *insufficient evidence*: the interval
 is still printed, but the scheme is demoted to Tier C with a note that the cell cannot be judged. At
 present no cell is refused; the cells in the third state are listed in `RANKING.md`.
 

@@ -795,3 +795,91 @@ Both failure directions planted: adding a defect no pattern matches fails with
 with `FALSE POSITIVE on clean text`. The test also refuses to let the plant
 set shrink below ten defects and eight clean strings, because deleting a plant
 to make the scanner pass is the failure mode it exists to guard.
+
+## 2026-10-02 — the prospective figures were measuring the retracted band
+
+Round item 1 moved the shipped band to split conformal but left every arm that
+*measures* it building in-sample. Three of them, found one after another:
+
+- `src/real_use_case.py` — `Conformal(...).fit(m, train)`, calibrated on the
+  same rows the centre came from, and using `SchemeMean` rather than
+  `ConservativeStratified`, so it was the wrong construction as well as the
+  wrong calibration. The script said so in a printed note; what was wrong was
+  the paper quoting its output as validation of the shipped interval.
+- `verify/independent_check.py` — `conformal_q([abs(x - mu) for x in g])`,
+  the quantile of residuals about the mean of the same group.
+- `src/adversarial_audit.py` — `frozen_predictor()`, the same pattern again,
+  feeding the gate-rejected coverage range that `SCOPE.md` quotes.
+
+**They agreed with each other, and the agreement was worthless.**
+`paper/audit_paper.py` section 4 exists to cross-check the verifier's arm
+against the pipeline's and reported zero disagreements throughout, because
+both implemented the same wrong premise. This is the float-boundary lesson one
+level down: a comparison between two implementations of a shared assumption
+cannot detect that assumption. Nothing in the check could have revealed it.
+
+All four arms now build the shipped band, and the fourth — the adversarial
+audit's from-first-principles reimplementation — reproduces every bound
+exactly (`independent lo/hi matches pipeline: True`). Getting there required
+matching one non-obvious detail: `fit_calibrated` applies the >=20-row/>=3-
+checkpoint support gate to the FIT partition, not the whole corpus. **Nine of
+the twelve size cells clear that gate on the fit side and all twelve clear it
+on the whole corpus**, so three cells are unusable because the partition took
+their support away rather than because the corpus lacks it. Of the nine, seven
+also have >=9 calibration rows and get a width.
+
+### What moved
+
+| figure | in-sample | shipped |
+| --- | --- | --- |
+| strict coverage | 121/133 = 90.98% | 126/133 = 94.74% |
+| scheme-level | 121/133 = 90.98% | 124/133 = 93.23% |
+| Clopper-Pearson CI | [84.77, 95.25] | [89.46, 97.86] |
+| cluster-robust CI | [86.60, 95.35] | [90.62, 98.85] |
+| ICC / design effect | -0.0061 / 1.000 | +0.0187 / 1.112 |
+| SE ratio | 0.899 | 1.084 |
+| all prospective | 171/188 = 90.96% | 176/188 = 93.62% |
+| gate-rejected range | 88.1%-91.2% | 90.7%-93.8% |
+| w4a16 | 89.02% | 97.56% |
+| w8a8_int | 91.67% | 86.11% |
+
+Two reversals matter more than the headline. **W4A16 stops being the
+below-nominal scheme and w8a8_int becomes it.** And the ICC turns positive
+while the SE ratio crosses 1.0, so the cluster-robust interval is now *wider*
+than the row-level one — which is what clustering normally does. The whole §6
+paragraph arguing why it was narrower, including its two-step decomposition,
+was explaining an artefact of the retracted band.
+
+The band over-covers rather than under-covers, and the mechanism is the
+finding: W4A16's calibration half-width is 2.69pp against 2.14pp in-sample,
+26% wider to buy coverage it already had.
+
+### The Gemma-3 and in/out-of-family claims are withdrawn, not updated
+
+§6 argued that Gemma-3 sat below nominal and that small-sample groups pulled
+the aggregate up. On the shipped band Gemma-3 sits *above* nominal (88.89% ->
+95.56%) and the pull-up more than halves (2.18pp -> 0.87pp). Both legs
+reverse. Rewriting the paragraph to argue the opposite would be fitting prose
+to wherever the number landed, so the comparison is withdrawn and the
+per-group composition reported instead.
+
+The in-family/out-of-family split is withdrawn for a reason that does not
+depend on the band at all. Of the 133 strict rows: DeepSeek-R1-Distill
+contributes 77 from 6 checkpoints, Gemma-3 45 from 4, and SmolLM, SmolLM3 and
+Nemotron-Nano 11 from 3 between them. The "out-of-family" half was
+four-fifths Gemma-3 and the remainder three groups of one checkpoint each, so
+a label implying a result about transfer across families was carrying a
+contrast between two groups. The keys stay registered; nothing quotes their
+difference.
+
+### A guard that has to be different in kind
+
+`out/calibration_partition.json` is deliberately absent from the
+artifact-staleness test. The two stdlib verifiers take it as a declared input
+so they need not reproduce numpy's generator, and requiring it to postdate
+`data/dataset.csv` would couple the audit tools to the regeneration order they
+exist to be independent of. Its guard is `test_verifiers_exit_zero`, which
+fails if the partition it declares stops reproducing the bands the pipeline
+prints. That is the property that matters, and an mtime cannot express it. The
+exclusion is recorded in the test so the next person does not read it as an
+oversight and "fix" it.

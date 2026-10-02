@@ -13,11 +13,11 @@
   },
   {
     "tag": "OK",
-    "finding": "strict subset (133 rows, groups ['deepseek-r1-distill', 'gemma-3', 'nemotron', 'smollm', 'smollm3']): 91.0% coverage, 95% CI [84.8%, 95.3%] still contains nominal 90%"
+    "finding": "strict subset (133 rows, groups ['deepseek-r1-distill', 'gemma-3', 'nemotron', 'smollm', 'smollm3']): 94.7% coverage, 95% CI [89.5%, 97.9%] still contains nominal 90%"
   },
   {
     "tag": "FINDING",
-    "finding": "the gate removed 6 test rows, so the honest coverage is a RANGE: 88.1% to 91.2%, not a point estimate of 90.2%. Manual inspection below shows the rejected rows are card errors, not extreme-but-valid data."
+    "finding": "the gate removed 6 test rows, so the honest coverage is a RANGE: 90.7% to 93.8%, not a point estimate of 90.2%. Manual inspection below shows the rejected rows are card errors, not extreme-but-valid data."
   },
   {
     "tag": "FINDING",
@@ -25,15 +25,15 @@
   },
   {
     "tag": "OK",
-    "finding": "from-scratch recomputation reproduces 171/188 = 91.0% exactly"
+    "finding": "from-scratch recomputation reproduces 176/188 = 93.6% exactly"
   },
   {
     "tag": "OK",
     "finding": "delta == acc_after - acc_before on all 188 test rows"
   },
   {
-    "tag": "OK",
-    "finding": "all 18 sampled rows: both accuracies appear verbatim in the source card, delta = after-before, interval = scheme mean +/- scheme qhat, and the pass/fail flag matches the interval test"
+    "tag": "FINDING",
+    "finding": "at least one sampled row failed manual re-derivation"
   },
   {
     "tag": "CONFIRMED",
@@ -41,7 +41,7 @@
   },
   {
     "tag": "CORRECTED",
-    "finding": "an earlier version of this audit claimed the raw empirical band beats conformal (92.0% vs 91.0% here, with bands fitted in-sample on all training data). Under the STRICT protocol used elsewhere -- held-out calibration family, per scheme -- the ordering REVERSES: see src/interval_shape.py, conformal 89.0% at 3.93pp width vs empirical 88.3% at 5.48pp, on the 2306 rows where the empirical band is finite at all. The empirical band's apparent advantage came from returning +/-inf on 43% of rows, and an infinite interval always covers. Conformal stays."
+    "finding": "an earlier version of this audit claimed the raw empirical band beats conformal (92.0% vs 93.6% here, with bands fitted in-sample on all training data). Under the STRICT protocol used elsewhere -- held-out calibration family, per scheme -- the ordering REVERSES: see src/interval_shape.py, conformal 89.0% at 3.93pp width vs empirical 88.3% at 5.48pp, on the 2306 rows where the empirical band is finite at all. The empirical band's apparent advantage came from returning +/-inf on 43% of rows, and an infinite interval always covers. Conformal stays."
   },
   {
     "tag": "CONFIRMED",
@@ -49,18 +49,18 @@
   },
   {
     "tag": "CONFIRMED",
-    "finding": "gemma-3-1b-it W4A16 loses 1.88pp on average and misses the interval on 3 of 6 benchmarks (GSM8K -3.03, MMLU -2.99, ARC -2.90). The tool reports [-2.87, +1.40] and raises no warning. This is the limitation made concrete."
+    "finding": "gemma-3-1b-it W4A16 loses 1.88pp on average and misses the interval on 0 of 6 benchmarks (GSM8K -3.03, MMLU -2.99, ARC -2.90). The tool reports [-3.22, +1.90] and raises no warning. This is the limitation made concrete."
   },
   {
     "tag": "CONFIRMED",
-    "finding": "Qwen3-8B W4A16 on MMLU-Pro loses 8.86pp. The tool neither flags it nor covers it: a user would be told to expect about -0.74pp with a floor of -2.87pp, and would lose 8.9pp. This is the honest worst-case example to publish."
+    "finding": "Qwen3-8B W4A16 on MMLU-Pro loses 8.86pp. The tool neither flags it nor covers it: a user would be told to expect about -0.66pp with a floor of -3.22pp, and would lose 8.9pp. This is the honest worst-case example to publish."
   },
   {
     "tag": "FINDING",
-    "finding": "27 of 34 losses worse than 3pp fall below the interval floor. Large degradations are exactly where the envelope fails, and they are not rare: 34/1011 = 3.4% of all rows."
+    "finding": "21 of 34 losses worse than 3pp fall below the interval floor. Large degradations are exactly where the envelope fails, and they are not rare: 34/1011 = 3.4% of all rows."
   },
   {
     "tag": "OK",
-    "finding": "clustering does not materially widen the interval (10.5pp naive vs 8.8pp clustered); coverage misses are spread across models rather than concentrated in one, so the headline CI is not understating uncertainty"
+    "finding": "clustering does not materially widen the interval (8.4pp naive vs 8.2pp clustered); coverage misses are spread across models rather than concentrated in one, so the headline CI is not understating uncertainty"
   }
 ]

@@ -69,14 +69,13 @@ per-scheme conformal-style intervals with \(\ProspCov\%\) two-sided empirical
 coverage (\(\ProspInside/\ProspN\) rows from \ProspClusN{} unseen quantized
 checkpoints, 95\% cluster-robust CI \([\ProspCrLo,\ProspCrHi]\), clustered on
 the checkpoint because rows from one quantization run are not independent). Under the family definition of \S\ref{sec:data} the
-strict set splits into \ProspInFamCkpts{} in-family checkpoints
-(DeepSeek-R1-Distill of Llama or Qwen bases) at \ProspInFamCov\% and
-\ProspOutFamCkpts{} out-of-family at \ProspOutFamCov\%; the
-checkpoint-cluster 95\% CI on the difference is [\ProspDiffLo, \ProspDiffHi]pp
-and does not resolve whether the two are equivalent. Within out-of-family,
-Gemma-3 alone (the only sub-group with more than 10 rows) covers at
-\ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows), \ProspGemThreeGap{}pp below
-nominal. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
+strict set is three uneven groups, not a balanced sample across them:
+DeepSeek-R1-Distill of Llama-3 and Qwen-2.5 bases (\ProspDsRows{} rows,
+\ProspDsCkpts{} checkpoints, \ProspDsCov\%), Gemma-3 (\ProspGThreeRows{},
+\ProspGThreeCkpts{}, \ProspGThreeCov\%), and SmolLM, SmolLM3 and
+Nemotron-Nano together (\ProspTailRows{} rows, \ProspTailCkpts{}
+checkpoints, all covered). We report the groups and do not difference them;
+\S\ref{sec:results} says why. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
 and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of two operative verdicts: trusted,
 or insufficient evidence, where the interval is still shown but the scheme is
@@ -273,13 +272,28 @@ construction of split conformal regression~\cite{lei2018distribution}: given
 residuals \(\{s_i\}_{i=1}^{n}\) and level \(\alpha\), the interval half-width
 is the \(\lceil (n+1)(1-\alpha) \rceil\)-th smallest score, which under a
 proper calibration/test split gives exact finite-sample coverage under
-exchangeability. Where \(n\) is too small for that index to exist, we return
-\(\infty\) rather than a misleadingly finite band. The shipped per-scheme
-interval fits its centre and its half-width on the \emph{same} rows (an
-in-sample residual-quantile band), so the split-conformal guarantee holds only
-for the explicit calibration-set variant used inside the leave-one-family-out
-audit; the empirical prospective figure below is what carries the shipped
-intervals.
+exchangeability. The shipped per-scheme interval is built this
+way: the \Nckpt{} checkpoints are partitioned once into a fit side supplying
+the centre and a disjoint calibration side supplying the width
+(\S\ref{sec:results}). Earlier versions did not --- centre and width came
+from the same rows, an in-sample residual-quantile band carrying the
+arithmetic of a guarantee it did not have --- and \S\ref{sec:audit} records
+the retraction.
+
+Two limitations of the implementation, stated because neither is what a reader
+would assume from the construction above. First, where \(n\) is too small for
+the index to exist we do \emph{not} return \(\infty\). A scheme whose
+calibration side has fewer than nine rows silently retains its fit-side
+width, which is in-sample; a (scheme, size-band) cell in the same position is
+dropped and falls back to the scheme width. Neither is an infinite band, and
+an earlier version of this paragraph claimed otherwise. On the current corpus
+no scheme is in that position and two of twelve cells are, so nothing shipped
+is affected --- but the fallback is in-sample and the honest description of it
+is that we have not implemented the \(\infty\) behaviour, not that we chose
+it. Second, the guarantee is only as strong as the number of exchangeable
+units behind each width, and ours is \CalibUnitsMin{} to \CalibUnitsMax{}
+checkpoints per scheme against the \CalibUnitsFloor{} we fixed in advance
+(\S\ref{sec:results}).
 
 \paragraph{Mondrian (group-conditional) calibration.} Calibrating separately within categories is the Mondrian construction of \citet{vovk2005algorithmic}, applied to regression by \citet{bostrom2020mondrian}. A single marginal
 interval advertised at 90\% covers only \NvfpMarginal\% of NVFP4 rows
@@ -496,7 +510,7 @@ variance, which we attribute to sampling error rather than treat as a finding.
 \paragraph{Implication.} From card-level features, the entire fitted
 artifact is \NpredNums{} numbers.
 A raw per-scheme historical quantile band, with no model and no conformal
-machinery, is a serious competitor: it looked better covered in-sample, though under the strict protocol that advantage disappears (\S\ref{sec:audit}). What conformal contributes on the calibration-set variant used inside the leave-one-family-out audit is a finite-sample guarantee under exchangeability; the shipped intervals fit their centre and half-width on the same rows and do not carry that guarantee (\S\ref{sec:method}). What the machinery contributes to the shipped artifact is a principled rule for small-\(n\) schemes, not accuracy. We therefore describe the result as a \emph{calibrated historical
+machinery, is a serious competitor: it looked better covered in-sample, though under the strict protocol that advantage disappears (\S\ref{sec:audit}). What conformal contributes is a finite-sample guarantee under exchangeability, and the shipped intervals now carry it: centre and half-width come from disjoint sides of a fixed checkpoint partition (\S\ref{sec:method}). Earlier versions fitted both on the same rows and did not. What the machinery contributes to the shipped artifact is a principled rule for small-\(n\) schemes, not accuracy. We therefore describe the result as a \emph{calibrated historical
 baseline}, not a predictor.
 
 \section{Results}\label{sec:results}
@@ -597,16 +611,14 @@ family-split reporting below applies \S\ref{sec:data} to what survives
 the filter and states both sides separately. The \ProspN{} strict rows
 come from \ProspClusN{} distinct checkpoints, which we hand-classify
 against the training-family list. Under the
-definition of \S\ref{sec:data}: \ProspInFamCkpts{} in-family checkpoints
-(all DeepSeek-R1-Distill of a Llama-3.* or Qwen-2.5 base in training)
-contribute \ProspInFamRows{} rows at \ProspInFamCov\% two-sided
-coverage; \ProspOutFamCkpts{} out-of-family checkpoints (Gemma-3, SmolLM
-and SmolLM3, NVIDIA-Nemotron-Nano-9B) contribute \ProspOutFamRows{} rows
-at \ProspOutFamCov\%. Both point estimates land near the nominal 90\%
-two-sided level, but the checkpoint-cluster 95\% CI on the in-minus-out
-difference is [\ProspDiffLo, \ProspDiffHi]pp: at this sample size we
-cannot resolve whether in-family and out-of-family coverage are
-equivalent, and the paper does not claim they are. There is independent
+definition of \S\ref{sec:data}, \ProspInFamCkpts{} of them are
+DeepSeek-R1-Distill of a Llama-3.* or Qwen-2.5 base that is in training and
+\ProspOutFamCkpts{} are not. An earlier version differenced those two halves
+and reported a checkpoint-cluster CI on the gap. That comparison is withdrawn:
+the second half is four-fifths Gemma-3 and the rest is three groups of one
+checkpoint each, so the label implied a result about transfer across families
+that the composition cannot carry. The per-group coverages are reported
+earlier in this section and we claim nothing from their differences. There is independent
 support for reading small coverage movements this cautiously. In
 correspondence, an author of \citet{tong2026compression} described using a
 90\% coverage target as a validity check rather than an estimand, with
@@ -615,15 +627,10 @@ movements around that target can arise from calibration and test sampling
 alone. That is the same effect our noise-floor estimate quantifies for
 accuracy deltas (\S\ref{sec:negative}), arrived at independently and on a
 different estimand. The aggregate
-out-of-family figure carries the same Simpson caveat as the pooled
-headline: Gemma-3 alone (the only sub-group with more than 10 rows)
-covers at \ProspGemThreeCov\% (\ProspGemThreeInside/\ProspGemThreeRows
-rows from \ProspGemThreeCkpts{} checkpoints), \ProspGemThreeGap{}pp below nominal, and
-SmolLM/SmolLM3 and Nemotron-Nano contribute \ProspOutSmallRows{} rows at
-100\% from \ProspOutSmallCkpts{} small-sample checkpoints, which pull the
-out-of-family aggregate up by \ProspOutSmallPullup{}pp above Gemma-3
-alone. The classification is enumerated for these \ProspClusN{}
-checkpoints, not a general algorithm (\S\ref{sec:audit}).
+out-of-family figure carried a Simpson caveat that we have since withdrawn
+along with the comparison itself; the per-group composition is reported
+earlier in this section instead. The classification is enumerated for these
+\ProspClusN{} checkpoints, not a general algorithm (\S\ref{sec:audit}).
 
 \paragraph{The band is split conformal, and until this version it was not.}
 The interval this paper calls calibrated was, in the shipped tool, centred and
@@ -761,6 +768,26 @@ subgroups. Under an 8-family reporting this weakness would show as
 Llama-3.3's own held-out fold at 85.1\% (the worst held-out family).
 Under Definition B it is folded into 92.2\% on the merged Llama-3 mean;
 we report the breakdown here so the merge does not hide it.
+
+\paragraph{Prospective composition, and what it does not support.} The
+\ProspN{} strict rows are not a balanced sample across the groups they come from.
+DeepSeek-R1-Distill checkpoints of Llama-3 and Qwen-2.5 bases contribute
+\ProspDsRows{} rows from \ProspDsCkpts{} checkpoints at \ProspDsCov\%;
+Gemma-3 contributes \ProspGThreeRows{} rows from \ProspGThreeCkpts{}
+checkpoints at \ProspGThreeCov\%; SmolLM, SmolLM3 and Nemotron-Nano
+contribute \ProspTailRows{} rows from \ProspTailCkpts{} checkpoints between
+them, all covered. An earlier version of this section split those into
+``in-family'' and ``out-of-family'' and compared the halves, and also noted
+that Gemma-3 sat below nominal while the small groups pulled the aggregate
+up. We have withdrawn both. On the shipped band Gemma-3 sits \emph{above}
+nominal and the pull-up more than halves, so neither leg of that argument
+survives; and a comparison that reverses when the band is corrected is not one
+we should have been making. We state the per-group coverages and claim nothing
+from their differences in either direction. The reason is the composition
+rather than the arithmetic: the ``out-of-family'' half was four-fifths
+Gemma-3, and the three groups behind the remaining \ProspTailRows{} rows are
+one checkpoint each, so what read as a result about transfer across families
+was Gemma-3 against DeepSeek-R1-Distill with a label implying more.
 
 \paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
 not \ProspN{} independent observations, which is why the headline interval is
@@ -1219,6 +1246,70 @@ that the state exists, that this corpus does not contain evidence thin enough
 in the right way to trigger it, and that wanting it to trigger is a reason for
 suspicion of any change that would make it.
 
+\paragraph{Where the tool departs from its own pre-registration.} The
+protocol in the supplement fixes the calibration unit as the checkpoint, with
+a paragraph arguing that the row would be the self-serving choice because it
+multiplies the apparent calibration sample about twenty-fold. The
+implementation counts rows. We did not decide that; we failed to notice it.
+\texttt{fit\_calibrated} already carried a \texttt{len(g) >= 9} guard from an
+earlier version, that guard counts rows, and we reused it without checking it
+against what we had just written.
+
+The consequence is not cosmetic. At the registered unit, no scheme qualifies
+--- the per-scheme calibration sides hold \CalibUnitsMin{} to
+\CalibUnitsMax{} checkpoints against a floor of \CalibUnitsFloor{} --- and
+\emph{none} of the twelve size cells qualifies either, against the
+pre-registration's own trigger of fewer than eight surviving, which would have
+fired and restricted the tool to a pooled band. Under the row gate seven of
+twelve cells survive and every scheme gets a per-scheme width. So the
+registered protocol and the shipped artifact are different objects, and the
+registered one is the more conservative.
+
+A second departure follows from the first. The pre-registration singled out
+NVFP4, which has \CalibUnitsMin{} calibration checkpoints, and fixed in
+advance that it would back off to the pooled quantile with the backoff flagged
+in the output and counted in the registry. Because twenty-eight calibration
+rows clear the row gate, NVFP4 took a per-scheme width, the backoff never
+fired, and nothing is flagged. The registered handling for the scheme we had
+identified as the most fragile never executed.
+
+We are not changing the gate this week to make the claim true, and we are not
+claiming adherence. The shipped band is a row-gated split-conformal band whose
+measured coverage is real and whose guarantee rests on \CalibUnitsMin{} to
+\CalibUnitsMax{} exchangeable units per scheme, which \S\ref{sec:results}
+states. What pre-registration bought here was the construction choice, the
+decision bands and the primary/secondary designation, all fixed before any
+number existed. What it did not buy was agreement between the document and the
+code, because nothing mechanically compared them. The document ships in the
+supplement, which is what makes this discoverable by a reader rather than only
+by us --- an argument for shipping it, not against.
+
+\paragraph{What the independent verifier still derives, and what it now takes
+on trust.} \texttt{verify/independent\_check.py} parsed the raw cards and
+rebuilt the envelope with no project imports, which is why its agreement with
+the pipeline was worth reporting. Two things about that are now different and
+both belong on the record.
+
+It was agreeing for the wrong reason. Both it and the pipeline's prospective
+script built the band in-sample, so the cross-check in
+\texttt{paper/audit\_paper.py} reported zero disagreements throughout --- a
+comparison between two implementations of the same wrong premise. That is the
+float-boundary lesson of this section one level further down: the check was
+sound and the premise it rested on was not, and nothing in the check could
+have revealed that. Both arms now build the shipped split-conformal band and
+agree on it.
+
+And its independence is now partial, by necessity. The partition is drawn with
+a generator the standard library cannot reproduce, so the verifier reads
+\emph{which} checkpoints calibrate from a published list. Everything that list
+is used for it still derives itself: the checkpoint identity from the naming
+convention, the family label, the size band, the row assignment, the centres
+on the fit side, the conformal index and quantile on the calibration side, and
+the widen-only size rule. So the check no longer covers ``is this the
+partition they say it is'' and still covers ``given that partition, is every
+published number right''. A thirteen-name list is auditable by eye; a
+reimplemented generator is not.
+
 \paragraph{A pre-registration that was wrong, and how it was wrong.}
 Before running the calibration comparison we fixed a protocol in writing,
 including what to do about NVFP4, which has \CalibUnitsMin{} calibration
@@ -1315,11 +1406,9 @@ measurement noise rather than model capacity; predictors that use
 checkpoint-level statistics were not tested and remain open. What does
 work is narrower: a per-scheme calibrated envelope that is validated at
 \(\ProspCov\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{}
-of the \Nsch{} schemes. In-family and out-of-family point estimates both
-land near nominal (\ProspInFamCov\% and \ProspOutFamCov\% respectively),
-but the sample size does not distinguish them, and Gemma-3, the largest
-out-of-family sub-group, covers at \ProspGemThreeCov\%, \ProspGemThreeGap{}pp below
-nominal. The envelope also says which of its own cells it cannot judge: a cell is
+of the \Nsch{} schemes. Coverage is reported per group rather than
+split in-family against out-of-family; the composition behind that split does
+not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
 either trusted or insufficient evidence, and in the latter case the interval
 is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
 \NCellsTotal{} cells are insufficient evidence. A third verdict that

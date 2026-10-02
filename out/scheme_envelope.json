@@ -1,7 +1,7 @@
 {
   "artifact": "per-scheme quantization accuracy-delta envelope",
   "what_it_is": "the observed distribution of (quantized - original) accuracy in percentage points on OpenLLM-style benchmarks, per quantization scheme, with a conformal-style 90% interval (an in-sample residual-quantile band; the split-conformal guarantee applies only to the explicit calibration-set variant used inside the LOFO audit). It is a calibrated historical baseline, NOT a per-model predictor.",
-  "built": "2026-10-01",
+  "built": "2026-10-02",
   "alpha": 0.1,
   "target": "acc_after - acc_before, percentage points",
   "training_data": {
@@ -22,20 +22,20 @@
     },
     "prospective_all_rows": {
       "n": 188,
-      "inside": 171,
-      "coverage": 0.91,
+      "inside": 176,
+      "coverage": 0.936,
       "ci95": [
-        0.859,
-        0.946
+        0.891,
+        0.967
       ]
     },
     "prospective_strict": {
       "n": 133,
-      "inside": 121,
-      "coverage": 0.91,
+      "inside": 126,
+      "coverage": 0.947,
       "ci95": [
-        0.848,
-        0.953
+        0.895,
+        0.979
       ]
     },
     "prospective_strict_note": "excludes rows whose family is in training, and Llama-4 (parser was adapted to that card family)",

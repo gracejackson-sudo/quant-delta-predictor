@@ -781,6 +781,29 @@ def registry():
             100 * _out.inside.mean() - 100 * _gm3.inside.mean(), 0.05,
             "how many pp the small-sample groups raise the out-of-family "
             "aggregate above Gemma-3 alone")
+        # Composition of the strict prospective set, by the family label the
+        # verifier now emits rather than by a regex over the model string.
+        # Added 2026-10-02 because the in-family/out-of-family comparison was
+        # withdrawn: the out-of-family half was four-fifths Gemma-3, so the
+        # contrast carried a label implying a family-transfer result it could
+        # not support. These keys report the groups instead of differencing
+        # them. "Checkpoints" means base checkpoints, suffix stripped, which
+        # is what it means everywhere else in the paper.
+        if "family" in _ic.columns and "base_model" in _ic.columns:
+            _ds = _st[_st.family == "deepseek-r1-distill"]
+            _g3 = _st[_st.family == "gemma-3"]
+            _tail = _st[~_st.family.isin(["deepseek-r1-distill", "gemma-3"])]
+            for _lbl, _sub in (("ds", _ds), ("g3", _g3), ("tail", _tail)):
+                if len(_sub) == 0:
+                    continue
+                add(f"prosp_{_lbl}_rows", len(_sub), 0,
+                    f"strict prospective rows, {_lbl} group")
+                add(f"prosp_{_lbl}_ckpts", int(_sub.base_model.nunique()), 0,
+                    f"distinct base checkpoints, {_lbl} group")
+                add(f"prosp_{_lbl}_cov_pct",
+                    100 * _sub.inside.astype(str).str.lower().eq("true").mean(),
+                    0.05, f"two-sided coverage, {_lbl} group")
+
         # Cluster-bootstrap 95% CI on the in-family minus out-of-family
         # difference. Resamples whole checkpoints separately from each side.
         import numpy as _npf

@@ -17,6 +17,7 @@ Usage:  python3 verify/independent_check.py
 """
 import csv
 import math
+import json
 import os
 import re
 import sys
@@ -289,7 +290,17 @@ def read_card(path, model_id):
         if not (0 < before <= 100 and 0 <= after <= 100):
             continue
         seen.add(b)
-        out.append({"model": model_id, "scheme": sch, "benchmark": b,
+        out.append({"model": model_id,
+                    # Derived here, not imported: the checkpoint identity is
+                    # the model id with its quantization suffix removed, which
+                    # is the publisher's own naming convention. Needed because
+                    # the shipped band partitions on CHECKPOINTS, so this file
+                    # has to know which rows share one. Written from the
+                    # convention rather than copied from harvest.py.
+                    "base_model": base_checkpoint(model_id),
+                    "family": family_of(model_id),
+                    "band": band_of(model_id),
+                    "scheme": sch, "benchmark": b,
                     "before": before, "after": after,
                     "delta": round(after - before, 4)})
     if out and max(r["before"] for r in out) <= 1.0:
@@ -298,6 +309,60 @@ def read_card(path, model_id):
 
 
 # --------------------------------------------------------------------------
+
+_QUANT_SUFFIX = re.compile(
+    r"[-.](?:quantized\.w[48]a(?:16|8)|FP8[-_]?dynamic|FP8[-_]?block|FP8|"
+    r"INT8|INT4|NVFP4A16|NVFP4|MXFP4|W4A16|W8A8|W8A16)$", re.I)
+
+
+def base_checkpoint(model_id):
+    """-> the underlying checkpoint, i.e. the model id minus its quantization
+    suffix. The publisher names every quantized variant <checkpoint>-<scheme>,
+    so stripping the scheme token recovers the thing the rows share."""
+    return _QUANT_SUFFIX.sub("", model_id.split("/", 1)[-1])
+
+
+_FAMILY_PATS = [
+    ("llama-3", r"llama-3"), ("llama-4", r"llama-4"),
+    ("qwen2.5", r"qwen2\.5"), ("qwen3", r"qwen3"),
+    ("granite", r"granite"), ("mistral", r"mistral|ministral"),
+    ("gemma-2", r"gemma-2"), ("gemma-3", r"gemma-3"),
+    ("deepseek-r1-distill", r"deepseek-r1-distill"),
+    ("smollm3", r"smollm3"), ("smollm", r"smollm"),
+    ("nemotron", r"nemotron"), ("phi", r"phi-?4"),
+]
+
+
+def family_of(model_id):
+    """-> family label, derived from the checkpoint name. Emitted into
+    out/independent_check.csv so the registry's family split stops recovering
+    membership by regex over a model string it was handed."""
+    t = model_id.split("/", 1)[-1].lower()
+    for name, pat in _FAMILY_PATS:
+        if re.search(pat, t):
+            return name
+    return "other"
+
+
+
+_SIZE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*[bB](?![a-zA-Z0-9])")
+
+
+def params_of(model_id):
+    """-> parameter count in billions, or None. Derived from the checkpoint
+    name, which is where the publisher states it."""
+    m = _SIZE_RE.search(model_id.split("/", 1)[-1])
+    return float(m.group(1)) if m else None
+
+
+def band_of(model_id):
+    """-> size band, matching the three the tool reports."""
+    p = params_of(model_id)
+    if p is None:
+        return "unknown"
+    return "<2B" if p < 2 else ("2-10B" if p <= 10 else ">10B")
+
+
 def conformal_q(vals, alpha):
     v = sorted(vals)
     n = len(v)
@@ -384,14 +449,65 @@ def main():
                           f"pipeline={_theirs.get(_b, 0):>4d}")
             return 3
 
-    # build the envelope independently
+    # Build the envelope independently -- as SPLIT CONFORMAL, which is what
+    # ships. Until 2026-10-02 this block put the centre and the width on the
+    # same rows, and src/real_use_case.py did the same, so the two arms agreed
+    # with each other because they shared the assumption rather than because
+    # either matched the shipped band. The cross-arm check in
+    # paper/audit_paper.py reported zero disagreements throughout, which is
+    # the float-boundary lesson one level down: a comparison between two
+    # implementations of the same wrong premise is not evidence.
+    #
+    # DECLARED INPUT, stated here and in the module docstring: which
+    # checkpoints form the calibration side. Read from
+    # out/calibration_partition.json because this file is standard-library
+    # only and cannot reproduce numpy's default_rng. Everything that list is
+    # used for -- splitting the rows, the centre on the fit side, the
+    # conformal index and quantile on the calibration side -- is still derived
+    # here from the raw cards.
+    part = json.load(open(os.path.join(
+        ROOT, "out", "calibration_partition.json")))
+    cal_ck = set(part["calibration_checkpoints"])
+    fit_rows = [r for r in train if r["base_model"] not in cal_ck]
+    cal_rows = [r for r in train if r["base_model"] in cal_ck]
     means, qhat, counts = {}, {}, {}
     for s in sorted({r["scheme"] for r in train}):
-        g = [r["delta"] for r in train if r["scheme"] == s]
-        mu = sum(g) / len(g)
+        gf = [r["delta"] for r in fit_rows if r["scheme"] == s]
+        gc = [r for r in cal_rows if r["scheme"] == s]
+        if not gf:
+            continue
+        mu = sum(gf) / len(gf)
         means[s] = mu
-        qhat[s] = conformal_q([abs(x - mu) for x in g], ALPHA)
-        counts[s] = len(g)
+        # residuals about the centre predict_interval will use, on the
+        # disjoint calibration side; too few to index -> keep the fit-side
+        # width, which is what strata.fit_calibrated does (and which S4 now
+        # records as a limitation rather than claiming we return infinity).
+        if len(gc) >= 9:
+            qhat[s] = conformal_q([abs(r["delta"] - mu) for r in gc], ALPHA)
+        else:
+            qhat[s] = conformal_q([abs(x - mu) for x in gf], ALPHA)
+        # support counts describe the published evidence, so whole corpus
+        counts[s] = sum(1 for r in train if r["scheme"] == s)
+
+    # The widen-only size rule, derived here rather than imported: a
+    # (scheme, band) cell may RAISE the scheme half-width and never lower it,
+    # and only if it clears the support floor (>=20 rows, >=3 checkpoints over
+    # the whole corpus) and has >=9 calibration rows to index a quantile with.
+    # Without this the two arms compare different objects: the shipped tool
+    # prints the widened band, and leaving it out produced two verdict
+    # disagreements that were the stratification, not a defect.
+    strat = {}
+    for s in sorted({r["scheme"] for r in train}):
+        for b in ("<2B", "2-10B", ">10B"):
+            whole = [r for r in train if r["scheme"] == s and r["band"] == b]
+            if len(whole) < 20 or len({r["base_model"] for r in whole}) < 3:
+                continue
+            gc = [r for r in cal_rows if r["scheme"] == s and r["band"] == b]
+            if len(gc) < 9 or s not in means:
+                continue
+            q = conformal_q([abs(r["delta"] - means[s]) for r in gc], ALPHA)
+            if math.isfinite(q) and q > qhat.get(s, 0.0):
+                strat[(s, b)] = q
     print(f"\n  {'scheme':<14}{'n':>5}{'mean':>10}{'half-width':>12}")
     for s in sorted(means):
         print(f"  {s:<14}{counts[s]:>5}{means[s]:>+10.4f}{qhat[s]:>12.4f}")
@@ -405,6 +521,7 @@ def main():
         if mu is None:
             r["inside"] = None
             continue
+        q = max(q, strat.get((r["scheme"], r.get("band")), q))
         r["lo"], r["hi"] = mu - q, mu + q
         # closed-interval hit with a 1e-9 float tolerance; see the
         # audit-section note on shared-assumption reimplementation
@@ -470,7 +587,8 @@ def main():
 
     with open(os.path.join(ROOT, "out", "independent_check.csv"), "w",
               newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["model", "scheme", "benchmark",
+        w = csv.DictWriter(f, fieldnames=["model", "base_model", "family",
+                                   "scheme", "benchmark",
                                           "before", "after", "delta", "lo",
                                           "hi", "inside"])
         w.writeheader()
