@@ -277,8 +277,14 @@ way: the \Nckpt{} checkpoints are partitioned once into a fit side supplying
 the centre and a disjoint calibration side supplying the width
 (\S\ref{sec:results}). Earlier versions did not --- centre and width came
 from the same rows, an in-sample residual-quantile band carrying the
-arithmetic of a guarantee it did not have --- and \S\ref{sec:audit} records
-the retraction.
+arithmetic of a guarantee it did not have. The description was not the only
+thing that was wrong: every prospective coverage figure we published for that
+band was also measured on it, by three separate scripts that each built it
+in-sample and therefore agreed with one another. Those figures have all moved,
+two of them reversing which scheme is the worst covered and whether clustering
+widens the interval or narrows it. \S\ref{sec:audit} lists what moved and by
+how much; a reader who wants to know what else changed should start there
+rather than infer it from this paragraph.
 
 Two limitations of the implementation, stated because neither is what a reader
 would assume from the construction above. First, where \(n\) is too small for
