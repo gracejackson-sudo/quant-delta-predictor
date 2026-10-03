@@ -65,7 +65,7 @@ slowest learning rate and heaviest regularisation on offer. Asked for the best
 card-feature model, nested cross-validation answers one shrunk almost to a
 constant.
 Second, a positive one: conditioning only on the quantization scheme yields
-per-scheme conformal-style intervals with \(\ProspCov\%\) two-sided empirical
+per-scheme conformal-style intervals with \(\ProspCovScheme\%\) two-sided empirical
 coverage (\(\ProspInside/\ProspN\) rows from \ProspClusN{} unseen quantized
 checkpoints, 95\% cluster-robust CI \([\ProspCrLo,\ProspCrHi]\), clustered on
 the checkpoint because rows from one quantization run are not independent). Under the family definition of \S\ref{sec:data} the
@@ -555,7 +555,9 @@ family (Llama-3.* as one family under Definition B, and Qwen-3), or
 any card whose format informed a parser fix (Llama-4). The two grounds
 are separate; only Llama-4 is excluded for the parser reason. Under
 this protocol two-sided coverage
-is \(\ProspInside/\ProspN = \ProspCov\%\) against a nominal 90\% two-sided
+is \(\ProspInsideScheme/\ProspN = \ProspCovScheme\%\) at the scheme level, and
+\(\ProspInside/\ProspN = \ProspCov\%\) once the widen-only size rule is applied
+as the tool applies it, against a nominal 90\% two-sided
 level, with a 95\% cluster-robust CI of \([\ProspCrLo, \ProspCrHi]\).
 
 \paragraph{Where these figures are computed, which is not where a reader
@@ -820,7 +822,7 @@ w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeig
 
 W4A16, the most common scheme, dominates the pooled figure and sits below the nominal 90\%; the other schemes rest on few
 checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
-did not manufacture the headline. That said, the pooled \ProspCov\% is
+did not manufacture the headline. That said, the pooled \ProspCovScheme\% is
 pulled up by \ProspRowsFpdyn{} FP8-dynamic rows from \ProspCkptsFpdyn{}
 checkpoints and \ProspRowsWeightsixteen{} W8A16 rows from \ProspCkptsWeightsixteen{}
 checkpoint, both at \ProspCovFpdyn\% coverage: W4A16, at \ProspRowsWfour{}
@@ -1133,16 +1135,26 @@ survived---would misrepresent how the result was obtained.
     The predictor is frozen and does not use size, so the gate is not
     load-bearing on the method; it is load-bearing on which of the
     pre-registered repos actually get scored. The paper reports on the
-    \ProspN-row frozen-and-scored set (\ProspInside/\ProspN{} =
-    \ProspCov\%). An external audit reports that, if the
-    \ProspNameGatedRepos{} gated cards were harvested and scored under
-    the same protocol, the with-them figure would be
-    \ProspWithGatedInside/\ProspWithGatedTotal{} = \ProspWithGatedCov\%;
-    that figure is not locally reproducible in this repository because
-    the raw cards for those nine repos are not shipped. We report the
-    frozen-set figure as our headline and disclose the with-them
-    figure as an external check that the frozen-set number is not
-    materially inflated by the drop.
+    \ProspN-row frozen-and-scored set
+    (\ProspInsideScheme/\ProspN{} = \ProspCovScheme\% at the scheme level,
+    \ProspInside/\ProspN{} = \ProspCov\% as the tool prints it). Earlier versions also quoted a with-them figure from an external audit,
+    said to show that the frozen-set number was not materially inflated by
+    the drop, and described it as not locally reproducible because the raw
+    cards for those repos were not shipped. That figure is retired, for three
+    reasons, and the third is the one worth stating plainly. It was measured
+    on the in-sample construction this paper retracts (\S\ref{sec:method}).
+    Its denominator cannot be reconstructed against the current corpus: it was
+    smaller than the ungated row count, and lifting a gate adds rows rather
+    than removing them, so no row set we can define reproduces it. And the
+    reproducibility disclaimer was false --- all \ProspNameGatedRepos{} cards
+    are and were present in \texttt{data/prospective\_cards/}, so the figure
+    has been recomputable in this repository since the day it was quoted,
+    and nobody tried. A limitation that sounds
+    candid and is simply untrue is the same failure as a check that passes
+    while verifying nothing, and it belongs in this section for that reason.
+    We have not replaced it with a recomputed version: that would be a
+    different quantity over a row set this paper has never described, and
+    introducing one is not a substitute for withdrawing a claim.
   \item \emph{The family classifier is enumerated.} The in-family /
     out-of-family split of the \ProspClusN{} strict prospective checkpoints
     was decided by inspecting each card and matching against the
@@ -1411,7 +1423,7 @@ features does not work on published data, and the reason is largely
 measurement noise rather than model capacity; predictors that use
 checkpoint-level statistics were not tested and remain open. What does
 work is narrower: a per-scheme calibrated envelope that is validated at
-\(\ProspCov\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{}
+\(\ProspCovScheme\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{}
 of the \Nsch{} schemes. Coverage is reported per group rather than
 split in-family against out-of-family; the composition behind that split does
 not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is

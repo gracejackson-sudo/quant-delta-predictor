@@ -1909,7 +1909,12 @@ _REGISTRY_MANIFEST = {
     # The in-family/out-of-family difference keys stay registered but are no
     # longer quoted -- the composition behind that split does not support a
     # claim, see S6 and PROVENANCE.md.
-    "(scalar)": 321,
+    # -1 net on 2026-10-02: the three prosp_with_gated_* keys are retired
+    # (measured on the retracted construction, denominator unreconstructable,
+    # and the "not locally reproducible" label was false), and the two
+    # headline coverage keys are added -- scheme-level inside and coverage,
+    # registered so the figure the abstract quotes is gated like every other.
+    "(scalar)": 320,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

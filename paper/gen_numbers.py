@@ -169,9 +169,9 @@ M = {
     # Tier 1.3 gated-repos disclosure (§9).
     "ProspRegisteredRepos": ("prosp_registered_repos", "{:.0f}"),
     "ProspNameGatedRepos":  ("prosp_name_gated_repos", "{:.0f}"),
-    "ProspWithGatedInside": ("prosp_with_gated_inside", "{:.0f}"),
-    "ProspWithGatedTotal":  ("prosp_with_gated_total", "{:.0f}"),
-    "ProspWithGatedCov":    ("prosp_with_gated_cov_pct", "{:.1f}"),
+    # ProspWithGated* retired 2026-10-02 with their registry keys; see S9.
+    "ProspInsideScheme": ("prosp_inside_scheme", "{:.0f}"),
+    "ProspCovScheme":    ("prosp_cov_scheme_pct", "{:.2f}"),
     "GpqaOtherRows":        ("gpqa_other_rows", "{:.0f}"),
     "MaxBenchmarksPerRun":  ("max_benchmarks_per_run", "{:.0f}"),
     # Tier 2.5 v4 §5 unified disclosure (per-fold spread).

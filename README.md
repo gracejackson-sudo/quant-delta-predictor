@@ -9,8 +9,11 @@ The shipped intervals were prospectively validated on 133<!-- claim: prosp_n = 1
 (Gemma-3, DeepSeek-R1-Distill, SmolLM, SmolLM3, NVIDIA-Nemotron-Nano) — none of which were used to
 build the tool, and the band under test is the one the tool ships: split conformal, with the
 centre and the width estimated on disjoint sets of checkpoints. **Two-sided empirical coverage at a
-nominal 90% is 94.7<!-- claim: prosp_cov_pct = 94.7368 -->% (126<!-- claim: prosp_inside = 126.0000 -->/133<!-- claim: prosp_n = 133.0000 -->, 95% cluster-robust
-CI [90.6<!-- claim: prosp_cr_lo = 90.6223 -->, 98.9<!-- claim: prosp_cr_hi = 98.8514 -->]).** The rows come from 19<!-- claim: prosp_clus_n = 19.0000 --> quantization runs, up to 14<!-- claim: prosp_rows_per_ckpt_max = 14.0000 --> from one, so
+nominal 90% is 93.23<!-- claim: prosp_cov_scheme_pct = 93.2331 -->% (124<!-- claim: prosp_inside_scheme = 124.0000 -->/133<!-- claim: prosp_n = 133.0000 -->) from the
+scheme-level band, and 94.7<!-- claim: prosp_cov_pct = 94.7368 -->% (126<!-- claim: prosp_inside = 126.0000 -->/133<!-- claim: prosp_n = 133.0000 -->) once the widen-only size
+rule is applied as the tool applies it; 95% cluster-robust CI [90.6<!-- claim: prosp_cr_lo = 90.6223 -->, 98.9<!-- claim: prosp_cr_hi = 98.8514 -->] on the
+latter.** The two differ by which band a row gets, not by which rows are counted — the denominator
+is 133 either way. The rows come from 19<!-- claim: prosp_clus_n = 19.0000 --> quantization runs, up to 14<!-- claim: prosp_rows_per_ckpt_max = 14.0000 --> from one, so
 the checkpoint and not the row is the unit of independent evidence; the interval is the sandwich
 estimator for a ratio under cluster sampling. It is *wider* than the row-level exact
 Clopper–Pearson interval ([89.5<!-- claim: prosp_ci_lo = 89.4565 -->, 97.9<!-- claim: prosp_ci_hi = 97.8580 -->], also reported), which is what

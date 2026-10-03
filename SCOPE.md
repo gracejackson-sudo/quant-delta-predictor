@@ -58,7 +58,9 @@ These came directly out of the audit and are the difference between honest and m
    floor is recomputed every run and printed in the tool footer.
 4. **"Trained only on checkpoints Red Hat chose to publish."** Outcome-truncated data, so it
    underpredicts damage from an untuned recipe.
-5. **The validation provenance**: 94.7% two-sided coverage on 133 held-out rows from 19 unseen
+5. **The validation provenance**: 93.2% two-sided coverage from the scheme-level band (94.7% once
+   the widen-only size rule is applied, as the tool applies it — same 133 rows either way, a
+   different band per row) on 133 held-out rows from 19 unseen
    quantized checkpoints in 5 groups, 95% cluster-robust CI [90.6%, 98.9%] (the row-level
    Clopper–Pearson interval, [89.5%, 97.9%], is also reported), with the 90.7%–93.8% bound from
    gate-rejected rows stated. These figures measure the band the tool **ships** (split conformal,

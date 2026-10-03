@@ -707,6 +707,25 @@ def registry():
             "Clopper-Pearson 95% lower bound")
         add("prosp_ci_hi", 100 * _beta.ppf(0.975, _k + 1, _n - _k), 0.05,
             "Clopper-Pearson 95% upper bound")
+        # Two coverage figures, both registered, because they are different
+        # objects and neither may stand in for the other. The HEADLINE is
+        # scheme-level: the band every row would get from its scheme alone.
+        # The AS-PRINTED figure additionally applies the widen-only size
+        # rule, which is what rank.py shows a user and what all four
+        # independent arms cross-check. Quoting one as the other is the
+        # denominator problem this paper spends S9 on.
+        _sch_in = 0
+        for _r in _st.itertuples():
+            _b = getattr(_r, "scheme", None)
+            _cell = m.by_scheme.get(_b) or m.global_
+            _lo = _cell["mean"] - _cell["half_width"]
+            _hi = _cell["mean"] + _cell["half_width"]
+            _sch_in += int(_lo - 1e-9 <= _r.delta <= _hi + 1e-9)
+        add("prosp_inside_scheme", _sch_in, 0,
+            "strict prospective rows inside the SCHEME-LEVEL band (no size "
+            "widening) [HEADLINE]")
+        add("prosp_cov_scheme_pct", 100 * _sch_in / _n, 0.05,
+            "strict prospective coverage, scheme-level band [HEADLINE]")
         # Composition of the strict prospective set, and a cluster-aware interval.
         import numpy as _np
         add("prosp_n_schemes", _st.scheme.nunique(), 0,
@@ -1400,13 +1419,17 @@ def registry():
     add("prosp_registered_repos", 34, 0, "pre-registered prospective repos")
     add("prosp_name_gated_repos", 9, 0,
         "pre-registered repos rejected by parse_params_b name-gate")
-    add("prosp_with_gated_inside", 143, 0,
-        "with-gated-repos rows inside the interval (EXTERNAL, day-7 audit; "
-        "not locally reproducible without the 9 gated cards)")
-    add("prosp_with_gated_total", 156, 0,
-        "with-gated-repos total rows (EXTERNAL, day-7 audit)")
-    add("prosp_with_gated_cov_pct", 100 * 143 / 156, 0.02,
-        "with-gated-repos coverage (EXTERNAL, day-7 audit)")
+    # prosp_with_gated_inside / _total / _cov_pct retired 2026-10-02. They
+    # were 143 / 156 / 91.67%, hard-coded from an external day-7 audit and
+    # described as "not locally reproducible without the 9 gated cards".
+    # Three reasons, see S9: measured on the in-sample construction this
+    # version retracts; a denominator that cannot be reconstructed against
+    # the current corpus (156 is SMALLER than the 188 ungated rows, and
+    # lifting a name gate adds rows rather than removing them); and the
+    # reproducibility disclaimer was false -- all nine cards are in
+    # data/prospective_cards/ and the figure recomputes in minutes. Not
+    # replaced: a recomputed version would be a different quantity over a
+    # row set the paper has never described.
 
     # Tier 2.8 (day-7 audit): gemma-3-1b-it W4A16 has 6 TruthfulQA-and-
     # friends deltas; how many the shipped conformal bound catches was

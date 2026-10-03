@@ -883,3 +883,45 @@ fails if the partition it declares stops reproducing the bands the pipeline
 prints. That is the property that matters, and an mtime cannot express it. The
 exclusion is recorded in the test so the next person does not read it as an
 oversight and "fix" it.
+
+### Retired: the with-gated-repos coverage figure
+
+`prosp_with_gated_inside` / `_total` / `_cov_pct` — 143 / 156 / 91.67% —
+are removed. They were hard-coded from an external day-7 audit and labelled
+"not locally reproducible without the 9 gated cards". Three reasons, in
+increasing order of how badly they reflect on us:
+
+1. Measured on the in-sample construction retracted above.
+2. **The denominator cannot be reconstructed.** 156 is *smaller* than the 188
+   ungated prospective rows. Lifting a name gate admits rows; it cannot remove
+   32. So no row set definable against the current corpus reproduces it, and
+   nothing in the repository records which set was used.
+3. **The reproducibility label was false.** All nine gated cards are in
+   `data/prospective_cards/` and have been throughout —
+   `RedHatAI_phi-4-*` (3), `RedHatAI_Phi-4-mini-instruct-*` (2),
+   `RedHatAI_Mistral-Nemo-Instruct-2407-*` (2),
+   `RedHatAI_Devstral-Small-2507-*` (2). `load_dir(..., allow_no_size=True)`
+   admits 8 of the 9 and the figure recomputes in minutes. The disclaimer was
+   not a hedge about a genuine limit; it was wrong, and it read as candour.
+   That is the same failure as a check that passes while verifying nothing,
+   and it is the reason this entry exists rather than a one-line deletion.
+
+Not replaced. The gate-lifted figure on the shipped band is 210/224 = 93.75%
+all-rows and 160/169 = 94.67% strict, which is a different quantity over a row
+set the paper has never described. Introducing it would imply continuity with
+143/156 that does not exist, and a new claim is not a substitute for
+withdrawing an old one.
+
+### Both coverage figures are now registered
+
+`prosp_cov_scheme_pct` = 93.23% on `prosp_inside_scheme` = 124 of 133 is the
+headline: the band a row gets from its scheme alone. `prosp_cov_pct` = 94.74%
+on 126 of 133 is what the tool prints, with the widen-only size rule applied.
+The denominator is 133 either way; the two differ by which band a row gets,
+not by which rows are counted, and every site that quotes one now says which.
+
+The headline figure had been derivable but unregistered, which is not a
+position this project can defend while spending a section of the paper on
+denominators. Both are gated now, the manifest pin moves 321 -> 320 (three
+retired, two added), and the as-printed figure remains the one all four
+independent arms cross-check, because it is the one the tool shows a user.
