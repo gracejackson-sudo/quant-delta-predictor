@@ -97,6 +97,9 @@ def jackknife_plus_loco(d, alpha=ALPHA):
         for i in sorted(rest.base_model.unique()):
             inner_fit = rest[rest.base_model != i]
             held = rest[rest.base_model == i]
+            # DELIBERATELY IN-SAMPLE on the inner fold: jackknife+ needs a
+            # centre refit without checkpoint i, and its residual is taken
+            # about that centre. Do not convert.
             m = ConservativeStratified().fit(inner_fit)
             yhat, _, _, _ = m.predict_interval(held)
             for j, (_, r) in enumerate(held.iterrows()):
@@ -104,6 +107,8 @@ def jackknife_plus_loco(d, alpha=ALPHA):
                              "centre": float(yhat[j]),
                              "resid": abs(float(r.delta) - float(yhat[j]))})
         R = pd.DataFrame(recs)
+        # DELIBERATELY IN-SAMPLE: the centre jackknife+ intervals are
+        # reported about. Do not convert.
         m_full = ConservativeStratified().fit(rest)
         yhat_te, _, _, lv_te = m_full.predict_interval(te)
         for j, (_, r) in enumerate(te.iterrows()):
@@ -159,6 +164,9 @@ def main():
                          "fit_checkpoints": sorted(fit)}}
 
     # what the shipped in-sample path gives, for the A/B
+    # DELIBERATELY IN-SAMPLE: the retracted band, recorded here as the
+    # baseline the split-conformal comparison is measured against. This
+    # script exists to contrast the two constructions. Do not convert.
     m_ins = ConservativeStratified().fit(d)
     res["in_sample_half_width_pp"] = {
         s: float(c["half_width"]) for s, c in m_ins.by_scheme.items()}
@@ -193,6 +201,17 @@ def main():
           % (res["jackknife_plus"]["coverage_pct"],
              res["jackknife_plus"]["rows"],
              res["jackknife_plus"]["mean_half_width_pp"]), flush=True)
+
+    # The twenty-seed sensitivity is part of the pre-registered protocol and
+    # four registry keys read it, but partition_sensitivity() was defined and
+    # never called from main() in any revision -- so running this script
+    # dropped the block and paper/gen_numbers.py then exited on four missing
+    # keys. Called by hand it reproduced the committed figures exactly, which
+    # means the paper's numbers were right and the pipeline that claimed to
+    # produce them was not. It is called here.
+    print("\n20-partition sensitivity (pre-registered; one run, cannot move "
+          "the headline) ...", flush=True)
+    res["partition_sensitivity"] = partition_sensitivity(d)
 
     json.dump(res, open(OUT, "w"), indent=2, default=str)
     t1.to_csv(os.path.join(ROOT, "out", "calibrated_split_conformal.csv"), index=False)

@@ -1176,6 +1176,36 @@ def test_the_shipped_envelope_matches_a_fresh_build():
     assert shipped["known_limitations"] == fresh["known_limitations"]
     assert shipped["validation"] == fresh["validation"]
 
+    # Freshness against build_envelope alone is not enough, and on 2026-10-07
+    # that was the whole problem: this artifact was built from an in-sample
+    # band for five days and the test passed, because a fresh build reproduced
+    # the same wrong construction. src/cli.py printed [-4.18, +1.87] for NVFP4
+    # while rank.py and the paper printed [-7.64, +5.17]. So pin the artifact
+    # against strata.calibrated_fit directly -- the band every other arm uses
+    # -- which fails if the envelope's construction ever diverges again,
+    # whatever build_envelope happens to do.
+    import sys as _s
+    _s.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    from model import load as _load
+    from strata import annotate as _ann, calibrated_fit as _cfit
+    _band = _cfit(_ann(_load(os.path.join(
+        os.path.dirname(__file__), "..", "data", "dataset.csv"))))
+    for _sc, _v in shipped["schemes"].items():
+        _cell = _band.by_scheme.get(_sc)
+        assert _cell is not None, f"envelope has a scheme the band does not: {_sc}"
+        _lo = round(_cell["mean"] - _cell["half_width"], 2)
+        _hi = round(_cell["mean"] + _cell["half_width"], 2)
+        assert _v["interval_90_pp"] == [_lo, _hi], (
+            f"out/scheme_envelope.json prints {_v['interval_90_pp']} for "
+            f"{_sc} but strata.calibrated_fit gives [{_lo}, {_hi}]. The "
+            f"shipped artifact and the shipped band have diverged, which is "
+            f"what let src/cli.py disagree with the paper for five days. "
+            f"Rebuild with src/build_envelope.py, and if it still disagrees "
+            f"the construction in that script is wrong, not the artifact.")
+        assert round(_cell["half_width"], 3) == _v["conformal_half_width_pp"], (
+            f"{_sc} half-width: artifact {_v['conformal_half_width_pp']}, "
+            f"calibrated_fit {round(_cell['half_width'], 3)}")
+
 
 def test_ranking_doc_labels_each_cell_with_the_tools_own_verdict():
     """RANKING.md once marked any cell under 85% as 'refused' while the tool called it
@@ -1353,6 +1383,254 @@ def test_the_audit_scripts_exit_zero():
             f"section, so a reader runs it.\n"
             f"--- last 25 lines ---\n"
             + "\n".join((r.stdout + r.stderr).strip().split("\n")[-25:]))
+
+
+def test_pack_status_names_every_pack_item():
+    """PACK_STATUS.md must account for every item in the submission pack.
+
+    The checklist lived outside git until 2026-10-08, so no test could read
+    it, and it covered pack items 01, 02 and 04 while never mentioning 03.
+    Item 03 ("Claims versus evidence") carries no LIVE stamp, was watched by
+    nothing, and still asserted five claims the repository had retracted. The
+    information was written down honestly and nothing mechanical consumed it,
+    which is the failure this cycle keeps producing.
+
+    What this READS: PACK_STATUS.md, now committed, and the pack item numbers
+    it names. A planted failure is a pack item the checklist does not mention.
+    The pack CONTENTS stay outside git; only the checklist is tracked.
+    """
+    root = os.path.join(os.path.dirname(__file__), "..")
+    path = os.path.join(root, "PACK_STATUS.md")
+    assert os.path.exists(path), (
+        "PACK_STATUS.md is not in the repository. It was moved in "
+        "deliberately so a test could read it; if it has gone back outside "
+        "git, nothing watches the pack again.")
+    text = open(path, encoding="utf-8").read()
+    for item in ("01", "02", "03", "04"):
+        assert f"`{item} -" in text or f"item {item}" in text.lower(), (
+            f"PACK_STATUS.md does not mention pack item {item}. Every item "
+            f"needs a row, including any that carry no LIVE stamp -- an "
+            f"unstamped item is precisely the one no other check can see.")
+    assert "no stamp" in text.lower() or "LIVE" in text, (
+        "PACK_STATUS.md no longer records stamp state for the pack items.")
+
+
+def test_no_src_function_is_defined_and_never_called():
+    """A function the pipeline never calls can still be load-bearing on paper.
+
+    src/calibrate_bands.py defined partition_sensitivity() and never called it
+    from main(), in any revision. Four registry keys read its output, so
+    running the script dropped the block and paper/gen_numbers.py exited on
+    four missing keys; called by hand it reproduced the committed figures
+    exactly. The paper's twenty-seed sensitivity was therefore correct and the
+    pipeline that claimed to produce it did not. Nothing caught that, because
+    every gate we have checks values rather than whether the code that
+    computes them runs.
+
+    What this READS: every module-level public function in src/, and whether
+    its name appears anywhere else in src/, verify/, tests/ or paper/. A
+    planted failure is a function defined and referenced nowhere else.
+    """
+    import ast
+    import glob
+    root = os.path.join(os.path.dirname(__file__), "..")
+
+    # Public helpers kept deliberately without an in-repo caller.
+    ALLOWED_UNCALLED = {
+        # a documented normaliser for externally-supplied adversarial frames;
+        # the schema module is the published entry point for that format.
+        "to_corpus_rows",
+    }
+    corpus = ""
+    for pat in ("src/*.py", "verify/*.py", "tests/*.py", "paper/*.py"):
+        for f in glob.glob(os.path.join(root, pat)):
+            corpus += open(f, encoding="utf-8", errors="replace").read()
+
+    dead = []
+    for f in sorted(glob.glob(os.path.join(root, "src", "*.py"))):
+        tree = ast.parse(open(f, encoding="utf-8").read())
+        for node in tree.body:
+            if not isinstance(node, ast.FunctionDef):
+                continue
+            if node.name.startswith("_") or node.name == "main":
+                continue
+            if node.name in ALLOWED_UNCALLED:
+                continue
+            if corpus.count(node.name) <= 1:
+                dead.append(f"  {os.path.basename(f)}:{node.lineno} "
+                            f"{node.name}() is defined and never called")
+    assert not dead, (
+        "a src/ function is defined and called from nowhere. If the paper "
+        "quotes figures it produces, those figures are not being produced by "
+        "the pipeline that claims to.\n" + "\n".join(dead))
+
+
+def test_the_widen_only_superset_property_holds_and_can_fail():
+    """Section 5 argues that the widen-only size rule cannot lose a covered
+    row, and cites gained/lost counts as the empirical half of that argument.
+    Both halves are checked here, and the second one is the point.
+
+    The property is true BY CONSTRUCTION -- a cell may only raise a
+    half-width, so the widen-only inside-set must contain the scheme-only one
+    -- which means a test that merely asserts it may be a predicate incapable
+    of failing. This section of the paper already records two checks that
+    passed without being able to fire, so this test proves its own
+    non-vacuity: it removes the max() that enforces monotonicity, confirms
+    the flag goes False, and restores it.
+
+    What this READS: out/strata_compare.json's superset flag and lost-count
+    for the shipped rule, then the same computation with the rule allowed to
+    narrow. A planted failure in either direction fails here.
+    """
+    import json
+    import sys as _s
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _s.path.insert(0, os.path.join(root, "src"))
+    import numpy as _np
+    import pandas as _pd
+    from model import load as _load
+    from strata import (ConservativeStratified as _CS, annotate as _ann)
+    import strata_compare as _SC
+
+    art = json.load(open(os.path.join(root, "out", "strata_compare.json")))
+    for pop in ("strict", "all_prospective"):
+        assert art[pop]["widen_only_is_superset"] is True, pop
+        assert art[pop]["widen_only"]["lost_vs_scheme_only"] == 0, (
+            f"{pop}: the widen-only rule lost "
+            f"{art[pop]['widen_only']['lost_vs_scheme_only']} covered rows. "
+            f"That is impossible for a rule that can only widen, so either "
+            f"the rule or the measurement is wrong.")
+
+    # --- non-vacuity: make the rule able to narrow and the flag must flip
+    d = _ann(_load(os.path.join(root, "data", "dataset.csv")))
+    p = _ann(_pd.read_csv(os.path.join(root, "out", "real_use_case.csv")))
+    orig = _CS.predict_interval
+
+    def _narrowing(self, dd):
+        dd = _ann(dd)
+        yhat, lo, hi, lvl = [], [], [], []
+        for s, b in zip(dd.scheme, dd.band):
+            base = self.by_scheme.get(s) or self.global_
+            cell = self.by_stratum.get((s, b))
+            hw = cell["half_width"] if cell is not None else base["half_width"]
+            yhat.append(base["mean"])
+            lo.append(base["mean"] - hw)
+            hi.append(base["mean"] + hw)
+            lvl.append("planted")
+        return (_np.array(yhat), _np.array(lo), _np.array(hi),
+                _np.array(lvl, dtype=object))
+
+    try:
+        _CS.predict_interval = _narrowing
+        broken = _SC.compare(d, p)
+    finally:
+        _CS.predict_interval = orig
+
+    assert broken["widen_only_is_superset"] is False, (
+        "removing the max() that enforces widen-only monotonicity did NOT "
+        "make the superset flag False. The flag is therefore not testing the "
+        "property Section 5 cites it for, and the 'none fewer' claim rests "
+        "on a predicate that cannot fail.")
+    assert broken["widen_only"]["lost_vs_scheme_only"] > 0, (
+        "a rule allowed to narrow lost no rows; the lost-count is not "
+        "measuring what it claims to measure.")
+
+    # and the real rule is back
+    assert _SC.compare(d, p)["widen_only_is_superset"] is True
+
+
+def test_the_two_paper_variants_say_the_same_thing():
+    """The anonymous and named variants must not drift apart in substance.
+
+    Audit item 9 existed because nothing compared them: main.tex said the
+    strict prospective filter "does not implement the mechanistic family
+    definition" while neurips_main.tex said it "aligns with" that definition.
+    A contradiction, and the more flattering half was in the anonymous variant
+    -- the one reviewers read. Only a human audit found it.
+
+    The two bodies became identical sentence-for-sentence on 2026-10-07, which
+    is the moment to pin it: trivially green today, and it makes the drift
+    structurally impossible rather than something re-checked by hand.
+
+    What this READS: both bodies from \begin{abstract} onward, comments
+    stripped, whitespace collapsed, split into sentences, compared as
+    multisets. The preamble is excluded because the two variants legitimately
+    differ there (document class, anonymity macros, title block). A planted
+    failure is any substantive sentence present in one and not the other.
+    """
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+
+    # Blocks that may legitimately differ, by explicit allowlist. Empty today.
+    # Adding to it is a deliberate act and should carry a reason.
+    ALLOWED_DIFFERENT: tuple = ()
+
+    def body(name):
+        s = open(os.path.join(root, "paper", name), encoding="utf-8").read()
+        i = s.find("\\begin{abstract}")
+        s = s[i:] if i >= 0 else s
+        s = "\n".join(l for l in s.split("\n")
+                       if not l.lstrip().startswith("%"))
+        s = re.sub(r"\s+", " ", s)
+        return [x for x in re.split(r"(?<=[.!?]) ", s)
+                if x and not any(a in x for a in ALLOWED_DIFFERENT)]
+
+    a, b = body("neurips_main.tex"), body("main.tex")
+    only_a = [x for x in a if x not in set(b)]
+    only_b = [x for x in b if x not in set(a)]
+    assert not (only_a or only_b), (
+        "the two paper variants have drifted apart in substance. Audit item 9 "
+        "was exactly this, with the more flattering wording in the anonymous "
+        "variant.\n"
+        + "".join(f"\n  only in neurips_main.tex: {x[:200]}" for x in only_a)
+        + "".join(f"\n  only in main.tex:         {x[:200]}" for x in only_b))
+
+
+def test_no_duplicate_dict_keys_in_the_registry_or_generator():
+    """A repeated key in a dict literal is silent: Python keeps the last and
+    says nothing.
+
+    Found on 2026-10-07 when tools/patch.py refused an anchor that matched
+    twice -- ProspCovWeightint had been written into paper/gen_numbers.py
+    twice by an earlier edit. Both copies happened to be byte-identical, so
+    nothing rendered wrongly, but nothing would have told us if they had
+    differed: the paper would have published whichever came second while the
+    value we verified was the first. The registry's own integrity had been
+    taken on trust.
+
+    What this READS: every dict literal in the two files that define what the
+    paper may say, via the AST, so it sees keys rather than text. A planted
+    failure is a key written twice with different values -- it fails here and
+    names the key and the line numbers.
+    """
+    import ast
+    root = os.path.join(os.path.dirname(__file__), "..")
+    problems = []
+    for rel in ("paper/gen_numbers.py", "src/verify_claims.py",
+                "src/strata_compare.py", "src/build_envelope.py"):
+        path = os.path.join(root, rel)
+        if not os.path.exists(path):
+            continue
+        tree = ast.parse(open(path, encoding="utf-8").read(), filename=rel)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Dict):
+                continue
+            seen = {}
+            for k in node.keys:
+                if not isinstance(k, ast.Constant) or not isinstance(
+                        k.value, (str, int, float)):
+                    continue
+                if k.value in seen:
+                    problems.append(
+                        f"  {rel}: key {k.value!r} appears twice in one dict "
+                        f"(lines {seen[k.value]} and {k.lineno})")
+                else:
+                    seen[k.value] = k.lineno
+    assert not problems, (
+        "duplicate keys in a dict that governs what the paper may say. "
+        "Python keeps the last silently, so the rendered value and the "
+        "verified value can diverge with nothing to say so.\n"
+        + "\n".join(problems))
 
 
 def test_verifiers_exit_zero():
@@ -1832,6 +2110,13 @@ def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
         # verify_claims.py and paper/gen_numbers.py read its output, so it
         # must run before them. README's block now says so explicitly.
         ("out/independent_check.csv",     "python verify/independent_check.py"),
+        # Added 2026-10-07 with the artifact itself. The size-stratification
+        # comparison was quoted in S5 and RANKING.md from a script that only
+        # printed, so two of its figures were measured with an in-sample
+        # half-width and nothing noticed for weeks. It is downstream of
+        # out/real_use_case.csv, so it runs after src/real_use_case.py.
+        ("out/strata_compare.json",        "python src/strata_compare.py "
+                                           "(AFTER src/real_use_case.py)"),
         # out/calibration_partition.json is the one artifact an mtime check
         # cannot guard, and it is excluded here deliberately rather than
         # forgotten. verify/independent_rank.py and verify/independent_check.py
@@ -1914,7 +2199,13 @@ _REGISTRY_MANIFEST = {
     # and the "not locally reproducible" label was false), and the two
     # headline coverage keys are added -- scheme-level inside and coverage,
     # registered so the figure the abstract quotes is gated like every other.
-    "(scalar)": 320,
+    # +36 on 2026-10-07: the size-stratification comparison became
+    # registry-backed (src/strata_compare.py -> out/strata_compare.json).
+    # Three variants x five figures x two populations = 30, plus two row
+    # counts, plus four cell counts. It had been quoted in S5 and RANKING.md
+    # for weeks from a script that printed and registered nothing, which is
+    # how two figures measured with an in-sample half-width sat unwatched.
+    "(scalar)": 356,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

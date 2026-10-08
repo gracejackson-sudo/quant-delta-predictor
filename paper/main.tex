@@ -42,10 +42,13 @@ slowest learning rate and heaviest regularisation on offer. Asked for the best
 card-feature model, nested cross-validation answers one shrunk almost to a
 constant.
 Second, a positive one: conditioning only on the quantization scheme yields
-per-scheme conformal-style intervals with \(\ProspCovScheme\%\) two-sided empirical
-coverage (\(\ProspInside/\ProspN\) rows from \ProspClusN{} unseen quantized
-checkpoints, 95\% cluster-robust CI \([\ProspCrLo,\ProspCrHi]\), clustered on
-the checkpoint because rows from one quantization run are not independent). Under the family definition of \S\ref{sec:data} the
+per-scheme split-conformal intervals with \(\ProspCovScheme\%\) two-sided
+empirical coverage for the scheme-only envelope, before the size rule
+(\(\ProspInsideScheme/\ProspN\) rows from \ProspClusN{} unseen quantized
+checkpoints). Applying the widen-only size rule as the tool applies it gives
+\(\ProspCov\%\) (\(\ProspInside/\ProspN\)), with a 95\% cluster-robust CI of
+\([\ProspCrLo,\ProspCrHi]\) clustered on the checkpoint, because rows from one
+quantization run are not independent. Under the family definition of \S\ref{sec:data} the
 strict set is three uneven groups, not a balanced sample across them:
 DeepSeek-R1-Distill of Llama-3 and Qwen-2.5 bases (\ProspDsRows{} rows,
 \ProspDsCkpts{} checkpoints, \ProspDsCov\%), Gemma-3 (\ProspGThreeRows{},
@@ -532,7 +535,8 @@ family (Llama-3.* as one family under Definition B, and Qwen-3), or
 any card whose format informed a parser fix (Llama-4). The two grounds
 are separate; only Llama-4 is excluded for the parser reason. Under
 this protocol two-sided coverage
-is \(\ProspInsideScheme/\ProspN = \ProspCovScheme\%\) at the scheme level, and
+is \(\ProspInsideScheme/\ProspN = \ProspCovScheme\%\) for the scheme-only
+envelope, before the size rule, and
 \(\ProspInside/\ProspN = \ProspCov\%\) once the widen-only size rule is applied
 as the tool applies it, against a nominal 90\% two-sided
 level, with a 95\% cluster-robust CI of \([\ProspCrLo, \ProspCrHi]\).
@@ -709,17 +713,22 @@ to justify a separate width.
 above is implemented in \texttt{verify/independent\_check.py}, a from-scratch
 reimplementation that shares no code with the pipeline. It parses the raw
 model cards independently and recomputes the prospective-coverage figures
-this section reports. It was run against the card corpus once, on 2026-09-27,
-and that run produced \texttt{out/independent\_check.csv} --- the \ProspN{}
-strict-prospective rows behind the numbers above. That run compared
-prospective rows only: the training corpus was used to build the envelope
-but no per-row training-parse verification was written, and the
-training-row-count and per-label comparisons in the current
-\texttt{verify/independent\_check.py} have not fired against the shipped
-data. The card corpus itself is not committed (license and PII constraints;
-\texttt{PROVENANCE.md} 2026-09-27), so this repository cannot re-run the
-parse. What it ships in its place is a tolerance-integrity gate on the
-2026-09-27 output
+this section reports. It is run against the card corpus on every corpus
+change, and its output \texttt{out/independent\_check.csv} holds
+\ProspAllRows{} prospective rows, of which \ProspN{} are the strict subset
+behind the numbers above. An earlier version of this paragraph said it had
+been run once, on a single date, and that its training-row comparisons had
+never fired against the shipped data. Both were out of date: the file has
+been regenerated repeatedly, and the training comparisons have fired and
+caught real defects --- a parser bug that silently dropped two rows, and a
+label-vocabulary divergence after the GPQA protocol split. It now reports
+\Nrows{} training rows on both sides, with zero rows found by only one side
+and zero delta or verdict disagreements.
+
+The card corpus itself is not committed (license and PII constraints;
+\texttt{PROVENANCE.md} 2026-09-27), so a reader without the cards cannot
+re-run the parse. What ships in its place is a tolerance-integrity gate on the
+committed output
 (\texttt{tests/test\_all.py::test\_independent\_check\_csv\_matches\_tolerance\_recomputation}):
 the gate recomputes each row's \texttt{inside} flag from its \texttt{lo},
 \texttt{hi} and \texttt{delta} under a $10^{-9}$ boundary tolerance, and
@@ -796,16 +805,55 @@ w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeig
 \end{tabular}
 \end{center}
 
-W4A16, the most common scheme, dominates the pooled figure and sits below the nominal 90\%; the other schemes rest on few
+W4A16, the most common scheme, dominates the pooled figure; the other schemes rest on few
 checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
-did not manufacture the headline. That said, the pooled \ProspCovScheme\% is
+did not manufacture the headline. That said, the pooled scheme-only
+\ProspCovScheme\% is
 pulled up by \ProspRowsFpdyn{} FP8-dynamic rows from \ProspCkptsFpdyn{}
 checkpoints and \ProspRowsWeightsixteen{} W8A16 rows from \ProspCkptsWeightsixteen{}
-checkpoint, both at \ProspCovFpdyn\% coverage: W4A16, at \ProspRowsWfour{}
-of the \ProspN{} strict rows (\ProspRowsWfourShare\%), comes in at
-\ProspCovWfour\%, which is below the nominal 90\%. The pooled number
-should be read as an average across schemes with very different sample
+checkpoint, both at \ProspCovFpdyn\% coverage. W4A16, at \ProspRowsWfour{}
+of the \ProspN{} strict rows (\ProspRowsWfourShare\%), covers at
+\ProspCovWfour\%, above nominal. The one scheme below nominal is W8A8-int at
+\ProspCovWeightint\% on \ProspRowsWeightint{} rows from
+\ProspCkptsWeightint{} checkpoints. Earlier versions of this paragraph named
+W4A16 as the below-nominal scheme; that was true of the in-sample band and
+reversed when the shipped band was corrected (\S\ref{sec:audit}). The pooled
+number should be read as an average across schemes with very different sample
 sizes, not as a coverage claim uniform across schemes.
+
+\paragraph{Size stratification: what survives and what does not.} Size
+enters the shipped envelope only through a widen-only rule --- a (scheme, size
+band) cell may raise its scheme's half-width and never lower it. Measured
+against the shipped band on the \StratRows{} strict prospective rows, that
+rule covers \StratWidenInside{} of them against \StratSchemeInside{} for the
+scheme-only envelope: \StratWidenGained{} rows more, and \StratWidenLost{}
+fewer. The direction is forced by the construction rather than observed,
+because a rule that can only raise a half-width cannot drop a covered row, so
+the widen-only inside-set must contain the scheme-only one and the only cost
+is width (\StratWidenWidth{}pp against \StratSchemeWidth{}pp). The data agrees
+on both populations: \StratWidenGainedAll{} rows gained and
+\StratWidenLostAll{} lost on the full prospective set as well. That
+monotonicity is why the rule is defensible rather than merely harmless --- no
+cell can be made falsely tight, and the worst case is an interval wider than
+it needed to be, which is the safer direction for a risk tool to err.
+
+Full stratification, a per-cell centre and width free to narrow, covers
+\StratFullInside{} of the same \StratRows{} rows at essentially unchanged mean
+width (\StratFullWidth{}pp). Against the scheme-only envelope it loses
+\StratFullLost{} rows and gains \StratFullGained{}: a two-way churn that only
+a rule permitted to narrow can produce. It tightens cells it should not and
+the prospective rows fall outside. That variant was discarded in an earlier
+version on a weaker measurement, in which the half-width was fitted in-sample;
+the conclusion survives the correction.
+
+What does not survive is any claim that the size band \emph{identifies} risk.
+Of the \NCellsTotal{} cells, \SizeWidthsOld{} raised their scheme's width
+under the retracted in-sample band and \SizeWidths{} do under the shipped one,
+and \StratCellsBoth{} are the same cells. \StratBandReplaced{} scheme has its
+widening band \emph{replaced} rather than added or dropped --- W8A16, from
+\(>\)10B under the in-sample band to 2--10B under the shipped one. So the rule
+earns its place as a one-directional conservatism for thin small-model cells,
+and not as evidence that size predicts damage.
 
 \paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
 intervals exclude zero: the tool can never state that a scheme \emph{will}
@@ -992,9 +1040,11 @@ survived---would misrepresent how the result was obtained.
     used in construction was wrong. Under the definition adopted in
     \S\ref{sec:data}, \ProspInFamCkpts{} of the \ProspClusN{} are
     derivatives of a training family and \ProspOutFamCkpts{} are new
-    pretraining runs; the point estimates on both sides land near nominal
-    but the difference between them is not resolvable at this sample size
-    (\S\ref{sec:results}).
+    pretraining runs. We no longer compare the two sides: the
+    second is four-fifths one family, so the contrast carried a label
+    implying a result about transfer across families that its composition
+    cannot support, and \S\ref{sec:results} reports the groups separately
+    instead.
   \item \emph{LOFO means different things for different schemes.}
     Under the shipped calibration path, when a leave-one-family-out
     calibration family has fewer than 9 rows of a scheme, the code
@@ -1015,7 +1065,7 @@ survived---would misrepresent how the result was obtained.
     \LofoHeldoutOneSided\%. We disclose here rather than exclude:
     the shipped pipeline reports the pooled figure, and the reader
     should know what the pool contains.
-  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, and the strict figure is now \ProspInside/\ProspN. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about.
+  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, which moved the strict figure from 118/131 to 119/131 at the time. The boundary case no longer arises: W4A16's upper bound is now \HiWfour{}pp rather than $+1.40$, so that row is inside by a clear margin, and the strict figure has since moved to \ProspInside/\ProspN{} for an unrelated reason --- the shipped band was corrected from an in-sample to a split-conformal construction. The tolerance patch should not be credited with that change. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about, and this section records three further instances of it.
   \item \emph{Artifact family regenerated after Definition B.} The
     Definition B corpus change (Tier 0.1, 8 $\to$ 6 families) shifted
     the shape of every leave-one-family-out artifact. Seven files were
@@ -1057,13 +1107,11 @@ survived---would misrepresent how the result was obtained.
     that disagrees with the same checkpoint's NVFP4 row's \texttt{GPQA
     (0-shot)} = 31.63 by 14pp. These 2 rows carry the placeholder label
     \texttt{gpqa\_ambiguous\_46}: the card does not resolve which
-    protocol they measure, and we do not infer from the value. An
-    earlier version of this paragraph asserted that 8 rows carried
-    the string \texttt{GPQA (Diamond, 0-shot)}. That was wrong, but so
-    was the first correction to it, which said no card carries that
-    string at all. Three cards do: the Qwen3-8B, Qwen3-14B and
-    Qwen3-32B NVFP4 cards each report both \texttt{GPQA (0-shot)} and
-    \texttt{GPQA (Diamond, 0-shot)}. Those Diamond rows were initially
+    protocol they measure, and we do not infer from the value. Three cards carry the string
+    \texttt{GPQA (Diamond, 0-shot)} --- the Qwen3-8B, Qwen3-14B and
+    Qwen3-32B NVFP4 cards, each reporting it alongside
+    \texttt{GPQA (0-shot)}. Two earlier versions of this paragraph got that
+    count wrong in opposite directions. Those Diamond rows were initially
     absent from the corpus not because the string is absent from the
     cards but because the harvester's first-table-wins rule discarded
     them as duplicates of a label that was, at the time, collapsed.
@@ -1112,7 +1160,8 @@ survived---would misrepresent how the result was obtained.
     load-bearing on the method; it is load-bearing on which of the
     pre-registered repos actually get scored. The paper reports on the
     \ProspN-row frozen-and-scored set
-    (\ProspInsideScheme/\ProspN{} = \ProspCovScheme\% at the scheme level,
+    (\ProspInsideScheme/\ProspN{} = \ProspCovScheme\% for the scheme-only
+    envelope,
     \ProspInside/\ProspN{} = \ProspCov\% as the tool prints it). Earlier versions also quoted a with-them figure from an external audit,
     said to show that the frozen-set number was not materially inflated by
     the drop, and described it as not locally reproducible because the raw
@@ -1131,6 +1180,43 @@ survived---would misrepresent how the result was obtained.
     We have not replaced it with a recomputed version: that would be a
     different quantity over a row set this paper has never described, and
     introducing one is not a substitute for withdrawing a claim.
+  \item \emph{A claim verified by fixing what we found, not by enumerating
+    what existed.} Having moved the shipped interval to split conformal, we
+    found three scripts still measuring the retracted in-sample band, fixed
+    them, and wrote that "all four arms now build the shipped band." That was
+    false when written. We had checked the three paths we knew of plus the one
+    we had just changed, which cannot detect a path that nobody had considered. A fifth
+    existed: \texttt{build\_envelope.py} built the band from a whole-corpus
+    mean and residual quantile and wrote it into the artifact the
+    command-line tool reads, so the tool printed
+    \([\LoNvfpOld, \HiNvfpOld]\) for NVFP4 where this paper printed
+    \([\LoNvfp, \HiNvfp]\), and the test comparing artifact to fresh build
+    passed because it rebuilt the same wrong construction. We then enumerated
+    instead: every caller of every quantile primitive, every interval
+    constructor, every consumer. That found eight band-constructing paths
+    where we had claimed four. "We fixed the instances we found" is a
+    statement about our search, not about the code, and this section already
+    records two checks that passed while verifying nothing --- this is the
+    same failure one level up, where the method rather than a single check was
+    what did not fire.
+  \item \emph{A correct number with the wrong object attached.} We reported
+    that size stratification "costs \(6.4\) points of coverage and buys no
+    tightening." The figure was right and the object was wrong: it measures
+    \emph{full} stratification, free to narrow, discarded in September. The
+    rule the artifact ships is widen-only, and on the same rows it
+    \emph{gains} \StratWidenGained{} covered rows and loses
+    \StratWidenLost{}. This is not the failure the entries above record, and
+    the difference decides what could catch it. There, prose asserted a
+    relation the registry contradicts --- "smaller than", "below nominal" ---
+    and a check comparing directional words against the relation the registry
+    holds could in principle fire. Here nothing in the sentence is false about
+    the number it names: the number is correctly computed, correctly
+    registered and correctly quoted, and simply is not the number the claim
+    requires. No directional check sees that, because the defect is in the
+    correspondence between a key and the object a sentence is about, which
+    lives in the registry's schema rather than in the prose. It was caught by
+    a reader asking why the tool still applied a rule we had just called
+    worthless.
   \item \emph{The family classifier is enumerated.} The in-family /
     out-of-family split of the \ProspClusN{} strict prospective checkpoints
     was decided by inspecting each card and matching against the
@@ -1216,20 +1302,17 @@ answer anywhere ought to decline there. The single thing standing between that
 cell and a refusal is the \MinCkpt-checkpoint support floor; the cell has two.
 
 Lowering the floor to two would have produced the refusal, and three things
-argue against it. First, the constant does double duty: \MinCkpt{} gates both
-the coverage verdict and the Tier-A support floor, so lowering it weakens the
-support rule at the same time, and both halves of that rule came from the same
-external review. Second, it would not have fired alone: \texttt{w8a16|<2B}
-also rests on two checkpoints, with a bootstrap interval collapsed onto its
-point estimate because resampling two checkpoints that both score perfectly
-returns one value, so the same change that refuses one cell promotes a
-degenerate one to \emph{trusted}. Third, a confident refusal on
+argue against it. The constant does double duty: \MinCkpt{} gates both the
+coverage verdict and the Tier-A support floor, and both halves came from the
+same external review, so lowering it weakens the support rule too. It would
+not have fired alone: \texttt{w8a16|<2B} also rests on two checkpoints, with
+a bootstrap interval collapsed onto its point estimate, so the same change
+promotes a degenerate cell to \emph{trusted}. And a confident refusal on
 \texttt{w4a16|<2B} would rest on \RowsCellWfourSmall{} rows from
-\CkptsCellWfourSmall{} checkpoints in a single family---thinner evidence than
-anything this paper calls trusted---so the floor would be applying in one
-direction and not the other. That asymmetry is arguable: withholding an
-interval is the safe error and granting one is not. But we would be making the
-argument after choosing the threshold, and knowing which cell it would move.
+\CkptsCellWfourSmall{} checkpoints in one family --- thinner than anything
+this paper calls trusted. The counter-argument is available, that withholding
+an interval is the safe error, but we would be making it after choosing the
+threshold and knowing which cell it would move.
 
 That last point is the decisive one. We set these thresholds knowing where the
 adversarial arm found damage, and this section already concedes they were
@@ -1334,23 +1417,19 @@ it in advance was right; the decision itself was wrong. The next version of
 this protocol should make a thin scheme's backoff the \emph{maximum} of the
 pooled and its own in-sample width, not the pooled alone.
 
-\paragraph{A pre-registration that contradicted itself.} The same
-document that got the NVFP4 backoff wrong was also internally inconsistent on
-a second point, and in a way that mattered. Its construction section specified
-centres from the fit partition and widths from a disjoint calibration
-partition, which is split conformal. Its ``what is held fixed'' section said
-the centre was the cell mean, unchanged. Those cannot both hold: estimating
-the centre on all rows means the calibration residuals are taken about a
-centre that has seen them, which is precisely the in-sample defect the item
-existed to remove. We resolved it in favour of the construction section,
-because it is the only reading under which the result is a split-conformal
-interval at all, and the consequence --- centres now resting on
-\CalibFitCkpt{} of \Nckpt{} checkpoints --- is reported in
-\S\ref{sec:results} rather than left for a reader to discover. The honest
-summary is that pre-registering a protocol stopped us choosing a construction
-after seeing results, and did not stop us writing two incompatible sentences
-about it; the fix is that a pre-registration needs the same internal-agreement
-check we apply to the paper.
+\paragraph{A pre-registration that contradicted itself.} The same document
+was also internally inconsistent: its construction section specified centres
+from the fit partition and widths from a disjoint one, which is split
+conformal, while its ``what is held fixed'' section said the centre was
+unchanged. Both cannot hold --- a centre estimated on all rows has seen the
+calibration residuals, which is the in-sample defect the item existed to
+remove. We resolved it for the construction section, the only reading under
+which the result is split conformal at all, and \S\ref{sec:results} reports
+the consequence: centres now rest on \CalibFitCkpt{} of \Nckpt{}
+checkpoints. Pre-registration stopped us choosing a construction after seeing
+results and did not stop us writing two incompatible sentences about it; a
+protocol document needs the same internal-agreement check we apply to the
+paper.
 
 \paragraph{An overclaimed guarantee.} The artifact was described as carrying a
 coverage guarantee without qualification. Checking the method against the
@@ -1399,8 +1478,10 @@ features does not work on published data, and the reason is largely
 measurement noise rather than model capacity; predictors that use
 checkpoint-level statistics were not tested and remain open. What does
 work is narrower: a per-scheme calibrated envelope that is validated at
-\(\ProspCovScheme\%\) two-sided coverage on unseen checkpoints for \ProspSchemes{}
-of the \Nsch{} schemes. Coverage is reported per group rather than
+\(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
+unseen checkpoints
+for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
+widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
 split in-family against out-of-family; the composition behind that split does
 not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
 either trusted or insufficient evidence, and in the latter case the interval

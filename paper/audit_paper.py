@@ -47,6 +47,17 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "68", "84", "90", "95", "100", "133", "500", "2022", "2023", "2024",
           "2026", "0", "36", "0.03", "0.36", "89.6", "93.4", "99", "10",
           "500,000", "118", "131", "83.6", "94.6", "90.1", "68", "9",
+          # 119: the strict count immediately after the 2026-09-27 tolerance
+          # patch, quoted in the float-boundary bullet beside 118/131 so a
+          # reader can see what that patch did and did not change. Same
+          # historical-narrative class as 118 and 131 above.
+          "119",
+          # 6.4: the retracted stratification claim quoted verbatim in the
+          # audit section ("costs 6.4 points of coverage and buys no
+          # tightening"). The figure measured full stratification while the
+          # sentence was about the widen-only rule; quoting it is the point
+          # of the entry, and the live figures beside it are macros.
+          "6.4",
           # documented exemptions, each checked by hand:
           "000",   # part of "500{,}000", an external figure from Kurtic et al.
           "3.1",   # part of the model name "Llama-3.1", not a measurement

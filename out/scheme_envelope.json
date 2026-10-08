@@ -1,7 +1,7 @@
 {
   "artifact": "per-scheme quantization accuracy-delta envelope",
-  "what_it_is": "the observed distribution of (quantized - original) accuracy in percentage points on OpenLLM-style benchmarks, per quantization scheme, with a conformal-style 90% interval (an in-sample residual-quantile band; the split-conformal guarantee applies only to the explicit calibration-set variant used inside the LOFO audit). It is a calibrated historical baseline, NOT a per-model predictor.",
-  "built": "2026-10-02",
+  "what_it_is": "the observed distribution of (quantized - original) accuracy in percentage points on OpenLLM-style benchmarks, per quantization scheme, with a split-conformal 90% interval: the centre is estimated on the fit side of a fixed checkpoint partition and the half-width from residuals on the disjoint calibration side, so the interval carries the split-conformal guarantee. Its strength is limited by the number of exchangeable units behind each width, which is 2 to 8 checkpoints per scheme. It is a calibrated historical baseline, NOT a per-model predictor.",
+  "built": "2026-10-07",
   "alpha": 0.1,
   "target": "acc_after - acc_before, percentage points",
   "training_data": {
@@ -68,12 +68,12 @@
       "n_observations": 80,
       "n_checkpoints": 13,
       "n_families": 3,
-      "mean_delta_pp": -0.317,
+      "mean_delta_pp": -0.382,
       "median_delta_pp": -0.22,
-      "conformal_half_width_pp": 0.793,
+      "conformal_half_width_pp": 1.128,
       "interval_90_pp": [
-        -1.11,
-        0.48
+        -1.51,
+        0.75
       ],
       "empirical_band_90_pp": [
         -1.21,
@@ -134,12 +134,12 @@
       "n_observations": 200,
       "n_checkpoints": 22,
       "n_families": 5,
-      "mean_delta_pp": -0.048,
+      "mean_delta_pp": -0.027,
       "median_delta_pp": -0.085,
-      "conformal_half_width_pp": 1.392,
+      "conformal_half_width_pp": 1.193,
       "interval_90_pp": [
-        -1.44,
-        1.34
+        -1.22,
+        1.17
       ],
       "empirical_band_90_pp": [
         -1.18,
@@ -200,12 +200,12 @@
       "n_observations": 68,
       "n_checkpoints": 5,
       "n_families": 3,
-      "mean_delta_pp": -1.157,
+      "mean_delta_pp": -1.236,
       "median_delta_pp": -0.86,
-      "conformal_half_width_pp": 3.027,
+      "conformal_half_width_pp": 6.406,
       "interval_90_pp": [
-        -4.18,
-        1.87
+        -7.64,
+        5.17
       ],
       "empirical_band_90_pp": [
         -5.08,
@@ -259,12 +259,12 @@
       "n_observations": 194,
       "n_checkpoints": 23,
       "n_families": 6,
-      "mean_delta_pp": -0.736,
+      "mean_delta_pp": -0.661,
       "median_delta_pp": -0.61,
-      "conformal_half_width_pp": 2.136,
+      "conformal_half_width_pp": 2.559,
       "interval_90_pp": [
-        -2.87,
-        1.4
+        -3.22,
+        1.9
       ],
       "empirical_band_90_pp": [
         -3.22,
@@ -325,12 +325,12 @@
       "n_observations": 86,
       "n_checkpoints": 15,
       "n_families": 4,
-      "mean_delta_pp": -0.084,
+      "mean_delta_pp": -0.23,
       "median_delta_pp": -0.045,
-      "conformal_half_width_pp": 0.896,
+      "conformal_half_width_pp": 0.76,
       "interval_90_pp": [
-        -0.98,
-        0.81
+        -0.99,
+        0.53
       ],
       "empirical_band_90_pp": [
         -1.26,
@@ -393,10 +393,10 @@
       "n_families": 5,
       "mean_delta_pp": -0.339,
       "median_delta_pp": -0.3,
-      "conformal_half_width_pp": 1.469,
+      "conformal_half_width_pp": 1.319,
       "interval_90_pp": [
-        -1.81,
-        1.13
+        -1.66,
+        0.98
       ],
       "empirical_band_90_pp": [
         -2.13,

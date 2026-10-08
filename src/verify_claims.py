@@ -83,6 +83,9 @@ def registry():
     # The "insample_" figures are the retracted path, recomputed live rather
     # than remembered, so S6's retraction cannot drift from what it retracts.
     import numpy as _np1   # local, matching this module's convention
+    # DELIBERATELY IN-SAMPLE: this is the retracted band itself, kept live so
+    # S6's retraction is measured against what it retracts rather than
+    # remembered. Contrasted with `m` (calibrated_fit) above. Do not convert.
     _ins = ConservativeStratified().fit(d)
     _w = d.groupby("scheme").size()
     add("insample_hw_pp",
@@ -109,6 +112,50 @@ def registry():
     add("big_losses_below_floor_insample",
         int((_bl.delta.to_numpy(float) < _lo_ins).sum()), 0,
         "rows past -3pp that fell below the in-sample interval floor")
+
+    # Size stratification, three variants on the shipped band, both
+    # populations, from out/strata_compare.json. Registered because S5 and
+    # RANKING.md quoted this comparison for weeks from a script that printed
+    # and registered nothing. The gained/lost decomposition is the empirical
+    # half of the monotonicity argument -- a rule that can only widen cannot
+    # drop a covered row -- so "gained 2, lost 0" is gated, not asserted.
+    _sc = os.path.join(HERE, "..", "out", "strata_compare.json")
+    if os.path.exists(_sc):
+        _sj = json.load(open(_sc))
+        for _pop, _suf in (("strict", ""), ("all_prospective", "_all")):
+            _r = _sj.get(_pop)
+            if not _r:
+                continue
+            add(f"strat_rows{_suf}", _r["n_rows"], 0,
+                f"prospective rows in the {_pop} stratification comparison")
+            for _v, _lbl in (("scheme_only", "scheme-only envelope"),
+                             ("widen_only", "widen-only size rule (shipped)"),
+                             ("full", "full stratification (discarded)")):
+                _x = _r[_v]
+                add(f"strat_{_v}_inside{_suf}", _x["inside"], 0,
+                    f"rows covered, {_lbl}, {_pop}")
+                add(f"strat_{_v}_cov_pct{_suf}", _x["coverage_pct"], 0.05,
+                    f"coverage, {_lbl}, {_pop}")
+                add(f"strat_{_v}_hw_pp{_suf}", _x["mean_half_width_pp"], 0.002,
+                    f"mean half-width, {_lbl}, {_pop}")
+                add(f"strat_{_v}_gained{_suf}", _x["gained_vs_scheme_only"], 0,
+                    f"rows covered by {_lbl} and not by the scheme-only "
+                    f"envelope, {_pop}")
+                add(f"strat_{_v}_lost{_suf}", _x["lost_vs_scheme_only"], 0,
+                    f"rows covered by the scheme-only envelope and not by "
+                    f"{_lbl}, {_pop}")
+        _c = _sj.get("cells", {})
+        if _c:
+            add("strat_widen_cells_in_sample", _c["n_widening_in_sample"], 0,
+                "cells raising their scheme width under the retracted band")
+            add("strat_widen_cells_shipped", _c["n_widening_shipped"], 0,
+                "cells raising their scheme width under the shipped band")
+            add("strat_widen_cells_both", _c["n_widening_both"], 0,
+                "cells that raise their scheme width under BOTH bands")
+            add("strat_schemes_band_replaced",
+                _c["n_schemes_band_replaced"], 0,
+                "schemes whose widening size band is replaced rather than "
+                "added or dropped when the band is corrected")
 
     _cb = os.path.join(HERE, "..", "out", "calibrated_bands.json")
     if os.path.exists(_cb):
@@ -138,6 +185,8 @@ def registry():
                 "checkpoints the shipped centre is estimated on")
             add("calib_cal_ckpt", len(_p.get("calibration_checkpoints", [])),
                 0, "checkpoints the shipped width is estimated on")
+            # DELIBERATELY WHOLE-CORPUS: contrasted with the fit-partition
+            # centre to measure centre_move_max_pp. Do not convert.
             _full = ConservativeStratified().fit(d)
             add("centre_move_max_pp",
                 max(abs(m.by_scheme[k]["mean"] - _full.by_scheme[k]["mean"])

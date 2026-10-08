@@ -19,7 +19,8 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(__file__))
 from model import load  # noqa: E402
-from strata import SchemeOnlyBaseline, StratifiedBaseline, annotate  # noqa: E402
+from strata import (SchemeOnlyBaseline, StratifiedBaseline,  # noqa: E402
+                    annotate, calibrated_fit)
 
 HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
@@ -97,9 +98,17 @@ def main():
                             "scheme", "benchmark", "acc_before", "acc_after",
                             "delta", "group") if c in p.columns]
         p = p[keep]
+        # Prospective coverage must be measured against the band that SHIPS.
+        # This block fitted centre AND width on all of `d` and then scored
+        # unseen rows, so the width was in-sample even though the test rows
+        # were not -- the same defect src/real_use_case.py had. It matters
+        # here because RANKING.md quotes this comparison as the reason the
+        # narrowing half of size stratification was discarded. The conclusion
+        # survives (and S6 now undermines the widening half independently),
+        # but it should not survive because nobody checked what produced it.
         for name, cls in (("scheme only", SchemeOnlyBaseline),
                           ("stratified", StratifiedBaseline)):
-            m = cls().fit(d)
+            m = calibrated_fit(d, cls=cls)
             yhat, lo, hi, lvl = m.predict_interval(p)
             t = annotate(p).copy()
             t["lo"], t["hi"], t["level"] = lo, hi, lvl
@@ -123,7 +132,7 @@ def main():
     print("\n" + "=" * 72)
     print("MoE: can we stratify on it?")
     print("=" * 72)
-    m = StratifiedBaseline().fit(d)
+    m = calibrated_fit(d, cls=StratifiedBaseline)
     if m.moe_stats:
         s = m.moe_stats
         print(f"  MoE rows in training: {s['n']} from "

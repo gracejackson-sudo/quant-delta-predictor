@@ -47,6 +47,13 @@ DEFECTS = [
     # A sentence truncated onto a preposition or article.
     "the measured value is 90 and. The rest follows",
     "we report the coverage of. The interval is",
+    # The false-negative plant, 2026-10-08. Identical defect with an
+    # unrelated decimal beside it: under the old 140-character exemption
+    # window this went unreported, and whether it did depended on where the
+    # line happened to wrap, so the same prose was flagged in one variant and
+    # not the other. Keep both forms -- the pair is what proves the exemption
+    # is tested against the match rather than its neighbourhood.
+    "we report 2.583pp coverage of. The interval is",
     # Punctuation collisions from deleting a clause but not its separator.
     "a wider interval, , on the same rows",
     "the half-width is 2.68pp ,and the centre",
@@ -132,7 +139,18 @@ def hits(text):
         flat = stripped if strip_headings else raw
         for m in re.finditer(pat, flat):
             ctx = flat[max(0, m.start() - 70):m.end() + 70]
-            if honour_exempt and _EXEMPT.search(ctx):
+            # The exemption is tested against the MATCH plus a tight left
+            # margin, not against `ctx`. Using the 140-character window was a
+            # false negative: a genuine "coverage of. The interval" defect
+            # went unreported when an unrelated decimal like 2.583pp happened
+            # to fall inside the window, and whether it did depended on where
+            # the line wrapped -- so the same prose was flagged in one
+            # variant and not the other. The exemptions this guards against
+            # (e.g., i.e., et al., Fig., decimals, filenames) all sit AT the
+            # match or immediately before it, so a 14-character margin is
+            # enough to see them and too tight to swallow a defect.
+            probe = flat[max(0, m.start() - 14):m.end()]
+            if honour_exempt and _EXEMPT.search(probe):
                 continue
             out.append((why, m.group(0), ctx.strip()))
     return out

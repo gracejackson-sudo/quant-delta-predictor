@@ -28,7 +28,7 @@ W4A16 damage varies with size; near-lossless schemes do not.
 
 ### Full stratification was tested and rejected
 
-Per-(scheme, size band) intervals narrowed the >10B band and prospective coverage fell from 90.3% to 84.4%. Those two figures come from `src/validate_strata.py`, which is a separate run rather than part of this registry. What shipped instead is one-sided: a size cell may only *widen* the scheme interval, never narrow it.
+Per-(scheme, size band) intervals cost prospective coverage: 92.6% scheme-only against 86.2% stratified, at near-identical mean width (4.07pp against 4.16pp), so stratification bought nothing and lost 6.4 points. Measured on the shipped split-conformal band; the figures previously quoted here, 90.3% falling to 84.4%, were measured with the width fitted in-sample and are superseded. Those figures come from `src/validate_strata.py`, which is a separate run rather than part of this registry. What shipped instead is one-sided: a size cell may only *widen* the scheme interval, never narrow it.
 
 Under strict held-out calibration the widening applies to 13<!-- claim: widening_share_pct = 12.5152 -->% of evaluations (row-by-calibration-family), and where it applies coverage is 93.0<!-- claim: widening_coverage_pct = 93.0097 -->%. It is a safety margin on a minority of queries, not a reshaping of the envelope.
 

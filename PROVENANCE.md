@@ -925,3 +925,91 @@ position this project can defend while spending a section of the paper on
 denominators. Both are gated now, the manifest pin moves 321 -> 320 (three
 retired, two added), and the as-printed figure remains the one all four
 independent arms cross-check, because it is the one the tool shows a user.
+
+## 2026-10-08 — the 7 October audit: four blockers and eight items
+
+### Blocker 1: the shipped tool printed the retracted band
+
+`src/build_envelope.py` never called `calibrated_fit`. It computed a
+whole-corpus mean and the residual quantile about it on the same rows, and
+wrote that into `out/scheme_envelope.json` — which `src/cli.py` reads. So
+`cli.py nvfp4` printed `[-4.18, +1.87]` while `rank.py` and the paper printed
+`[-7.64, +5.17]`. Built 2026-10-02, after the band change, so not staleness.
+`what_it_is` still described "an in-sample residual-quantile band" while the
+`validation` block beside it quoted the shipped-band figure.
+
+`test_the_shipped_envelope_matches_a_fresh_build` passed throughout, because
+it compared the artifact against a fresh build of the same wrong
+construction. It is now pinned to `strata.calibrated_fit` directly, and the
+plant confirms it fails on exactly the condition that passed for five days.
+
+Every scheme's interval moved; NVFP4 by 2.12x. Descriptive fields — counts,
+median, empirical band, worst observed — are unchanged, per `_DESCRIPTIVE`.
+
+### The enumeration, which is the real fix
+
+"All four arms now build the shipped band" was verified by fixing the three
+we had found. That cannot detect a path nobody considered. Enumerating every
+caller of every quantile primitive, every interval constructor and every
+consumer found **eight** band-constructing paths where we had claimed four:
+seven correct and `build_envelope.py` defective. Five further paths are
+deliberately in-sample (the retracted-band comparisons in `verify_claims.py`
+and `calibrate_bands.py`) and now carry a comment saying so, so the next
+sweep does not re-derive it.
+
+`src/validate_strata.py` was converted too: it fitted width in-sample and
+`RANKING.md` quoted its conclusion. Post-conversion the conclusion is
+stronger, and it is now registry-backed via `src/strata_compare.py`.
+
+### Blockers 2-4, all one class
+
+- **§5's clustering paragraph asserted the opposite of its macros.** It said
+  the cluster-robust SE was "smaller" than the naive one (2.10 vs 1.94), that
+  clustering "does not inflate this statistic" (ratio 1.084, design effect
+  1.112), and that the unit change accounted for a narrowing (term -0.64).
+  Rewritten; the retraction stays in the paragraph where the claim was.
+- **§5 named W4A16 as below nominal** at a macro value of 97.6%. The scheme
+  below nominal is W8A8-int at 86.1%, now a registered macro. `SCOPE.md:71`
+  carried the contradiction in a single sentence and the audit missed it.
+- **The abstract mixed the two coverage figures**, rendering 93.23% beside
+  126/133 and a CI computed from 126. Twelve sites across four files now name
+  which figure they mean — and "at the scheme level" was itself the wrong
+  label, naming a granularity when the distinction is whether the widen-only
+  size rule was applied.
+
+### Gates added, each plant-verified
+
+- **duplicate dict keys** (AST, over the four files that decide what the paper
+  may say). Found two real duplicates, `ProspCovWeightint` and
+  `BigLossBelow`; both were byte-identical so nothing rendered wrongly, but
+  nothing would have said so if they had differed.
+- **variant lockstep.** The two paper bodies are identical sentence-for-
+  sentence for the first time, so the test is trivially green and the drift
+  that produced audit item 9 is now structurally impossible.
+- **the widen-only superset property, proving its own non-vacuity.** The
+  property is true by construction, so a test asserting it might be incapable
+  of failing. The test removes the `max()` that enforces monotonicity,
+  confirms the flag goes False with 11 rows lost, and restores it.
+- **functions defined and never called.** `partition_sensitivity()` in
+  `calibrate_bands.py` was defined and never called from `main()` in any
+  revision, while four registry keys read its output: the paper's twenty-seed
+  figures were right and the pipeline that claimed to produce them did not.
+- **every pack item named in `PACK_STATUS.md`**, now committed so a test can
+  read it. It covered items 01, 02 and 04 and never mentioned 03, which
+  carries no stamp and still asserts five retracted claims.
+
+### A false negative in the prose scanner
+
+The decimal exemption was matched against a 140-character window, so a
+genuine defect went unreported when an unrelated decimal fell inside it — and
+whether it did depended on where the line wrapped, which is why the same prose
+was flagged in one variant and not the other. The exemption is now tested
+against the match plus a 14-character margin. Both forms of the case are
+permanent plants; the self-check is 12 plants and 10 clean strings.
+
+### The scrub caught the file we had just committed
+
+Committing `PACK_STATUS.md` put the GitHub handle into the anonymous
+supplement three times, and `test_supplement_scrub` failed immediately. It is
+excluded from the supplement build: submission-process documentation, not
+research material. The gate worked on the first build after the change.

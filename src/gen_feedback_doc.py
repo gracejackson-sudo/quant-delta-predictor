@@ -352,11 +352,18 @@ def main():
       "split-conformal while the code fits centre and half-width on the same "
       "rows, so only the explicit calibration-set variant carries the "
       "split-conformal guarantee.\n")
-    A("**What was done:** paper wording corrected. The abstract now says "
-      "\"per-scheme conformal-style intervals\". The Method paragraph keeps "
-      "the split-conformal theory citation, names the shipped construction as "
-      "an in-sample residual-quantile band, and points at the empirical "
-      "prospective figure as what the shipped intervals actually carry.\n")
+    A("**What was done:** first the wording, then the construction. The "
+      "2026-09 fix corrected the paper to describe the shipped band honestly "
+      "as an in-sample residual-quantile band. On 2026-10-02 the band itself "
+      "was replaced: src/rank.py and the shipped envelope now build split "
+      "conformal, with the centre on the fit side of a fixed checkpoint "
+      "partition and the half-width from residuals on the disjoint "
+      "calibration side, so the interval carries the guarantee the abstract "
+      "claims. The abstract says \"split-conformal\" rather than "
+      "\"conformal-style\"; the hedge was a response to this item and is no "
+      "longer needed. What remains disclosed is the strength rather than the "
+      "existence of the guarantee: each width rests on 2 to 8 exchangeable "
+      "checkpoints. See the audit section.\n")
 
     A("### H2. Pair counting\n")
     A(f"**What was said:** the coverage numbers were reported as though the "

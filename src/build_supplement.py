@@ -56,6 +56,14 @@ DROP_FILES: list[str] = [
     "src/build_supplement.py",  # THIS script: its regex patterns quote the
                                 # author name and would tip a reviewer off
                                 # to what was being scrubbed
+    "PACK_STATUS.md",       # submission-process checklist, not research
+                            # material: it names the public repository and
+                            # the review venue, and a reviewer has no use
+                            # for it. Committed to the repo on 2026-10-08 so
+                            # a test could read it (it had lived outside git
+                            # and nothing watched the pack items); the scrub
+                            # caught the GitHub handle in it immediately,
+                            # which is the gate working.
     "tests/test_supplement.py", # tests for THIS script; same reason as above
     "tests/test_pack.py",       # tests the TMLR-submission-pack path; the
                                 # EF-Day-N path literal inside it would trip

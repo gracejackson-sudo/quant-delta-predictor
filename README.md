@@ -10,7 +10,7 @@ The shipped intervals were prospectively validated on 133<!-- claim: prosp_n = 1
 build the tool, and the band under test is the one the tool ships: split conformal, with the
 centre and the width estimated on disjoint sets of checkpoints. **Two-sided empirical coverage at a
 nominal 90% is 93.23<!-- claim: prosp_cov_scheme_pct = 93.2331 -->% (124<!-- claim: prosp_inside_scheme = 124.0000 -->/133<!-- claim: prosp_n = 133.0000 -->) from the
-scheme-level band, and 94.7<!-- claim: prosp_cov_pct = 94.7368 -->% (126<!-- claim: prosp_inside = 126.0000 -->/133<!-- claim: prosp_n = 133.0000 -->) once the widen-only size
+scheme-only envelope, before the size rule, and 94.7<!-- claim: prosp_cov_pct = 94.7368 -->% (126<!-- claim: prosp_inside = 126.0000 -->/133<!-- claim: prosp_n = 133.0000 -->) once the widen-only size
 rule is applied as the tool applies it; 95% cluster-robust CI [90.6<!-- claim: prosp_cr_lo = 90.6223 -->, 98.9<!-- claim: prosp_cr_hi = 98.8514 -->] on the
 latter.** The two differ by which band a row gets, not by which rows are counted — the denominator
 is 133 either way. The rows come from 19<!-- claim: prosp_clus_n = 19.0000 --> quantization runs, up to 14<!-- claim: prosp_rows_per_ckpt_max = 14.0000 --> from one, so
@@ -196,6 +196,8 @@ python3 verify/independent_check.py            # AFTER real_use_case.py, BEFORE 
 # 5. the tuned baselines (slow: ~8 min single-threaded; set OMP_NUM_THREADS=1)
 ./.venv/bin/python src/tune_baselines.py
 ./.venv/bin/python src/tune_baseline_cis.py
+./.venv/bin/python src/calibrate_bands.py     # the split-conformal vs jackknife+ comparison (slow: ~25 min)
+./.venv/bin/python src/strata_compare.py      # AFTER real_use_case.py: the three size-stratification variants
 
 # 6. generated docs, then the paper macros, then the gate
 ./.venv/bin/python src/gen_ranking_doc.py

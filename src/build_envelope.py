@@ -15,7 +15,8 @@ from datetime import date
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
-from model import conformal_quantile, load  # noqa: E402
+from model import conformal_quantile, load  # noqa: E402,F401
+from strata import calibrated_fit  # noqa: E402
 
 HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
@@ -84,11 +85,26 @@ def build_artifact():
     sch_insufficient = sorted(k for k, v in sch_states.items() if v == "insufficient_evidence")
     sch_refused = sorted(k for k, v in sch_states.items() if v == "refused")
 
+    # The envelope must carry the band that SHIPS. Until 2026-10-07 this block
+    # computed mu over the whole corpus and the half-width from residuals about
+    # it on the SAME rows -- the in-sample construction the paper retracts --
+    # so src/cli.py printed [-4.18, +1.87] for NVFP4 where rank.py and the
+    # paper printed [-7.64, +5.17]. It was the fifth band-constructing path and
+    # the eighth overall; the freshness test could not see it because it
+    # compared this artifact against a fresh build of the same construction.
+    #
+    # Centre and half-width now come from strata.calibrated_fit: centre on the
+    # fit side of the fixed checkpoint partition, width from the disjoint
+    # calibration side. The descriptive figures below (observation and
+    # checkpoint counts, median, empirical band, worst observed) stay on the
+    # whole corpus, because they describe the published evidence rather than
+    # the construction -- the same separation as strata._DESCRIPTIVE.
+    _band = calibrated_fit(d)
     schemes = {}
     for s, g in d.groupby("scheme"):
-        mu = float(g.delta.mean())
-        resid = np.abs(g.delta.to_numpy(float) - mu)
-        q = conformal_quantile(resid, ALPHA)
+        _cell = _band.by_scheme.get(s) or _band.global_
+        mu = float(_cell["mean"])
+        q = float(_cell["half_width"])
         v = np.sort(g.delta.to_numpy(float))
         n = len(v)
         klo = max(0, int(np.floor((n + 1) * (ALPHA / 2))) - 1)
@@ -133,10 +149,13 @@ def build_artifact():
         "what_it_is": ("the observed distribution of (quantized - original) "
                        "accuracy in percentage points on OpenLLM-style "
                        "benchmarks, per quantization scheme, with a "
-                       "conformal-style 90% interval (an in-sample "
-                       "residual-quantile band; the split-conformal "
-                       "guarantee applies only to the explicit "
-                       "calibration-set variant used inside the LOFO audit). "
+                       "split-conformal 90% interval: the centre is "
+                       "estimated on the fit side of a fixed checkpoint "
+                       "partition and the half-width from residuals on the "
+                       "disjoint calibration side, so the interval carries "
+                       "the split-conformal guarantee. Its strength is "
+                       "limited by the number of exchangeable units behind "
+                       "each width, which is 2 to 8 checkpoints per scheme. "
                        "It is a calibrated historical baseline, NOT a "
                        "per-model predictor."),
         "built": str(date.today()),
