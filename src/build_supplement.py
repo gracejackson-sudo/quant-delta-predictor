@@ -201,6 +201,34 @@ def rewrite(dst: str) -> None:
             log(f"  rewrote {rel}")
 
 
+def _pdf_text(path):
+    """-> all text in a PDF, or None if it cannot be read.
+
+    Returning None is deliberate and is reported as a finding: a PDF the
+    scanner cannot read is a PDF whose contents are unknown, and "unknown"
+    must not be treated as "clean". That is the distinction the old
+    skip-by-extension rule collapsed.
+
+    Text is joined across pages so a name split over a page boundary is still
+    matched, and a hard-wrapped byline ("Grace\nJackson") is normalised,
+    because the patterns are written for prose and PDF extraction inserts
+    newlines at layout positions rather than sentence ones.
+    """
+    try:
+        from pypdf import PdfReader
+    except ImportError:          # pragma: no cover
+        return None
+    try:
+        reader = PdfReader(path)
+        parts = []
+        for page in reader.pages:
+            parts.append(page.extract_text() or "")
+        import re as _re
+        return _re.sub(r"\s+", " ", "\n".join(parts))
+    except Exception:
+        return None
+
+
 def scan(dst: str) -> list[tuple[str, int, str, str]]:
     """Return every (path, line_number, matched_string, label) surviving the
     redaction."""
@@ -211,21 +239,34 @@ def scan(dst: str) -> list[tuple[str, int, str, str]]:
                 for p, lbl in IDENT_STRINGS]
     for base, dirs, files in os.walk(dst):
         dirs[:] = [d for d in dirs if d not in DROP_DIRS]
+        # (see _pdf_text: PDFs are extracted rather than skipped)
         for f in files:
             src = os.path.join(base, f)
             rel = os.path.relpath(src, dst)
             if rel in CHECK_EXEMPT:
                 continue
-            # Skip binaries by extension.
-            if os.path.splitext(f)[1].lower() in (
-                    ".png", ".jpg", ".jpeg", ".gif", ".pdf", ".zip",
-                    ".tar", ".gz", ".xz", ".bin", ".pyc", ".npy", ".pt",
-                    ".safetensors", ".woff", ".woff2", ".ttf", ".ico"):
+            ext = os.path.splitext(f)[1].lower()
+            # PDFs are EXTRACTED, not skipped. A [final] build ships a PDF
+            # with the byline in it, and until 2026-10-08 this scanner skipped
+            # every .pdf by extension -- so the one file most likely to carry
+            # an identity string was the one file never read. Five planted
+            # text leaks were caught and a leak planted inside
+            # paper/neurips_main.pdf was not.
+            if ext == ".pdf":
+                text = _pdf_text(src)
+                if text is None:
+                    hits.append((rel, 0, "UNREADABLE PDF", "cannot scan"))
+                    continue
+            elif ext in (".png", ".jpg", ".jpeg", ".gif", ".zip",
+                         ".tar", ".gz", ".xz", ".bin", ".pyc", ".npy", ".pt",
+                         ".safetensors", ".woff", ".woff2", ".ttf", ".ico"):
                 continue
-            try:
-                text = open(src, encoding="utf-8", errors="ignore").read()
-            except (OSError, UnicodeDecodeError):
-                continue
+            else:
+                try:
+                    text = open(src, encoding="utf-8",
+                                errors="ignore").read()
+                except (OSError, UnicodeDecodeError):
+                    continue
             for pat, lbl in patterns:
                 for m in pat.finditer(text):
                     ln = text.count("\n", 0, m.start()) + 1

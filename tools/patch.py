@@ -50,6 +50,23 @@ def _write(path: str, text: str) -> None:
         f.write(text)
 
 
+# Every edit this module performs, across every call, in order. The single-
+# edit path did not track this at first and that is the path that gets used,
+# so a failure printed "Edits already applied in this run: unknown" -- which
+# is precisely the property the tool was built to provide. Module-level so a
+# caller using bare edit() still gets the boundary reported.
+_LOG: list = []
+
+
+def edits_applied() -> list:
+    """Everything applied since the process started, or since reset_log()."""
+    return list(_LOG)
+
+
+def reset_log() -> None:
+    _LOG.clear()
+
+
 def edit(path: str, old: str, new: str, count: int = 1,
          applied: list | None = None) -> None:
     """Replace `old` with `new` in `path`, write, re-read, verify."""
@@ -66,7 +83,7 @@ def edit(path: str, old: str, new: str, count: int = 1,
             f"wrapping -- the two variants have diverged and need separate "
             f"anchors.\n"
             f"  Edits already applied in this run: "
-            f"{applied if applied is not None else 'unknown'}")
+            f"{applied if applied is not None else (_LOG or 'none')}")
     _write(path, s.replace(old, new))
 
     # re-read from disk: the point is to verify what is on disk, not in memory
@@ -77,6 +94,7 @@ def edit(path: str, old: str, new: str, count: int = 1,
     if old not in new and old in back:
         raise PatchError(f"{path}: anchor still present after the write "
                          f"({back.count(old)} time(s)). Do not proceed.")
+    _LOG.append(f"{path}: {old[:40]!r}")
     if applied is not None:
         applied.append(f"{path}: {old[:40]!r}")
 

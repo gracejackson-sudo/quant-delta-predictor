@@ -72,7 +72,9 @@ matches HEAD while carrying whatever the last LaTeX run produced.
    (its `LIVE <sha>` occurrences at lines 12 and 19 come from the same
    template).
 5. Re-run `pytest tests/test_pack.py::test_submission_pack_matches_current_head`
-   with `QDP_TMLR_PACK=/Users/grace/Downloads/EF-Day-5/TMLR-submission-pack`
+   with `QDP_TMLR_PACK=<path to the TMLR-submission-pack folder>` (the pack
+   lives outside this repository; the absolute path was redacted when this
+   file was committed, because the tracked tree must carry no personal paths)
    set. Expect green.
 
 The other pack test (`test_submission_pack_agrees_on_a_single_commit`) checks

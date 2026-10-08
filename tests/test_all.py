@@ -1385,6 +1385,106 @@ def test_the_audit_scripts_exit_zero():
             + "\n".join((r.stdout + r.stderr).strip().split("\n")[-25:]))
 
 
+def test_no_dead_macros_in_numbers_tex():
+    """A macro no document references is dead registry surface.
+
+    Same class as a function defined and never called. Run for the first time
+    on 2026-10-08 it found 27, of which 16 had been orphaned that week by
+    withdrawn claims -- the Gemma-3 comparison, the in-family /
+    out-of-family split, the small-sample pull-up. A stale definition
+    surviving a rewrite is how a retired figure gets quoted again later.
+
+    The registry KEYS behind them are deliberately kept: they are still
+    computed and verified, and the retraction text in the audit section
+    depends on some of them. What is removed is the LaTeX nobody references.
+
+    This test carries its own non-vacuity check, per the standing pattern: it
+    confirms that a macro known to be referenced would be detected as live,
+    so a regex that silently matched nothing could not make it pass.
+    """
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    numbers = open(os.path.join(root, "paper", "numbers.tex"),
+                   encoding="utf-8").read()
+    bodies = ""
+    for name in ("neurips_main.tex", "main.tex"):
+        path = os.path.join(root, "paper", name)
+        if os.path.exists(path):
+            bodies += open(path, encoding="utf-8").read()
+
+    ALLOWED_UNUSED: set = set()   # empty; add only with a stated reason
+
+    defined = re.findall(r"\\newcommand\{\\([A-Za-z]+)\}", numbers)
+    assert defined, "parsed no macros out of numbers.tex; the regex is wrong"
+
+    def is_live(m):
+        return bool(re.search(r"\\" + m + r"(?![A-Za-z])", bodies))
+
+    # non-vacuity: a macro the paper certainly uses must read as live
+    assert is_live("Nrows"), (
+        "the liveness probe says \\Nrows is unreferenced, which cannot be "
+        "true. The detection is broken, so an empty dead-list below would "
+        "mean nothing.")
+
+    dead = sorted(m for m in defined
+                  if m not in ALLOWED_UNUSED and not is_live(m))
+    assert not dead, (
+        f"{len(dead)} macro(s) defined in paper/numbers.tex and referenced by "
+        f"neither variant. Remove them from paper/gen_numbers.py (keep the "
+        f"registry keys) or allowlist with a reason:\n  "
+        + "\n  ".join(dead))
+
+
+def test_the_prospective_group_counts_sum_to_their_totals():
+    """Group counts must add up to the total, for both count series.
+
+    The abstract said 19 unseen quantized checkpoints and then listed groups
+    of 6, 4 and 3 -- which sum to 13. Both figures were right and traced:
+    there are 19 quantized checkpoints and they derive from 13 base models.
+    Nothing was false; two different objects shared one word, and no gate
+    compared the series because each number verified on its own.
+
+    A "checkpoint" in this paper is a quantized model artifact: one
+    (base model, scheme) pair that was evaluated. A base model is the
+    unquantized model several of those derive from.
+
+    What this READS: the registry's per-group and total counts for both
+    series. A planted failure is a group count that no longer sums, which is
+    what a corpus change or a regrouping produces.
+    """
+    import sys as _s
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _s.path.insert(0, os.path.join(root, "src"))
+    from verify_claims import registry as _reg
+    R = {k: v[0] for k, v in _reg().items()}
+
+    groups = ("ds", "g3", "tail")
+    for series, total_key, label in (
+            ("ckpts", "prosp_clus_n", "quantized checkpoints"),
+            ("bases", "prosp_bases", "base models")):
+        parts = {g: R.get(f"prosp_{g}_{series}") for g in groups}
+        missing = [g for g, v in parts.items() if v is None]
+        assert not missing, (
+            f"the {label} series is missing group(s) {missing}; the sum "
+            f"cannot be checked, which is the state the abstract was in.")
+        total = R[total_key]
+        assert sum(parts.values()) == total, (
+            f"the {label} counts do not sum: "
+            + " + ".join(f"{g}={int(v)}" for g, v in parts.items())
+            + f" = {int(sum(parts.values()))}, but {total_key} = {int(total)}."
+            f" Either a group is missing, a row moved between groups, or the "
+            f"two count series have been confused -- 'checkpoint' means a "
+            f"quantized artifact and the base-model count is a different "
+            f"number.")
+
+    # and the two series must not be equal by accident, or the test above
+    # would pass while the paper conflated them again
+    assert R["prosp_clus_n"] != R["prosp_bases"], (
+        "the quantized-checkpoint and base-model totals are now equal, so "
+        "this test can no longer distinguish them. Check whether the corpus "
+        "changed or whether one series is being computed from the other.")
+
+
 def test_pack_status_names_every_pack_item():
     """PACK_STATUS.md must account for every item in the submission pack.
 
@@ -2205,7 +2305,12 @@ _REGISTRY_MANIFEST = {
     # counts, plus four cell counts. It had been quoted in S5 and RANKING.md
     # for weeks from a script that printed and registered nothing, which is
     # how two figures measured with an in-sample half-width sat unwatched.
-    "(scalar)": 356,
+    # +4 on 2026-10-08: the base-model count series. "Checkpoint" means a
+    # quantized model artifact -- one (base model, scheme) pair -- and the
+    # base model is a different object. The abstract quoted 19 of the first
+    # and then grouped by the second, which sums to 13; both figures were
+    # traced and correct and nothing compared the series.
+    "(scalar)": 360,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

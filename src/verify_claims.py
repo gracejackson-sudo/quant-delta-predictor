@@ -750,6 +750,8 @@ def registry():
             or _re.search(r"Llama-4", m_.split("/")[-1], _re.I)))]
         _k, _n = int(_st.inside.sum()), len(_st)
         add("prosp_n", _n, 0, "strict prospective rows (independent check)")
+        add("prosp_bases", int(_st.base_model.nunique()), 0,
+            "distinct base models behind the strict prospective checkpoints")
         add("prosp_inside", _k, 0, "strict prospective rows inside the interval")
         add("prosp_cov_pct", 100 * _k / _n, 0.05, "strict prospective coverage")
         add("prosp_ci_lo", 100 * _beta.ppf(0.025, _k, _n - _k + 1), 0.05,
@@ -866,8 +868,17 @@ def registry():
                     continue
                 add(f"prosp_{_lbl}_rows", len(_sub), 0,
                     f"strict prospective rows, {_lbl} group")
-                add(f"prosp_{_lbl}_ckpts", int(_sub.base_model.nunique()), 0,
-                    f"distinct base checkpoints, {_lbl} group")
+                # Two different objects, both registered and both labelled.
+                # A "checkpoint" in this paper is a quantized model artifact:
+                # one (base model, scheme) pair that was evaluated. The base
+                # model is the unquantized model several of those derive
+                # from. The abstract said 19 and then listed groups summing
+                # to 13 for weeks, because every individual figure was traced
+                # and correct and nothing compared the two series.
+                add(f"prosp_{_lbl}_ckpts", int(_sub.model.nunique()), 0,
+                    f"quantized checkpoints, {_lbl} group")
+                add(f"prosp_{_lbl}_bases", int(_sub.base_model.nunique()), 0,
+                    f"distinct base models, {_lbl} group")
                 add(f"prosp_{_lbl}_cov_pct",
                     100 * _sub.inside.astype(str).str.lower().eq("true").mean(),
                     0.05, f"two-sided coverage, {_lbl} group")

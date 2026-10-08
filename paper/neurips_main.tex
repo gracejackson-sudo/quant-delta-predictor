@@ -68,16 +68,19 @@ Second, a positive one: conditioning only on the quantization scheme yields
 per-scheme split-conformal intervals with \(\ProspCovScheme\%\) two-sided
 empirical coverage for the scheme-only envelope, before the size rule
 (\(\ProspInsideScheme/\ProspN\) rows from \ProspClusN{} unseen quantized
-checkpoints). Applying the widen-only size rule as the tool applies it gives
+checkpoints --- one (base model, scheme) pair each --- derived from
+\ProspBases{} base models). Applying the widen-only size rule as the tool applies it gives
 \(\ProspCov\%\) (\(\ProspInside/\ProspN\)), with a 95\% cluster-robust CI of
 \([\ProspCrLo,\ProspCrHi]\) clustered on the checkpoint, because rows from one
 quantization run are not independent. Under the family definition of \S\ref{sec:data} the
 strict set is three uneven groups, not a balanced sample across them:
 DeepSeek-R1-Distill of Llama-3 and Qwen-2.5 bases (\ProspDsRows{} rows,
-\ProspDsCkpts{} checkpoints, \ProspDsCov\%), Gemma-3 (\ProspGThreeRows{},
-\ProspGThreeCkpts{}, \ProspGThreeCov\%), and SmolLM, SmolLM3 and
-Nemotron-Nano together (\ProspTailRows{} rows, \ProspTailCkpts{}
-checkpoints, all covered). We report the groups and do not difference them;
+\ProspDsCkpts{} checkpoints from \ProspDsBases{} base models,
+\ProspDsCov\%), Gemma-3 (\ProspGThreeRows{} rows, \ProspGThreeCkpts{}
+checkpoints from \ProspGThreeBases{} base models, \ProspGThreeCov\%), and
+SmolLM, SmolLM3 and Nemotron-Nano together (\ProspTailRows{} rows,
+\ProspTailCkpts{} checkpoints from \ProspTailBases{} base models, all
+covered). We report the groups and do not difference them;
 \S\ref{sec:results} says why. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
 and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of two operative verdicts: trusted,
@@ -790,9 +793,13 @@ we report the breakdown here so the merge does not hide it.
 DeepSeek-R1-Distill checkpoints of Llama-3 and Qwen-2.5 bases contribute
 \ProspDsRows{} rows from \ProspDsCkpts{} checkpoints at \ProspDsCov\%;
 Gemma-3 contributes \ProspGThreeRows{} rows from \ProspGThreeCkpts{}
-checkpoints at \ProspGThreeCov\%; SmolLM, SmolLM3 and Nemotron-Nano
-contribute \ProspTailRows{} rows from \ProspTailCkpts{} checkpoints between
-them, all covered. An earlier version of this section split those into
+checkpoints (\ProspGThreeBases{} base models) at \ProspGThreeCov\%; SmolLM,
+SmolLM3 and Nemotron-Nano contribute \ProspTailRows{} rows from
+\ProspTailCkpts{} checkpoints (\ProspTailBases{} base models) between them,
+all covered. Throughout, a \emph{checkpoint} is a quantized model artifact
+--- one (base model, scheme) pair that was evaluated --- and a base model is
+the unquantized model several of those derive from. The \ProspClusN{}
+checkpoints come from \ProspBases{} base models. An earlier version of this section split those into
 ``in-family'' and ``out-of-family'' and compared the halves, and also noted
 that Gemma-3 sat below nominal while the small groups pulled the aggregate
 up. We have withdrawn both. On the shipped band Gemma-3 sits \emph{above}

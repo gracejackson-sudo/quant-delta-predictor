@@ -49,7 +49,6 @@ M = {
     "NRhHarvestedNoRecipe": (
         "n_rh_harvested_no_recipe_2026_09_26", "{:.0f}"),
     "BaseQwenMid": ("s2_base_qwen15", "{:.2f}"),
-    "PubQwenMid": ("s2_pub_qwen15", "{:.2f}"),
     "ProtoSens": ("s2_protocol_sensitivity", "{:.2f}"),
     "ExcessN": ("s2_excess_n", "{:.0f}"),
     "IntervalsExclZero": ("intervals_excluding_zero", "{:.0f}"),
@@ -62,12 +61,11 @@ M = {
     "ProspCov": ("prosp_cov_pct", "{:.1f}"),
     "ProspCILo": ("prosp_ci_lo", "{:.1f}"), "ProspCIHi": ("prosp_ci_hi", "{:.1f}"),
     "MaeGain": ("mae_gain_pp", "{:.2f}"),
-    "TargetMean": ("target_mean_pp", "{:.2f}"), "TargetSd": ("target_sd_pp", "{:.2f}"),
+    "TargetMean": ("target_mean_pp", "{:.2f}"),
     "NoiseNBench": ("noise_n_bench", "{:.0f}"), "NoiseNThird": ("noise_n_third", "{:.0f}"),
     "NoiseMinPct": ("noise_min_pct", "{:.0f}"), "GsmNoiseSd": ("noise_gsm8k_sd_pp", "{:.1f}"),
     "BandEmpCov": ("band_emp_coverage_pct", "{:.1f}"),
     "BandConfCov": ("band_conf_coverage_pct", "{:.1f}"),
-    "InfShare": ("inf_share_pct", "{:.0f}"),
     "InfSharePct": ("inf_share_pct", "{:.1f}"),
     "FiniteConfCov": ("finite_conf_cov_pct", "{:.1f}"),
     "FiniteEmpCov": ("finite_emp_cov_pct", "{:.1f}"),
@@ -91,22 +89,8 @@ M = {
     "ProspCovWfour": ("prosp_scheme_cov_pct::w4a16", "{:.1f}"),
     "ProspRowsWfourShare": ("prosp_wfour_share_pct", "{:.0f}"),
     # Family-split coverage on the strict prospective set (Sec 3 definition).
-    "ProspInFamRows": ("prosp_in_family_rows", "{:.0f}"),
-    "ProspInFamInside": ("prosp_in_family_inside", "{:.0f}"),
-    "ProspInFamCov": ("prosp_in_family_cov_pct", "{:.1f}"),
     "ProspInFamCkpts": ("prosp_in_family_ckpts", "{:.0f}"),
-    "ProspOutFamRows": ("prosp_out_family_rows", "{:.0f}"),
-    "ProspOutFamInside": ("prosp_out_family_inside", "{:.0f}"),
-    "ProspOutFamCov": ("prosp_out_family_cov_pct", "{:.1f}"),
     "ProspOutFamCkpts": ("prosp_out_family_ckpts", "{:.0f}"),
-    "ProspGemThreeRows": ("prosp_gemma3_rows", "{:.0f}"),
-    "ProspGemThreeInside": ("prosp_gemma3_inside", "{:.0f}"),
-    "ProspGemThreeCov": ("prosp_gemma3_cov_pct", "{:.1f}"),
-    "ProspGemThreeCkpts": ("prosp_gemma3_ckpts", "{:.0f}"),
-    "ProspGemThreeGap": ("prosp_gemma3_gap_pp", "{:.1f}"),
-    "ProspOutSmallRows": ("prosp_outfam_small_rows", "{:.0f}"),
-    "ProspOutSmallCkpts": ("prosp_outfam_small_ckpts", "{:.0f}"),
-    "ProspOutSmallPullup": ("prosp_outfam_small_pullup_pp", "{:.1f}"),
     # Round item 2: the checkpoint-level headline, the ICC explanation that
     # has to sit beside it, and the narrowing decomposition.
     "ProspCrLo": ("prosp_cr_lo", "{:.1f}"),
@@ -122,14 +106,11 @@ M = {
     "ProspWorstCkptMisses": ("prosp_worst_ckpt_misses", "{:.0f}"),
     "ProspTotalMisses": ("prosp_total_misses", "{:.0f}"),
     "ProspWorstBenchMisses": ("prosp_worst_bench_misses", "{:.0f}"),
-    "ProspBenchWithMiss": ("prosp_bench_with_miss", "{:.0f}"),
     "ProspWidthCp": ("prosp_width_cp", "{:.2f}"),
     "ProspWidthWald": ("prosp_width_wald", "{:.2f}"),
     "ProspWidthCr": ("prosp_width_cr", "{:.2f}"),
     "ProspNarrowEst": ("prosp_narrowing_estimator", "{:.2f}"),
     "ProspNarrowUnit": ("prosp_narrowing_unit", "{:.2f}"),
-    "ProspDiffLo": ("prosp_infam_outfam_diff_lo", "{:+.0f}"),
-    "ProspDiffHi": ("prosp_infam_outfam_diff_hi", "{:+.0f}"),
     # Tier 0.1 disclosure: per-subgroup coverage of the held-out
     # llama-3 fold, 3.1/3.2/3.3 x calibration family. §6 subgroup table.
     "LThreeSubOneGem": ("lofo_l3sub_cov::3.1::gemma-2", "{:.1f}"),
@@ -162,7 +143,6 @@ M = {
     "LofoFallRateWfour": ("lofo_fallback_rate_pct::w4a16", "{:.0f}"),
     "LofoFallRateWsixteen": ("lofo_fallback_rate_pct::w8a16", "{:.0f}"),
     "LofoFallRateWint":  ("lofo_fallback_rate_pct::w8a8_int", "{:.0f}"),
-    "LofoHeldoutPairs":  ("lofo_heldout_pairs", "{:.0f}"),
     "LofoHeldoutCov":    ("lofo_heldout_cov_pct", "{:.1f}"),
     "LofoHeldoutOneSided": ("lofo_heldout_one_sided_pct", "{:.1f}"),
     "PooledCellCov":       ("pooled_cell_coverage_pct", "{:.1f}"),
@@ -172,11 +152,9 @@ M = {
     # ProspWithGated* retired 2026-10-02 with their registry keys; see S9.
     "ProspInsideScheme": ("prosp_inside_scheme", "{:.0f}"),
     "ProspCovScheme":    ("prosp_cov_scheme_pct", "{:.2f}"),
-    "GpqaOtherRows":        ("gpqa_other_rows", "{:.0f}"),
     "MaxBenchmarksPerRun":  ("max_benchmarks_per_run", "{:.0f}"),
     # Tier 2.5 v4 §5 unified disclosure (per-fold spread).
     "LofoSchemeMeanWinsFolds": ("lofo_scheme_mean_wins_folds", "{:.0f}"),
-    "LofoSchemeMeanLosesFolds":("lofo_scheme_mean_loses_folds","{:.0f}"),
     "LofoSchemeMeanMin":       ("lofo_scheme_mean_min",       "{:.2f}"),
     "LofoSchemeMeanMax":       ("lofo_scheme_mean_max",       "{:.2f}"),
     "LofoRidgeMin":            ("lofo_ridge_min",             "{:.2f}"),
@@ -219,6 +197,14 @@ M = {
     "ProspCovWeightsixteen": ("prosp_scheme_cov_pct::w8a16", "{:.1f}"),
     # Round item 4: nested-CV tuned baselines, the grid-edge finding, and the
     # CIs that put the tuned-vs-lookup advantage inside noise.
+    # 27 macro definitions removed 2026-10-08: emitted LaTeX that
+    # neither variant referenced. Sixteen were orphaned by this
+    # cycle's withdrawals (the Gemma-3 comparison, the in-family /
+    # out-of-family split, the small-sample pull-up); the rest had
+    # been dead longer. The registry KEYS are kept -- they are still
+    # computed and verified -- but a macro no document uses is dead
+    # registry surface, and dead surface is how a stale definition
+    # survives a rewrite. test_no_dead_macros_in_numbers_tex gates it.
     "MaeFloor": ("mae_floor_pp", "{:.3f}"),
     "HeadroomPp": ("headroom_pp", "{:.3f}"),
     # Round item 1: the calibrated band, and the in-sample band it retracts.
@@ -231,7 +217,6 @@ M = {
     "CalibCovMin": ("calib_cov_min_pct", "{:.2f}"),
     "CalibCovMax": ("calib_cov_max_pct", "{:.2f}"),
     "CalibCovMedian": ("calib_cov_median_pct", "{:.2f}"),
-    "CalibPartitions": ("calib_partitions", "{:.0f}"),
     "CalibUnitsMin": ("calib_units_min", "{:.0f}"),
     "CalibUnitsMax": ("calib_units_max", "{:.0f}"),
     "CalibUnitsFloor": ("calib_units_floor", "{:.0f}"),
@@ -244,9 +229,11 @@ M = {
     "ProspGThreeCov": ("prosp_g3_cov_pct", "{:.1f}"),
     "ProspTailRows": ("prosp_tail_rows", "{:.0f}"),
     "ProspTailCkpts": ("prosp_tail_ckpts", "{:.0f}"),
-    "CalibCalCkpt": ("calib_cal_ckpt", "{:.0f}"),
+    "ProspBases": ("prosp_bases", "{:.0f}"),
+    "ProspDsBases": ("prosp_ds_bases", "{:.0f}"),
+    "ProspGThreeBases": ("prosp_g3_bases", "{:.0f}"),
+    "ProspTailBases": ("prosp_tail_bases", "{:.0f}"),
     "CentreMoveMax": ("centre_move_max_pp", "{:.3f}"),
-    "JackknifeCov": ("jackknife_cov_pct", "{:.2f}"),
     "JackknifeNvfpCov": ("jackknife_nvfp_cov_pct", "{:.2f}"),
     "SizeWidths": ("n_size_dependent_widths", "{:.0f}"),
     "SizeWidthsOld": ("size_widths_insample", "{:.0f}"),
@@ -297,7 +284,7 @@ M = {
     "TuneGlobalVsRidgeHi": ("tune_diff_hi::global_vs_ridge_tuned", "{:+.4f}"),
     "MaeGainLo": ("mae_gain_ci_lo", "{:.2f}"), "MaeGainHi": ("mae_gain_ci_hi", "{:.2f}"),
     "MaeGainFamsPos": ("mae_gain_fams_pos", "{:.0f}"),
-    "NoiseMaxPct": ("noise_max_pct", "{:.0f}"), "NoiseNOver": ("noise_n_ge100", "{:.0f}"),
+    "NoiseMaxPct": ("noise_max_pct", "{:.0f}"),
     "NoiseNSmall": ("noise_n_small", "{:.0f}"),
     "RefuseBelow": ("refuse_below_pct", "{:.0f}"),
     "BootLoWsixteenBig": ("os_boot90_lo::w8a16|>10B", "{:.0f}"),

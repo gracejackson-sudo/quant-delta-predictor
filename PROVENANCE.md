@@ -1013,3 +1013,51 @@ Committing `PACK_STATUS.md` put the GitHub handle into the anonymous
 supplement three times, and `test_supplement_scrub` failed immediately. It is
 excluded from the supplement build: submission-process documentation, not
 research material. The gate worked on the first build after the change.
+
+### 2026-10-08, later: "checkpoint" defined, and three structural gates
+
+**A checkpoint is a quantized model artifact** — one (base model, scheme) pair
+that was evaluated. The base model is the unquantized model several of those
+derive from. Verified against `out/independent_check.csv`: 19 quantized
+checkpoints from 13 base models; groups 7/8/4 and 6/4/3, both series summing.
+The abstract had said 19 and then grouped by the second series, which sums to
+13. Nothing was false — two objects shared one word, and no gate compared the
+series because every individual figure verified on its own.
+`test_the_prospective_group_counts_sum_to_their_totals` now checks both sums,
+and refuses to pass if the two totals become equal, which would make it unable
+to distinguish them.
+
+**The scrub reads PDFs.** It skipped every `.pdf` by extension, so the file
+most likely to carry an identity string was the one file never read. Extraction
+is via `pypdf`, text joined across pages and whitespace-normalised so a
+hard-wrapped byline still matches, and an unreadable PDF is reported as a
+finding rather than skipped — "unknown" must not read as "clean". Proven with a
+hand-built PDF whose extracted text is the byline, planted as
+`paper/neurips_main.pdf`: the scrub exits 1 with
+`paper/neurips_main.pdf:1 [author name] 'Grace Jackson'`. That is the leak a
+`[final]` build would have shipped. The plant is a permanent test.
+
+**27 dead macros removed, now gated.** Macros defined in `numbers.tex` and
+referenced by neither variant: 16 had been orphaned days earlier by the
+withdrawn Gemma-3 comparison, the withdrawn in-family/out-of-family split and
+the withdrawn small-sample pull-up. The registry keys are kept — still
+computed, still verified, and the retraction text depends on several — but
+LaTeX nothing references is how a retired figure gets quoted again later. 329
+macros to 302. The gate carries its own non-vacuity check: it asserts a macro
+the paper certainly uses reads as live, so a regex matching nothing could not
+make the dead-list empty.
+
+**`tools/patch.py` single-edit tracking.** A bare `edit()` call reported
+`Edits already applied in this run: unknown`, and that is the path actually
+used — the one property justifying the tool was missing from it. Now logged at
+module level, so any failure names the boundary.
+
+### Committing PACK_STATUS.md tripped three gates in a row
+
+Bringing one external file under version control surfaced three real leaks it
+had been carrying unwatched: the GitHub handle three times (supplement scrub),
+and an absolute personal path (`test_no_secret_shaped_strings_in_tracked_tree`).
+The handle is handled by excluding the file from the supplement build; the path
+is redacted. A fourth gate, `test_pack_status_names_every_pack_item`, is the
+one added for it. The file was written honestly and nothing mechanical read
+it; the moment something did, it found three problems.

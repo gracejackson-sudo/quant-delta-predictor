@@ -34,6 +34,81 @@ def _run_scrub(tmp, plant=False):
     return r, dst, zpath
 
 
+def _one_page_pdf_containing(text):
+    """A minimal valid PDF whose extracted text is `text`.
+
+    Built by hand rather than with a PDF library so the test has no
+    dependency beyond the extractor the scrub itself uses.
+    """
+    content = f"BT /F1 12 Tf 72 720 Td ({text}) Tj ET".encode()
+    objs = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+        b"/Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+        b"<< /Length %d >>\nstream\n" % len(content) + content
+        + b"\nendstream",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
+    out = bytearray(b"%PDF-1.4\n")
+    offs = []
+    for i, o in enumerate(objs, 1):
+        offs.append(len(out))
+        out += b"%d 0 obj\n" % i + o + b"\nendobj\n"
+    x = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objs) + 1)
+    for o in offs:
+        out += b"%010d 00000 n \n" % o
+    out += (b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n"
+            % (len(objs) + 1, x))
+    return bytes(out)
+
+
+def test_the_scrub_reads_pdfs_and_catches_a_leak_inside_one(tmp_path):
+    """A leak inside a PDF must fail the scrub.
+
+    Until 2026-10-08 the scanner skipped every .pdf by extension, so the one
+    file most likely to carry an identity string was the one file never read.
+    Five planted text leaks were caught; a leak planted inside
+    paper/neurips_main.pdf was not. Today's PDF is anonymous, but a [final]
+    build ships one with the byline, and it would have passed.
+
+    What this READS: the extractor on a hand-built PDF whose text is the
+    author name, and then the scrub's own scan over a tree containing it. A
+    regression -- reverting to skip-by-extension, or losing the extractor --
+    fails here.
+    """
+    import importlib
+    import sys as _s
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _s.path.insert(0, os.path.join(root, "src"))
+    BS = importlib.import_module("build_supplement")
+
+    leak = "Grace Jackson"
+    pdf = tmp_path / "planted.pdf"
+    pdf.write_bytes(_one_page_pdf_containing(leak))
+
+    # 1. the extractor must actually read it
+    text = BS._pdf_text(str(pdf))
+    assert text is not None, (
+        "the PDF extractor returned None on a valid PDF. If pypdf is "
+        "unavailable the scrub cannot scan PDFs at all, and that must be a "
+        "finding rather than a silent skip.")
+    assert leak in text, (
+        f"extracted text does not contain the planted byline: {text[:120]!r}")
+
+    # 2. the scrub's scanner must report it
+    tree = tmp_path / "tree" / "paper"
+    tree.mkdir(parents=True)
+    (tree / "neurips_main.pdf").write_bytes(_one_page_pdf_containing(leak))
+    hits = BS.scan(str(tmp_path / "tree"))
+    assert any(h[0].endswith("neurips_main.pdf") for h in hits), (
+        "the scrub scanned a tree containing a PDF with the author name in "
+        "it and reported no finding. A leak inside a PDF is exactly the case "
+        "a [final] build produces.\n"
+        f"findings: {hits}")
+
+
 def test_supplement_scrub_succeeds_and_the_zip_has_no_identity_strings(tmp_path):
     import re
     import zipfile
