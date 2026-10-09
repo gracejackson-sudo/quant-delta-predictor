@@ -1114,3 +1114,54 @@ split and the withdrawn small-sample pull-up; six (`calib_cal_ckpt`,
 `target_sd_pp`) predate it. Whether a withdrawn claim's values should remain
 computable is a judgement rather than a measurement, so the list is recorded
 here and the decision is open.
+
+### 2026-10-08 --- the audit record split, and why the key removal did not run
+
+The Audit section is now two halves, sorted on whether a reviewer needs an
+entry to judge the result. Nine error items and six paragraphs stay in
+\S\ref{sec:audit}; eight items and four paragraphs move to a new
+`\section{Process errors}` appendix, plus one paragraph written there to hold
+the gate-blindness analysis that had been embedded in the stratification item.
+Nothing was dropped: `test_the_error_record_is_complete_across_both_its_halves`
+pins the total item and paragraph counts across both halves, so moving an entry
+passes and deleting one fails. Both were plant-verified. By words the Audit
+section falls from 35% of the main matter to 27%, with about 1,700 words moved
+rather than cut.
+
+Two gates were widened by the restructure before anything else could notice,
+and both are fixed in the same commit. `paper/audit_paper.py` exempted the
+retracted-phrasing patterns for any match appearing after `\section{Audit}`
+anywhere in the file, which already covered the Conclusion and would now cover
+the whole appendix; it is bounded to the Audit span or after `\appendix`, and
+plant-verified at three sites (a planted retraction in the Conclusion now
+fires; in the Audit body and in the appendix it stays exempt, correctly).
+`tests/test_all.py` asserted the support-floor reasoning survives by splitting
+on `\section{Audit}` and reading to end-of-file, so appendix text would have
+satisfied a claim about the body; it is bounded to the body.
+
+`src/check_prose.py` flagged `\appendix \section{Process errors}` as prose
+running into a heading --- a false positive, because the pattern read the
+control word `appendix` as an ordinary lowercase word. The lowercase run now
+has to start a real word, and the string is pinned in `CLEAN`. All 12 plants
+still fire.
+
+**The key removal did not run, and the reason matters more than the removal.**
+Re-deriving the bounded set above does not reproduce it. Excluding templated
+keys, the literal unreferenced count is about 45, not 22 --- and the six
+pre-existing keys named above no longer appear unreferenced at all, because
+*naming them in this file* made them match a check whose criterion is "the key
+string appears in a tracked file". The write-up destroyed the evidence, which
+is the same mechanism as the byline that leaked by being documented.
+
+Worse, two of those six are not dead. The paper quotes their values spelled out
+as words: `calib_partitions` is 20 against "over twenty seeds", and
+`calib_cal_ckpt` is 13 against "a thirteen-name list". The untraced-literal
+gate scans for numerals and a spelled-out numeral is not one, so both pass
+every check here while being precisely what the registry exists to prevent.
+`jackknife_cov_pct` is genuinely unquoted, and its value is 88.09% pooled
+against the 66.18% NVFP4 figure the paper does quote --- so a reader learns the
+secondary construction failed on one scheme without learning how it did
+overall. Removing keys on the strength of the check as it stands would have
+deleted the trace for two live claims and buried a third. Deferred, with the
+class recorded in `AUDIT_DISCIPLINE.md`.
+

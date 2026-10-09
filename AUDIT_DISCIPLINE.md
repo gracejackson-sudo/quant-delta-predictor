@@ -263,6 +263,47 @@ Class A is a property of prose and could be asserted; Class B is a property of
 the schema and probably cannot be, and conflating them would produce a gate
 that fires on the easy half and misses the half that actually shipped.
 
+### The second thing to build: a dynamic dead-key check
+
+Dead *macros* were removable because `numbers.tex` states each one literally.
+Registry *keys* are not. Key-to-macro runs through loops over `(scheme, band)`,
+`(stat, scheme)` and cell tuples; key-to-document runs through generated docs
+whose claim tags are themselves loop-emitted. A static scan has to guess which
+f-string template produced which key, and it guesses badly.
+
+Two static attempts were made on 2026-10-08. The first flagged 466 of 853 keys
+(55%), the second 375 of 853 (44%), and both included keys that can be proved
+live --- `cell_rows::w4a16|<2B` is quoted through `\RowsCellWfourSmall`, and
+`tune_diff::global_vs_ridge_tuned` appears in `NEGATIVE_RESULT.md`. A gate with
+a 44% false-positive rate is the gate nobody trusts, which is the failure this
+document was written to avoid.
+
+The mechanism that makes the question decidable is dynamic: instrument
+`paper/gen_numbers.py` and each document generator to record every key they
+actually resolve, then diff that record against the registry. Keys are
+resolved at run time, so the record is exact rather than inferred, and the
+instrumentation is a few lines in the lookup path rather than a parser for
+every template in the repository. Deferred past submission for the same
+reason as the pin file: new tooling in the final week, against a class that
+has cost nothing yet.
+
+**A caution found while scoping it.** Writing the candidate orphan list into
+`PROVENANCE.md` made six of those keys appear *referenced* to a check whose
+criterion is "the key string appears in a tracked file". Documenting the
+finding destroyed the evidence for it --- the same shape as the byline that
+leaked into a tracked file by being written up. Any such check must exclude
+the documents that discuss it, and must say which ones it excluded.
+
+**And a defect class the orphan list detects by accident.** Two of the six
+pre-existing unreferenced keys are not dead at all: the paper quotes their
+values *as words*. `calib_partitions` is 20 and the paper says "over twenty
+seeds"; `calib_cal_ckpt` is 13 and the paper says "a thirteen-name list". The
+untraced-literal gate scans for numerals, and a numeral spelled out is not
+one, so these pass every check in the repository while being exactly what the
+registry exists to prevent. An unreferenced key whose value appears in the
+prose in words is therefore a signal, not noise --- which is an argument for
+keeping the orphan list even before the check that computes it is reliable.
+
 ### A known limit of the supplement scrub, stated rather than assumed
 
 The scrub checks extracted page text and (since 2026-10-08) the document

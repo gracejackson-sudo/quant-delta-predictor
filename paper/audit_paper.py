@@ -211,11 +211,31 @@ BANNED = [
 ]
 low = TEX.lower()
 hits = 0
+
+
+def _in_error_record(pos):
+    """True inside the Audit section or the process-error appendix.
+
+    Those two are allowed to quote what they retracted. The test used to ask
+    only whether \\section{Audit} appeared ANYWHERE earlier in the file, which
+    exempted the Conclusion as well -- and, once the audit record was split,
+    the whole appendix and everything after it. An exemption that widens
+    whenever the document grows a section is the shape of a check that passes
+    because nothing happens to reach it.
+    """
+    a = TEX.find("\\section{Audit}")
+    c = TEX.find("\\section{Conclusion}")
+    if a >= 0 and (c < 0 or a < pos < c):
+        return True
+    ap = TEX.find("\\appendix")
+    return ap >= 0 and pos > ap
+
+
 for pat, why in BANNED:
     for m in re.finditer(pat, low):
         seg = re.sub(r"\s+", " ", TEX[max(0, m.start()-70):m.start()+70])
-        # the audit section is allowed to quote what it retracted
-        if "\\section{Audit}" in TEX[:m.start()] and "retracted" in why:
+        # the error record is allowed to quote what it retracted
+        if "retracted" in why and _in_error_record(m.start()):
             continue
         hits += 1
         fail.append(f"overclaim [{why}]: ...{seg}...")

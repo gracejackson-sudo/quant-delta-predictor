@@ -1010,8 +1010,12 @@ def test_paper_describes_the_verdicts_that_actually_fire():
             f"{name}: conclusion lacks the middle verdict")
         assert "three verdicts" not in tail, (
             f"{name}: the conclusion advertises three verdicts again")
-        # retiring the claim must not become dropping the record
-        audit = s.split("\\section{Audit}")[1]
+        # retiring the claim must not become dropping the record.
+        # Bounded to the Audit section itself: splitting on \\section{Audit}
+        # and taking [1] read to end-of-file, so text in the Conclusion -- or,
+        # after the audit record was split, anywhere in the appendix -- would
+        # have satisfied it. The claim is that the BODY keeps the reasoning.
+        audit = s.split("\\section{Audit}")[1].split("\\section{Conclusion}")[0]
         assert "could have made fire" in audit, (
             f"{name}: the audit section no longer records the decision not to "
             f"lower the support floor. Retiring a claim from the abstract is "
@@ -1325,6 +1329,64 @@ def test_prose_scanner_catches_its_own_plants():
         f"the plant set has shrunk to {len(cp.DEFECTS)} defects and "
         f"{len(cp.CLEAN)} clean strings. Plants are the artifact; deleting "
         f"one to make the scanner pass is the failure mode this guards.")
+
+
+def test_the_error_record_is_complete_across_both_its_halves():
+    """The Audit section claims its appendix is "a complete log and not a
+    selection". This asserts the arithmetic behind that sentence.
+
+    Splitting the record into a body half (what a reviewer needs to judge the
+    result) and an appendix half (errors found, fixed, and without surviving
+    consequence) creates a way to lose an entry that no previous gate could
+    see: deleting one looks exactly like moving one. Nothing compared the two
+    halves against the whole.
+
+    What this PINS: the total number of \\item entries and \\paragraph blocks
+    across both halves, and the signpost in each direction. Moving an entry
+    between halves leaves the totals alone and passes. Deleting one fails.
+    Adding one fails too, which is correct -- a new entry should be a
+    deliberate edit to this number in the same commit.
+
+    Planted failure: delete any \\item from either half and the count drops.
+    """
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    # 17 error items, 9 in the body and 8 in the appendix, on 2026-10-08.
+    TOTAL_ITEMS = 17
+    # 13 \paragraph blocks: 7 body (one of them the itemize header), 6
+    # appendix (ditto, plus the four moved and the gate-blindness note).
+    TOTAL_PARAS = 13
+    for name in ("main.tex", "neurips_main.tex"):
+        s = open(os.path.join(root, "paper", name), encoding="utf-8").read()
+        a, c = s.index("\\section{Audit}"), s.index("\\section{Conclusion}")
+        ap = s.index("\\appendix")
+        body, appx = s[a:c], s[ap:]
+        assert "\\label{sec:process}" in appx, (
+            f"{name}: the process-error appendix has lost its label, so the "
+            f"body's cross-references into it will render as '??'")
+        # the split must be signposted in both directions, or it reads as
+        # burial rather than organization
+        assert "Appendix~\\ref{sec:process}" in body, (
+            f"{name}: the Audit section no longer points at its appendix")
+        assert "\\S\\ref{sec:audit}" in appx, (
+            f"{name}: the appendix no longer points back at the Audit section")
+        assert "complete log" in body, (
+            f"{name}: the body no longer states that the appendix is a "
+            f"complete log rather than a selection. If that stopped being "
+            f"true, this test is the wrong thing to change.")
+        items = (len(re.findall(r"\\item \\emph\{", body))
+                 + len(re.findall(r"\\item \\emph\{", appx)))
+        paras = (len(re.findall(r"\\paragraph\{", body))
+                 + len(re.findall(r"\\paragraph\{", appx)))
+        assert items == TOTAL_ITEMS, (
+            f"{name}: the error record holds {items} items, expected "
+            f"{TOTAL_ITEMS}. Moving an entry between the body and the "
+            f"appendix does not change this number; deleting one does. If an "
+            f"entry was added or retired deliberately, update the constant "
+            f"in this test in the same commit and say why.")
+        assert paras == TOTAL_PARAS, (
+            f"{name}: the error record holds {paras} paragraph blocks, "
+            f"expected {TOTAL_PARAS}. Same reasoning as the item count.")
 
 
 def test_both_paper_variants_have_no_mangled_prose():

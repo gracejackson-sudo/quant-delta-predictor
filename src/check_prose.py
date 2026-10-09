@@ -70,6 +70,10 @@ CLEAN = [
     # Headings legitimately end in a preposition or article.
     "\\paragraph{What this tool is for.} The scenario it answers",
     "\\paragraph{A state we built, could have made fire, and chose not to.}",
+    # A structural macro before a heading is correct LaTeX, not a lost
+    # terminator. Flagged when the Audit section was split and an appendix
+    # appeared for the first time.
+    "\\\\appendix \\\\section{Process errors}\\\\label{sec:process}",
     # A percent sign followed by a lowercase word is ordinary.
     "a 95\\% checkpoint-bootstrap CI of",
     "against a nominal 90\\% two-sided level, with a 95\\% cluster-robust CI",
@@ -114,7 +118,12 @@ PATTERNS = [
      "sentence truncated onto an article or preposition", True, True),
     (r",\s*,|,\s*\.|\.\s*,|\s,and\b", "punctuation collision", True, False),
     (r"\\emph\{\}|\\textbf\{\}|\\texttt\{\}", "emphasis emptied", True, False),
-    (r"[a-z]{3,}\s+\\(?:paragraph|section|subsection)\{",
+    # The lowercase run must start a real word: not preceded by a letter
+    # (or the regex slides along and matches a suffix) and not preceded by a
+    # backslash, which would make it a control word. "\appendix \section{"
+    # is correct LaTeX and was flagged as a mangled join the first time an
+    # appendix existed -- see CLEAN.
+    (r"(?<![\\\\A-Za-z])[a-z]{3,}\s+\\(?:paragraph|section|subsection)\{",
      "prose running into a heading", False, False),
     (r"\(\s*\)|\[\s*\]", "empty delimiter", True, False),
     (r"--- ---|-- --", "doubled dash", True, False),

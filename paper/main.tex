@@ -1019,6 +1019,18 @@ We record errors found in our own work, including those that changed published
 claims. This section exists because the alternative---reporting only what
 survived---would misrepresent how the result was obtained.
 
+The record is split on one question: does a reviewer need an entry to judge
+the result? Here are the entries we think the answer is yes for --- corpus
+definitions that moved and took published figures with them, claims we
+withdrew, a threshold we chose knowing which cell it would move, and the
+places where the shipped artifact and its own pre-registration are different
+objects. Appendix~\ref{sec:process} holds the errors that were found, fixed,
+and leave nothing for a reader to discount. That appendix is a complete log
+and not a selection: every error we know of is in one half or the other, the
+split is editorial rather than evidential, and an entry there is one we judged
+a reviewer does not need rather than one we would rather they skipped. A
+reader who wants the list unsorted should read both.
+
 \paragraph{Errors that changed a published number.}
 \begin{itemize}
   \item \emph{The training corpus originally counted Llama-3.1, Llama-3.2
@@ -1072,25 +1084,7 @@ survived---would misrepresent how the result was obtained.
     \LofoHeldoutOneSided\%. We disclose here rather than exclude:
     the shipped pipeline reports the pooled figure, and the reader
     should know what the pool contains.
-  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, which moved the strict figure from 118/131 to 119/131 at the time. The boundary case no longer arises: W4A16's upper bound is now \HiWfour{}pp rather than $+1.40$, so that row is inside by a clear margin, and the strict figure has since moved to \ProspInside/\ProspN{} for an unrelated reason --- the shipped band was corrected from an in-sample to a split-conformal construction. The tolerance patch should not be credited with that change. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about, and this section records three further instances of it.
-  \item \emph{Artifact family regenerated after Definition B.} The
-    Definition B corpus change (Tier 0.1, 8 $\to$ 6 families) shifted
-    the shape of every leave-one-family-out artifact. Seven files were
-    kept from an 8-family run for several commits after the code moved
-    to 6 families: \texttt{predictor\_comparison.json},
-    \texttt{final\_results.json}, \texttt{diagnostics.json},
-    \texttt{interval\_shape.json}, \texttt{interval\_shape\_finite.json},
-    \texttt{bias\_correction.json}, and
-    \texttt{bias\_correction\_empirical.json}. The registry read from
-    all seven silently. Regenerating them moved \texttt{mae\_global\_lofo}
-    from 0.7545 to 0.7553, \texttt{pred\_mae::ridge} from 0.764 to
-    0.776, \texttt{band\_emp\_coverage\_pct} from 93.4\% to 91.0\% (the
-    ``empirical clearly beats conformal'' claim we nearly shipped a
-    switch on sat on the stale artifact; see the regression paragraph),
-    and Regime C mondrian coverage from 89.15\% at 168 folds to 90.01\%
-    at 60 folds. A staleness gate now fails if any consumed artifact
-    predates \texttt{data/dataset.csv}, so this class of silent-stale
-    cannot repeat.
+  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, which moved the strict figure from 118/131 to 119/131 at the time. The boundary case no longer arises: W4A16's upper bound is now \HiWfour{}pp rather than $+1.40$, so that row is inside by a clear margin, and the strict figure has since moved to \ProspInside/\ProspN{} for an unrelated reason --- the shipped band was corrected from an in-sample to a split-conformal construction. The tolerance patch should not be credited with that change. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about. Two further instances are on the record, and naming them is more use than counting them: the independent verifier and the pipeline both built the band in-sample and agreed with each other throughout (below), and the test that compared the shipped artifact against a freshly built one agreed because it rebuilt the same wrong construction (Appendix~\ref{sec:process}). An earlier version of this sentence claimed three; we can substantiate two.
   \item \emph{GPQA was multiple protocols under one label.} The label
     \texttt{gpqa} in the harvested corpus conflated several distinct
     GPQA evaluation protocols. Every card was reopened and the label
@@ -1187,43 +1181,16 @@ survived---would misrepresent how the result was obtained.
     We have not replaced it with a recomputed version: that would be a
     different quantity over a row set this paper has never described, and
     introducing one is not a substitute for withdrawing a claim.
-  \item \emph{A claim verified by fixing what we found, not by enumerating
-    what existed.} Having moved the shipped interval to split conformal, we
-    found three scripts still measuring the retracted in-sample band, fixed
-    them, and wrote that "all four arms now build the shipped band." That was
-    false when written. We had checked the three paths we knew of plus the one
-    we had just changed, which cannot detect a path that nobody had considered. A fifth
-    existed: \texttt{build\_envelope.py} built the band from a whole-corpus
-    mean and residual quantile and wrote it into the artifact the
-    command-line tool reads, so the tool printed
-    \([\LoNvfpOld, \HiNvfpOld]\) for NVFP4 where this paper printed
-    \([\LoNvfp, \HiNvfp]\), and the test comparing artifact to fresh build
-    passed because it rebuilt the same wrong construction. We then enumerated
-    instead: every caller of every quantile primitive, every interval
-    constructor, every consumer. That found eight band-constructing paths
-    where we had claimed four. "We fixed the instances we found" is a
-    statement about our search, not about the code, and this section already
-    records two checks that passed while verifying nothing --- this is the
-    same failure one level up, where the method rather than a single check was
-    what did not fire.
   \item \emph{A correct number with the wrong object attached.} We reported
     that size stratification "costs \(6.4\) points of coverage and buys no
     tightening." The figure was right and the object was wrong: it measures
     \emph{full} stratification, free to narrow, discarded in September. The
     rule the artifact ships is widen-only, and on the same rows it
     \emph{gains} \StratWidenGained{} covered rows and loses
-    \StratWidenLost{}. This is not the failure the entries above record, and
-    the difference decides what could catch it. There, prose asserted a
-    relation the registry contradicts --- "smaller than", "below nominal" ---
-    and a check comparing directional words against the relation the registry
-    holds could in principle fire. Here nothing in the sentence is false about
-    the number it names: the number is correctly computed, correctly
-    registered and correctly quoted, and simply is not the number the claim
-    requires. No directional check sees that, because the defect is in the
-    correspondence between a key and the object a sentence is about, which
-    lives in the registry's schema rather than in the prose. It was caught by
-    a reader asking why the tool still applied a rule we had just called
-    worthless.
+    \StratWidenLost{}. It was caught by a reader asking why the tool
+    still applied a rule we had just called worthless. The defect is a
+    different shape from the others here and no gate in this repository can
+    see it; Appendix~\ref{sec:process} says why.
   \item \emph{The family classifier is enumerated.} The in-family /
     out-of-family split of the \ProspClusN{} strict prospective checkpoints
     was decided by inspecting each card and matching against the
@@ -1234,40 +1201,11 @@ survived---would misrepresent how the result was obtained.
     another base, a fine-tune with an idiosyncratic name) would need a
     manual re-classification. The definition itself is fixed; the code
     path applies it to this set only.
-  \item \emph{Two parser bugs.} A benchmark label typo cost 11 training rows;
-    separately, \texttt{MATH-500} was matched as \texttt{Math-Lvl-5},
-    contaminating 7 test rows with scores from a different benchmark.
-  \item \emph{A centring mismatch.} Calibration measured residuals about the
-    stratum mean while intervals centred on the scheme mean, mis-sizing every
-    calibrated width. Found only by independent reimplementation.
-  \item \emph{A column-order fault.} One card template orders columns
-    \([\text{recovery}, \text{base}, \text{quant}]\), which our parser turned into a spurious
-    \(-68\)pp delta. The integrity gate rejected 10 of 11 rows on that card,
-    passing only the one where \(\text{base} = \text{quant}\) made the check
-    degenerate.
   \item \emph{A retracted single-publisher claim.} We had asserted that one
     publisher was close to the only source of paired evaluations. A census of
     \PubChecked{} publishers found \PubOthersPaired{} paired-evaluation cards
     outside the control publisher, \PubIntelPaired{} of them Intel's; what
-    differs is whose rows can be verified (\S\ref{sec:limits}).
-  \item \emph{A bootstrap on the wrong statistic.} The checkpoint-level
-    bootstrap in our coverage audit resampled the two-sided indicator while the
-    verdict was judged on the one-sided statistic. An external commenter asked
-    for it to wrap the one-sided figure, which exposed the mismatch
-    (\S\ref{sec:method}).
-  \item \emph{Inflated pair counts.} An earlier version of the tool reported
-    the number of (test row, calibration family) evaluations as if it were the
-    number of rows: with \Nfam{} families each row is scored \PairsPerRow{} times, so
-    \PooledPairs{} evaluations came from only \PooledRows{} rows. Every
-    row-count claim was recomputed on \texttt{distinct\_rows}.
-  \item \emph{Two levels judged differently.} Cells were judged on the
-    one-sided coverage statistic and refused when the point estimate fell
-    below the threshold, but schemes had been judged on the two-sided
-    statistic and refused only when the entire bootstrap interval fell below
-    it. A single classifier now judges both levels the same way, and the
-    envelope's refused list is a computed copy of the ranking tool's, checked
-    by a test.
-\end{itemize}
+    differs is whose rows can be verified (\S\ref{sec:limits}).\end{itemize}
 
 \paragraph{A regression we nearly shipped.} An audit indicated that a raw
 asymmetric empirical band appeared to cover better than the shipped symmetric
@@ -1394,6 +1332,132 @@ partition they say it is'' and still covers ``given that partition, is every
 published number right''. A thirteen-name list is auditable by eye; a
 reimplemented generator is not.
 
+\paragraph{Provenance discipline.} Two parser fixes were informed by inspecting
+rows that were already in the test set. Rather than silently retain them, we
+record which fixes were test-informed and exclude the affected family from the
+strict headline.
+
+\paragraph{Mechanical verification.} The figures this paper reports as
+results are macros generated from a claims registry that recomputes each value
+from source artifacts, and the accompanying code fails a test if an
+outward-facing document contains an untraced numeric literal. The exceptions
+are historical figures in the error list above (row counts and the
+\(-68\)pp delta), which are quoted from the provenance record rather than
+recomputed.
+
+\section{Conclusion}
+
+Per-model prediction of quantization accuracy damage from card-level
+features does not work on published data, and the reason is largely
+measurement noise rather than model capacity; predictors that use
+checkpoint-level statistics were not tested and remain open. What does
+work is narrower: a per-scheme calibrated envelope that is validated at
+\(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
+unseen checkpoints
+for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
+widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
+split in-family against out-of-family; the composition behind that split does
+not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
+either trusted or insufficient evidence, and in the latter case the interval
+is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
+\NCellsTotal{} cells are insufficient evidence. A third verdict that
+withholds the interval is implemented and does not fire here
+(\S\ref{sec:audit}). The more useful contribution may be the limitation
+itself---the published record of quantized models is outcome-truncated, and we
+measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
+estimate built on that record is a floor on risk, not a ceiling, and should say
+so.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+
+\section{Process errors}\label{sec:process}
+
+This is the other half of \S\ref{sec:audit}, split on whether a reviewer
+needs an entry to judge the result. These are errors that were found and
+fixed and that leave nothing to discount in the figures this paper reports:
+the defect is gone, a gate that would catch its recurrence exists, and a
+reader who skips this appendix is not missing a qualification on any claim.
+They are on the record anyway, for two reasons. A paper that listed only the
+errors with surviving consequences would describe a cleaner process than the
+one that produced it. And several of these are the same mistake in different
+places, which is visible only when they are read together --- two are a check
+that passed while verifying nothing, and two are a fault in a protocol
+document that nothing mechanically checked, one in its reasoning and one in
+its internal consistency.
+
+\paragraph{Errors found, fixed, and without surviving consequence.}
+\begin{itemize}
+  \item \emph{Artifact family regenerated after Definition B.} The
+    Definition B corpus change (Tier 0.1, 8 $\to$ 6 families) shifted
+    the shape of every leave-one-family-out artifact. Seven files were
+    kept from an 8-family run for several commits after the code moved
+    to 6 families: \texttt{predictor\_comparison.json},
+    \texttt{final\_results.json}, \texttt{diagnostics.json},
+    \texttt{interval\_shape.json}, \texttt{interval\_shape\_finite.json},
+    \texttt{bias\_correction.json}, and
+    \texttt{bias\_correction\_empirical.json}. The registry read from
+    all seven silently. Regenerating them moved \texttt{mae\_global\_lofo}
+    from 0.7545 to 0.7553, \texttt{pred\_mae::ridge} from 0.764 to
+    0.776, \texttt{band\_emp\_coverage\_pct} from 93.4\% to 91.0\% (the
+    ``empirical clearly beats conformal'' claim we nearly shipped a
+    switch on sat on the stale artifact; see \S\ref{sec:audit}'s regression paragraph),
+    and Regime C mondrian coverage from 89.15\% at 168 folds to 90.01\%
+    at 60 folds. A staleness gate now fails if any consumed artifact
+    predates \texttt{data/dataset.csv}, so this class of silent-stale
+    cannot repeat.
+  \item \emph{A claim verified by fixing what we found, not by enumerating
+    what existed.} Having moved the shipped interval to split conformal, we
+    found three scripts still measuring the retracted in-sample band, fixed
+    them, and wrote that "all four arms now build the shipped band." That was
+    false when written. We had checked the three paths we knew of plus the one
+    we had just changed, which cannot detect a path that nobody had considered. A fifth
+    existed: \texttt{build\_envelope.py} built the band from a whole-corpus
+    mean and residual quantile and wrote it into the artifact the
+    command-line tool reads, so the tool printed
+    \([\LoNvfpOld, \HiNvfpOld]\) for NVFP4 where this paper printed
+    \([\LoNvfp, \HiNvfp]\), and the test comparing artifact to fresh build
+    passed because it rebuilt the same wrong construction. We then enumerated
+    instead: every caller of every quantile primitive, every interval
+    constructor, every consumer. That found eight band-constructing paths
+    where we had claimed four. "We fixed the instances we found" is a
+    statement about our search, not about the code. \S\ref{sec:audit} and
+    this appendix each record a check that passed while verifying nothing;
+    this is the same failure one level up, where the method rather than a single check was
+    what did not fire.
+  \item \emph{Two parser bugs.} A benchmark label typo cost 11 training rows;
+    separately, \texttt{MATH-500} was matched as \texttt{Math-Lvl-5},
+    contaminating 7 test rows with scores from a different benchmark.
+  \item \emph{A centring mismatch.} Calibration measured residuals about the
+    stratum mean while intervals centred on the scheme mean, mis-sizing every
+    calibrated width. Found only by independent reimplementation.
+  \item \emph{A column-order fault.} One card template orders columns
+    \([\text{recovery}, \text{base}, \text{quant}]\), which our parser turned into a spurious
+    \(-68\)pp delta. The integrity gate rejected 10 of 11 rows on that card,
+    passing only the one where \(\text{base} = \text{quant}\) made the check
+    degenerate.
+  \item \emph{A bootstrap on the wrong statistic.} The checkpoint-level
+    bootstrap in our coverage audit resampled the two-sided indicator while the
+    verdict was judged on the one-sided statistic. An external commenter asked
+    for it to wrap the one-sided figure, which exposed the mismatch
+    (\S\ref{sec:method}).
+  \item \emph{Inflated pair counts.} An earlier version of the tool reported
+    the number of (test row, calibration family) evaluations as if it were the
+    number of rows: with \Nfam{} families each row is scored \PairsPerRow{} times, so
+    \PooledPairs{} evaluations came from only \PooledRows{} rows. Every
+    row-count claim was recomputed on \texttt{distinct\_rows}.
+  \item \emph{Two levels judged differently.} Cells were judged on the
+    one-sided coverage statistic and refused when the point estimate fell
+    below the threshold, but schemes had been judged on the two-sided
+    statistic and refused only when the entire bootstrap interval fell below
+    it. A single classifier now judges both levels the same way, and the
+    envelope's refused list is a computed copy of the ranking tool's, checked
+    by a test.
+
+\end{itemize}
+
 \paragraph{A pre-registration that was wrong, and how it was wrong.}
 Before running the calibration comparison we fixed a protocol in writing,
 including what to do about NVFP4, which has \CalibUnitsMin{} calibration
@@ -1444,11 +1508,6 @@ conformal literature rather than against our own earlier work showed the
 guarantee is conditional on exchangeability that selection breaks. Corrected in
 \S\ref{sec:limits}.
 
-\paragraph{Provenance discipline.} Two parser fixes were informed by inspecting
-rows that were already in the test set. Rather than silently retain them, we
-record which fixes were test-informed and exclude the affected family from the
-strict headline.
-
 \paragraph{An attempted extension of the adversarial arm to 3B.} On a fresh
 40\,GB A100 with a fresh dependency install, we re-ran the adversarial
 sweep to (i) verify that yesterday's numbers reproduce and (ii) add a
@@ -1470,38 +1529,20 @@ methodology. The adversarial arm therefore remains bounded at
 \(\leq\AdvMaxB\)B as before; \S\ref{sec:limits} states this scope
 directly.
 
-\paragraph{Mechanical verification.} The figures this paper reports as
-results are macros generated from a claims registry that recomputes each value
-from source artifacts, and the accompanying code fails a test if an
-outward-facing document contains an untraced numeric literal. The exceptions
-are historical figures in the error list above (row counts and the
-\(-68\)pp delta), which are quoted from the provenance record rather than
-recomputed.
-
-\section{Conclusion}
-
-Per-model prediction of quantization accuracy damage from card-level
-features does not work on published data, and the reason is largely
-measurement noise rather than model capacity; predictors that use
-checkpoint-level statistics were not tested and remain open. What does
-work is narrower: a per-scheme calibrated envelope that is validated at
-\(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
-unseen checkpoints
-for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
-widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
-split in-family against out-of-family; the composition behind that split does
-not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
-either trusted or insufficient evidence, and in the latter case the interval
-is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
-\NCellsTotal{} cells are insufficient evidence. A third verdict that
-withholds the interval is implemented and does not fire here
-(\S\ref{sec:audit}). The more useful contribution may be the limitation
-itself---the published record of quantized models is outcome-truncated, and we
-measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
-estimate built on that record is a floor on risk, not a ceiling, and should say
-so.
-
-\bibliographystyle{plainnat}
-\bibliography{refs}
+\paragraph{Why the stratification error was invisible to every gate.} The
+mis-attributed stratification figure in \S\ref{sec:audit} is not the same
+failure as the other entries, and the difference decides what could catch it.
+Elsewhere, prose asserted a relation the registry contradicts --- ``smaller
+than'', ``below nominal'' --- and a check comparing directional words against
+the relation the registry holds could in principle fire. In the
+stratification case nothing in the sentence was false about the number it
+named: the number was correctly
+computed, correctly registered and correctly quoted, and simply was not the
+number the claim required. No directional check sees that, because the defect
+lies in the correspondence between a key and the object a sentence is about,
+which lives in the registry's schema rather than in the prose. Every gate in
+this repository checks that a macro's value is right and that no literal is
+untraced; none can tell that the sentence around a correct macro is about
+something else.
 
 \end{document}
