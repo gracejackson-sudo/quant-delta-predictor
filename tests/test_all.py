@@ -1477,12 +1477,25 @@ def test_the_prospective_group_counts_sum_to_their_totals():
             f"quantized artifact and the base-model count is a different "
             f"number.")
 
-    # and the two series must not be equal by accident, or the test above
-    # would pass while the paper conflated them again
+    # The two series must not be equal, or the sums above would both pass
+    # while the paper conflated the objects again.
+    #
+    # NOTE: this asserts a property of the DATA, not of the code. A future
+    # corpus in which every base model contributes exactly one quantized
+    # checkpoint would make the totals legitimately equal, and this line
+    # would then fail on correct data. That is intentional: at that point the
+    # two series are indistinguishable by inspection, so the protection this
+    # test provides is gone and somebody should know. The fix is NOT to
+    # delete the assertion. It is to check that each series is still computed
+    # from its own field (prosp_clus_n from the quantized artifact, model;
+    # prosp_bases from base_model), confirm the equality is real, and replace
+    # this line with a comment recording the corpus state that made the two
+    # coincide.
     assert R["prosp_clus_n"] != R["prosp_bases"], (
         "the quantized-checkpoint and base-model totals are now equal, so "
-        "this test can no longer distinguish them. Check whether the corpus "
-        "changed or whether one series is being computed from the other.")
+        "this test can no longer distinguish them. This may be correct data "
+        "-- one quantized checkpoint per base model -- rather than a bug. "
+        "See the note above this assertion before changing it.")
 
 
 def test_pack_status_names_every_pack_item():

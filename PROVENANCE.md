@@ -1034,7 +1034,9 @@ hard-wrapped byline still matches, and an unreadable PDF is reported as a
 finding rather than skipped — "unknown" must not read as "clean". Proven with a
 hand-built PDF whose extracted text is the byline, planted as
 `paper/neurips_main.pdf`: the scrub exits 1 with
-`paper/neurips_main.pdf:1 [author name] 'Grace Jackson'`. That is the leak a
+`paper/neurips_main.pdf:1 [author name] '<the byline>'` --- redacted here,
+because quoting it verbatim in a tracked file is itself the leak, which the
+scrub caught on the next build. That is the leak a
 `[final]` build would have shipped. The plant is a permanent test.
 
 **27 dead macros removed, now gated.** Macros defined in `numbers.tex` and
@@ -1061,3 +1063,54 @@ The handle is handled by excluding the file from the supplement build; the path
 is redacted. A fourth gate, `test_pack_status_names_every_pack_item`, is the
 one added for it. The file was written honestly and nothing mechanical read
 it; the moment something did, it found three problems.
+
+### 2026-10-08: PDF metadata, and a check that could not be built
+
+**The scrub reads PDF metadata.** Page text cannot show the document info
+dictionary or the XMP packet, and that is where an anonymized PDF usually
+deanonymizes itself: hyperref writes `\author{...}` into `/Author`, and
+`/Producer` routinely carries a local username or an absolute path. The scrub
+had no metadata handling at all. Every field is now returned and its VALUE
+scanned with the same identity patterns used on prose, so a producer that
+invents its own keys is covered without the code knowing the key names. An
+unreadable packet is reported as a finding — "unknown" must not read as
+"clean".
+
+Plant-verified, one case per field, with the field named in the message:
+`/Author` set to the byline fires; `/Producer` carrying a home-directory path
+fires on the path pattern; a `/Creator` naming a person fires; and
+Overleaf-style clean metadata (`pdfTeX-1.40.25`) stays silent, which matters
+because a gate that fires on an ordinary build gets turned off. Caveat
+recorded: **this has not been tested against a PDF actually built by
+Overleaf.** The check is producer-agnostic by construction — it scans values,
+not toolchain names — but no real Overleaf output has been through it.
+
+Writing this entry put the byline verbatim into a tracked file, and the scrub
+failed the next build on `PROVENANCE.md`. Documenting a leak created one. The
+quotation is redacted.
+
+### The symmetric dead-key check: attempted, not built, and why
+
+Dead macros were removable because `numbers.tex` states them literally. Keys
+are not: the key-to-macro mapping runs through loops over (scheme, band),
+(stat, scheme) and cell tuples, and the key-to-document mapping runs through
+generated docs whose claim tags are themselves emitted by loops. Two static
+attempts flagged **466 of 853** and then **375 of 853** keys, both including
+keys provably live — `cell_rows::w4a16|<2B` is quoted through
+`\RowsCellWfourSmall`, and `tune_diff::global_vs_ridge_tuned` appears in
+`NEGATIVE_RESULT.md`. A gate with a 44% false-positive rate is the gate
+nobody trusts, which is the failure mode this project keeps documenting.
+
+The reliable mechanism is dynamic, not static: instrument `paper/gen_numbers.py`
+to record every key it resolves and the doc generators to record every key
+they tag, then diff that against the registry's output. The keys are resolved
+at run time, so the record is exact. That is the version to build.
+
+What is measured meanwhile is the bounded set this cycle created: **22 keys**
+unreferenced by any macro and unmentioned in any doc, tex or test. Sixteen are
+the withdrawn Gemma-3 comparison, the withdrawn in-family / out-of-family
+split and the withdrawn small-sample pull-up; six (`calib_cal_ckpt`,
+`calib_partitions`, `jackknife_cov_pct`, `gpqa_other_rows`, `noise_n_ge100`,
+`target_sd_pp`) predate it. Whether a withdrawn claim's values should remain
+computable is a judgement rather than a measurement, so the list is recorded
+here and the decision is open.

@@ -109,6 +109,81 @@ def test_the_scrub_reads_pdfs_and_catches_a_leak_inside_one(tmp_path):
         f"findings: {hits}")
 
 
+def test_the_scrub_reads_pdf_metadata_not_just_page_text(tmp_path):
+    """A leak in PDF metadata must fail the scrub.
+
+    Page-text extraction sees a visible byline. It does not see the document
+    info dictionary or the XMP packet, and that is the most common way an
+    anonymized PDF deanonymizes itself: hyperref writes \\author{...}
+    straight into /Author, and /Producer routinely carries a local username
+    or an absolute path. The repository produced both classes of leak in one
+    week from a single committed file, so neither is hypothetical.
+
+    This matters at the moment of a [final] rebuild: that build is the first
+    one to carry real author metadata, and without this check it would also
+    be the first nobody checked.
+
+    What this READS: the scrub's own scanner over trees containing PDFs with
+    planted metadata, one case per field, plus a clean case that must stay
+    silent. Values are scanned with the same identity patterns used on prose,
+    so the check does not depend on which toolchain wrote the file -- a
+    producer that invents its own keys is covered without this test knowing
+    the key names.
+    """
+    import importlib
+    import sys as _s
+    root = os.path.join(os.path.dirname(__file__), "..")
+    _s.path.insert(0, os.path.join(root, "src"))
+    BS = importlib.import_module("build_supplement")
+    from pypdf import PdfReader, PdfWriter
+
+    source = os.path.join(root, "paper", "neurips_main.pdf")
+    if not os.path.exists(source):
+        import pytest
+        pytest.skip("paper/neurips_main.pdf absent")
+
+    def build(meta, out):
+        r = PdfReader(source)
+        w = PdfWriter()
+        for p in r.pages:
+            w.add_page(p)
+        w.add_metadata(meta)
+        with open(out, "wb") as f:
+            w.write(f)
+
+    cases = [
+        ("author", {"/Author": "Grace Jackson"}, True),
+        ("producer",
+         {"/Producer": "pdfTeX via /Users/grace/Downloads/qdp"}, True),
+        ("creator",
+         {"/Creator": "Overleaf project by Grace Jackson",
+          "/Producer": "pdfTeX-1.40.25"}, True),
+        # Overleaf's strings differ from the local xdvipdfmx build; a clean
+        # one must not fire, or the gate is useless after the rebuild.
+        ("clean", {"/Creator": "LaTeX with hyperref",
+                   "/Producer": "pdfTeX-1.40.25"}, False),
+    ]
+    for slug, meta, should_fire in cases:
+        tree = tmp_path / slug / "paper"
+        tree.mkdir(parents=True)
+        build(meta, str(tree / "neurips_main.pdf"))
+        hits = [h for h in BS.scan(str(tmp_path / slug))
+                if "neurips_main.pdf" in h[0]]
+        if should_fire:
+            assert hits, (
+                f"a leak planted in {list(meta)} was not reported. Page text "
+                f"cannot show metadata, so this is the check that has to "
+                f"catch it.")
+            assert any("/Info" in h[0] or "XMP" in h[0] for h in hits), (
+                f"the leak was reported but not attributed to a metadata "
+                f"field, so the message will not tell an author where to "
+                f"look: {hits}")
+        else:
+            assert not hits, (
+                f"clean metadata reported a leak: {hits}. A gate that fires "
+                f"on an ordinary Overleaf build gets turned off.")
+
+
 def test_supplement_scrub_succeeds_and_the_zip_has_no_identity_strings(tmp_path):
     import re
     import zipfile

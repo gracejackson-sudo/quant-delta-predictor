@@ -229,6 +229,58 @@ def _pdf_text(path):
         return None
 
 
+def _pdf_metadata_text(path):
+    """-> (label, value) pairs from a PDF's metadata, or None if unreadable.
+
+    Text extraction sees a visible byline. It does not see the document info
+    dictionary or the XMP packet, and those are the most common way an
+    anonymized PDF deanonymizes itself: a LaTeX toolchain with hyperref
+    writes \\author{...} straight into /Author, and /Producer routinely
+    carries a local username or an absolute path. Neither appears anywhere in
+    page text.
+
+    Every field is returned rather than a chosen subset, so a producer that
+    invents its own keys (Overleaf, Distiller, Word) is covered without this
+    function knowing the key names in advance. The caller scans the VALUES
+    with the same identity patterns it applies to prose, so the check does
+    not depend on which toolchain built the file.
+    """
+    try:
+        from pypdf import PdfReader
+    except ImportError:          # pragma: no cover
+        return None
+    try:
+        reader = PdfReader(path)
+    except Exception:
+        return None
+    out = []
+    try:
+        info = reader.metadata or {}
+        for k, v in dict(info).items():
+            if v is None:
+                continue
+            out.append((f"/Info {k}", str(v)))
+    except Exception:
+        out.append(("/Info", "<<UNREADABLE>>"))
+    # XMP: a separate packet, and a separate leak path. dc:creator is the
+    # canonical author field; the whole packet is scanned because producers
+    # write arbitrary namespaces into it.
+    try:
+        xmp = reader.xmp_metadata
+        if xmp is not None:
+            raw = getattr(xmp, "rdf_root", None)
+            if raw is not None:
+                out.append(("XMP packet", raw.toxml()))
+            for attr in ("dc_creator", "dc_title", "dc_description",
+                         "pdf_producer", "xmp_creator_tool"):
+                val = getattr(xmp, attr, None)
+                if val:
+                    out.append((f"XMP {attr}", str(val)))
+    except Exception:
+        out.append(("XMP", "<<UNREADABLE>>"))
+    return out
+
+
 def scan(dst: str) -> list[tuple[str, int, str, str]]:
     """Return every (path, line_number, matched_string, label) surviving the
     redaction."""
@@ -253,6 +305,19 @@ def scan(dst: str) -> list[tuple[str, int, str, str]]:
             # text leaks were caught and a leak planted inside
             # paper/neurips_main.pdf was not.
             if ext == ".pdf":
+                # metadata first: it is the leak page text cannot show
+                meta = _pdf_metadata_text(src)
+                if meta is None:
+                    hits.append((rel, 0, "UNREADABLE PDF", "cannot scan"))
+                    continue
+                for label, value in meta:
+                    if value == "<<UNREADABLE>>":
+                        hits.append((rel, 0, label, "metadata unreadable"))
+                        continue
+                    for pat, lbl in patterns:
+                        for m in pat.finditer(value):
+                            hits.append((f"{rel} [{label}]", 0,
+                                         m.group(0), lbl))
                 text = _pdf_text(src)
                 if text is None:
                     hits.append((rel, 0, "UNREADABLE PDF", "cannot scan"))

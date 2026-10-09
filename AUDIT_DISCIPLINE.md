@@ -136,3 +136,138 @@ not run", which is this. A submission build should not be blocked by the
 second, and the rest of the gate — claim verification, traceability, the doc
 check, both verifiers, and the other three sections of the paper audit — is
 unaffected and still runs.
+
+## Scoped, not built: two classes of defect no gate here can see
+
+Every gate in this repository verifies a **value**: that a tagged figure
+equals the computed one, that no literal is untraced, that an artifact is not
+older than its input. Three times in October 2026 a change was carried into
+the registry and the macros but not into the prose that interprets them, and
+no gate fired, because nothing in the paper's *values* was wrong. The two
+classes below are what those failures were. Neither is addressed, and the
+costs below are the reason to decide deliberately rather than drift.
+
+### Class A: prose asserts a relation the registry contradicts
+
+The §5 clustering paragraph said the cluster-robust standard error was
+"smaller" than the naive one, that clustering "does not inflate this
+statistic", and that the change of unit "accounts for the remaining"
+narrowing. The macros beside those words read 2.10 against 1.94, a ratio of
+1.084, a design effect of 1.112, and a unit term of −0.64. Every clause was
+backwards. Separately, §5 called W4A16 "below the nominal 90%" at a macro
+value of 97.6%.
+
+In both cases the numbers were correct, registered, and verified. The
+sentence around them was false.
+
+**Candidate: a directional-word gate.** For each tagged macro, find
+comparative words within a window — smaller, larger, below, above, narrower,
+wider, exceeds, falls short — and the other macro or constant they relate it
+to, then check the relation against the registry.
+
+What it would catch: both instances above, and the "narrower" claim in the
+decomposition.
+
+What it costs. Parsing "X is smaller than Y" out of LaTeX prose where X and Y
+are macros, negations, and subordinate clauses is the hard part; a naive
+version will mostly produce false positives on sentences like "smaller than
+the floor would imply", and a false-positive-heavy gate gets disabled. The
+honest estimate is a day to build, and the maintenance risk is that it becomes
+a gate people route around. A cheaper 80% version: restrict it to sentences
+containing exactly two macros and one comparative, and report rather than
+fail, so it is a review aid and not a build break. That version would have
+caught the clustering paragraph and the W4A16 sentence.
+
+### Class B: a correct figure with the wrong object attached
+
+We wrote that size stratification "costs 6.4 points of coverage and buys no
+tightening". The figure was right. It measured *full* stratification, a
+variant discarded in September; the rule the artifact ships is widen-only,
+which on the same rows gains two covered rows and loses none.
+
+No directional check sees this. Nothing in the sentence is false about the
+number it names. The number is correctly computed, correctly registered and
+correctly quoted — it simply is not the number the claim requires. The defect
+is in the correspondence between a key and the object a sentence is about,
+which lives in the registry's schema rather than in the prose.
+
+**Candidate: object descriptions plus a quoting index.** Every registry key
+already carries a one-line description of how it was computed. Extend it to
+state *what object it measures* — "the widen-only rule, shipped" versus "full
+stratification, discarded" — and emit, per key, the list of sites that quote
+it. A re-read of that index is then one cheap pass over the whole paper: for
+each key, does every quoting site mean the object the description names?
+
+What it would catch: this instance, and the "at the scheme level" mislabel,
+where the value was right and the label named a granularity when the
+distinction was whether a size rule had been applied.
+
+What it costs, and how to bound it. Hand-writing object descriptions for all
+~360 keys in one sitting produces 360 descriptions of uneven quality, written
+by someone who stopped caring around key 200. Instead: require a description
+at registration for every *new* key, and backfill only the keys the paper
+actually quotes --- the per-key index says which those are, and it is a much
+smaller set. An unquoted key gets its description when something quotes it.
+That turns a grind into a standing rule plus a bounded backfill. The
+quoting index is cheap — macros are already resolved from keys, and the
+dead-macro gate walks the same graph. The real cost is that the check is a
+human pass over a generated index rather than an assertion, so it only works
+if someone does it; its value is making the pass possible at all, which it
+currently is not.
+
+### The mechanism to build first: pin the prose to the value
+
+Both candidates above try to *understand* the sentence. A third does not, and
+covers more of what actually happened.
+
+For every macro, record two things in a committed pin file: its current value,
+and a hash of the sentence containing it. On regeneration, fail when a macro's
+value changed and its enclosing sentence did not. The message is "this figure
+moved and the sentence around it did not --- confirm the sentence still
+holds", and the author either edits the sentence or re-pins.
+
+No comparative parsing, no negation handling, no LaTeX semantics, no false
+positives from subordinate clauses. The only parsing is sentence boundaries,
+which `src/check_prose.py` already does.
+
+Checked against the four defects of this cycle:
+
+| defect | fires? |
+| --- | --- |
+| clustering paragraph: macros moved when the band was corrected, prose did not | yes |
+| W4A16 below nominal: `ProspCovWfour` moved to 97.6%, "below the nominal 90%" stayed | yes |
+| abstract mixing the two coverage figures: figures changed, labels did not | yes |
+| stratification mis-attribution: the figure never moved, only the object the sentence was about | **no** |
+
+Three of four, assertable, and the one it misses is Class B --- which is the
+evidence that Class B is a schema problem rather than a prose problem, not a
+gap in this mechanism. Its failure mode is a one-line re-pin rather than a
+build break worth disabling, which is what makes it survivable.
+
+Two things to get right if it is built. The pin file must be reviewable in a
+diff, so a re-pin is visible to whoever reads the commit rather than buried in
+a regenerated blob. And re-pinning must require a stated reason, or it becomes
+a reflex --- the same failure as an allowlist that grows without justification.
+
+### Why neither is built yet
+
+Both were identified at the end of a cycle in which four blocking defects
+were found by audit rather than by gate. Building a gate against the class
+that just bit you, in the same week, with no interval to see whether the
+diagnosis holds, is how a repository accumulates checks nobody trusts. The
+decision to build should be taken against the next cycle's evidence, not
+this one's.
+
+What is recorded now is the distinction, because it determines the mechanism:
+Class A is a property of prose and could be asserted; Class B is a property of
+the schema and probably cannot be, and conflating them would produce a gate
+that fires on the easy half and misses the half that actually shipped.
+
+### A known limit of the supplement scrub, stated rather than assumed
+
+The scrub checks extracted page text and (since 2026-10-08) the document
+metadata. It **cannot** see a byline rendered as an image, inside a figure, or
+otherwise rasterized, because there is no text to extract. Nothing in the
+current build renders author information that way, and no check enforces that.
+If a future build adds a logo, a scanned signature or a figure containing a
+name, the scrub will pass it.
