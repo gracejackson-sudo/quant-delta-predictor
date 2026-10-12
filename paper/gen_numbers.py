@@ -15,7 +15,11 @@ R = {k: v[0] for k, v in registry().items()}
 M = {
     "NrowsRaw": ("n_rows_raw", "{:.0f}"), "NrowsDropped": ("n_rows_dropped_near_chance", "{:.0f}"),
     "MinAccBefore": ("min_acc_before_pct", "{:.0f}"),
-    "Nrows": ("n_rows", "{:.0f}"), "Nckpt": ("n_checkpoints", "{:.0f}"),
+    "Nrows": ("n_rows", "{:.0f}"),
+    # \Nckpt rendered n_checkpoints, which counted base models, while the
+    # prose said "checkpoints". Split into the two objects, 2026-10-11.
+    "NBase": ("n_base_models", "{:.0f}"),
+    "NQuantCkpt": ("n_quant_checkpoints", "{:.0f}"),
     "Nfam": ("n_families", "{:.0f}"), "Nsch": ("n_schemes", "{:.0f}"),
     "MinCkpt": ("min_cell_checkpoints", "{:.0f}"),
     "NpredNums": ("n_numbers_in_predictor", "{:.0f}"),
@@ -227,8 +231,8 @@ M = {
     "CalibUnitsMin": ("calib_units_min", "{:.0f}"),
     "CalibUnitsMax": ("calib_units_max", "{:.0f}"),
     "CalibUnitsFloor": ("calib_units_floor", "{:.0f}"),
-    "CalibFitCkpt": ("calib_fit_ckpt", "{:.0f}"),
-    "CalibCalCkpt": ("calib_cal_ckpt", "{:.0f}"),
+    "CalibFitBases": ("calib_fit_bases", "{:.0f}"),
+    "CalibCalBases": ("calib_cal_bases", "{:.0f}"),
     "CalibPartitions": ("calib_partitions", "{:.0f}"),
     "CalibCellsAttempted": ("calib_cells_attempted", "{:.0f}"),
     "CalibCellsSurvived": ("calib_cells_survived", "{:.0f}"),

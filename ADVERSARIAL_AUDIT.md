@@ -27,7 +27,7 @@ predictor.
 | check | result |
 |---|---|
 | shared model ids between train and test | **0** |
-| shared base checkpoints | **0** |
+| shared base models | **0** |
 | shared (model, benchmark) rows | **0** |
 
 ### But "unseen families" was overstated — finding

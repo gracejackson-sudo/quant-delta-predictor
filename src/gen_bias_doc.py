@@ -337,8 +337,10 @@ def tool_doc():
       "specific quantization schemes. Not a predictor. Not novel relative to "
       "BenchPress on the core mechanism.\n")
     A(f"Built on {n('n_rows')} published evaluations from "
-      f"{n('n_checkpoints')} checkpoints across {n('n_families')} model "
-      f"families (RedHatAI model cards). "
+      f"{n('n_quant_checkpoints')} quantized checkpoints across "
+      f"{n('n_base_models')} base models and {n('n_families')} model "
+      f"families (several checkpoints share a base model, so the evidence "
+      f"unit is the base model, not the checkpoint) (RedHatAI model cards). "
       f"Of the {n('n_rows_raw')} rows extracted, "
       f"{n('n_rows_dropped_near_chance')} with a baseline below "
       f"{n('min_acc_before_pct')}% accuracy (near chance) are dropped.\n")
@@ -495,7 +497,7 @@ def tool_doc():
       f"versus mediocre recipe**, not versus production. It is a "
       f"*conservative anchor*, not a bound: we cannot demonstrate "
       f"monotonicity on {n('s2_excess_n')} rows from 2 models. "
-      f"*Not identical artifacts:* the published rows are the base "
+      f"*Not identical artifacts:* the published rows are the base models "
       f"checkpoints and ours the -Instruct variants; their base MMLU agrees "
       f"to {n('ctrl_baseagree::Qwen2_5-0_5B','{:.2f}')}pp and "
       f"{n('ctrl_baseagree::Qwen2_5-1_5B','{:.2f}')}pp, so they are "

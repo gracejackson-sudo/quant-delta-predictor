@@ -22,8 +22,11 @@ def main():
       "per-scheme average\n")
     A("*A negative result, with the measured noise floor, a low-rank transfer "
       "test, and a comparison to BenchPress.*\n")
-    A(f"Data: {n('n_rows')} published evaluations from {n('n_checkpoints')} "
-      f"checkpoints across {n('n_families')} model families, scraped from "
+    A(f"Data: {n('n_rows')} published evaluations from "
+      f"{n('n_quant_checkpoints')} quantized checkpoints across "
+      f"{n('n_base_models')} base models and {n('n_families')} model "
+      f"families. Several checkpoints share a base model, so the evidence "
+      f"unit is the base model, not the checkpoint. Scraped from "
       f"RedHatAI model cards. Every figure below is generated from a computed "
       f"value and re-verified by `src/verify_claims.py`.\n")
     A("---\n")

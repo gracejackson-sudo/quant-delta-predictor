@@ -2,7 +2,7 @@
 
 *A negative result, with the measured noise floor, a low-rank transfer test, and a comparison to BenchPress.*
 
-Data: 823<!-- claim: n_rows = 823.000000 --> published evaluations from 38<!-- claim: n_checkpoints = 38.000000 --> checkpoints across 6<!-- claim: n_families = 6.000000 --> model families, scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
+Data: 823<!-- claim: n_rows = 823.000000 --> published evaluations from 102<!-- claim: n_quant_checkpoints = 102.000000 --> quantized checkpoints across 38<!-- claim: n_base_models = 38.000000 --> base models and 6<!-- claim: n_families = 6.000000 --> model families. Several checkpoints share a base model, so the evidence unit is the base model, not the checkpoint. Scraped from RedHatAI model cards. Every figure below is generated from a computed value and re-verified by `src/verify_claims.py`.
 
 ---
 

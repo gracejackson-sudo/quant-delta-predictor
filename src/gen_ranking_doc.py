@@ -61,8 +61,10 @@ def main():
       f"half-widths, and {n('n_size_dependent_widths')} size-dependent "
       f"widths.\n")
     A(f"Built on {n('n_rows')} published evaluations from "
-      f"{n('n_checkpoints')} checkpoints across {n('n_families')} model "
-      f"families. "
+      f"{n('n_quant_checkpoints')} quantized checkpoints across "
+      f"{n('n_base_models')} base models and {n('n_families')} model "
+      f"families (several checkpoints share a base model, so the evidence "
+      f"unit is the base model, not the checkpoint). "
       f"Of the {n('n_rows_raw')} rows extracted, "
       f"{n('n_rows_dropped_near_chance')} with a baseline below "
       f"{n('min_acc_before_pct')}% accuracy (near chance) are dropped.\n")

@@ -123,7 +123,7 @@ def reconcile_gpqa_main(rows):
     w8a8 cards report 46.10. One label, two protocols, 14pp apart, so the
     label alone cannot say which protocol the high rows measure.
 
-    Rule: within one base checkpoint, if the `gpqa_main` baselines disagree
+    Rule: within one base model, if the `gpqa_main` baselines disagree
     by more than GPQA_CONFLICT_PP, the lowest is retained as `gpqa_main`
     and the others are relabelled GPQA_AMBIGUOUS. The lowest is retained
     because unnormalised GPQA main 0-shot sits at or near four-way chance on

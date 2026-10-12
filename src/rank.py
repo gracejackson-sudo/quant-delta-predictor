@@ -666,7 +666,7 @@ def report(ranked, unknown, risk_pp, band, moe, meta=None):  # noqa: C901
     print("=" * w)
     M = meta or {}
     print(f"Historical baseline over {M.get('n_rows', 0)} published "
-          f"evaluations from {M.get('n_checkpoints', 0)} checkpoints across "
+          f"evaluations from {M.get('n_checkpoints', 0)} base models across "
           f"{M.get('n_families', 0)} model families.")
     print("Sorted by tier, then by how tightly past results clustered.\n")
     print("How to read the interval: it is the range that contained 9 out of")

@@ -39,7 +39,7 @@ OUT = os.path.join(HERE, "..", "out")
 
 
 def build_matrix(d):
-    """Rows: base checkpoints AND quantized checkpoints. Cols: benchmarks."""
+    """Rows: base models AND quantized checkpoints. Cols: benchmarks."""
     base = (d.groupby(["base_model", "benchmark"]).acc_before.mean()
             .reset_index().rename(columns={"acc_before": "score"}))
     base["row"] = "BASE::" + base.base_model

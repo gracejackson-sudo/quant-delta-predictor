@@ -77,7 +77,7 @@ calibration partition, residuals taken about the centre
 path use it. Guarantee: marginal `1-alpha` coverage under exchangeability of
 calibration and test units.
 
-**Secondary: jackknife+, leave-one-checkpoint-out.** For each checkpoint, a
+**Secondary: jackknife+, leave-one-base-model-out.** For each base model, a
 centre refit without it; the interval from the quantiles of
 `{centre_{-i} +/- |residual_i|}`. No split, so every row informs the centre.
 Guarantee: `1-2*alpha`, i.e. **80% at alpha = 0.10** -- not 90%.

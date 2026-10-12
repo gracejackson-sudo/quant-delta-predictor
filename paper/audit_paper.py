@@ -188,7 +188,7 @@ WORDNUM = re.compile(
 # Hyphenated METHOD NAMES and compound adjectives, not counts.
 WORDTERM = re.compile(r"^(?:leave-)?(?:one|two|three|four|six|eight|twenty)-"
                       r"(?:family|checkpoint|sided|state|column|fold|way|"
-                      r"directional|fifths|out)", re.I)
+                      r"directional|fifths|out|base)", re.I)
 # Rhetorical or self-evident uses, each checked by hand during the
 # 2026-10-11 sweep. ADDING TO THIS SET REQUIRES A REASON: the whole point is
 # that a figure cannot be hidden here by spelling it out.
@@ -249,6 +249,7 @@ _WSTOP = set("""a an the and or but of to in on at by for from with without
 within across against under over above below between among about into onto
 than then as is are was were be been being has have had do does did not no
 nor so if when where while because although though since after before until
+remain remains remained
 unless whether that which who whom whose this these those it its their our
 your his her they we you there here both each every either neither all any
 some most more less fewer other others such own same only also still now
@@ -315,6 +316,81 @@ if _uncovered:
         f"it is not a count.")
 print(f"   counted nouns derived         : {len(_derived)} "
       f"({len(_uncovered)} uncovered)")
+
+# ------------------------------------------- does the noun match the macro?
+# THE DEFECT THIS EXISTS FOR. n_checkpoints counted base models, said so in
+# its own description, was rendered as \Nckpt, and the prose around it said
+# "checkpoints" -- in the abstract, the method section, and four generated
+# documents. Every gate here compares a macro's VALUE to the registry and
+# none compared the registry's description to the noun in the sentence, so
+# the value was right, the description was right, and the claim was wrong.
+#
+# This is not general description-versus-prose checking. It is a per-macro
+# unit declaration: a numeric macro may declare the noun phrase that is
+# allowed to follow it, and the build fails when some OTHER noun does. A
+# macro with no declared unit is exempt, so the table grows deliberately.
+# It would have failed on "the \Nckpt{} checkpoints" the day it was written.
+# Each entry is the HEAD noun, not the whole phrase: up to two modifiers are
+# allowed in between, so "\\ProspClusN{} distinct checkpoints" passes and
+# "\\NBase{} checkpoints" does not. What must match is the thing counted.
+MACRO_UNITS = {
+    # the two objects that were conflated
+    "NBase":               r"models?",
+    "NQuantCkpt":          r"checkpoints?",
+    "CalibFitBases":       r"models?",
+    "CalibCalBases":       r"models?|names?",
+    # the prospective set, where the unit genuinely is the checkpoint
+    "ProspClusN":          r"checkpoints?|runs?",
+    "ProspBases":          r"models?",
+    "ProspDsCkpts":        r"checkpoints?",
+    "ProspGThreeCkpts":    r"checkpoints?",
+    "ProspTailCkpts":      r"checkpoints?",
+    "ProspDsBases":        r"models?",
+    "ProspGThreeBases":    r"models?",
+    "ProspTailBases":      r"models?",
+    # the four cell populations: three different sets, two holding the same
+    # number, which is why each is declared separately
+    "NCellsTotal":         r"cells?",
+    "CalibCellsAttempted": r"cells?",
+    "CalibCellsSurvived":  r"cells?",
+    "CalibCellsStarved":   r"cells?",
+    "StratCellsInSample":  r"cells?",
+    # the rest of the corpus-scale figures. "folds" for Nfam because
+    # leave-one-family-out runs one fold per family; "intervals" for Nsch
+    # because the envelope publishes one per scheme; "observations" for
+    # ProspN because the sentence that says the rows are NOT independent
+    # observations is the independence guard itself.
+    "Nrows":               r"evaluations?|rows?|figure",
+    "ProspN":              r"rows?|observations?",
+    "Nsch":                r"schemes?|intervals?",
+    "Nfam":                r"famil(?:y|ies)|folds?",
+    "CalibUnitsFloor":     r"units?",
+    "CalibUnitsMin":       r"checkpoints?|units?",
+    "CalibUnitsMax":       r"checkpoints?|units?",
+    "CalibPartitions":     r"seeds?|partitions?",
+    "CalibRowsNvfp":       r"rows?",
+}
+unit_fail = []
+for mac, allowed in sorted(MACRO_UNITS.items()):
+    pat = re.compile(r"\\" + mac + r"\b\{?\}?\s*(?:\\?%)?\s*(.{0,42})", re.S)
+    ok = re.compile(r"^(?:[a-z][a-z-]+ ){0,2}(?:" + allowed + r")\b", re.I)
+    for m in pat.finditer(body):
+        tail = re.sub(r"\s+", " ", m.group(1)).lstrip()
+        # a macro followed by punctuation, a function word, another macro or
+        # maths makes no claim about a unit here
+        first = re.match(r"[A-Za-z][A-Za-z-]*", tail)
+        if not first or first.group(0).lower() in _WSTOP:
+            continue
+        if ok.match(tail):
+            continue
+        unit_fail.append(f"\\{mac} is declared as {allowed!r} but reads "
+                         f"“\\{mac}{{}} {tail}…”")
+if unit_fail:
+    fail.append("a macro is followed by a noun it does not count (fix the "
+                "sentence, or widen the declaration in MACRO_UNITS if the "
+                "noun is right):\n      " + "\n      ".join(unit_fail))
+print(f"   macro unit declarations       : {len(MACRO_UNITS)} "
+      f"({len(unit_fail)} mismatched)")
 
 # ---------------------------------------------------------------- 2
 head("2. CITATIONS")

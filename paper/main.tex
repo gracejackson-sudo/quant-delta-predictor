@@ -19,8 +19,8 @@ Quantizing a large language model reduces serving cost and costs some accuracy.
 Determining how much normally requires re-running a full benchmark suite, which
 is the expense quantization was meant to avoid. We ask whether the accuracy
 delta can be predicted instead. Using \Nrows{} published evaluations spanning
-\Nckpt{} base checkpoints, \Nfam{} model families and \Nsch{} quantization
-schemes, we report three results. First, a \emph{negative} one: per-model
+\NQuantCkpt{} quantized checkpoints from \NBase{} base models, \Nfam{} model
+families and \Nsch{} quantization schemes, we report three results. First, a \emph{negative} one: per-model
 prediction carries almost no signal. Under leave-one-family-out validation a
 per-scheme mean beats a global mean by \(\MaeGain\)pp of MAE (95\%
 checkpoint-bootstrap CI \([\MaeGainLo, \MaeGainHi]\)), and evaluation noise
@@ -183,8 +183,13 @@ We harvest published model cards into rows of
 \((\text{model}, \text{scheme}, \text{benchmark},
 \text{acc}_{\text{before}}, \text{acc}_{\text{after}})\), yielding \NrowsRaw{}
 rows, of which \Nrows{} remain after dropping \NrowsDropped{} whose baseline accuracy is below
-\MinAccBefore{}\% (near chance, where a delta is uninformative), across \Nckpt{} base checkpoints, \Nfam{} families and
-\Nsch{} schemes.
+\MinAccBefore{}\% (near chance, where a delta is uninformative), across
+\NQuantCkpt{} quantized checkpoints drawn from \NBase{} base models,
+\Nfam{} families and \Nsch{} schemes. The checkpoint count is not a count of
+independent units and no interval in this paper treats it as one: several
+checkpoints share a base model, so the unit of evidence on the training side
+is the base model and the prospective headline is clustered on the checkpoint
+(\S\ref{sec:results}).
 
 \paragraph{An integrity gate.} Cards typically print a \emph{Recovery \%}
 column alongside the before/after pair. This is redundant information, and we
@@ -204,7 +209,7 @@ this distinction matters.
 \paragraph{What we mean by family.} Throughout, two checkpoints share
 a family when one is derived from the other's pretraining weights (via
 distillation, continued pretraining, quantization, or fine-tuning), or when
-they share a common pretraining base checkpoint. A distillation is a member
+they share a common pretraining base model. A distillation is a member
 of its teacher's family; a new pretraining run is a new family, regardless
 of shared name. This is the mechanistic definition: quantization damage
 depends on the weight distribution and activation-outlier structure the
@@ -256,9 +261,10 @@ residuals \(\{s_i\}_{i=1}^{n}\) and level \(\alpha\), the interval half-width
 is the \(\lceil (n+1)(1-\alpha) \rceil\)-th smallest score, which under a
 proper calibration/test split gives exact finite-sample coverage under
 exchangeability. The shipped per-scheme interval is built this
-way: the \Nckpt{} checkpoints are partitioned once into a fit side supplying
-the centre and a disjoint calibration side supplying the width
-(\S\ref{sec:results}). Earlier versions did not --- centre and width came
+way: the \NBase{} base models are partitioned once into a fit side supplying
+the centre and a disjoint calibration side supplying the width, every
+checkpoint of a base model going to the same side, so the two sides share no
+base model (\S\ref{sec:results}). Earlier versions did not --- centre and width came
 from the same rows, an in-sample residual-quantile band carrying the
 arithmetic of a guarantee it did not have. The description was not the only
 thing that was wrong: every prospective coverage figure we published for that
@@ -630,11 +636,16 @@ widened on the same rows: the half-width was the conformal quantile of
 \(|\delta - \bar{\delta}|\) over the very rows \(\bar{\delta}\) was computed
 from. That is the split-conformal formula evaluated in-sample, which is a
 description of spread presented with the arithmetic of a guarantee. It is now
-genuine split conformal --- the \Nckpt{} checkpoints are partitioned once, by a
-fixed seed, into a fit side that supplies the centre and a disjoint
-calibration side that supplies the width, and the partition is over
-checkpoints rather than rows because rows from one quantization run share a
-model, a recipe and one harness invocation.
+genuine split conformal --- the \NBase{} base models are partitioned once, by
+a fixed seed, into a fit side that supplies the centre and a disjoint
+calibration side that supplies the width. The partition is over base models
+rather than rows because rows from one quantization run share a model, a
+recipe and one harness invocation, and over base models rather than
+checkpoints because the \NQuantCkpt{} checkpoints are nested inside the
+\NBase{} base models: holding out a base model holds out every quantization
+of it, so the calibration side shares no base with the fit side. Until
+2026-10-11 this paragraph called that unit the checkpoint, which understated
+it.
 
 The clearest evidence that the old path was wrong is NVFP4. Its published
 interval moves from \([\LoNvfpOld, \HiNvfpOld]\) to
@@ -652,8 +663,9 @@ below the interval floor drops from \BigLossBelowOld{} to
 \BigLossBelow{} of \BigLosses{}: the honest band catches five severe outcomes
 the optimistic one missed, which is the whole point of the exercise.
 
-Measured under leave-one-checkpoint-out over all \Nckpt{} checkpoints, so that
-every row is scored by a band that never saw its own checkpoint, two-sided
+Measured under leave-one-base-model-out over all \NBase{} base models, so
+that every row is scored by a band that never saw any checkpoint of its own
+base model, two-sided
 coverage is \CalibCov\% against a nominal \(90\%\). Repeating the partition
 over \CalibPartitions{} seeds gives a median of \CalibCovMedian\% and a range
 of \CalibCovMin{}--\CalibCovMax\%; every one of the \CalibPartitions{} clears
@@ -664,8 +676,8 @@ Two consequences of that partition are worth stating because a reader will
 otherwise find them and think we did not. First, the centre and the width come
 from \emph{disjoint} sets of checkpoints, which is what makes the width a
 conformal quantile rather than a description of the rows it was fitted on. The
-centre therefore rests on the fit side only --- \CalibFitCkpt{} of the
-\Nckpt{} checkpoints --- and a reader who compares the shipped centre against
+centre therefore rests on the fit side only --- \CalibFitBases{} of the
+\NBase{} base models --- and a reader who compares the shipped centre against
 the scheme mean over the whole corpus will find they differ, by up to
 \CentreMoveMax{}pp. That is the cost of the guarantee, not a discrepancy.
 Second, only the centre and the width are partitioned. Every support and
@@ -1338,7 +1350,7 @@ convention, the family label, the size band, the row assignment, the centres
 on the fit side, the conformal index and quantile on the calibration side, and
 the widen-only size rule. So the check no longer covers ``is this the
 partition they say it is'' and still covers ``given that partition, is every
-published number right''. A \CalibCalCkpt{}-name list is auditable by eye; a
+published number right''. A \CalibCalBases{}-name list is auditable by eye; a
 reimplemented generator is not.
 
 \paragraph{Provenance discipline.} Two parser fixes were informed by inspecting
@@ -1536,8 +1548,8 @@ unchanged. Both cannot hold --- a centre estimated on all rows has seen the
 calibration residuals, which is the in-sample defect the item existed to
 remove. We resolved it for the construction section, the only reading under
 which the result is split conformal at all, and \S\ref{sec:results} reports
-the consequence: centres now rest on \CalibFitCkpt{} of \Nckpt{}
-checkpoints. Pre-registration stopped us choosing a construction after seeing
+the consequence: centres now rest on \CalibFitBases{} of \NBase{} base
+models. Pre-registration stopped us choosing a construction after seeing
 results and did not stop us writing two incompatible sentences about it; a
 protocol document needs the same internal-agreement check we apply to the
 paper.
@@ -1590,6 +1602,41 @@ Other figures in that same paragraph pair were quoting registry values
 spelled out as words, where no gate could see them at all, and one of those
 was not merely untraced but wrong. The sweep that found them is described in
 \S\ref{sec:audit}'s mechanical-verification paragraph.
+
+\paragraph{Settling a definition did not reach the sentences that used the old
+one.} An earlier round fixed what this paper means by a checkpoint: a
+quantized model artifact, one (base model, scheme) pair that was evaluated,
+with the base model the unquantized model several of those derive from. That
+definition is stated in \S\ref{sec:results} and it is correct. It did not
+propagate.
+
+The corpus-scale figure was registered as \texttt{n\_checkpoints}, rendered as
+a macro named for checkpoints, and described in the registry --- accurately
+--- as counting distinct base models. The prose around it said
+``checkpoints'': in the abstract, in the method section, in the sentence
+describing the fit/calibration partition, and in four generated documents. The
+value was right, the description was right, and the claim was wrong, so no
+check could fire: every gate here compares a macro's value against the
+registry and none compared the registry's description against the noun in the
+sentence. The quantized-checkpoint count, \NQuantCkpt{}, had never been
+stated anywhere. Both figures are now registered and named for what they
+count, and a per-macro unit declaration fails the build when a macro is
+followed by a noun it does not count.
+
+So defining a term requires auditing its uses. This is adjacent to the entry
+above and not the same: there the fix was incomplete, here the fix was correct
+and simply did not reach far enough.
+
+\emph{Both corrections found in that sweep make the paper stronger, which is
+worth saying because the rest of this record runs the other way.} The
+partition and the leave-one-out evaluation both hold out a base model, not a
+quantization of one --- so the held-out unit shares no pretraining base with
+anything on the fit side, and holding out a base model holds out every
+checkpoint of it at once. That is a harder test than the labels claimed, and
+the procedure was renamed from leave-one-checkpoint-out to
+leave-one-base-model-out to say so. Neither correction changes a published
+coverage figure; both change what the figure is a measurement of, in the
+direction of more rigour rather than less.
 
 \paragraph{Why the stratification error was invisible to every gate.} The
 mis-attributed stratification figure in \S\ref{sec:audit} is not the same

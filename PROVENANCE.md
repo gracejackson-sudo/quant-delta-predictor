@@ -682,7 +682,7 @@ the path `fit_calibrated`'s own docstring already said anything quoted to a
 user must come from. Protocol fixed in advance in
 `CALIBRATION_PREREGISTRATION.md`; outcome 1, split conformal succeeds.
 
-Leave-one-checkpoint-out coverage 93.56% against nominal 90%; 20 of 20
+Leave-one-base-model-out coverage 93.56% against nominal 90%; 20 of 20
 partition draws clear the pre-registered 87.9% threshold (median 91.56%).
 NVFP4's published interval goes [-4.18, +1.87] -> [-7.64, +5.17], 2.12x wider:
 the in-sample band had been understating the spread of the highest

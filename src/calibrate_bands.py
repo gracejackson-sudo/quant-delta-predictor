@@ -14,13 +14,17 @@ Two constructions, primary designated in advance:
             residuals taken about the centre predict_interval() will use.
             Mechanism is strata.ConservativeStratified.fit_calibrated.
 
-  SECONDARY jackknife+, leave-one-checkpoint-out. For each non-test
-            checkpoint i, a centre refit without i; the interval from the
+  SECONDARY jackknife+, leave-one-base-model-out. For each non-test
+            base model i, a centre refit without i; the interval from the
             quantiles of {centre_-i -+ |residual_i|}. Uses every non-test
-            checkpoint, at a 1-2*alpha guarantee (80% at alpha=0.10).
+            base model, at a 1-2*alpha guarantee (80% at alpha=0.10).
 
-Evaluation is leave-one-checkpoint-out over all 38 checkpoints, so every row
-is scored by a band that never saw its own checkpoint. The pre-registration
+Evaluation is leave-one-base-model-out over every base model in the corpus,
+so every row is scored by a band that never saw ANY checkpoint of its own
+base model. Both loops iterate d.base_model.unique(), and until 2026-10-11
+they were named and described as leave-one-checkpoint-out: the held-out unit
+is the base model, which holds out every quantization of it at once and is
+the harder test. The mislabel understated the construction. The pre-registration
 specified the fit/calibration partition and the evaluation unit but did not
 spell out how they compose; a single global three-way split leaves no test
 set at this n, so the nested form is the only one that yields a coverage
@@ -62,14 +66,14 @@ def _cov(y, lo, hi):
     return float(((y >= lo - e) & (y <= hi + e)).mean())
 
 
-def split_conformal_loco(d, cal_ckpts):
+def split_conformal_lobo(d, cal_bases):
     """Primary. Returns per-row records."""
     rows = []
     for test in sorted(d.base_model.unique()):
         te = d[d.base_model == test]
         rest = d[d.base_model != test]
-        dcal = rest[rest.base_model.isin(cal_ckpts)]
-        dfit = rest[~rest.base_model.isin(cal_ckpts)]
+        dcal = rest[rest.base_model.isin(cal_bases)]
+        dfit = rest[~rest.base_model.isin(cal_bases)]
         if dfit.empty or dcal.empty:
             continue
         m = ConservativeStratified().fit_calibrated(dfit, dcal)
@@ -83,16 +87,16 @@ def split_conformal_loco(d, cal_ckpts):
     return pd.DataFrame(rows)
 
 
-def jackknife_plus_loco(d, alpha=ALPHA):
+def jackknife_plus_lobo(d, alpha=ALPHA):
     """Secondary. Mondrian by scheme where the scheme has >= MIN_CAL_UNITS
     contributing checkpoints, else pooled."""
     rows = []
-    all_ckpts = sorted(d.base_model.unique())
-    for test in all_ckpts:
+    all_bases = sorted(d.base_model.unique())
+    for test in all_bases:
         te = d[d.base_model == test]
         rest = d[d.base_model != test]
-        # leave-one-checkpoint-out residuals, each about a centre that never
-        # saw that checkpoint
+        # leave-one-base-model-out residuals, each about a centre that
+        # never saw any checkpoint of that base model
         recs = []
         for i in sorted(rest.base_model.unique()):
             inner_fit = rest[rest.base_model != i]
@@ -187,16 +191,17 @@ def main():
               flush=True)
 
     print("\nprimary: split conformal, checkpoint-blocked ...", flush=True)
-    t1 = split_conformal_loco(d, cal)
+    t1 = split_conformal_lobo(d, cal)
     res["split_conformal"] = summarise(t1, "split conformal (checkpoint-blocked)", d)
     print("  coverage %.2f%% on %d rows, mean half-width %.3fpp"
           % (res["split_conformal"]["coverage_pct"],
              res["split_conformal"]["rows"],
              res["split_conformal"]["mean_half_width_pp"]), flush=True)
 
-    print("\nsecondary: jackknife+, leave-one-checkpoint-out ...", flush=True)
-    t2 = jackknife_plus_loco(d)
-    res["jackknife_plus"] = summarise(t2, "jackknife+ (leave-one-checkpoint-out)", d)
+    print("\nsecondary: jackknife+, leave-one-base-model-out ...", flush=True)
+    t2 = jackknife_plus_lobo(d)
+    res["jackknife_plus"] = summarise(
+        t2, "jackknife+ (leave-one-base-model-out)", d)
     print("  coverage %.2f%% on %d rows, mean half-width %.3fpp"
           % (res["jackknife_plus"]["coverage_pct"],
              res["jackknife_plus"]["rows"],
@@ -233,7 +238,7 @@ def partition_sensitivity(d, seeds=range(20)):
     for sd in seeds:
         rng = np.random.default_rng(sd)
         cal = set(rng.choice(ckpts, size=n_cal, replace=False).tolist())
-        t = split_conformal_loco(d, cal)
+        t = split_conformal_lobo(d, cal)
         y = t.delta.to_numpy(float)
         out.append({"seed": int(sd),
                     "coverage_pct": 100 * _cov(y, t.lo.to_numpy(float),

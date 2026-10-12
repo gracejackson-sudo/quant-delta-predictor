@@ -62,7 +62,7 @@ def a1_leakage(d, p):
     key_d = set(zip(d.model, d.benchmark))
     key_p = set(zip(p.model, p.benchmark))
     print(f"   shared model ids          : {len(ov_ids)} {ov_ids}")
-    print(f"   shared base checkpoints   : {len(ov_base)} {ov_base}")
+    print(f"   shared base models        : {len(ov_base)} {ov_base}")
     print(f"   shared (model, benchmark) : {len(key_d & key_p)}")
     if not ov_ids and not ov_base and not (key_d & key_p):
         note("OK", "no row-, checkpoint- or model-level overlap: there is no "

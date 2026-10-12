@@ -181,7 +181,7 @@ def registry():
     if os.path.exists(_cb):
         _j = json.load(open(_cb))
         add("calib_cov_pct", _j["split_conformal"]["coverage_pct"], 0.05,
-            "leave-one-checkpoint-out two-sided coverage of the calibrated "
+            "leave-one-base-model-out two-sided coverage of the calibrated "
             "band, pre-registered partition")
         add("calib_hw_pp", _j["split_conformal"]["mean_half_width_pp"], 0.002,
             "mean half-width of the calibrated band")
@@ -197,7 +197,7 @@ def registry():
         # units. This counts the schemes that have them.
         add("jackknife_schemes_with_19_units",
             int((d.groupby("scheme").base_model.nunique() >= 19).sum()), 0,
-            "schemes with the 19 leave-one-checkpoint-out units a 90% "
+            "schemes with the 19 leave-one-base-model-out units a 90% "
             "jackknife+ guarantee needs at alpha=0.05")
         if _j.get("partition_sensitivity"):
             _c = sorted(x["coverage_pct"] for x in _j["partition_sensitivity"])
@@ -209,10 +209,17 @@ def registry():
         _sup = _j.get("calibration_support", {})
         _p = _j.get("partition", {})
         if _p:
-            add("calib_fit_ckpt", len(_p.get("fit_checkpoints", [])), 0,
-                "checkpoints the shipped centre is estimated on")
-            add("calib_cal_ckpt", len(_p.get("calibration_checkpoints", [])),
-                0, "checkpoints the shipped width is estimated on")
+            # Both sides of the partition are BASE MODELS: the artifact's
+            # fit_checkpoints / calibration_checkpoints lists hold base-model
+            # names, and 25 + 13 = n_base_models. Renamed with the same
+            # reasoning as n_base_models above. Holding out a whole base
+            # model is the stronger choice -- no base model appears on both
+            # sides, so the calibration side shares no base with the fit
+            # side -- so the mislabel understated the construction.
+            add("calib_fit_bases", len(_p.get("fit_checkpoints", [])), 0,
+                "base models the shipped centre is estimated on")
+            add("calib_cal_bases", len(_p.get("calibration_checkpoints", [])),
+                0, "base models the shipped width is estimated on")
             # DELIBERATELY WHOLE-CORPUS: contrasted with the fit-partition
             # centre to measure centre_move_max_pp. Do not convert.
             _full = ConservativeStratified().fit(d)
@@ -284,7 +291,22 @@ def registry():
     add("n_rows_dropped_near_chance", _raw - meta["n_rows"], 0,
         "extracted rows dropped for a near-chance baseline")
     add("min_acc_before_pct", _MAB, 0, "baseline accuracy floor, in points")
-    add("n_checkpoints", meta["n_checkpoints"], 0, "distinct base models")
+    # RENAMED 2026-10-11. This key was called n_checkpoints and rendered as
+    # \Nckpt, and the prose around it said "checkpoints" -- in the abstract,
+    # the method, and four generated documents. It has always counted
+    # BASE MODELS, as its own description said, and nothing compared the
+    # description to the noun in the sentence. The quantized-checkpoint count
+    # is n_quant_checkpoints below and had never been stated anywhere.
+    add("n_base_models", meta["n_checkpoints"], 0,
+        "distinct base models: the unquantized models the corpus's "
+        "checkpoints derive from")
+    add("n_quant_checkpoints", int(d.groupby(["base_model", "scheme"]).ngroups),
+        0,
+        "quantized checkpoints: distinct (base model, scheme) pairs that "
+        "were evaluated, which is what this paper defines a checkpoint to be. "
+        "NOT an independent-evidence count -- several checkpoints share a "
+        "base model, which is why the training-side unit is the base model "
+        "and the prospective interval is clustered on the checkpoint")
     add("n_families", meta["n_families"], 0, "distinct families")
     add("n_benchmarks", int(d.benchmark.nunique()), 0,
         "distinct benchmarks in the modeling set (Tier 2.5 v4 split "
@@ -862,7 +884,7 @@ def registry():
         # from a training family (distillation, continued pretraining,
         # quantization, fine-tuning). On this corpus the in-family label
         # applies exactly to the seven DeepSeek-R1-Distill checkpoints, whose
-        # bases are Llama-3.1/3.3 and Qwen-2.5 checkpoints in the training
+        # bases are Llama-3.1/3.3 and Qwen-2.5 base models in the training
         # data. Every other strict checkpoint (Gemma-3, SmolLM, SmolLM3,
         # Nemotron-Nano) is a new pretraining run relative to the training
         # families and is treated as out-of-family.
@@ -919,8 +941,8 @@ def registry():
         # withdrawn: the out-of-family half was four-fifths Gemma-3, so the
         # contrast carried a label implying a family-transfer result it could
         # not support. These keys report the groups instead of differencing
-        # them. "Checkpoints" means base checkpoints, suffix stripped, which
-        # is what it means everywhere else in the paper.
+        # them. The two series below count different objects and both are
+        # registered: see the note on the add() calls.
         if "family" in _ic.columns and "base_model" in _ic.columns:
             _ds = _st[_st.family == "deepseek-r1-distill"]
             _g3 = _st[_st.family == "gemma-3"]
@@ -1255,7 +1277,8 @@ def registry():
                 f"leave-one-family-out MAE for {k}")
 
     # Is the per-scheme mean's small advantage distinguishable from zero?
-    # Leave-one-family-out, recomputed here; bootstrap resamples base checkpoints.
+    # Leave-one-family-out, recomputed here; the bootstrap resamples base
+    # models (not quantized checkpoints -- see n_base_models).
     import numpy as _np2
     _rows = []
     for _f in sorted(d.family.unique()):

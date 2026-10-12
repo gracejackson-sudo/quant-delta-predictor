@@ -1373,15 +1373,14 @@ def test_the_error_record_is_complete_across_both_its_halves():
     root = os.path.join(os.path.dirname(__file__), "..")
     # 17 error items, 9 in the body and 8 in the appendix, on 2026-10-08.
     TOTAL_ITEMS = 17
-    # 14 \paragraph blocks: 7 body, unchanged -- the 2026-10-11 note on
-    # figures written as words extended the existing mechanical-verification
-    # block rather than adding one -- and 7 appendix, which is the 6 from the
-    # 2026-10-08 split plus "A fix that exhibited the class it was fixing".
-    # That entry records that converting one site of a figure and registering
-    # its key looked like closure while a near-duplicate paragraph two pages
-    # away kept the hand-typed version. This count was pinned at 15 first;
-    # the test caught the miscount, which is what it is for.
-    TOTAL_PARAS = 14
+    # 15 \paragraph blocks: 7 body and 8 appendix. The appendix holds the 6
+    # from the 2026-10-08 split, "A fix that exhibited the class it was
+    # fixing", and "Settling a definition did not reach the sentences that
+    # used the old one" -- the n_checkpoints entry, where the value and the
+    # description were both right and the noun in the sentence was wrong.
+    # This count was pinned at 15 once before on a miscount and corrected to
+    # 14; it is 15 now because an entry was genuinely added.
+    TOTAL_PARAS = 15
     for name in ("main.tex", "neurips_main.tex"):
         s = open(os.path.join(root, "paper", name), encoding="utf-8").read()
         a, c = s.index("\\section{Audit}"), s.index("\\section{Conclusion}")
@@ -2412,7 +2411,7 @@ _REGISTRY_MANIFEST = {
     # +2 when the abstract moved off the threshold framing: the share of
     # the global-mean-to-noise-floor headroom recovered by the best
     # card-feature predictor, and by the shipped per-scheme mean.
-    # +14 at round item 1 (the calibrated band): the leave-one-checkpoint-out
+    # +14 at round item 1 (the calibrated band): the leave-one-base-model-out
     # coverage and mean half-width of the split-conformal band, the four
     # partition-sensitivity figures and the partition count, the three
     # calibration-unit counts, the jackknife+ pooled and nvfp4 coverages, the
@@ -2453,7 +2452,13 @@ _REGISTRY_MANIFEST = {
     # 17, as the denominator for a 12-cell population). +1 again for
     # jackknife_schemes_with_19_units: the paper now states WHY split
     # conformal is primary, which is arithmetic rather than a measurement.
-    "(scalar)": 369,
+    # 2026-10-11 (later): net +1 -> 370. n_checkpoints, calib_fit_ckpt and
+    # calib_cal_ckpt were renamed to n_base_models, calib_fit_bases and
+    # calib_cal_bases because all three counted base models while the prose
+    # called them checkpoints, and n_quant_checkpoints (102) was added -- the
+    # figure this paper's own definition of "checkpoint" requires and had
+    # never stated.
+    "(scalar)": 370,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.
