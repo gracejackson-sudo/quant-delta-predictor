@@ -1603,6 +1603,39 @@ spelled out as words, where no gate could see them at all, and one of those
 was not merely untraced but wrong. The sweep that found them is described in
 \S\ref{sec:audit}'s mechanical-verification paragraph.
 
+\paragraph{A check can be correct and still not read the document.} The
+script that audits this paper strips LaTeX comments before scanning, with a
+pattern that treated every \texttt{\%} as the start of one. An escaped
+\texttt{\textbackslash\%} is a printed percent sign, and this paper contains
+\WordGateEscapedPct{} of them against \WordGateRealComments{} real comments,
+so every line was cut at its first printed percentage. About
+\WordGateHiddenPct\% of the body --- \WordGateHiddenChars{} characters --- was
+never read by the hand-typed-numeral check, the spelled-out-figure check, the
+counted-noun derivation or the unit declarations.
+
+The retroactive part matters more than the fix. Every clean result those
+checks reported before this was found was computed over
+\WordGateScannedPct\% of the paper, and nothing in the output distinguished
+that from a complete pass: a check reading most of a document reports the same
+\emph{zero problems} as a check reading all of it. The four predicates were
+each correct. What was wrong was the copy of the document they were given, and
+no part of the apparatus made a claim about that copy. The recovered text
+held hand-typed numerals and spelled-out figures that no check had ever seen,
+one of them a count derived from a registered figure rather than registered
+itself.
+
+So a check that preprocesses its input is making a claim about the
+preprocessing, and that claim needs asserting like any other. Every reducing
+check in the accompanying code now reports bytes in against bytes scanned, the
+retained fraction is pinned within a band tight enough to fail on this
+specific defect --- verified by reintroducing it --- and each stripper carries
+a planted construct it must preserve. The same sweep found that the
+traceability checker removed fenced code blocks by accident of backtick
+pairing rather than by the rule written for them, and that the artifact
+freshness gate compared timestamps only, so a corpus edit that preserved its
+timestamp would have left every derived artifact looking current; the corpus
+content is now pinned by hash.
+
 \paragraph{Settling a definition did not reach the sentences that used the old
 one.} An earlier round fixed what this paper means by a checkpoint: a
 quantized model artifact, one (base model, scheme) pair that was evaluated,

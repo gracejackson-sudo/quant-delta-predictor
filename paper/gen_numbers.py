@@ -19,6 +19,11 @@ M = {
     # \Nckpt rendered n_checkpoints, which counted base models, while the
     # prose said "checkpoints". Split into the two objects, 2026-10-11.
     "NBase": ("n_base_models", "{:.0f}"),
+    "WordGateEscapedPct": ("word_gate_escaped_pct", "{:.0f}"),
+    "WordGateRealComments": ("word_gate_real_comments", "{:.0f}"),
+    "WordGateHiddenChars": ("word_gate_hidden_chars", "{:.0f}"),
+    "WordGateHiddenPct": ("word_gate_hidden_pct", "{:.1f}"),
+    "WordGateScannedPct": ("word_gate_scanned_pct", "{:.1f}"),
     "NQuantCkpt": ("n_quant_checkpoints", "{:.0f}"),
     "Nfam": ("n_families", "{:.0f}"), "Nsch": ("n_schemes", "{:.0f}"),
     "MinCkpt": ("min_cell_checkpoints", "{:.0f}"),

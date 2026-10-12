@@ -97,8 +97,15 @@ def classify(doc_text):
     tagged = [float(v) for _, v in CLAIM.findall(doc_text)]
     # strip the tags, then look at what a reader actually sees
     visible = CLAIM.sub("", doc_text)
-    visible = re.sub(r"`[^`]*`", " ", visible)       # inline code
+    # FENCED BLOCKS FIRST. The inline-code pattern ran first and chewed the
+    # fences three backticks at a time, so the fenced-block pattern never
+    # matched anything (measured: 0 bytes removed by it on every document)
+    # and a fence's content was removed by accident of pairing rather than on
+    # purpose. It cost 18 characters of README on 2026-10-11, which is small
+    # and was luck: a fence whose backticks happened to pair differently
+    # would have left shell commands in the scan or eaten prose around them.
     visible = re.sub(r"```.*?```", " ", visible, flags=re.S)
+    visible = re.sub(r"`[^`]*`", " ", visible)       # inline code
     visible = re.sub(r"\]\([^)]*\)", " ", visible)   # link targets
     untraced = []
     for m in NUM.finditer(visible):

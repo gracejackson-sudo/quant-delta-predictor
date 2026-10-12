@@ -1165,6 +1165,68 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-11 (fourth) --- input coverage, swept
+
+The escaped-percent defect is recorded above. This is the sweep it forced, and
+two more findings came out of it.
+
+**Bytes in against bytes scanned, for every reducing check.** Measured, pinned
+within a band, and the band is tight enough to fail on the defect that
+prompted it --- verified by reintroducing the bug and watching the test go red
+at 93.0% against a 96-98% band. The first band I wrote (93-98%) let the
+reintroduced bug pass, which is the whole failure mode of this document, found
+by planting rather than by reasoning.
+
+| check / input | retained |
+| --- | --- |
+| `audit_paper` body / either variant | 95.9%, 96.3% |
+| `check_prose` raw / either variant | 98.3%, 98.7% |
+| `check_prose` heading-stripped | 95.4%, 95.8% |
+| `audit_traceability` visible / 6 docs | 68.8% - 88.4% |
+| `check_docs` text / 44 docs | 91.2% overall, 44.9% worst (`RANKING.md`) |
+
+The low numbers are legitimate and now say why in the test: claim tags are
+large and numerous (`RANKING.md` carries 217), and every numeral inside an
+inline-code span was read by hand --- shell commands, size-band labels like
+`w4a16|<2B`, model names, formula constants, package versions, commit hashes,
+one IP address. None is a figure.
+
+**Each stripper carries a planted construct it must keep.** The escaped
+percent for `audit_paper` and `check_prose`, a prose figure and a fenced block
+for `audit_traceability`, an unclosed `<!--` for `check_docs`. Each probe also
+asserts the stripper still removes what it is for, so "keeps everything"
+cannot pass either.
+
+**Found in the sweep: `audit_traceability` was removing fenced code blocks by
+accident.** It stripped inline code first, so the inline pattern chewed each
+fence three backticks at a time and the fenced-block pattern matched zero
+bytes on every document. The content was removed, but by backtick pairing
+rather than by the rule written for it; a fence whose backticks paired
+differently would have left shell commands in the scan or eaten the prose
+around them. It cost 18 characters of README, which was luck. Fences are now
+stripped first.
+
+**Found in the sweep: the artifact freshness gate compared timestamps only.**
+It catches the safe direction --- a dataset whose mtime moves while an artifact
+does not, which is the red a byte-identical restore produced earlier today ---
+and it cannot see the unsafe one. A corpus edit whose timestamp is preserved
+(`touch -r`, an rsync or checkout that keeps times, an edit then a restored
+timestamp) leaves every derived artifact looking current against data it was
+not built from, which is exactly the C1/C2 failure arriving by a route the
+mtime check is blind to. `data/dataset.csv` is now pinned by sha256 with its
+line count, and the two reds are distinguishable: the hash says the corpus
+moved, the mtime says only that a file was touched. Plant-verified by changing
+one `acc_after` value and restoring the timestamp --- the mtime gate passes and
+the hash gate fails.
+
+**The appendix figures are measured, not recorded.** The five numbers in that
+entry are computed by running the broken stripper and the fixed one over the
+current paper and differencing, so they stay true as the paper changes. They
+have already moved: writing the entry added escaped percent signs, so the
+count is 136 rather than the 132 first observed, and the hidden span 3,359
+characters rather than 3,162. The claim is present-tense about the current
+file, which is why that is right rather than awkward.
+
 ### 2026-10-11 (third) --- the gate's own input, and measured declarations
 
 **3% of the paper was never read by any check in `audit_paper.py`.** The scan

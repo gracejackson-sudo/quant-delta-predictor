@@ -1351,6 +1351,168 @@ def test_prose_scanner_catches_its_own_plants():
         f"one to make the scanner pass is the failure mode this guards.")
 
 
+def test_every_gate_scans_what_it_claims_to_scan():
+    """Bytes in versus bytes actually scanned, for every check that reduces
+    its input before looking at it.
+
+    WHY. paper/audit_paper.py stripped LaTeX comments with re.sub(r"%.*"),
+    and an escaped \\% is a percent sign rather than a comment. This paper
+    has 132 of them against 7 real comments, so every line was cut at its
+    first printed percentage and 3,162 characters -- 3% of the body -- were
+    invisible to four correct checks for as long as they had existed. A
+    predicate can be right while its coverage is partial, and nothing in the
+    output distinguishes the two: a gate reading 97% of a document reports
+    the same "0 problems" as a gate reading all of it. So a check that
+    preprocesses its input is making a claim about that preprocessing, and
+    this is the test that asserts it.
+
+    WHAT THIS PINS: the retained fraction for each (gate, input) pair, within
+    a band, with what is legitimately removed named in the comment. A stripper
+    that starts eating more fails low; one that stops removing what it should
+    fails high. Both are worth knowing.
+
+    The companion test below plants a construct each stripper must keep.
+    """
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+
+    def tex(name):
+        return open(os.path.join(root, "paper", name), encoding="utf-8").read()
+
+    # (label, bytes_in, bytes_scanned, low, high)
+    rows = []
+
+    # --- audit_paper.py: \input, cross-reference commands, tabular blocks,
+    #     and real comments. 4% is the three tabular environments plus the
+    #     seven comment lines.
+    for v in ("neurips_main.tex", "main.tex"):
+        s = tex(v)
+        b = re.sub(r"\\input\{[^}]*\}", " ", s)
+        b = re.sub(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}", " ", b)
+        b = re.sub(r"\\begin\{tabular\}.*?\\end\{tabular\}", " ", b, flags=re.S)
+        b = re.sub(r"(?<!\\)%.*", " ", b)
+        # The band has to be tight enough to catch the bug it was written
+        # for. The \\%-as-comment bug costs 2.9 points (95.9% -> 93.0%), and
+        # a 93-98% band let the reintroduced bug pass -- measured, not
+        # assumed, by planting it. 95.5-97.5% fails on it.
+        rows.append((f"audit_paper body / {v}", len(s), len(b), 0.955, 0.975))
+
+    # --- check_prose.py: whole comment LINES (so an escaped \% mid-line is
+    #     safe by construction), then heading titles for the patterns that
+    #     opt into it.
+    for v in ("neurips_main.tex", "main.tex"):
+        s = tex(v)
+        kept = "\n".join(l for l in s.split("\n")
+                         if not l.lstrip().startswith("%"))
+        raw = re.sub(r"\s+", " ", kept)
+        st = re.sub(r"\\paragraph\{[^{}]*\}", " ", kept)
+        st = re.sub(r"\\(?:section|subsection)\{[^{}]*\}", " ", st)
+        st = re.sub(r"\s+", " ", st)
+        rows.append((f"check_prose raw / {v}", len(s), len(raw), 0.96, 1.0))
+        rows.append((f"check_prose stripped / {v}", len(s), len(st), 0.93, 0.98))
+
+    # --- audit_traceability.py: claim tags (large and numerous -- RANKING.md
+    #     carries 217), fenced blocks, inline code, link targets. Every
+    #     numeral inside inline code was read by hand on 2026-10-11 and none
+    #     is a figure: shell commands, size-band labels like w4a16|<2B, model
+    #     names, formula constants, package versions, commit hashes, an IP.
+    sys.path.insert(0, os.path.join(root, "src"))
+    import audit_traceability as AT
+    for f in AT.OUTWARD:
+        p = os.path.join(root, f)
+        if not os.path.exists(p):
+            continue
+        s = open(p, encoding="utf-8").read()
+        v = AT.CLAIM.sub("", s)
+        v = re.sub(r"```.*?```", " ", v, flags=re.S)
+        v = re.sub(r"`[^`]*`", " ", v)
+        v = re.sub(r"\]\([^)]*\)", " ", v)
+        rows.append((f"traceability visible / {f}", len(s), len(v), 0.60, 0.95))
+
+    # --- check_docs.py: HTML comments, which is where claim tags live.
+    #     RANKING.md retains under half of itself and that is all tags.
+    import check_docs as CD
+    for f in CD.DOCS:
+        s = CD.read(f)
+        rows.append((f"check_docs text / {f}", len(s), len(CD.strip_tags(s)),
+                     0.40, 1.0))
+
+    bad = []
+    for label, n_in, n_out, lo, hi in rows:
+        frac = (n_out / n_in) if n_in else 1.0
+        if not (lo <= frac <= hi):
+            bad.append(f"  {label}: {n_in} in, {n_out} scanned "
+                       f"({frac:.1%}), expected {lo:.0%}-{hi:.0%}")
+    assert not bad, (
+        "a gate's input coverage moved outside its pinned band. Low means "
+        "the stripper is eating text the check should see -- the \\% class. "
+        "High means it stopped removing what it was meant to. Work out which "
+        "before widening the band:\n" + "\n".join(bad))
+
+
+def test_each_input_stripper_keeps_what_it_must():
+    """Plant a construct every stripper should keep, and confirm it survives.
+
+    The \\% case is the template: an escaped construct that looks like syntax
+    to a naive regex. These probes cover the same shape in each stripper.
+    """
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    sys.path.insert(0, os.path.join(root, "src"))
+    bad = []
+
+    # 1. audit_paper.py -- an escaped percent must not start a comment.
+    probe = "coverage is 93.5\\% and twelve cells cleared the floor\n"
+    out = re.sub(r"(?<!\\)%.*", " ", probe)
+    if "twelve cells" not in out:
+        bad.append("audit_paper: text after an escaped \\% is being dropped "
+                   "(this is the 2026-10-11 bug, reintroduced)")
+    # and a REAL comment must still go
+    if "secret" in re.sub(r"(?<!\\)%.*", " ", "visible % secret\n"):
+        bad.append("audit_paper: real comments are no longer stripped")
+
+    # 2. check_prose.py -- strips whole comment lines, so a mid-line escaped
+    #    percent is safe; assert that rather than assume it.
+    body = "a line with 50\\% and nine rows\n% a real comment line\n"
+    kept = "\n".join(l for l in body.split("\n")
+                     if not l.lstrip().startswith("%"))
+    if "nine rows" not in kept:
+        bad.append("check_prose: a mid-line escaped percent now truncates")
+    if "a real comment line" in kept:
+        bad.append("check_prose: comment lines are no longer dropped")
+
+    # 3. audit_traceability.py -- a figure in prose must survive; one inside
+    #    inline code must not. And an unpaired backtick must not swallow the
+    #    document.
+    import audit_traceability as AT
+    def visible(s):
+        v = AT.CLAIM.sub("", s)
+        v = re.sub(r"```.*?```", " ", v, flags=re.S)
+        v = re.sub(r"`[^`]*`", " ", v)
+        return re.sub(r"\]\([^)]*\)", " ", v)
+    if "41.7" not in visible("coverage reached 41.7 points\n"):
+        bad.append("traceability: a figure in plain prose is being stripped")
+    if "0.4.1" in visible("pinned at `llmcompressor==0.4.1` here\n"):
+        bad.append("traceability: inline code is no longer stripped")
+    # fenced blocks must be removed as blocks, not chewed by the inline rule
+    fenced = visible("before\n```bash\nrun --flag 7\n```\nafter 12.5 points\n")
+    if "12.5" not in fenced or "run --flag" in fenced:
+        bad.append("traceability: fenced blocks are not being removed cleanly "
+                   f"(got {fenced!r})")
+
+    # 4. check_docs.py -- an unclosed HTML comment must not swallow the rest.
+    import check_docs as CD
+    if "the rest of it" not in CD.strip_tags("start\n<!-- unclosed\n"
+                                             "the rest of it\n"):
+        bad.append("check_docs: an unclosed <!-- now swallows the document")
+    if "tagged" in CD.strip_tags("x<!-- claim: tagged = 1 -->y"):
+        bad.append("check_docs: claim tags are no longer stripped")
+
+    assert not bad, ("an input stripper is removing text the check needs, or "
+                     "has stopped removing what it should:\n  "
+                     + "\n  ".join(bad))
+
+
 def test_cards_and_quantized_checkpoints_agree_on_this_corpus():
     """n_rh_cards_harvested and n_quant_checkpoints both read 102, and README
     says "one card per quantized checkpoint" on the strength of it.
@@ -1458,14 +1620,15 @@ def test_the_error_record_is_complete_across_both_its_halves():
     root = os.path.join(os.path.dirname(__file__), "..")
     # 17 error items, 9 in the body and 8 in the appendix, on 2026-10-08.
     TOTAL_ITEMS = 17
-    # 15 \paragraph blocks: 7 body and 8 appendix. The appendix holds the 6
+    # 16 \paragraph blocks: 7 body and 9 appendix. The appendix holds the 6
     # from the 2026-10-08 split, "A fix that exhibited the class it was
-    # fixing", and "Settling a definition did not reach the sentences that
-    # used the old one" -- the n_checkpoints entry, where the value and the
-    # description were both right and the noun in the sentence was wrong.
-    # This count was pinned at 15 once before on a miscount and corrected to
-    # 14; it is 15 now because an entry was genuinely added.
-    TOTAL_PARAS = 15
+    # fixing", "Settling a definition did not reach the sentences that used
+    # the old one" (the n_checkpoints entry, where the value and the
+    # description were both right and the noun in the sentence was wrong),
+    # and "A check can be correct and still not read the document" (the
+    # escaped-percent defect, where four correct predicates ran on a
+    # truncated copy of the paper).
+    TOTAL_PARAS = 16
     for name in ("main.tex", "neurips_main.tex"):
         s = open(os.path.join(root, "paper", name), encoding="utf-8").read()
         a, c = s.index("\\section{Audit}"), s.index("\\section{Conclusion}")
@@ -2352,6 +2515,58 @@ def test_regime_b_seed_is_stable_across_processes():
         "requires a stable seed derivation")
 
 
+def test_the_dataset_content_is_pinned_not_just_its_timestamp():
+    """The staleness gate below compares MTIMES. That covers one direction
+    and not the other, and the other is the dangerous one.
+
+    Safe direction, which it catches: the dataset's timestamp moves and an
+    artifact does not. Observed on 2026-10-11 when a byte-identical restore
+    moved the mtime and every consumed artifact went red -- noisy, but the
+    red was in the right direction.
+
+    UNSAFE DIRECTION, WHICH IT DOES NOT CATCH: the dataset's CONTENT changes
+    while its timestamp is preserved. `touch -r`, an rsync or checkout that
+    preserves times, or an edit followed by restoring the timestamp all leave
+    every artifact looking fresh against a corpus they were not built from.
+    That is precisely the C1/C2 failure the mtime test exists for, arriving
+    by a route the mtime test cannot see.
+
+    So the content is pinned. A dataset change now fails here regardless of
+    what happened to the timestamp, and the two reds are distinguishable: this
+    one says the corpus moved, the mtime one says only that a file was
+    touched.
+
+    IF THIS FAILS: the corpus changed. Rerun the whole chain in README's
+    order, verify the figures that move, and update the hash below IN THE SAME
+    COMMIT with the row count. Updating the hash alone is the one thing this
+    test exists to prevent.
+    """
+    import hashlib
+    root = os.path.join(os.path.dirname(__file__), "..")
+    p = os.path.join(root, "data", "dataset.csv")
+    raw = open(p, "rb").read()
+    got = hashlib.sha256(raw).hexdigest()
+    # data/dataset.csv as of 2026-10-11: 856 extracted rows, 823 after the
+    # near-chance filter, 102 quantized checkpoints from 38 base models.
+    WANT = "eb09d44db9ab85569ccf4c5ee9cc7b3517d0b4d9c0fb83c264879ab6209863cd"
+    WANT_LINES = 857          # 856 rows plus the header
+    lines = raw.count(b"\n") + (0 if raw.endswith(b"\n") else 1)
+    assert got == WANT, (
+        f"data/dataset.csv content has changed.\n"
+        f"  pinned sha256 {WANT}\n"
+        f"  actual sha256 {got}\n"
+        f"  lines: {lines} (pinned {WANT_LINES})\n"
+        f"Every out/*.json the registry consumes was built from the pinned "
+        f"content. Rerun the chain in README's order, check which figures "
+        f"move, and update this hash and line count in the same commit. The "
+        f"mtime test below cannot see this change if the timestamp was "
+        f"preserved, which is why the hash is here.")
+    assert lines == WANT_LINES, (
+        f"data/dataset.csv has {lines} lines, pinned at {WANT_LINES}, but its "
+        f"sha256 matches. That should be impossible; suspect the line-count "
+        f"arithmetic in this test rather than the data.")
+
+
 def test_registry_reading_artifacts_are_not_older_than_dataset_csv():
     """C1+C2 (day-7 audit): every out/*.json the registry reads must
     be at least as recent as data/dataset.csv. When Definition B moved
@@ -2542,8 +2757,10 @@ _REGISTRY_MANIFEST = {
     # calib_cal_bases because all three counted base models while the prose
     # called them checkpoints, and n_quant_checkpoints (102) was added -- the
     # figure this paper's own definition of "checkpoint" requires and had
-    # never stated.
-    "(scalar)": 370,
+    # never stated. 2026-10-11 (third): +5 -> 375 for the escaped-percent
+    # figures, which are measured from the paper by running the broken and
+    # the fixed comment stripper over it rather than recorded as prose.
+    "(scalar)": 375,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

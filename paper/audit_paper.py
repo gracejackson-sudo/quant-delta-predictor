@@ -197,7 +197,7 @@ _WNOUN = ("cells?|rows?|checkpoints?|schemes?|famil(?:y|ies)|seeds?|"
           "questions?|verdicts?|states?|thresholds?|points?|parameters?|"
           "pairs?|bands?|intervals?|predictors?|grounds?|numbers?|losses|"
           "bases|plots?|estimates?|misses|hits|reviewers?|commits?|"
-          "observations?")
+          "observations?|characters?")
 WORDNUM = re.compile(
     rf"\b(?:{_WORD})(?:[ -](?:[a-z]+[ -]){{0,2}}(?:{_WNOUN}))\b", re.I)
 # Hyphenated METHOD NAMES and compound adjectives, not counts.
@@ -357,6 +357,11 @@ print(f"   counted nouns derived         : {len(_derived)} "
 MACRO_UNITS = {
     # the two objects that were conflated
     "NBase":               r"models?",
+    "WordGateEscapedPct":  r"signs?|marks?",
+    "WordGateRealComments": r"comments?|marks?",
+    "WordGateHiddenChars": r"characters?",
+    "WordGateHiddenPct":   r"body",
+    "WordGateScannedPct":  r"body|paper",
     "NQuantCkpt":          r"checkpoints?",
     "CalibFitBases":       r"models?",
     "CalibCalBases":       r"models?|names?",
