@@ -347,6 +347,36 @@ pages later still said "only two cells are the same in both". Registering the
 key and converting one of its two sites looked like closing the item. Nothing
 could tell the difference.
 
+### A threshold chosen by reasoning is untested until the defect is replayed
+
+Four times on 2026-10-11 a gate was written, reasoned about, believed, and
+found vacuous the moment the defect it was written for was replayed against
+it.
+
+- A retention band of 93-98% for the escaped-percent bug. The bug costs 2.9
+  points; reintroducing it scored 93.0%, inside the band.
+- A noun-phrase declaration set that produced nine false positives on correct
+  prose, because the declarations were whole phrases where the paper writes
+  modifiers.
+- An inline-code predicate that looked for "```" inside the removed span. The
+  defect produces a span that contains no fence because it IS part of one, so
+  the check passed with the bug replanted.
+- And earlier in the week, a plant set that the prose scanner failed three
+  times before the plants were made the primary artifact.
+
+The common shape is that the number or the predicate was derived from an
+argument about the defect rather than from the defect. **Reasoning about the
+threshold is exactly what produced 93%.** So: every threshold, band or
+predicate must be validated by replaying the specific defect it exists to
+catch, and a gate whose target cannot be replayed is not yet a gate.
+
+The corollary is that bands are a weak form. A quantity can be right while the
+mechanism is wrong --- `audit_traceability` removed fenced blocks by backtick
+pairing rather than by the rule written for them, and the amount removed was
+correct --- so where a check reduces its input, assert WHAT was removed against
+the construct each rule names, not how much. That has no number to loosen and
+does not drift with content.
+
 ### The escaped percent sign: 3% of the paper was never read
 
 `paper/audit_paper.py` built its scan body with `re.sub(r"%.*", " ", body)`.

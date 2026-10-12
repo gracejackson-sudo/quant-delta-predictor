@@ -109,6 +109,14 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # appendix item as 89.15, 60 and 93.4, which were already exempt.
           # Each sat after a printed percentage on its line, so no check
           # had ever read it.
+          # The escaped-percent entry quotes the defect as measured at
+          # 708a84d, the last commit with it live: 132 escaped percent
+          # signs, 3{,}162 hidden characters, 97.0% of that revision
+          # scanned. Historical and deliberately frozen -- recomputing them
+          # against the current paper would answer a different question,
+          # which is the error the entry itself is about. 7 and 3.0 are
+          # already exempt above. See PROVENANCE.md 2026-10-11 (fifth).
+          "132", "162", "97.0",
           "0.9", "168", "90.01", "91.0",
           "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
           "0.7545",    # pre-regen mae_global_lofo
@@ -357,11 +365,6 @@ print(f"   counted nouns derived         : {len(_derived)} "
 MACRO_UNITS = {
     # the two objects that were conflated
     "NBase":               r"models?",
-    "WordGateEscapedPct":  r"signs?|marks?",
-    "WordGateRealComments": r"comments?|marks?",
-    "WordGateHiddenChars": r"characters?",
-    "WordGateHiddenPct":   r"body",
-    "WordGateScannedPct":  r"body|paper",
     "NQuantCkpt":          r"checkpoints?",
     "CalibFitBases":       r"models?",
     "CalibCalBases":       r"models?|names?",

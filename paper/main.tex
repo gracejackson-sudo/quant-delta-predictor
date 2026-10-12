@@ -1606,23 +1606,28 @@ was not merely untraced but wrong. The sweep that found them is described in
 \paragraph{A check can be correct and still not read the document.} The
 script that audits this paper strips LaTeX comments before scanning, with a
 pattern that treated every \texttt{\%} as the start of one. An escaped
-\texttt{\textbackslash\%} is a printed percent sign, and this paper contains
-\WordGateEscapedPct{} of them against \WordGateRealComments{} real comments,
-so every line was cut at its first printed percentage. About
-\WordGateHiddenPct\% of the body --- \WordGateHiddenChars{} characters --- was
-never read by the hand-typed-numeral check, the spelled-out-figure check, the
-counted-noun derivation or the unit declarations.
+\texttt{\textbackslash\%} is a printed percent sign, so every line was cut at
+its first printed percentage.
 
-The retroactive part matters more than the fix. Every clean result those
-checks reported before this was found was computed over
-\WordGateScannedPct\% of the paper, and nothing in the output distinguished
-that from a complete pass: a check reading most of a document reports the same
-\emph{zero problems} as a check reading all of it. The four predicates were
-each correct. What was wrong was the copy of the document they were given, and
-no part of the apparatus made a claim about that copy. The recovered text
-held hand-typed numerals and spelled-out figures that no check had ever seen,
-one of them a count derived from a registered figure rather than registered
-itself.
+The figures below are measured against the paper as committed immediately
+before the fix, and are historical rather than recomputed: at that revision
+the source held 132 escaped percent signs against 7 real comment marks, and
+3{,}162 characters --- $3.0\%$ of the body --- were never read by the
+hand-typed-numeral check, the spelled-out-figure check, the counted-noun
+derivation or the unit declarations. So the clean results those four checks
+had been reporting were computed over $97.0\%$ of that revision of the paper.
+The fraction varied as the paper grew and we do not claim a single number for
+the whole period the defect was live; what is quoted is one revision, named in
+the provenance record, where the defect was still present.
+
+The retroactive part matters more than the fix. Nothing in the output
+distinguished a partial pass from a complete one: a check reading most of a
+document reports the same \emph{zero problems} as a check reading all of it.
+The four predicates were each correct. What was wrong was the copy of the
+document they were given, and no part of the apparatus made a claim about that
+copy. The recovered text held hand-typed numerals and spelled-out figures that
+no check had ever seen, one of them a count derived from a registered figure
+rather than registered itself.
 
 So a check that preprocesses its input is making a claim about the
 preprocessing, and that claim needs asserting like any other. Every reducing

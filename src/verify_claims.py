@@ -297,35 +297,14 @@ def registry():
     # BASE MODELS, as its own description said, and nothing compared the
     # description to the noun in the sentence. The quantized-checkpoint count
     # is n_quant_checkpoints below and had never been stated anywhere.
-    # The escaped-percent defect, measured from the paper itself rather than
-    # recorded: run the broken stripper and the fixed one over the same file
-    # and compare. Keeps the appendix entry live instead of frozen prose.
-    _tex = open(os.path.join(HERE, "..", "paper", "neurips_main.tex"),
-                encoding="utf-8").read()
-
-    def _strip_stage(_s):
-        _b = re.sub(r"\\input\{[^}]*\}", " ", _s)
-        _b = re.sub(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}",
-                    " ", _b)
-        return re.sub(r"\\begin\{tabular\}.*?\\end\{tabular\}", " ", _b,
-                      flags=re.S)
-
-    _pre = _strip_stage(_tex)
-    _fixed = re.sub(r"(?<!\\)%.*", " ", _pre)
-    _broken = re.sub(r"%.*", " ", _pre)
-    add("word_gate_escaped_pct", len(re.findall(r"\\%", _tex)), 0,
-        "escaped percent signs in the paper, each of which the broken comment "
-        "stripper read as the start of a comment")
-    add("word_gate_real_comments", len(re.findall(r"(?<!\\)%", _tex)), 0,
-        "actual LaTeX comment marks in the paper")
-    add("word_gate_hidden_chars", len(_fixed) - len(_broken), 0,
-        "characters the broken stripper removed and the fixed one keeps: "
-        "text no check in paper/audit_paper.py had ever read")
-    add("word_gate_hidden_pct",
-        100.0 * (len(_fixed) - len(_broken)) / len(_fixed), 0.05,
-        "the same, as a percentage of the body the checks should scan")
-    add("word_gate_scanned_pct", 100.0 * len(_broken) / len(_fixed), 0.05,
-        "the fraction of the body the checks WERE scanning before the fix")
+    # The escaped-percent defect used to be registered here as five LIVE
+    # keys measured from the current paper. They were removed on 2026-10-11:
+    # the appendix quotes the defect as it was at 708a84d, the last commit
+    # with it live, and a live measurement answers 'what would the broken
+    # stripper read of TODAY'S paper' -- a different question, presented as
+    # the historical one. That is the same correct-number-wrong-object error
+    # the entry is about, which is how it was caught. The figures are frozen
+    # in the paper and exempted by name in paper/audit_paper.py.
     add("n_base_models", meta["n_checkpoints"], 0,
         "distinct base models: the unquantized models the corpus's "
         "checkpoints derive from")

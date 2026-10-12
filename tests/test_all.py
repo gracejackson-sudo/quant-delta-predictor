@@ -1351,103 +1351,153 @@ def test_prose_scanner_catches_its_own_plants():
         f"one to make the scanner pass is the failure mode this guards.")
 
 
-def test_every_gate_scans_what_it_claims_to_scan():
-    """Bytes in versus bytes actually scanned, for every check that reduces
-    its input before looking at it.
+def test_every_removed_span_matches_the_rule_that_removed_it():
+    """Assert WHAT each stripper removed, not how much.
 
-    WHY. paper/audit_paper.py stripped LaTeX comments with re.sub(r"%.*"),
-    and an escaped \\% is a percent sign rather than a comment. This paper
-    has 132 of them against 7 real comments, so every line was cut at its
-    first printed percentage and 3,162 characters -- 3% of the body -- were
-    invisible to four correct checks for as long as they had existed. A
-    predicate can be right while its coverage is partial, and nothing in the
-    output distinguishes the two: a gate reading 97% of a document reports
-    the same "0 problems" as a gate reading all of it. So a check that
-    preprocesses its input is making a claim about that preprocessing, and
-    this is the test that asserts it.
+    WHY NOT A RETENTION BAND. The first version of this test pinned the
+    retained fraction. It could not do the job, twice over.
 
-    WHAT THIS PINS: the retained fraction for each (gate, input) pair, within
-    a band, with what is legitimately removed named in the comment. A stripper
-    that starts eating more fails low; one that stops removing what it should
-    fails high. Both are worth knowing.
+    It failed to catch its own target: pinned at 93-98%, the reintroduced
+    escaped-percent bug passed at 93.0%. Tightening to 96-98% worked, but that
+    is a number chosen against one day's content -- add a section dense in
+    printed percentages, retention legitimately moves, somebody widens the
+    band, and it is vacuous again with nothing to say so.
 
-    The companion test below plants a construct each stripper must keep.
+    And a band cannot see the more interesting failure at all.
+    audit_traceability removed fenced code blocks by backtick pairing rather
+    than by the rule written for them: the quantity removed was right, the
+    mechanism was wrong, and no percentage check can tell. Retention was
+    correct while the stripper was doing something nobody intended.
+
+    So each stripper reports its removed spans with the rule that removed
+    each, and every span must match the construct its rule names. A comment
+    must begin with an UNESCAPED percent. A claim tag must look like a claim
+    tag. A fenced span must begin and end on a fence, and an inline-code span
+    must not cross one. Content-independent, nothing to loosen, and it catches
+    both of the defects found on 2026-10-11: the escaped-percent spans are not
+    comments, and the inline-code spans were straddling fence boundaries.
+
+    Retention percentages are printed for a reader and deliberately not
+    asserted. They are useful to read and useless to pin.
     """
     import re
     root = os.path.join(os.path.dirname(__file__), "..")
-
-    def tex(name):
-        return open(os.path.join(root, "paper", name), encoding="utf-8").read()
-
-    # (label, bytes_in, bytes_scanned, low, high)
-    rows = []
-
-    # --- audit_paper.py: \input, cross-reference commands, tabular blocks,
-    #     and real comments. 4% is the three tabular environments plus the
-    #     seven comment lines.
-    for v in ("neurips_main.tex", "main.tex"):
-        s = tex(v)
-        b = re.sub(r"\\input\{[^}]*\}", " ", s)
-        b = re.sub(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}", " ", b)
-        b = re.sub(r"\\begin\{tabular\}.*?\\end\{tabular\}", " ", b, flags=re.S)
-        b = re.sub(r"(?<!\\)%.*", " ", b)
-        # The band has to be tight enough to catch the bug it was written
-        # for. The \\%-as-comment bug costs 2.9 points (95.9% -> 93.0%), and
-        # a 93-98% band let the reintroduced bug pass -- measured, not
-        # assumed, by planting it. 95.5-97.5% fails on it.
-        rows.append((f"audit_paper body / {v}", len(s), len(b), 0.955, 0.975))
-
-    # --- check_prose.py: whole comment LINES (so an escaped \% mid-line is
-    #     safe by construction), then heading titles for the patterns that
-    #     opt into it.
-    for v in ("neurips_main.tex", "main.tex"):
-        s = tex(v)
-        kept = "\n".join(l for l in s.split("\n")
-                         if not l.lstrip().startswith("%"))
-        raw = re.sub(r"\s+", " ", kept)
-        st = re.sub(r"\\paragraph\{[^{}]*\}", " ", kept)
-        st = re.sub(r"\\(?:section|subsection)\{[^{}]*\}", " ", st)
-        st = re.sub(r"\s+", " ", st)
-        rows.append((f"check_prose raw / {v}", len(s), len(raw), 0.96, 1.0))
-        rows.append((f"check_prose stripped / {v}", len(s), len(st), 0.93, 0.98))
-
-    # --- audit_traceability.py: claim tags (large and numerous -- RANKING.md
-    #     carries 217), fenced blocks, inline code, link targets. Every
-    #     numeral inside inline code was read by hand on 2026-10-11 and none
-    #     is a figure: shell commands, size-band labels like w4a16|<2B, model
-    #     names, formula constants, package versions, commit hashes, an IP.
     sys.path.insert(0, os.path.join(root, "src"))
+    bad = []
+    report = []
+
+    def check(label, text, rules):
+        """rules: [(name, compiled pattern, predicate(span_text, start))]"""
+        removed = 0
+        for name, pat, ok in rules:
+            for m in pat.finditer(text):
+                removed += len(m.group(0))
+                if not ok(m.group(0), m.start(), text):
+                    bad.append(f"  {label}: the {name!r} rule removed a span "
+                               f"that is not a {name}: "
+                               f"{m.group(0)[:70]!r}")
+        report.append((label, len(text), len(text) - removed))
+
+    # ---- paper/audit_paper.py
+    IN_ = re.compile(r"\\input\{[^}]*\}")
+    XREF = re.compile(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}")
+    TAB = re.compile(r"\\begin\{tabular\}.*?\\end\{tabular\}", re.S)
+    CMT = re.compile(r"(?<!\\)%.*")
+    for v in ("neurips_main.tex", "main.tex"):
+        t = open(os.path.join(root, "paper", v), encoding="utf-8").read()
+        check(f"audit_paper / {v}", t, [
+            ("\\input", IN_,
+             lambda g, i, t: g.startswith("\\input{") and g.endswith("}")),
+            ("cross-reference", XREF,
+             lambda g, i, t: g.startswith("\\") and g.endswith("}")
+             and "{" in g),
+            ("tabular block", TAB,
+             lambda g, i, t: g.startswith("\\begin{tabular}")
+             and g.endswith("\\end{tabular}")),
+            # the 2026-10-11 defect: an ESCAPED percent is not a comment
+            ("LaTeX comment", CMT,
+             lambda g, i, t: g.startswith("%") and "\n" not in g
+             and (i == 0 or t[i - 1] != "\\")),
+        ])
+
+    # ---- src/check_prose.py drops whole lines and heading titles
+    PARA = re.compile(r"\\paragraph\{[^{}]*\}")
+    HEAD = re.compile(r"\\(?:section|subsection)\{[^{}]*\}")
+    for v in ("neurips_main.tex", "main.tex"):
+        t = open(os.path.join(root, "paper", v), encoding="utf-8").read()
+        for ln, line in enumerate(t.split("\n"), 1):
+            if line.lstrip().startswith("%") and not line.lstrip().startswith("\\"):
+                continue                      # a real comment line, correct
+            if line.lstrip().startswith("%"):
+                bad.append(f"  check_prose / {v}:{ln}: dropped a line that "
+                           f"starts with an escaped percent")
+        check(f"check_prose headings / {v}", t, [
+            ("paragraph title", PARA,
+             lambda g, i, t: g.startswith("\\paragraph{") and g.endswith("}")),
+            ("section title", HEAD,
+             lambda g, i, t: g.startswith("\\") and g.endswith("}")),
+        ])
+
+    # ---- src/audit_traceability.py
     import audit_traceability as AT
+    FENCE = re.compile(r"```.*?```", re.S)
+    INLINE = re.compile(r"`[^`]*`")
+    LINK = re.compile(r"\]\([^)]*\)")
     for f in AT.OUTWARD:
         p = os.path.join(root, f)
         if not os.path.exists(p):
             continue
-        s = open(p, encoding="utf-8").read()
-        v = AT.CLAIM.sub("", s)
-        v = re.sub(r"```.*?```", " ", v, flags=re.S)
-        v = re.sub(r"`[^`]*`", " ", v)
-        v = re.sub(r"\]\([^)]*\)", " ", v)
-        rows.append((f"traceability visible / {f}", len(s), len(v), 0.60, 0.95))
+        t = open(p, encoding="utf-8").read()
+        check(f"traceability / {f}", t, [
+            ("claim tag", AT.CLAIM,
+             lambda g, i, t: g.startswith("<!--") and g.endswith("-->")
+             and "claim:" in g),
+        ])
+        # fences are stripped first, so classify inline code on what is LEFT
+        after_fence = FENCE.sub(lambda m: " " * len(m.group(0)), t)
+        check(f"traceability fences / {f}", t, [
+            ("fenced block", FENCE,
+             lambda g, i, t: g.startswith("```") and g.endswith("```")),
+        ])
+        # The 2026-10-11 defect: inline code was stripped BEFORE fences, so
+        # the inline pattern matched the first two backticks of each opening
+        # fence. Such a span contains no backtick and no fence -- it IS part
+        # of one -- so the test is adjacency: a genuine inline span has a
+        # non-backtick on each side. Checking for "```" inside the span does
+        # not catch it, which is how the first version of this check passed
+        # with the bug replanted.
+        for m in INLINE.finditer(after_fence):
+            g = m.group(0)
+            before = after_fence[m.start() - 1] if m.start() else ""
+            after = (after_fence[m.end()]
+                     if m.end() < len(after_fence) else "")
+            if "```" in g or before == "`" or after == "`":
+                bad.append(f"  traceability / {f}: an 'inline code' span is "
+                           f"part of a fence rather than a span of its own: "
+                           f"{g[:40]!r} between {before!r} and {after!r}")
+        check(f"traceability links / {f}", t, [
+            ("link target", LINK,
+             lambda g, i, t: g.startswith("](") and g.endswith(")")),
+        ])
 
-    # --- check_docs.py: HTML comments, which is where claim tags live.
-    #     RANKING.md retains under half of itself and that is all tags.
+    # ---- src/check_docs.py
     import check_docs as CD
+    HTML = re.compile(r"<!--.*?-->", re.S)
     for f in CD.DOCS:
-        s = CD.read(f)
-        rows.append((f"check_docs text / {f}", len(s), len(CD.strip_tags(s)),
-                     0.40, 1.0))
+        t = CD.read(f)
+        check(f"check_docs / {f}", t, [
+            ("HTML comment", HTML,
+             lambda g, i, t: g.startswith("<!--") and g.endswith("-->")),
+        ])
 
-    bad = []
-    for label, n_in, n_out, lo, hi in rows:
-        frac = (n_out / n_in) if n_in else 1.0
-        if not (lo <= frac <= hi):
-            bad.append(f"  {label}: {n_in} in, {n_out} scanned "
-                       f"({frac:.1%}), expected {lo:.0%}-{hi:.0%}")
+    for label, n_in, n_kept in report[:8]:
+        print(f"   {label:<44} {n_in:>7} in, {n_kept:>7} kept "
+              f"({n_kept / n_in:.1%})" if n_in else label)
     assert not bad, (
-        "a gate's input coverage moved outside its pinned band. Low means "
-        "the stripper is eating text the check should see -- the \\% class. "
-        "High means it stopped removing what it was meant to. Work out which "
-        "before widening the band:\n" + "\n".join(bad))
+        "a stripper removed a span that is not the construct its rule names. "
+        "The quantity removed may be perfectly normal; what is wrong is the "
+        "mechanism, which no retention percentage can see:\n"
+        + "\n".join(bad))
 
 
 def test_each_input_stripper_keeps_what_it_must():
@@ -2758,9 +2808,11 @@ _REGISTRY_MANIFEST = {
     # called them checkpoints, and n_quant_checkpoints (102) was added -- the
     # figure this paper's own definition of "checkpoint" requires and had
     # never stated. 2026-10-11 (third): +5 -> 375 for the escaped-percent
-    # figures, which are measured from the paper by running the broken and
-    # the fixed comment stripper over it rather than recorded as prose.
-    "(scalar)": 375,
+    # figures, measured live from the paper. 2026-10-11 (fifth): those five
+    # came back out -> 370. A live measurement answers "what would the broken
+    # stripper read of TODAY'S paper", which is not the historical claim the
+    # appendix makes; the figures are frozen at 708a84d in the prose instead.
+    "(scalar)": 370,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

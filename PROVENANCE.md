@@ -1165,6 +1165,76 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-11 (fifth) --- the entry's own figure was the error it describes
+
+**The 96.8% was a present-tense counterfactual labelled as a historical
+claim.** The appendix said every clean result reported beforehand was computed
+over 96.8% of the paper. That figure came from running the broken stripper
+over TODAY's paper, which is the answer to "what fraction of the current text
+would the broken stripper read" presented as the answer to "what fraction did
+the gates read then". The tell was in the entry's own provenance note: the
+count had moved from 132 to 136 as the entry was written. Correct number,
+wrong object, inside the entry about a check making an unasserted claim about
+its own input.
+
+The figure is doing work in the argument, so it is now measured against the
+paper as committed at **708a84d**, the last commit with the defect live, and
+frozen: 132 escaped percent signs against 7 real comment marks, 3,162
+characters hidden, 3.0% of the body, **97.0% scanned**. The entry says the
+fraction varied as the paper grew and claims no single number for the whole
+period. The five live registry keys were removed (375 -> 370) because a live
+measurement answers the wrong question; the numerals are exempted by name in
+`paper/audit_paper.py` with the reasoning.
+
+**The retention band is replaced by removed-span classification.** A band
+could not do the job and both of today's findings prove it. It missed its own
+target: pinned 93-98%, the replanted bug scored 93.0%. And it is blind to the
+fence defect entirely, because there the quantity removed was correct and only
+the mechanism was wrong --- no percentage check can see that.
+
+Each stripper now reports its removed spans with the rule that removed each,
+and every span must match the construct its rule names: a comment begins with
+an unescaped percent, a claim tag looks like a claim tag, a fenced span begins
+and ends on a fence, an inline span is not adjacent to another backtick.
+Content-independent, nothing to loosen, no drift. Retention percentages are
+printed for a reader and deliberately not asserted.
+
+Plant-verified against both real defects:
+
+```
+pct    -> the 'LaTeX comment' rule removed a span that is not a LaTeX comment: '%'
+fence  -> an 'inline code' span is part of a fence rather than a span of its
+          own: '``' between '\n' and '`'
+```
+
+**And the first version of the inline predicate passed with the bug
+replanted.** It looked for "```" inside the removed span; the defect produces
+a span that contains no fence because it is part of one. The working test is
+adjacency. That is the fourth gate today that was vacuous until its defect was
+replayed, and the pattern now has its own section in `AUDIT_DISCIPLINE.md`.
+
+### 2026-10-11 (sixth) --- the declared-change gap is real and stays open
+
+Asked whether a full-regeneration test closes the gap the dataset hash leaves
+--- a declared corpus change whose artifacts were not rebuilt. It does not.
+There is no test that regenerates every consumed artifact and compares.
+
+- `test_the_shipped_envelope_matches_a_fresh_build` covers **one** of the
+  **17** artifacts the staleness gate lists, and compares selected keys rather
+  than bytes: `cells_refused`, `cells_insufficient_evidence`, the two scheme
+  equivalents, `known_limitations`, `validation`, plus a direct pin against
+  `strata.calibrated_fit`.
+- `test_reharvest_reproduces_committed_dataset_on_every_column` regenerates
+  `data/dataset.csv` from the cards, not the artifacts, and **returns early
+  when `data/cards` is absent** --- which is every clone, since the card corpus
+  is deliberately not redistributed. In the default gate on a checkout it is a
+  no-op.
+
+So the composition is: the sha256 pin makes a SILENT corpus change impossible,
+and nothing makes an UNREBUILT declared change impossible. 16 of 17 consumed
+artifacts have no fresh-build comparison at all. The gap is recorded rather
+than implied closed.
+
 ### 2026-10-11 (fourth) --- input coverage, swept
 
 The escaped-percent defect is recorded above. This is the sweep it forced, and
