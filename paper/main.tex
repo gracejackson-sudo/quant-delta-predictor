@@ -395,8 +395,8 @@ Llama-3.3 into one Llama-3 family, and the aggregate figures above are
 a weighted mean across the resulting \Nfam{} folds. Two properties of
 that pool are worth stating.
 \emph{Fold sizes are unequal.} Llama-3 accounts for \LThreeFoldRows{}
-of the \Nrows{} rows (\LThreeFoldSharePct\%); the other five folds are
-\NonLThreeFoldRowsMin--\NonLThreeFoldRowsMax{} rows
+of the \Nrows{} rows (\LThreeFoldSharePct\%); the remaining folds hold
+\NonLThreeFoldRowsMin--\NonLThreeFoldRowsMax{} rows each
 (\NonLThreeFoldShareMin--\NonLThreeFoldShareMax\%). When Llama-3 is held out, the training
 set drops to \LThreeHoldoutTrainPct\% of the corpus; when any other
 family is held out, training is \NonLThreeHoldoutMin--\NonLThreeHoldoutMax\%.
@@ -1266,8 +1266,8 @@ answer anywhere ought to decline there. The single thing standing between that
 cell and a refusal is the \MinCkpt-checkpoint support floor; the cell has two.
 
 Lowering the floor to two would have produced the refusal, and three things
-argue against it. The constant does double duty: \MinCkpt{} gates both the
-coverage verdict and the Tier-A support floor, and both halves came from the
+argue against it. The constant does double duty: a floor of \MinCkpt{}
+checkpoints governs both the coverage verdict and the Tier-A support floor, and both halves came from the
 same external review, so lowering it weakens the support rule too. It would
 not have fired alone: \texttt{w8a16|<2B} also rests on two checkpoints, with
 a bootstrap interval collapsed onto its point estimate, so the same change

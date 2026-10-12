@@ -347,6 +347,32 @@ pages later still said "only two cells are the same in both". Registering the
 key and converting one of its two sites looked like closing the item. Nothing
 could tell the difference.
 
+### The escaped percent sign: 3% of the paper was never read
+
+`paper/audit_paper.py` built its scan body with `re.sub(r"%.*", " ", body)`.
+An escaped `\%` is a percent sign, not a comment, and there are 132 of them in
+this paper against 7 real comments --- so every line was truncated at its
+first printed percentage and **3,162 characters, 3% of the body, were
+invisible to every check in the file**: the hand-typed-numeral gate, the word
+gate, the derived-noun check and the unit gate all ran on the truncated text.
+
+Found on 2026-10-11 while deriving which macros count things, because
+`\RefuseBelow\%` appeared to be followed by a noun that belonged two lines
+further down. The lookbehind was one character. What it had been hiding:
+
+- four hand-typed numerals nobody had seen (`0.9`, `168`, `90.01`, `91.0`);
+- two figures written as words, one of them real (`the other five folds`,
+  which is `\Nfam` minus one, now reworded out rather than registered);
+- four non-nouns that the counted-noun derivation then had to classify.
+
+**The lesson is about gate inputs, not gate logic.** Every check in that file
+was correct and every one was running on a mutilated copy of the thing it was
+checking. Nothing downstream could tell: a gate reading 97% of a document
+reports the same "0 problems" as a gate reading all of it. So a check that
+preprocesses its input owes the same scrutiny to the preprocessing as to the
+predicate --- and the cheap version of that is to assert the size of what was
+removed. Seven comments should not cost 3,162 characters.
+
 ### The counted-noun list is derived, not chosen
 
 The word gate's noun list IS its coverage boundary, and the first version was

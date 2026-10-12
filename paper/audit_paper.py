@@ -41,7 +41,15 @@ print(f"   referenced-but-undefined      : {len(undef)} {undef if undef else ''}
 body = re.sub(r"\\input\{[^}]*\}", " ", TEX)
 body = re.sub(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}", " ", body)
 body = re.sub(r"\\begin\{tabular\}.*?\\end\{tabular\}", " ", body, flags=re.S)
-body = re.sub(r"%.*", " ", body)
+# An ESCAPED \% is a percent sign, not a comment. Reading it as one
+# truncated every line at its first printed percentage and hid 3,162
+# characters -- 3% of the body, 132 sites -- from every check below: the
+# numeral gate, the word gate, the derived-noun check and the unit gate all
+# ran on a body with the text after each percentage deleted. Found
+# 2026-10-11 while deriving which macros count things, when \RefuseBelow\%
+# appeared to be followed by a noun from two lines further down. There are
+# 132 escaped percent signs in this paper and 7 real comments.
+body = re.sub(r"(?<!\\)%.*", " ", body)
 NUM = re.compile(r"(?<![\w.\\])\d+(?:\.\d+)?(?![\d])")
 EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "68", "84", "90", "95", "100", "133", "500", "2022", "2023", "2024",
@@ -95,6 +103,13 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # a corpus measurement; the count of schemes that HAVE 19 units is
           # a measurement and is \JackknifeSchemesNineteen.
           "0.10", "19",
+          # Hidden until the escaped-percent bug was fixed on 2026-10-11:
+          # 0.9 is 1-alpha inside the conformal index formula, and 168 /
+          # 90.01 / 91.0 are day-7 before-and-after values in the same
+          # appendix item as 89.15, 60 and 93.4, which were already exempt.
+          # Each sat after a printed percentage on its line, so no check
+          # had ever read it.
+          "0.9", "168", "90.01", "91.0",
           "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
           "0.7545",    # pre-regen mae_global_lofo
           "0.7553",    # post-regen mae_global_lofo (approx; live macro)
@@ -218,6 +233,9 @@ WORD_EXEMPT = {
     # --- rhetorical singulars in the remediation entry: "converting one
     #     site of a figure", "the one instance in this record"
     "one site", "one instance",
+    # "the one cell whose upper bound does sit below it (w4a16|<2B...)" --
+    # definite article, and the cell is named in the same parenthesis
+    "one cell",
     # --- deliberately vague quantifiers
     "a handful of rows",
 }
@@ -249,7 +267,7 @@ _WSTOP = set("""a an the and or but of to in on at by for from with without
 within across against under over above below between among about into onto
 than then as is are was were be been being has have had do does did not no
 nor so if when where while because although though since after before until
-remain remains remained
+remain remains remained report reports reported extracted extract
 unless whether that which who whom whose this these those it its their our
 your his her they we you there here both each every either neither all any
 some most more less fewer other others such own same only also still now
@@ -275,6 +293,9 @@ NOT_COUNTED = {
     "accounts",  # VERB: "evaluation noise accounts for at least a third"
     "looks",     # VERB: "coverage looks comfortable"
     "recipes",   # "all five quantization recipes" -- the five are named
+    # verbs and a preposition that follow a printed percentage. Invisible
+    # until the escaped-percent bug was fixed; none is a count.
+    "covers", "exceeds", "straddles", "versus",
 }
 
 
@@ -369,11 +390,77 @@ MACRO_UNITS = {
     "CalibUnitsMax":       r"checkpoints?|units?",
     "CalibPartitions":     r"seeds?|partitions?",
     "CalibRowsNvfp":       r"rows?",
+    # --- declared 2026-10-11 from the derivation: every macro the paper
+    # follows with a counted noun. Where the declaration was taken from the
+    # prose the macro already had, this is a regression guard rather than a
+    # verification -- see the note on the derivation below. The ones whose
+    # name and noun disagreed were read by hand.
+    "AdvBadRows":          r"rows?",
+    "AdvCtrlRows":         r"rows?",
+    "BigLosses":           r"losses|loss",
+    "CellsBlocked":        r"cells?",
+    "CkptsCellWfourSmall": r"checkpoints?",
+    "CkptsCellWsixteenBig": r"checkpoints?",
+    "ExcessN":             r"rows?",
+    "FiniteN":             r"rows?",
+    "GbSensMmluRows":      r"rows?",
+    "GbSensNitemsRows":    r"rows?",
+    "GemmaTwoFoldRows":    r"rows?",
+    "LofoTotalPairs":      r"evaluations?|pairs?",
+    "MaxBenchmarksPerRun": r"benchmarks?",
+    # "gates" was a VERB at one site ("\MinCkpt{} gates both the coverage
+    # verdict"); the sentence was reworded rather than the declaration widened
+    "MinCkpt":             r"checkpoints?",
+    "NRhCardsHarvested":   r"cards?",
+    "NRhCardsListed":      r"cards?",
+    # a count of benchmarks at one site and of the noise estimates built from
+    # them at another; both are correct readings of the same figure
+    "NoiseNBench":         r"benchmarks?|estimates?",
+    "NonLThreeFoldRowsMax": r"rows?",
+    "NpredNums":           r"numbers?",
+    "NrowsRaw":            r"rows?",
+    # the number of calibration families each row is scored under
+    "PairsPerRow":         r"famil(?:y|ies)",
+    "PooledPairs":         r"evaluations?|pairs?",
+    "PooledRows":          r"rows?",
+    "ProspAllRows":        r"rows?",
+    "ProspCkptsFpdyn":     r"checkpoints?",
+    "ProspCkptsWeightint": r"checkpoints?",
+    "ProspCkptsWeightsixteen": r"checkpoints?",
+    "ProspCkptsWithMiss":  r"checkpoints?",
+    "ProspDsRows":         r"rows?",
+    "ProspGThreeRows":     r"rows?",
+    # the same 9 pre-registered repositories, described once as repos and once
+    # as the cards that document them
+    "ProspNameGatedRepos": r"repos?|repositories|cards?",
+    "ProspRegisteredRepos": r"repos?|repositories",
+    "ProspRowsFpdyn":      r"rows?",
+    "ProspRowsWeightint":  r"rows?",
+    "ProspTailRows":       r"rows?",
+    "ProspTotalMisses":    r"misses|miss",
+    "PubCards":            r"cards?",
+    "PubChecked":          r"publishers?",
+    "PubOthersCards":      r"cards?",
+    "PubOthersCount":      r"publishers?",
+    "PubOthersPaired":     r"cards?",
+    "PubOthersVerifiableCards": r"cards?",
+    "QwenThreeFoldRows":   r"rows?",
+    "RowsCellWfourSmall":  r"rows?",
+    "RowsCellWsixteenBig": r"rows?",
+    "StratBandReplaced":   r"schemes?",
+    "StratCellsBoth":      r"cells?",
+    "StratFullLost":       r"rows?",
+    "StratRows":           r"rows?",
+    "StratSchemesNarrower": r"schemes?",
+    "StratWidenGained":    r"rows?",
+    "StratWidenGainedAll": r"rows?",
+    "TuneOuterFolds":      r"folds?",
 }
 unit_fail = []
 for mac, allowed in sorted(MACRO_UNITS.items()):
     pat = re.compile(r"\\" + mac + r"\b\{?\}?\s*(?:\\?%)?\s*(.{0,42})", re.S)
-    ok = re.compile(r"^(?:[a-z][a-z-]+ ){0,2}(?:" + allowed + r")\b", re.I)
+    ok = re.compile(r"^(?:[A-Za-z][A-Za-z0-9-]* ){0,2}(?:" + allowed
+                    + r")\b", re.I)
     for m in pat.finditer(body):
         tail = re.sub(r"\s+", " ", m.group(1)).lstrip()
         # a macro followed by punctuation, a function word, another macro or
@@ -391,6 +478,48 @@ if unit_fail:
                 "noun is right):\n      " + "\n      ".join(unit_fail))
 print(f"   macro unit declarations       : {len(MACRO_UNITS)} "
       f"({len(unit_fail)} mismatched)")
+
+# -------------------------------- which macros OUGHT to declare a unit?
+# MACRO_UNITS started as 26 entries out of ~314 defined macros, so the other
+# ~288 were exempt by omission -- the protection covered the macros somebody
+# thought of, which is the failure shape the derived noun vocabulary above
+# exists to avoid. Same move again: a macro that is followed by a counted
+# noun IS a counting macro and must declare its unit. Measured, not chosen.
+#
+# HONEST LIMIT. Where a declaration was written from the prose the macro
+# already had, this gate is a REGRESSION guard: it cannot catch a wrong noun
+# that was there when the declaration was made. It catches the noun changing
+# under a macro, and it catches a new macro being used without a decision.
+# The declarations whose name and noun disagreed were checked by hand.
+_counting = {}
+for _mac in sorted(_DEFINED_MACROS):
+    for _m in re.finditer(r"\\" + _mac + r"\b\{?\}?\s*(?:\\?%)?\s*(.{0,48})",
+                          body):
+        _tail = re.sub(r"\s+", " ", _m.group(1)).lstrip()
+        for _tok in re.findall(r"[A-Za-z][A-Za-z-]*", _tail)[:3]:
+            _w = _tok.lower()
+            if _w in _WSTOP or _w in {m.lower() for m in _DEFINED_MACROS}:
+                break
+            if _WNOUN_RE.match(_w):
+                _counting.setdefault(_mac, set()).add(_w)
+                break
+# Counting macros that deliberately do not declare a unit, with the reason.
+UNITLESS = {
+    # "\\(\\leq\\AdvMaxB\\)B, losses more than four times worse" -- the unit
+    # is B for billions of parameters, printed as a letter rather than a
+    # noun, and "losses" belongs to the clause after the comma.
+    "AdvMaxB": "unit is B (billions of parameters), not a counted noun",
+}
+_undeclared = sorted(set(_counting) - set(MACRO_UNITS) - set(UNITLESS))
+if _undeclared:
+    fail.append(
+        "these macros are followed by a counted noun but declare no unit, so "
+        "nothing checks that the noun is the one they count:\n      "
+        + "\n      ".join(f"\\{m} -> {sorted(_counting[m])}"
+                          for m in _undeclared)
+        + "\n      Add each to MACRO_UNITS, or to UNITLESS with a reason.")
+print(f"   counting macros               : {len(_counting)} "
+      f"({len(_undeclared)} without a declaration)")
 
 # ---------------------------------------------------------------- 2
 head("2. CITATIONS")

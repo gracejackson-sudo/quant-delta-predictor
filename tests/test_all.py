@@ -1351,6 +1351,91 @@ def test_prose_scanner_catches_its_own_plants():
         f"one to make the scanner pass is the failure mode this guards.")
 
 
+def test_cards_and_quantized_checkpoints_agree_on_this_corpus():
+    """n_rh_cards_harvested and n_quant_checkpoints both read 102, and README
+    says "one card per quantized checkpoint" on the strength of it.
+
+    THIS IS A PROPERTY OF THE DATA, NOT A GUARANTEE, and the distinction is
+    the point of the test. A card describes one quantized artifact, so the
+    map from cards to (base model, scheme) pairs is onto; nothing makes it
+    injective. Two RedHatAI repos could legitimately be two w4a16
+    quantizations of the same base at different group sizes, and then cards
+    would exceed checkpoints while both macros still rendered without
+    complaint -- and README's sentence explaining why they match would be
+    silently wrong. Two macros reading the same number with no assertion
+    between them is the trap this project has now hit three times
+    (prosp_bases/calib_cal_bases at 13, and two 12-cell populations).
+
+    IF THIS FAILS: do not delete it and do not "fix" the count. Check whether
+    a (base model, scheme) pair is now served by more than one card. If it is,
+    that is real data and the correct response is to reword README -- the
+    counts are then genuinely different objects and must be stated as two
+    figures, not one explained by the other.
+    """
+    import pandas as pd
+    root = os.path.join(os.path.dirname(__file__), "..")
+    sys.path.insert(0, os.path.join(root, "src"))
+    import verify_claims as VC
+    reg = VC.registry()
+    cards = reg["n_rh_cards_harvested"][0]
+    ckpts = reg["n_quant_checkpoints"][0]
+
+    d = VC.annotate(VC.load(VC.DATA))
+    pairs = d.groupby(["base_model", "scheme"]).model.nunique()
+    shared = pairs[pairs > 1]
+    assert shared.empty, (
+        "these (base model, scheme) pairs are served by more than one card, "
+        "so cards and quantized checkpoints are no longer the same count:\n"
+        + shared.to_string()
+        + "\n\nREADME says 'one card per quantized checkpoint'. That "
+          "sentence is now wrong and must be reworded; the two figures are "
+          "different objects.")
+    assert cards == ckpts, (
+        f"n_rh_cards_harvested is {cards:.0f} and n_quant_checkpoints is "
+        f"{ckpts:.0f}. No (base model, scheme) pair is served by two cards, "
+        f"so the gap is somewhere else -- a card contributing no rows, or a "
+        f"row whose model string does not match its card. Find it before "
+        f"touching either figure.")
+
+
+def test_the_term_base_checkpoint_does_not_come_back():
+    """"Base checkpoint" is a third term for an object this paper defines
+    twice over, and it survived in the paper's own family definition until
+    2026-10-11 -- "they share a common pretraining base checkpoint", in the
+    sentence that defines what a family is.
+
+    A checkpoint is a quantized model artifact and a base model is the
+    unquantized model it derives from. "Base checkpoint" is neither, reads
+    like both, and is what the corpus-scale figure was mislabelled as in the
+    abstract for weeks. A negative assertion is the only thing that stops a
+    term coming back, and this one came back once already.
+
+    Third-party model-card text under data/ is not ours to edit and is
+    excluded by path.
+    """
+    import re
+    root = os.path.join(os.path.dirname(__file__), "..")
+    targets = []
+    for rel in ("paper/main.tex", "paper/neurips_main.tex", "README.md",
+                "RANKING.md", "NEGATIVE_RESULT.md", "TOOL_SUMMARY.md",
+                "BIAS_CORRECTION.md", "ONE_SIDED_COVERAGE.md",
+                "ADVERSARIAL_AUDIT.md", "ACCOUNTING.md"):
+        p = os.path.join(root, rel)
+        if os.path.exists(p):
+            targets.append((rel, open(p, encoding="utf-8").read()))
+    hits = []
+    for rel, s in targets:
+        for m in re.finditer(r"(?i)base[ -]checkpoints?", s):
+            ln = s.count("\n", 0, m.start()) + 1
+            hits.append(f"  {rel}:{ln}  {m.group(0)!r}")
+    assert not hits, (
+        '"base checkpoint" is back. It is a third term for an object this '
+        'paper already names twice: a CHECKPOINT is a quantized model '
+        'artifact (one (base model, scheme) pair) and a BASE MODEL is the '
+        'unquantized model it derives from. Use whichever is meant.\n'
+        + "\n".join(hits))
+
+
 def test_the_error_record_is_complete_across_both_its_halves():
     """The Audit section claims its appendix is "a complete log and not a
     selection". This asserts the arithmetic behind that sentence.

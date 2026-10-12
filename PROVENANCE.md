@@ -1165,6 +1165,59 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-11 (third) --- the gate's own input, and measured declarations
+
+**3% of the paper was never read by any check in `audit_paper.py`.** The scan
+body was built with `re.sub(r"%.*", " ", body)`, and an escaped `\%` is a
+percent sign rather than a comment: 132 of them against 7 real comments, so
+every line was truncated at its first printed percentage. 3,162 characters
+were invisible to the numeral gate, the word gate, the derived-noun check and
+the unit gate. Found while deriving which macros count things, because
+`\RefuseBelow\%` appeared to be followed by a noun from two lines down.
+
+The recovered 3% contained four hand-typed numerals nobody had seen (`0.9`,
+the conformal index's `1-alpha`; and `168`, `90.01`, `91.0`, day-7
+before-and-after values in the same appendix item as three figures that were
+already exempt), and two figures written as words. One of those was real: "the
+other five folds" is `\Nfam` minus one, and the sentence now says "the
+remaining folds" rather than carrying an arithmetic derivative of a registered
+figure. Every check in that file was correct and every one was running on a
+mutilated copy of its input; a gate reading 97% of a document reports the same
+"0 problems" as a gate reading all of it. Recorded in `AUDIT_DISCIPLINE.md`.
+
+**The unit-declaration set is now measured.** It began as 26 declarations
+against ~314 defined macros, so ~288 were exempt by omission --- the
+protection covered the macros somebody thought of, which is the shape the
+derived noun vocabulary exists to avoid. The same move applied again: a macro
+followed by a counted noun IS a counting macro and must declare its unit, and
+the build fails otherwise. 77 counting macros, 79 declarations, 0 undeclared,
+1 in `UNITLESS` with a reason (`\AdvMaxB`, whose unit is B for billions of
+parameters, printed as a letter). Plant-verified twice: removing
+`\TuneOuterFolds`'s declaration reports it, and a brand-new macro used in a
+counting position reports it.
+
+Two sentences were reworded rather than have a declaration widened around
+them: `\MinCkpt{} gates both the coverage verdict` used "gates" as a verb,
+and `\NRhCardsHarvested{} report none` uses "report" as one.
+
+**The cards-to-checkpoints bijection is asserted as a data property, not a
+guarantee.** `n_rh_cards_harvested` and `n_quant_checkpoints` both read 102.
+A card describes one quantized artifact so the map is onto, but nothing makes
+it injective --- two repos could legitimately be two w4a16 quantizations of
+one base at different group sizes, and then the counts would diverge while
+both macros rendered fine and README's sentence explaining the match went
+silently wrong. The test asserts no (base model, scheme) pair is served by two
+cards, says in its own body that this is data rather than structure, and tells
+a future reader to reword README rather than delete the test. README now says
+the counts match on this corpus and why. Plant-verified by adding a second
+card for one pair.
+
+**"Base checkpoint" is now forbidden by assertion.** The third term --- neither
+the defined "checkpoint" nor the defined "base model" --- survived in the
+paper's own family definition until this evening. A negative test now refuses
+it in `paper/` and every generated document, excluding third-party card text
+under `data/`. Plant-verified by putting it back into the family definition.
+
 ### 2026-10-11 --- figures written as words: the sweep and the gate
 
 The central traceability gate matches `\d+`, so every figure the paper wrote
