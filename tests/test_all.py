@@ -1833,6 +1833,38 @@ def test_no_duplicate_dict_keys_in_the_registry_or_generator():
         "verified value can diverge with nothing to say so.\n"
         + "\n".join(problems))
 
+    # Two DIFFERENT macro names mapping to one registry key. Not a duplicate
+    # dict key, so the check above cannot see it, and it is the same hazard
+    # one level out: two names for one figure drift apart in prose, get
+    # converted one at a time, and a reader cannot tell they are the same
+    # number. Found three times now -- ProspCovWeightint and BigLossBelow by
+    # accident, and \BigLoss / \BigLosses on 2026-10-11 by a sweep for
+    # something else, declared 200 lines apart and both used as denominators.
+    import collections
+    gn = os.path.join(root, "paper", "gen_numbers.py")
+    tree = ast.parse(open(gn, encoding="utf-8").read(), filename="gen_numbers.py")
+    by_key = collections.defaultdict(list)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Dict):
+            continue
+        for k, v in zip(node.keys, node.values):
+            if not (isinstance(k, ast.Constant) and isinstance(k.value, str)):
+                continue
+            if not (isinstance(v, ast.Tuple) and v.elts
+                    and isinstance(v.elts[0], ast.Constant)
+                    and isinstance(v.elts[0].value, str)):
+                continue
+            by_key[v.elts[0].value].append((k.value, k.lineno))
+    aliased = {key: ms for key, ms in by_key.items() if len(ms) > 1}
+    assert not aliased, (
+        "these registry keys are rendered by more than one macro. Collapse "
+        "each to a single macro name: two names for one figure is how one "
+        "site gets converted and the other keeps a hand-typed value, which "
+        "is a defect no value check can see.\n"
+        + "\n".join(f"  {key}: " + ", ".join(f"\\{m} (line {ln})"
+                                              for m, ln in ms)
+                     for key, ms in sorted(aliased.items())))
+
 
 def test_verifiers_exit_zero():
     import subprocess

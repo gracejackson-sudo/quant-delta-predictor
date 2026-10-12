@@ -53,7 +53,10 @@ M = {
     "ExcessN": ("s2_excess_n", "{:.0f}"),
     "IntervalsExclZero": ("intervals_excluding_zero", "{:.0f}"),
     "BigLossBelow": ("n_big_losses_below_floor", "{:.0f}"),
-    "BigLoss": ("n_big_losses", "{:.0f}"),
+    # \BigLoss was a second macro for n_big_losses, declared 200 lines from
+    # \BigLosses and used as a denominator in a different sentence.
+    # Collapsed to \BigLosses on 2026-10-11; the gate in tests/test_all.py
+    # now refuses two macros for one key.
     "CellsBlocked": ("n_cells_blocked_from_tier_a", "{:.0f}"),
     "PooledOneSided": ("pooled_one_sided_pct", "{:.1f}"),
     "PubOthersVerifiableCards": ("pub_others_verifiable_cards", "{:.0f}"),
