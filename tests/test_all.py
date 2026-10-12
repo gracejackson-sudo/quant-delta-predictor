@@ -1373,9 +1373,15 @@ def test_the_error_record_is_complete_across_both_its_halves():
     root = os.path.join(os.path.dirname(__file__), "..")
     # 17 error items, 9 in the body and 8 in the appendix, on 2026-10-08.
     TOTAL_ITEMS = 17
-    # 13 \paragraph blocks: 7 body (one of them the itemize header), 6
-    # appendix (ditto, plus the four moved and the gate-blindness note).
-    TOTAL_PARAS = 13
+    # 14 \paragraph blocks: 7 body, unchanged -- the 2026-10-11 note on
+    # figures written as words extended the existing mechanical-verification
+    # block rather than adding one -- and 7 appendix, which is the 6 from the
+    # 2026-10-08 split plus "A fix that exhibited the class it was fixing".
+    # That entry records that converting one site of a figure and registering
+    # its key looked like closure while a near-duplicate paragraph two pages
+    # away kept the hand-typed version. This count was pinned at 15 first;
+    # the test caught the miscount, which is what it is for.
+    TOTAL_PARAS = 14
     for name in ("main.tex", "neurips_main.tex"):
         s = open(os.path.join(root, "paper", name), encoding="utf-8").read()
         a, c = s.index("\\section{Audit}"), s.index("\\section{Conclusion}")
@@ -2412,8 +2418,10 @@ _REGISTRY_MANIFEST = {
     # had the net change and was wrong), strat_schemes_narrower,
     # calib_rows_nvfp4, calib_cells_attempted / _survived / _row_starved,
     # and strat_cells_in_sample_pop (two sites were using n_cells_total,
-    # 17, as the denominator for a 12-cell population).
-    "(scalar)": 368,
+    # 17, as the denominator for a 12-cell population). +1 again for
+    # jackknife_schemes_with_19_units: the paper now states WHY split
+    # conformal is primary, which is arithmetic rather than a measurement.
+    "(scalar)": 369,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

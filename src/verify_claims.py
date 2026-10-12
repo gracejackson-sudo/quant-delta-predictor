@@ -191,6 +191,14 @@ def registry():
             _j["jackknife_plus"]["per_scheme"]["nvfp4"]["coverage_pct"], 0.05,
             "jackknife+ coverage on nvfp4 under the pre-registered pooled "
             "backoff")
+        # Why split conformal is primary, and it is arithmetic rather than
+        # a measurement: jackknife+ guarantees 1-2*alpha, so a 90% GUARANTEE
+        # needs alpha=0.05, whose conformal index needs 19 leave-one-out
+        # units. This counts the schemes that have them.
+        add("jackknife_schemes_with_19_units",
+            int((d.groupby("scheme").base_model.nunique() >= 19).sum()), 0,
+            "schemes with the 19 leave-one-checkpoint-out units a 90% "
+            "jackknife+ guarantee needs at alpha=0.05")
         if _j.get("partition_sensitivity"):
             _c = sorted(x["coverage_pct"] for x in _j["partition_sensitivity"])
             add("calib_cov_min_pct", _c[0], 0.05, "lowest of 20 partitions")

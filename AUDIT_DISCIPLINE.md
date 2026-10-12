@@ -347,6 +347,35 @@ pages later still said "only two cells are the same in both". Registering the
 key and converting one of its two sites looked like closing the item. Nothing
 could tell the difference.
 
+### The counted-noun list is derived, not chosen
+
+The word gate's noun list IS its coverage boundary, and the first version was
+chosen by hand --- so a figure counting a noun nobody thought of was invisible
+all over again. That is "we fixed the paths we knew of" relocated into a gate.
+
+It is now derived from the paper's own numeral usage: whatever the paper counts
+with numerals, it may count with words. `_derive_counted_nouns()` in
+`paper/audit_paper.py` walks forward from every numeral and numeric macro,
+abandons on a function word or finite verb, keeps plural heads, and the build
+fails when a derived noun is in neither `_WNOUN` nor `NOT_COUNTED`. The list
+regenerates as the paper changes and the diff is reviewable.
+
+On the first run it added `numbers`, `losses`, `bases`, `plots`, `estimates`
+and `misses` --- six nouns nobody had thought of, and `misses` is the one that
+matters, because "two misses against two" was the supporting asymmetry in a
+blocking defect. Four words that follow a numeral and are not counts are in
+`NOT_COUNTED` with the phrase that put them there (`accounts for`, `looks
+comfortable`, `8B/70B logits`, `pretraining weights`).
+
+Plant-verified both ways: a sentence counting "14 notebooks and 6 dashboards"
+fails and names both nouns, and one counting "11 misses" passes because the
+vocabulary already covers it.
+
+**A caution.** Singular forms of `hit`, `miss`, `loss` and `base` are far
+commoner in this paper as verbs and adjectives than as count heads, so the
+vocabulary carries only the plurals. The derivation produces plural heads
+anyway, which is why the mechanical filter and the vocabulary agree.
+
 ### A check that reads the tree cannot be documented in the tree
 
 **The class.** Any check whose criterion is "does this string appear in the

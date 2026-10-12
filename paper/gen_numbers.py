@@ -246,6 +246,7 @@ M = {
     "CentreMoveMax": ("centre_move_max_pp", "{:.3f}"),
     "JackknifeNvfpCov": ("jackknife_nvfp_cov_pct", "{:.2f}"),
     "JackknifeCov": ("jackknife_cov_pct", "{:.2f}"),
+    "JackknifeSchemesNineteen": ("jackknife_schemes_with_19_units", "{:.0f}"),
     "SizeWidths": ("n_size_dependent_widths", "{:.0f}"),
     "SizeWidthsOld": ("size_widths_insample", "{:.0f}"),
     "BigLosses": ("n_big_losses", "{:.0f}"),

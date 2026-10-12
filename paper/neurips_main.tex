@@ -1377,6 +1377,17 @@ are historical figures in the error list above (row counts and the
 \(-68\)pp delta), which are quoted from the provenance record rather than
 recomputed.
 
+That check matched numerals, so for as long as the registry has existed any
+figure written as a \emph{word} has been invisible to it. A sweep found
+figures quoting registry values as words, two of them at sites whose macros
+already existed and were in use elsewhere in the same section, and one that
+was wrong rather than merely untraced. The check now also fails on a
+word-number governing something this paper counts, and --- because a
+hand-written list of such nouns would put the coverage boundary back into
+somebody's judgement --- that list is itself derived from the nouns the paper
+counts with numerals, and the build fails when the paper begins counting
+something the list does not cover.
+
 \section{Conclusion}
 
 Per-model prediction of quantization accuracy damage from card-level
@@ -1518,9 +1529,22 @@ to a wider interval'' are not the same instruction, and we conflated them.
 We did not change the protocol after seeing this. The pre-registered primary
 construction, split conformal, does not have the defect --- NVFP4 keeps a
 per-scheme width there and over-covers --- so the shipped band is unaffected,
-and jackknife+ is reported as the secondary it was registered as --- including
+and jackknife+ is reported as the secondary it was registered as, including
 the pooled coverage above, which a version of this paragraph that gave only
-the NVFP4 figure did not. What we are
+the NVFP4 figure did not.
+
+That pooled figure obliges us to be exact about why split conformal is the
+shipped construction, because the measurement is not the reason and a reader
+who sees \JackknifeCov\% will ask. Jackknife+ performed acceptably. The reason
+is arithmetic and was fixed in advance: this paper wants to claim a \(90\%\)
+interval, split conformal guarantees \(1-\alpha\) and jackknife+ guarantees
+\(1-2\alpha\), so a \(90\%\) \emph{guarantee} from jackknife+ needs
+\(\alpha = 0.05\), whose conformal index needs \(19\) leave-one-out units per
+scheme --- and only \JackknifeSchemesNineteen{} of \Nsch{} schemes have them.
+Jackknife+ at a \(90\%\) guarantee is unavailable for half the schemes
+whatever it scores. It is run at \(\alpha = 0.10\), where its guarantee is
+\(80\%\), and the NVFP4 figure above is its per-scheme worst case rather than
+the grounds for preferring the other construction. What we are
 recording is that the reasoning in the pre-registration was faulty on a point
 we had singled out as the one most at risk of being decided post-hoc. Deciding
 it in advance was right; the decision itself was wrong. The next version of
@@ -1567,6 +1591,28 @@ be expected to accommodate this, so the constraint is hardware, not
 methodology. The adversarial arm therefore remains bounded at
 \(\leq\AdvMaxB\)B as before; \S\ref{sec:limits} states this scope
 directly.
+
+\paragraph{A fix that exhibited the class it was fixing.} The entry above
+records a correct figure attached to the wrong object. Its remediation is
+worth its own entry, because the remediation failed in the same way and the
+entries around it did not.
+
+When that error was first raised we registered the missing figure as a claim
+key and converted the sentence that had prompted the complaint. That looked
+like closure: the key existed, the macro resolved, the sentence quoted it, the
+build was green. A near-duplicate paragraph two pages earlier still carried the
+hand-typed version of the same figure, and it was found five days later by a
+sweep looking for something else. Converting one site of a figure and
+registering its key produces every visible sign of having fixed it. So a fix
+must enumerate the figure's sites rather than the site that prompted it ---
+which is the enumeration lesson in this appendix applied to our own
+remediation, and the one instance in this record made \emph{after} we had
+written the lesson down rather than before.
+
+Other figures in that same paragraph pair were quoting registry values
+spelled out as words, where no gate could see them at all, and one of those
+was not merely untraced but wrong. The sweep that found them is described in
+\S\ref{sec:audit}'s mechanical-verification paragraph.
 
 \paragraph{Why the stratification error was invisible to every gate.} The
 mis-attributed stratification figure in \S\ref{sec:audit} is not the same

@@ -89,6 +89,12 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # and each is enumerated in PROVENANCE.md's 2026-09-30 entry.
           # Not tagged because they are historical, not "the current value
           # to display" -- the current value IS the macro next to them.
+          # alpha itself, and the conformal index requirement AT alpha=0.05:
+          # a finite two-sided 95% quantile needs 19 units, the same kind of
+          # constant as the 9 already exempt above at alpha=0.10. Neither is
+          # a corpus measurement; the count of schemes that HAVE 19 units is
+          # a measurement and is \JackknifeSchemesNineteen.
+          "0.10", "19",
           "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
           "0.7545",    # pre-regen mae_global_lofo
           "0.7553",    # post-regen mae_global_lofo (approx; live macro)
@@ -156,21 +162,33 @@ _WUNIT = ("zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|"
 _WTENS = "thirty|forty|fifty|sixty|seventy|eighty|ninety"
 _WORD = (rf"(?:{_WTENS})-(?:one|two|three|four|five|six|seven|eight|nine)"
          rf"|(?:{_WTENS})|(?:{_WUNIT})|a dozen|a handful|a couple")
-# What this project counts. Short and reviewable on purpose: a count of
-# something not on this list is not a figure this paper reports.
+# What this project counts. The first version of this list was chosen by
+# hand, which made the GATE'S COVERAGE BOUNDARY a guess: a figure counting a
+# noun nobody thought of was invisible again. So the list is now checked
+# against the paper's own numeral usage -- the nouns this paper counts with
+# numerals are the nouns it may count with words -- by
+# _derive_counted_nouns() below, which fails the build when the paper starts
+# counting something the vocabulary does not cover.
+#
+# "numbers", "losses", "bases", "plots", "estimates" and "misses" were added
+# by that derivation on 2026-10-11; none had been thought of. "misses" is the
+# one that matters: "two misses against two" was blocker 2's supporting
+# asymmetry.
 _WNOUN = ("cells?|rows?|checkpoints?|schemes?|famil(?:y|ies)|seeds?|"
           "partitions?|folds?|cards?|repos?|repositories|benchmarks?|"
           "publishers?|arms?|paths?|keys?|macros?|models?|files?|names?|"
           "units?|evaluations?|figures?|claims?|gates?|tests?|entries|entry|"
           "instances?|sites?|variants?|scripts?|columns?|protocols?|"
           "questions?|verdicts?|states?|thresholds?|points?|parameters?|"
-          "pairs?|bands?|intervals?|predictors?|grounds?")
+          "pairs?|bands?|intervals?|predictors?|grounds?|numbers?|losses|"
+          "bases|plots?|estimates?|misses|hits|reviewers?|commits?|"
+          "observations?")
 WORDNUM = re.compile(
     rf"\b(?:{_WORD})(?:[ -](?:[a-z]+[ -]){{0,2}}(?:{_WNOUN}))\b", re.I)
 # Hyphenated METHOD NAMES and compound adjectives, not counts.
 WORDTERM = re.compile(r"^(?:leave-)?(?:one|two|three|four|six|eight|twenty)-"
                       r"(?:family|checkpoint|sided|state|column|fold|way|"
-                      r"directional|fifths)", re.I)
+                      r"directional|fifths|out)", re.I)
 # Rhetorical or self-evident uses, each checked by hand during the
 # 2026-10-11 sweep. ADDING TO THIS SET REQUIRES A REASON: the whole point is
 # that a figure cannot be hidden here by spelling it out.
@@ -195,6 +213,11 @@ WORD_EXEMPT = {
     # --- mathematical constants of the construction, not corpus figures:
     #     the 90% conformal index needs n >= 9 whatever the corpus is
     "nine rows",
+    # --- "one number" as the thing a reader wants, not a count of numbers
+    "one number",
+    # --- rhetorical singulars in the remediation entry: "converting one
+    #     site of a figure", "the one instance in this record"
+    "one site", "one instance",
     # --- deliberately vague quantifiers
     "a handful of rows",
 }
@@ -210,6 +233,88 @@ if wordhits:
                 "WORD_EXEMPT with a reason):\n      "
                 + "\n      ".join(wordhits))
 print(f"   figures written as words      : {len(wordhits)}")
+
+# ------------------------------------- is the counted-noun list wide enough?
+# _WNOUN above is the word gate's COVERAGE BOUNDARY, and the first version of
+# it was chosen by hand -- so a figure counting a noun nobody thought of was
+# invisible all over again, which is the same failure as "we fixed the paths
+# we knew of". This derives the boundary from the paper's own numeral usage
+# instead: whatever the paper counts with numerals, it may count with words,
+# so every noun that follows a numeral must be in _WNOUN or in NOT_COUNTED
+# with a reason. Self-maintaining, and the diff is reviewable.
+_DEFINED_MACROS = {m for m in defined if m.isalpha()}
+# Abandon the walk on these: the numeral was not counting a noun. Function
+# words, finite verbs, bare adjectives and the word-numbers themselves.
+_WSTOP = set("""a an the and or but of to in on at by for from with without
+within across against under over above below between among about into onto
+than then as is are was were be been being has have had do does did not no
+nor so if when where while because although though since after before until
+unless whether that which who whom whose this these those it its their our
+your his her they we you there here both each every either neither all any
+some most more less fewer other others such own same only also still now
+just even yet however therefore thus hence rather instead plus minus per via
+cannot can could may might must shall should will would come comes came sits
+sit gives give gave keeps keep kept moves move moved carries carry carried
+falls fall fell rises rise rose drops drop dropped grows grow grew measures
+measure measured reflects reflect reflected survives survive survived
+belongs belong belonged affects affect affected treats treat appears appear
+appeared qualifies qualify qualified clears clear cleared found finds find
+lost lose loses depending spanning dropping reordering dampening quantized
+partitioned refused fitted retracted shared paired contribute contributes
+contributed approximately essentially nominal strict wider narrower worse
+worst better best higher lower larger smaller wide old new global inner
+heaviest pooled insufficient separate none why them together times itself
+zero one two three four five six seven eight nine ten eleven twelve
+thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty
+thirty forty fifty sixty seventy eighty ninety hundred thousand""".split())
+# Follows a numeral but is not a count. Each checked by hand once.
+NOT_COUNTED = {
+    "logits",    # "Llama-3.2 1B/3B were distillations from 8B/70B logits"
+    "weights",   # "derived from the other's pretraining weights"
+    "accounts",  # VERB: "evaluation noise accounts for at least a third"
+    "looks",     # VERB: "coverage looks comfortable"
+    "recipes",   # "all five quantization recipes" -- the five are named
+}
+
+
+def _derive_counted_nouns(text):
+    """-> nouns the paper counts with a numeral (or a numeric macro)."""
+    numeral = re.compile(
+        r"(?:(?<![\w.\\])\d+(?:\.\d+)?(?![\d])"
+        r"|\\(?:" + "|".join(sorted(_DEFINED_MACROS, key=len, reverse=True))
+        + r")\b\{?\}?)")
+    macro_lower = {m.lower() for m in _DEFINED_MACROS}
+    found = set()
+    for m in numeral.finditer(text):
+        tail = re.sub(r"^\\?%", "", text[m.end():m.end() + 70])
+        for tok in re.findall(r"[A-Za-z][A-Za-z-]*", tail)[:3]:
+            w = tok.lower()
+            if w in _WSTOP:
+                break          # the numeral was not counting anything
+            if len(w) <= 2:
+                continue
+            # mechanical filters only, no per-word judgement: plural heads,
+            # no macro-name leakage from an adjacent macro, no compounds
+            if (w not in macro_lower and "-" not in w
+                    and w.endswith("s") and not w.endswith("ss")
+                    and w[:-1] not in _WSTOP):
+                found.add(w)
+            break
+    return found
+
+
+_WNOUN_RE = re.compile(rf"^(?:{_WNOUN})$", re.I)
+_derived = _derive_counted_nouns(re.sub(r"\s+", " ", body))
+_uncovered = sorted(w for w in _derived
+                    if w not in NOT_COUNTED and not _WNOUN_RE.match(w))
+if _uncovered:
+    fail.append(
+        "the paper counts these with numerals but the word gate's vocabulary "
+        f"does not cover them, so the same figure spelled out would pass: "
+        f"{_uncovered}. Add each to _WNOUN, or to NOT_COUNTED with the reason "
+        f"it is not a count.")
+print(f"   counted nouns derived         : {len(_derived)} "
+      f"({len(_uncovered)} uncovered)")
 
 # ---------------------------------------------------------------- 2
 head("2. CITATIONS")

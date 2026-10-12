@@ -1250,4 +1250,50 @@ identifier in each one --- so the pin is load-bearing rather than cargo cult.
 Plant-verified: removing the `src/make_pdfs.py` entry names that file in the
 failure.
 
+### 2026-10-11 (later) --- the gate's own coverage boundary, and the jackknife reason
+
+**The counted-noun list was a guess, and it was the boundary.** The word gate
+only sees figures counting a noun on its list, and the first list was chosen by
+hand. It is now derived from the paper's own numeral usage and the build fails
+when a derived noun is uncovered. The derivation added `numbers`, `losses`,
+`bases`, `plots`, `estimates` and `misses`; `misses` is the one that matters,
+since "two misses against two" was a blocking defect's supporting asymmetry.
+Three sites fired under the wider vocabulary and all three were rhetorical
+("wants one number" twice, "all five quantization recipes hit" where `hit` was
+a verb); the singulars of `hit`/`miss`/`loss`/`base` were dropped for that
+reason. Plant-verified: "14 notebooks and 6 dashboards" fails and names both,
+"11 misses" passes.
+
+**The reason for preferring split conformal is arithmetic, and the paper did
+not say so.** Now that the pooled jackknife+ figure is printed --- 88.09%,
+above the 1-2*alpha = 80% it guarantees --- the measurement visibly does not
+justify rejecting it, and a reader would ask. The pre-registration always had
+the right reason and the paper never carried it: a 90% *guarantee* from
+jackknife+ needs alpha=0.05, whose conformal index needs 19 leave-one-out
+units per scheme, and only 3 of 6 schemes have them (w8a8_int 24, w4a16 23,
+fp8_dynamic 22; w8a16 15, fp8 13, nvfp4 5). Verified against the artifact
+before writing. The appendix now states that jackknife+ performed acceptably,
+that the choice is arithmetic rather than empirical, and that the NVFP4 figure
+is its per-scheme worst case rather than the grounds. Registered as
+`jackknife_schemes_with_19_units`.
+
+**A fix that exhibited the class it was fixing** is now its own appendix entry.
+Converting one site of a figure and registering its key produces every visible
+sign of closure, so a fix must enumerate the figure's sites rather than the
+site that prompted it. It is the one entry in the record made *after* the
+lesson was written down.
+
+**Two gates fired on the prose written for this entry**, which is the
+intended behaviour and worth recording as evidence they are not vacuous: the
+numeral check flagged alpha and the 19-unit index requirement (both exempted
+as construction constants, like the 9 at alpha=0.10), and the word gate
+flagged "leave-one-out units" (the method name, now excluded) plus a
+meta-count of our own edits, which was removed rather than registered.
+
+**The completeness pin caught a miscount of mine.** I pinned the paragraph
+total at 15 on the assumption that the mechanical-verification note was a new
+block; it extended the existing one, so the real total is 14. That is what
+the pin is for.
+
+
 
