@@ -1165,3 +1165,89 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-11 --- figures written as words: the sweep and the gate
+
+The central traceability gate matches `\d+`, so every figure the paper wrote
+as a word has been invisible to it since the registry existed. Closed in two
+halves: a gate that makes the class impossible, then a sweep that cleared
+today's instances.
+
+**The gate.** `paper/audit_paper.py` now fails the build on a figure written as
+a word. Matching every word form from `zero` to `ninety-nine` plus `hundred`,
+`dozen`, `both` and `half` flags about 300 sites in this paper and roughly 290
+are rhetorical ("one of two grounds", "both halves", "one level up"), so the
+pattern matches the SHAPE of a count instead: a word number, up to two
+modifiers, then one of a closed list of things this project counts. That is 63
+sites, which is reviewable, and `WORD_EXEMPT` carries a reason for each
+rhetorical or definitional one. Plant-verified both ways --- "nineteen
+checkpoints drawn from thirteen base models" fires twice, "seventeen cells"
+fires, and "one of the two readings, and both halves of the record" stays
+silent.
+
+**What the sweep found.** Nine figures were quoting a registry value as a
+word, and two of those had macros that already existed and were in use
+*elsewhere in the same section*. Eight figures had no key at all and now do:
+`strat_widen_cells_gone` / `_new`, `strat_schemes_narrower`,
+`calib_rows_nvfp4`, `calib_cells_attempted` / `_survived` / `_row_starved`,
+and `strat_cells_in_sample_pop`. Registry: 360 -> 368 scalars.
+
+**Two of the sites were wrong, not merely untraced.**
+
+*"Two of the old widenings disappear, two new ones appear."* The set
+difference is **four** and two is the net change: 6 cells widen under the
+retracted band, 4 under the shipped one, 2 under both, so 4 go and 2 arrive.
+Registered as the set difference with the reason, at both sites.
+
+*"`\SizeWidthsOld{}` of `\NCellsTotal{}` cells raised their scheme's width."*
+`n_cells_total` is 17 --- the cell population of the COVERAGE artifact. The
+in-sample band fitted 12 cells, and the shipped band fits 7. Both sites were
+using a correct number as the denominator of a population it does not
+describe, which is the Class B defect the audit section documents, in the body,
+twice. The two 12-cell populations are also not the same set: both hold 12 and
+5 members differ on each side, so reusing `calib_cells_attempted` would have
+repeated the error with a different macro. `strat_cells_in_sample_pop` is
+separate for that reason, and both sentences now name their own population.
+
+**A fix that was not a fix.** `strat_widen_cells_both` was registered in an
+earlier cycle in response to this same complaint, and `\StratCellsBoth` was
+used at one site while a near-duplicate paragraph two pages later still said
+"only two cells are the same in both". Registering the key and converting one
+of its two sites looked like closing the item.
+
+### 2026-10-11 --- the jackknife+ pooled figure
+
+The paper quoted jackknife+'s NVFP4 coverage (`\JackknifeNvfpCov`, the worst
+per-scheme figure in the work) and never its pooled coverage, which was
+registered as `jackknife_cov_pct` and had no macro. Reporting the scheme a
+rejected construction failed on while omitting how it did overall overstates
+the case against it, in the direction that flatters the construction we ship.
+`\JackknifeCov` now appears beside it: 88.09% pooled, close to nominal and
+above the 1-2*alpha = 80% jackknife+ actually guarantees.
+
+Every jackknife+ mention is in the process-error appendix; none is in the body,
+so the asymmetry was inside one paragraph rather than between the body and the
+appendix. It was still worth fixing where the claim is made.
+
+### 2026-10-11 --- two gates that could not go red for the right reason
+
+`test_both_paper_variants_pass_audit_paper_cleanly` asserted on
+`stdout.splitlines()[-6:]`, so a truncated or interleaved capture failed it
+while the audit was clean --- observed once on 2026-10-08, passing in
+isolation and in three later runs. `audit_paper.py` now emits one
+machine-readable line, `AUDIT_PAPER_RESULT variant=... failures=N
+warnings=N`, and the test requires exactly one of them anywhere in the output:
+a truncated capture now fails as "no sentinel" rather than as a false audit
+failure, and the two conditions are distinguishable.
+
+`src/build_supplement.py` drops itself from the build tree because its regex
+patterns quote the author name, and nothing asserted that entry existed.
+Removing it ships a file enumerating every identity string being scrubbed,
+which is both a leak and a roadmap; disabling the entry and running the scrub
+produces 13 hits across 5 labels and exit 1.
+`test_the_self_referential_files_are_pinned_in_drop_files` pins the entry for
+six such files and, in a second half, shows the scan actually finds an
+identifier in each one --- so the pin is load-bearing rather than cargo cult.
+Plant-verified: removing the `src/make_pdfs.py` entry names that file in the
+failure.
+
+

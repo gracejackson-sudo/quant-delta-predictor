@@ -23,7 +23,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 from model import load  # noqa: E402
 from strata import (ConservativeStratified, SchemeOnlyBaseline,  # noqa: E402
-                    calibrated_fit,
+                    calibrated_fit, checkpoint_partition,
                     StratifiedBaseline, annotate)
 import rank as R  # noqa: E402
 
@@ -156,6 +156,26 @@ def registry():
                 _c["n_schemes_band_replaced"], 0,
                 "schemes whose widening size band is replaced rather than "
                 "added or dropped when the band is corrected")
+            # SET differences, not the difference of the two counts. The
+            # paper said "two of the old widenings disappear" because 6-4=2,
+            # which is the NET change; the set difference is 6-2=4. Both
+            # numbers are about the same two sets and only one answers the
+            # sentence, so both are registered and the prose quotes these.
+            add("strat_widen_cells_gone",
+                _c["n_widening_in_sample"] - _c["n_widening_both"], 0,
+                "cells that widened under the retracted band and do not "
+                "under the shipped one (set difference, not net change)")
+            add("strat_widen_cells_new",
+                _c["n_widening_shipped"] - _c["n_widening_both"], 0,
+                "cells that widen under the shipped band and did not under "
+                "the retracted one (set difference, not net change)")
+        add("strat_schemes_narrower",
+            sum(1 for _s in m.by_scheme
+                if m.by_scheme[_s]["half_width"]
+                < ConservativeStratified().fit(d).by_scheme[_s]["half_width"]
+                - 1e-12), 0,
+            "schemes whose shipped half-width is NARROWER than the retracted "
+            "in-sample one: calibration corrects in both directions")
 
     _cb = os.path.join(HERE, "..", "out", "calibrated_bands.json")
     if os.path.exists(_cb):
@@ -204,6 +224,40 @@ def registry():
                 "per-scheme width")
             add("calib_units_floor", 9, 0,
                 "calibration units a finite 90% conformal quantile needs")
+            add("calib_rows_nvfp4", _sup["nvfp4"]["rows"], 0,
+                "calibration-side rows for nvfp4: what clears the ROW gate "
+                "while its 2 checkpoints do not clear the unit gate")
+    # The (scheme, size-band) cells the calibration ATTEMPTS, and how many
+    # get their own width. Distinct from n_cells_total, which counts the
+    # cells in the COVERAGE artifact (17) and is a different object -- the
+    # paper's "twelve cells" is this denominator, not that one.
+    add("calib_cells_attempted", len(m.by_stratum) + len(m.rejected), 0,
+        "(scheme, size-band) cells the calibration attempts: those that get "
+        "their own width plus those rejected for want of support")
+    # The RETRACTED in-sample band fitted its own cell population, and it is
+    # NOT the same set: both happen to hold 12 cells and 5 members differ on
+    # each side. Two sites quoted n_cells_total (17, the coverage artifact's
+    # population) as the denominator for this 12-cell one -- a correct number
+    # with the wrong object, the class the audit section documents. Separate
+    # key so the two denominators cannot be confused again.
+    add("strat_cells_in_sample_pop",
+        len(ConservativeStratified().fit(d).by_stratum), 0,
+        "(scheme, size-band) cells the RETRACTED in-sample band fitted: the "
+        "denominator for how many of them raised their scheme's width")
+    add("calib_cells_survived", len(m.by_stratum), 0,
+        "of those, the cells that get a calibrated size-specific width")
+    # Cells whose calibration side holds fewer rows than the 90% conformal
+    # index needs, so they silently fall back to the scheme width. The
+    # paper's "two of twelve cells" -- the numerator of the in-sample
+    # fallback disclosure in the method section.
+    _calck, _ = checkpoint_partition(d)
+    _cside = d[d.base_model.isin(_calck)]
+    add("calib_cells_row_starved",
+        sum(1 for (_cs, _cb) in (set(m.by_stratum) | set(m.rejected))
+            if len(_cside[(_cside.scheme == _cs) & (_cside.band == _cb)]) < 9),
+        0,
+        "attempted cells whose calibration side has fewer than 9 rows, so "
+        "the width falls back to the scheme and is in-sample")
     add("n_big_losses_below_floor", meta["n_big_losses_below_floor"], 0,
         "of those, delta below their scheme's interval floor")
     add("pooled_cell_coverage_pct", cc["pooled"]["coverage"] * 100, 0.05,

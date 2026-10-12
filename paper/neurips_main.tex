@@ -299,7 +299,8 @@ calibration side has fewer than nine rows silently retains its fit-side
 width, which is in-sample; a (scheme, size-band) cell in the same position is
 dropped and falls back to the scheme width. Neither is an infinite band, and
 an earlier version of this paragraph claimed otherwise. On the current corpus
-no scheme is in that position and two of twelve cells are, so nothing shipped
+no scheme is in that position and \CalibCellsStarved{} of
+\CalibCellsAttempted{} cells are, so nothing shipped
 is affected --- but the fallback is in-sample and the honest description of it
 is that we have not implemented the \(\infty\) behaviour, not that we chose
 it. Second, the guarantee is only as strong as the number of exchangeable
@@ -667,8 +668,8 @@ than \(3\)pp) and the one the tool already warns about hardest. A reader who
 wants one number for whether in-sample calibration mattered should take that
 one, not the pooled coverage figure.
 
-Calibration corrects in both directions and is not a blanket widening. Three
-schemes get narrower. Across the corpus the pooled half-width grows from
+Calibration corrects in both directions and is not a blanket widening.
+\StratSchemesNarrower{} schemes get narrower. Across the corpus the pooled half-width grows from
 \InsampleHw{}pp to \CalibHw{}pp, and the number of \(>3\)pp losses falling
 below the interval floor drops from \BigLossBelowOld{} to
 \BigLossBelow{} of \BigLosses{}: the honest band catches five severe outcomes
@@ -677,8 +678,9 @@ the optimistic one missed, which is the whole point of the exercise.
 Measured under leave-one-checkpoint-out over all \Nckpt{} checkpoints, so that
 every row is scored by a band that never saw its own checkpoint, two-sided
 coverage is \CalibCov\% against a nominal \(90\%\). Repeating the partition
-over twenty seeds gives a median of \CalibCovMedian\% and a range of
-\CalibCovMin{}--\CalibCovMax\%; every one of the twenty clears the threshold
+over \CalibPartitions{} seeds gives a median of \CalibCovMedian\% and a range
+of \CalibCovMin{}--\CalibCovMax\%; every one of the \CalibPartitions{} clears
+the threshold
 fixed in advance. The pre-registered partition is not the most flattering of
 them.
 Two consequences of that partition are worth stating because a reader will
@@ -697,9 +699,10 @@ published evidence and not the construction.
 
 \paragraph{What the widths actually rest on, which is less than the coverage
 suggests.} We fixed in advance that a finite \(90\%\) conformal quantile needs
-nine calibration units, and that the unit is the checkpoint. After the
-partition, not one scheme meets that: the per-scheme widths rest on between
-two and eight independent checkpoints, and NVFP4's rests on \textbf{two}. The
+\CalibUnitsFloor{} calibration units, and that the unit is the checkpoint.
+After the partition, not one scheme meets that: the per-scheme widths rest on
+between \CalibUnitsMin{} and \CalibUnitsMax{} independent checkpoints, and
+NVFP4's rests on \textbf{\CalibUnitsMin{}}. The
 quantile index itself counts calibration rows, of which every scheme has
 enough, so the widths exist and the coverage above is measured rather than
 assumed. But the quantity that determines how much a conformal guarantee is
@@ -722,10 +725,13 @@ it. The narrowing half was discarded earlier because it did not survive
 contact with unseen checkpoints. The widening half does not survive honest
 calibration either.
 
-Under the in-sample band, \SizeWidthsOld{} of \NCellsTotal{} cells actually
-raised their scheme's width. Under the calibrated band, \SizeWidths{} do --- and
-only two cells are the same in both. Two of the old widenings disappear, two
-new ones appear, and for W8A16 the two size bands exchange places: the
+Under the in-sample band, \SizeWidthsOld{} of the \StratCellsInSample{} cells
+it fitted raised their scheme's width. Under the calibrated band,
+\SizeWidths{} of \CalibCellsSurvived{} do. The two populations are not the
+same cells --- that is part of what fails here, not a detail of presentation
+--- and only \StratCellsBoth{} cells widen under both. \StratWidenGone{} of
+the old widenings disappear and \StratWidenNew{} new ones appear, and for
+W8A16 the two size bands exchange places: the
 in-sample band flags \(>\)10B as the wider-spread case, the calibrated band
 flags 2--10B instead. Membership and direction both move. We therefore report
 the per-cell verdicts, which are measured per cell and unaffected by this, and
@@ -877,9 +883,10 @@ version on a weaker measurement, in which the half-width was fitted in-sample;
 the conclusion survives the correction.
 
 What does not survive is any claim that the size band \emph{identifies} risk.
-Of the \NCellsTotal{} cells, \SizeWidthsOld{} raised their scheme's width
-under the retracted in-sample band and \SizeWidths{} do under the shipped one,
-and \StratCellsBoth{} are the same cells. \StratBandReplaced{} scheme has its
+Of the \StratCellsInSample{} cells the retracted in-sample band fitted,
+\SizeWidthsOld{} raised their scheme's width. Of the \CalibCellsSurvived{}
+the shipped band fits, \SizeWidths{} do, and \StratCellsBoth{} are the same
+cells. \StratBandReplaced{} scheme has its
 widening band \emph{replaced} rather than added or dropped --- W8A16, from
 \(>\)10B under the in-sample band to 2--10B under the shipped one. So the rule
 earns its place as a one-directional conservatism for thin small-model cells,
@@ -1303,18 +1310,20 @@ against what we had just written.
 The consequence is not cosmetic. At the registered unit, no scheme qualifies
 --- the per-scheme calibration sides hold \CalibUnitsMin{} to
 \CalibUnitsMax{} checkpoints against a floor of \CalibUnitsFloor{} --- and
-\emph{none} of the twelve size cells qualifies either, against the
+\emph{none} of the \CalibCellsAttempted{} size cells qualifies either, against the
 pre-registration's own trigger of fewer than eight surviving, which would have
-fired and restricted the tool to a pooled band. Under the row gate seven of
-twelve cells survive and every scheme gets a per-scheme width. So the
+fired and restricted the tool to a pooled band. Under the row gate
+\CalibCellsSurvived{} of \CalibCellsAttempted{} cells survive and every scheme
+gets a per-scheme width. So the
 registered protocol and the shipped artifact are different objects, and the
 registered one is the more conservative.
 
 A second departure follows from the first. The pre-registration singled out
 NVFP4, which has \CalibUnitsMin{} calibration checkpoints, and fixed in
 advance that it would back off to the pooled quantile with the backoff flagged
-in the output and counted in the registry. Because twenty-eight calibration
-rows clear the row gate, NVFP4 took a per-scheme width, the backoff never
+in the output and counted in the registry. Because \CalibRowsNvfp{}
+calibration rows clear the row gate, NVFP4 took a per-scheme width, the
+backoff never
 fired, and nothing is flagged. The registered handling for the scheme we had
 identified as the most fragile never executed.
 
@@ -1352,7 +1361,7 @@ convention, the family label, the size band, the row assignment, the centres
 on the fit side, the conformal index and quantile on the calibration side, and
 the widen-only size rule. So the check no longer covers ``is this the
 partition they say it is'' and still covers ``given that partition, is every
-published number right''. A thirteen-name list is auditable by eye; a
+published number right''. A \CalibCalCkpt{}-name list is auditable by eye; a
 reimplemented generator is not.
 
 \paragraph{Provenance discipline.} Two parser fixes were informed by inspecting
@@ -1496,7 +1505,12 @@ tighter, so the pooled quantile sits well below what NVFP4 needs: under
 jackknife+ the backoff gave NVFP4 a half-width \emph{narrower} than its own
 in-sample width, and its coverage fell to \JackknifeNvfpCov\% against a
 nominal \(90\%\) --- the worst per-scheme figure anywhere in this work, and
-below the threshold we had pre-registered as a scheme-level failure. A backoff
+below the threshold we had pre-registered as a scheme-level failure. The
+pooled figure belongs beside it and had been missing: jackknife+ covers
+\JackknifeCov\% across the corpus, close to nominal and comfortably above the
+\(1-2\alpha = 80\%\) its construction actually guarantees. Reporting only the
+scheme it failed on would overstate the case against a construction we chose
+not to ship, in the direction that flatters the one we did. A backoff
 intended to be conservative was anti-conservative for the one scheme it was
 written for, because ``back off to the larger reference class'' and ``back off
 to a wider interval'' are not the same instruction, and we conflated them.
@@ -1504,7 +1518,9 @@ to a wider interval'' are not the same instruction, and we conflated them.
 We did not change the protocol after seeing this. The pre-registered primary
 construction, split conformal, does not have the defect --- NVFP4 keeps a
 per-scheme width there and over-covers --- so the shipped band is unaffected,
-and jackknife+ is reported as the secondary it was registered as. What we are
+and jackknife+ is reported as the secondary it was registered as --- including
+the pooled coverage above, which a version of this paragraph that gave only
+the NVFP4 figure did not. What we are
 recording is that the reasoning in the pre-registration was faulty on a point
 we had singled out as the one most at risk of being decided post-hoc. Deciding
 it in advance was right; the decision itself was wrong. The next version of

@@ -294,15 +294,79 @@ finding destroyed the evidence for it --- the same shape as the byline that
 leaked into a tracked file by being written up. Any such check must exclude
 the documents that discuss it, and must say which ones it excluded.
 
-**And a defect class the orphan list detects by accident.** Two of the six
-pre-existing unreferenced keys are not dead at all: the paper quotes their
-values *as words*. `calib_partitions` is 20 and the paper says "over twenty
-seeds"; `calib_cal_ckpt` is 13 and the paper says "a thirteen-name list". The
+**And a defect class the orphan list detected by accident**, now closed. Two
+of the six pre-existing unreferenced keys were not dead at all: the paper
+quoted their values *as words*. `calib_partitions` is 20 against "over twenty
+seeds"; `calib_cal_ckpt` is 13 against "a thirteen-name list". The
 untraced-literal gate scans for numerals, and a numeral spelled out is not
-one, so these pass every check in the repository while being exactly what the
-registry exists to prevent. An unreferenced key whose value appears in the
+one, so these passed every check in the repository while being exactly what
+the registry exists to prevent. An unreferenced key whose value appears in the
 prose in words is therefore a signal, not noise --- which is an argument for
 keeping the orphan list even before the check that computes it is reliable.
+The sweep and the gate that closes the class are described under *Figures
+written as words* below.
+
+### Figures written as words
+
+**The class.** The central traceability gate matches `\d+`. Every figure
+written as a word has been invisible to it since the registry existed. A
+spelled-out count passes the numeral check, passes the registry check (which
+only verifies values that are *tagged*), and passes the prose scanner (which
+looks for mangled joins, not for untraced data).
+
+**Why an allowlist of word-numbers does not work.** Matching every word form
+from `zero` to `ninety-nine`, plus `hundred`, `thousand`, `dozen`, `both` and
+`half`, flags about 300 sites in this paper. Roughly 290 are rhetorical ---
+"one of two grounds", "both halves", "half the corpus", "one level up". A gate
+needing a 290-entry phrase allowlist is the gate nobody trusts, which is the
+failure the first half of this document is about.
+
+**What works instead: match the shape of a count.** A figure written as a word
+is a word-number governing something this project counts --- cells, rows,
+checkpoints, schemes, families, seeds, partitions, folds, cards, arms, paths.
+`paper/audit_paper.py` matches a word-number followed by up to two modifiers
+and then one of that closed noun list, excludes hyphenated method names
+(`leave-one-family-out`, `one-sided`, `three-state`), and fails the build on
+anything left that is not in `WORD_EXEMPT` with a reason. That is 63 sites
+rather than 300, it is reviewable, and on the 2026-10-11 sweep it found every
+instance that had been found by hand plus four that had not.
+
+**What the first sweep found**, out of 63 count-shaped sites: nine figures
+quoting a registry value as a word, of which two had macros that already
+existed and were used *elsewhere in the same section*; seven figures with no
+key at all; and one that was simply **wrong** --- "two of the old widenings
+disappear" where the set difference is four and two is the net change. The
+error had survived because no gate could read the sentence as a claim about a
+number. The rest are rhetorical or definitional and are allowlisted with
+reasons.
+
+**The lesson about the fix that is not a fix.** `strat_widen_cells_both` had
+been registered in an earlier cycle *in response to this same complaint*, and
+`\StratCellsBoth` was used at one site while a near-duplicate paragraph two
+pages later still said "only two cells are the same in both". Registering the
+key and converting one of its two sites looked like closing the item. Nothing
+could tell the difference.
+
+### A check that reads the tree cannot be documented in the tree
+
+**The class.** Any check whose criterion is "does this string appear in the
+repository" is contaminated the moment its own findings are written down. The
+orphan-key list in `PROVENANCE.md` names six keys; naming them made all six
+match the check that identified them, so re-running it reported them as live.
+The write-up destroyed the evidence for the finding it recorded.
+
+This is the second instance in two weeks. The first: documenting a PDF byline
+leak put the byline verbatim into a tracked file, and the scrub failed the
+next build on `PROVENANCE.md`.
+
+**The rule.** A check that reads the tree must exclude the documents that
+discuss it, and must **name what it excluded** in its own output. An exclusion
+nobody can see is indistinguishable from a check that found nothing, which is
+the failure mode this whole document exists to catch. `src/build_supplement.py`
+already does the honest version of this: it drops itself from the build tree by
+an explicit `DROP_FILES` entry with the reason beside it, the scan is shown to
+catch the file if that entry is ever removed, and since 2026-10-11 a test pins
+the entry so the protection is not "an entry nobody checks".
 
 ### A known limit of the supplement scrub, stated rather than assumed
 

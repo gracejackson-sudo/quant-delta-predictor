@@ -134,6 +134,83 @@ if hand:
     warn.append(f"hand-typed numerals in prose (verify each): {hand}")
 print(f"   hand-typed numerals in prose  : {len(hand)} {hand if hand else ''}")
 
+# ------------------------------------------------- figures written as WORDS
+# The numeral check above cannot see these: a spelled-out count is not a
+# numeral. Two live claims had been quoting registry values as words since
+# the registry existed -- "over twenty seeds" against calib_partitions=20,
+# and "a thirteen-name list" against calib_cal_ckpt=13 -- and passed every
+# gate in this repository. One of them, "two of the old widenings disappear",
+# was also WRONG (the set difference is four; two is the net change), which
+# is what an untraced figure buys you.
+#
+# Matching every word-number flags about 300 sites in this paper and almost
+# all of them are rhetorical: "one of two grounds", "both halves", "half the
+# corpus", "one level up". An allowlist of that size is the gate nobody
+# trusts. So the pattern matches the SHAPE OF A COUNT instead -- a word
+# number immediately governing one of the things this project counts, with up
+# to two modifiers in between ("twenty-eight calibration rows"). That is 63
+# sites, which is reviewable, and it caught every real instance found by hand.
+_WUNIT = ("zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|"
+          "twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|"
+          "nineteen|twenty")
+_WTENS = "thirty|forty|fifty|sixty|seventy|eighty|ninety"
+_WORD = (rf"(?:{_WTENS})-(?:one|two|three|four|five|six|seven|eight|nine)"
+         rf"|(?:{_WTENS})|(?:{_WUNIT})|a dozen|a handful|a couple")
+# What this project counts. Short and reviewable on purpose: a count of
+# something not on this list is not a figure this paper reports.
+_WNOUN = ("cells?|rows?|checkpoints?|schemes?|famil(?:y|ies)|seeds?|"
+          "partitions?|folds?|cards?|repos?|repositories|benchmarks?|"
+          "publishers?|arms?|paths?|keys?|macros?|models?|files?|names?|"
+          "units?|evaluations?|figures?|claims?|gates?|tests?|entries|entry|"
+          "instances?|sites?|variants?|scripts?|columns?|protocols?|"
+          "questions?|verdicts?|states?|thresholds?|points?|parameters?|"
+          "pairs?|bands?|intervals?|predictors?|grounds?")
+WORDNUM = re.compile(
+    rf"\b(?:{_WORD})(?:[ -](?:[a-z]+[ -]){{0,2}}(?:{_WNOUN}))\b", re.I)
+# Hyphenated METHOD NAMES and compound adjectives, not counts.
+WORDTERM = re.compile(r"^(?:leave-)?(?:one|two|three|four|six|eight|twenty)-"
+                      r"(?:family|checkpoint|sided|state|column|fold|way|"
+                      r"directional|fifths)", re.I)
+# Rhetorical or self-evident uses, each checked by hand during the
+# 2026-10-11 sweep. ADDING TO THIS SET REQUIRES A REASON: the whole point is
+# that a figure cannot be hidden here by spelling it out.
+WORD_EXEMPT = {
+    # --- enumerated right there in the sentence, so the count is its own
+    #     evidence and a macro would add nothing
+    "four parameters", "seven files", "three cards", "two grounds",
+    "one of two grounds", "two operative verdicts", "two verdicts",
+    "three verdicts", "two states", "two size bands",
+    # --- definitional, not measured: these sentences DEFINE the object
+    "two checkpoints",          # "two checkpoints share a family when..."
+    "one model family", "one question", "one checkpoint", "one row",
+    "one scheme", "one family", "one gate", "one publisher", "one card",
+    "one benchmark", "one figure", "two arms row", "two models",
+    "two cards", "zero rows", "zero delta or verdict",
+    # --- historical figures in the error record, quoted as what we then
+    #     believed. The live values beside them are macros.
+    "three separate families", "three separate scripts", "two cells",
+    "two specific cells", "two rows", "three scripts", "four arms",
+    "three paths", "eight band-constructing paths", "two further instances",
+    "four rows", "three schemes",
+    # --- mathematical constants of the construction, not corpus figures:
+    #     the 90% conformal index needs n >= 9 whatever the corpus is
+    "nine rows",
+    # --- deliberately vague quantifiers
+    "a handful of rows",
+}
+wordhits = []
+for m in WORDNUM.finditer(body):
+    g = m.group(0).strip()
+    if WORDTERM.match(g) or " ".join(g.lower().split()) in WORD_EXEMPT:
+        continue
+    seg = re.sub(r"\s+", " ", body[max(0, m.start()-60):m.start()+70])
+    wordhits.append(f"{g!r} ...{seg}...")
+if wordhits:
+    fail.append("figures written as words (convert to a macro, or add to "
+                "WORD_EXEMPT with a reason):\n      "
+                + "\n      ".join(wordhits))
+print(f"   figures written as words      : {len(wordhits)}")
+
 # ---------------------------------------------------------------- 2
 head("2. CITATIONS")
 keys = set(re.findall(r"@\w+\{([^,]+),", BIB))
@@ -368,4 +445,11 @@ for w in warn:
 for f in fail:
     print(f"   FAIL     {f}")
 print(f"\n   {len(fail)} failure(s), {len(warn)} warning(s)")
+# A single machine-readable line, emitted exactly once, so a caller does not
+# have to find the human summary by position. tests/test_all.py read
+# stdout.splitlines()[-6:] and could therefore go red on a truncated or
+# interleaved capture while nothing was wrong -- a gate that cries wolf costs
+# more than it catches.
+print(f"AUDIT_PAPER_RESULT variant={TEXNAME} "
+      f"failures={len(fail)} warnings={len(warn)}")
 sys.exit(1 if fail else 0)

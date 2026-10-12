@@ -1272,16 +1272,36 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
     """The Step-2 fixes have to be in the long-form .tex as well as the
     neurips one; running audit_paper.py against either variant must report
     0 failures and 0 warnings."""
+    import re
     import subprocess
     root = os.path.join(os.path.dirname(__file__), "..")
     for name in ("main.tex", "neurips_main.tex"):
         r = subprocess.run(
             [sys.executable, os.path.join("paper", "audit_paper.py"), name],
             cwd=root, capture_output=True, text=True)
-        tail = r.stdout.splitlines()[-6:]
-        joined = "\n".join(tail)
-        assert "0 failure(s)" in joined and "0 warning(s)" in joined, \
-            f"{name} audit is not clean:\n{joined}"
+        # Read the machine-readable sentinel from the WHOLE output, not the
+        # last six lines. The positional read could go red on a truncated or
+        # interleaved capture while the audit itself was clean, and did once
+        # on 2026-10-08. Requiring exactly one sentinel makes a truncated
+        # capture fail as "no sentinel" instead of as a false audit failure.
+        hits = re.findall(
+            r"^AUDIT_PAPER_RESULT variant=(\S+) failures=(\d+) warnings=(\d+)$",
+            r.stdout, re.M)
+        assert len(hits) == 1, (
+            f"{name}: expected exactly one AUDIT_PAPER_RESULT line, got "
+            f"{len(hits)}. If this says 0, the output was truncated or the "
+            f"script died before reporting -- that is a different failure "
+            f"from a dirty audit, and the exit code was {r.returncode}.\n"
+            f"{r.stdout[-1500:]}{r.stderr[-800:]}")
+        variant, nfail, nwarn = hits[0]
+        assert variant == name, (
+            f"audit_paper.py reported on {variant!r} when asked for {name!r}")
+        assert (nfail, nwarn) == ("0", "0"), (
+            f"{name} audit is not clean: {nfail} failure(s), {nwarn} "
+            f"warning(s).\n{r.stdout[-2500:]}")
+        assert r.returncode == 0, (
+            f"{name}: audit reported 0 failures but exited "
+            f"{r.returncode}")
 
 
 # ---------------------------------------------------------------------------
@@ -2385,7 +2405,15 @@ _REGISTRY_MANIFEST = {
     # base model is a different object. The abstract quoted 19 of the first
     # and then grouped by the second, which sums to 13; both figures were
     # traced and correct and nothing compared the series.
-    "(scalar)": 360,
+    # 2026-10-11: +8 for the spelled-out-numeral sweep. calib_partitions
+    # and calib_cal_ckpt already existed and the paper was quoting them as
+    # WORDS; these eight are the figures that had no key at all --
+    # strat_widen_cells_gone / _new (the SET difference, where the prose
+    # had the net change and was wrong), strat_schemes_narrower,
+    # calib_rows_nvfp4, calib_cells_attempted / _survived / _row_starved,
+    # and strat_cells_in_sample_pop (two sites were using n_cells_total,
+    # 17, as the denominator for a 12-cell population).
+    "(scalar)": 368,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

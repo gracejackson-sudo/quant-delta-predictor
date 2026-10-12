@@ -184,6 +184,60 @@ def test_the_scrub_reads_pdf_metadata_not_just_page_text(tmp_path):
                 f"on an ordinary Overleaf build gets turned off.")
 
 
+def test_the_self_referential_files_are_pinned_in_drop_files(tmp_path):
+    """The scrub must drop the files that quote the strings it searches for.
+
+    Found on 2026-10-11: the exclusion was an entry in DROP_FILES with a
+    reason written beside it, and NOTHING asserted the entry existed. Deleting
+    it would have shipped a file enumerating every identity string being
+    scrubbed -- which is both a leak and a roadmap. The protection was "an
+    entry plus a build-time scan", and the entry was unpinned, which is the
+    same shape as every other defect this cycle.
+
+    Two halves, because membership alone is a tautology: the entry is pinned,
+    AND the scan is shown to catch the file if the entry ever goes. The second
+    half is what makes the first meaningful -- and it is why the build fails
+    loudly rather than silently if someone edits DROP_FILES.
+    """
+    import shutil
+    import build_supplement as B
+
+    SELF_REFERENTIAL = {
+        "src/build_supplement.py",   # its patterns quote the author name
+        "tests/test_supplement.py",  # this file; its assertions do too
+        "tests/test_pack.py",        # carries the EF-Day-N path literal
+        "src/make_pdfs.py",          # writes the byline into generated PDFs
+        "src/gen_form_page.py",      # carries the feedback endpoint
+        "PACK_STATUS.md",            # names the repository and the venue
+    }
+    missing = sorted(SELF_REFERENTIAL - set(B.DROP_FILES))
+    assert not missing, (
+        "these files quote the strings the scrub searches for and are no "
+        f"longer dropped from the build tree: {missing}. Either restore the "
+        "DROP_FILES entry, or -- if the file genuinely no longer carries an "
+        "identifier -- remove it from this test in the same commit and say "
+        "why in the message.")
+
+    # Non-vacuity: show the scan would catch each one. A DROP_FILES entry is
+    # only load-bearing for files the scan would otherwise flag; if the scan
+    # found nothing in a file, pinning its entry would be cargo cult.
+    unprotected = []
+    for rel in sorted(SELF_REFERENTIAL):
+        src = os.path.join(ROOT, rel)
+        if not os.path.exists(src):
+            continue                      # absent from the tree; nothing to leak
+        d = tmp_path / rel.replace("/", "_")
+        d.mkdir()
+        shutil.copy2(src, d / os.path.basename(rel))
+        if not B.scan(str(d)):
+            unprotected.append(rel)
+    assert not unprotected, (
+        "the scan finds no identity string in these files, so dropping them "
+        f"is not what keeps them out: {unprotected}. Either the patterns "
+        "stopped matching -- the serious reading -- or the file was cleaned "
+        "up and does not belong in this test any more.")
+
+
 def test_supplement_scrub_succeeds_and_the_zip_has_no_identity_strings(tmp_path):
     import re
     import zipfile
