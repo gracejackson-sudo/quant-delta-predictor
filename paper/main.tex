@@ -353,7 +353,8 @@ that the \emph{refused} state, as defined, does not fire: every cell with
 enough checkpoints to reach the second gate has a bootstrap upper bound
 comfortably above \RefuseBelow\%, and the one cell whose upper bound
 does sit below it (\texttt{w4a16|<2B}, upper bound \BootHiWfourSmall\%)
-has too few checkpoints to reach that gate and lands in
+has \CkptsCellWfourSmall{} checkpoints against the \MinCkpt{} that gate
+requires, and lands in
 \emph{insufficient evidence} instead. So the verdict rule is, on this corpus,
 two states and not three. We considered lowering the support floor to make the
 third fire and decided against it; \S\ref{sec:audit} gives the reasoning,
@@ -478,8 +479,8 @@ digits we do not. The table above is rendered to match: the predictors that
 lose to the global mean carry three decimals, and only the shipped per-scheme
 mean and the global mean itself---the comparison the paper rests on---carry
 four. The estimator is sensitive to small changes in a 38-column
-design matrix built from a few hundred clustered rows, which is itself part of
-the negative result.
+design matrix built from \Nrows{} rows clustered on \NBase{} base models,
+which is itself part of the negative result.
 
 So the honest statement is narrower than ``no signal'' and stronger than the
 claim it replaces. A sliver of card-feature signal exists; recovering it
@@ -762,8 +763,8 @@ independent parse.
 \paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
 Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3
 into one Llama-3 fold. The merged mean can conceal that Llama-3.3
-alone consistently sits several points below its cousins under every
-calibration family, so we break out the held-out Llama-3 fold by
+alone consistently sits \LThreeGapMin--\LThreeGapMax{}pp below its cousins
+under every calibration family, so we break out the held-out Llama-3 fold by
 subgroup. Rows are the calibration family; columns are the three
 subgroups the merged fold contains.
 \begin{center}
@@ -1156,11 +1157,12 @@ reader who wants the list unsorted should read both.
     \texttt{GPQA CoT diamond (5-shot)} $\to$
     \texttt{gpqa\_diamond\_cot\_5shot} (\NrowsGpqaDiamondCot).
     Two Llama-3.3-70B-Instruct rows (FP8-dynamic and w8a8) at
-    \texttt{acc\_before} $\approx$ 46.10 come from cards that carry
+    \texttt{acc\_before} = \GpqaAmbigAccBefore{} come from cards that carry
     only the string \texttt{GPQA (0-shot)} -- the same string used for
     the low-baseline \texttt{gpqa\_main} rows -- yet report a value
     that disagrees with the same checkpoint's NVFP4 row's \texttt{GPQA
-    (0-shot)} = 31.63 by 14pp. These 2 rows carry the placeholder label
+    (0-shot)} = \GpqaMainNvfpAccBefore{} by \GpqaAmbigGap{}pp. These
+    \GpqaAmbigRows{} rows carry the placeholder label
     \texttt{gpqa\_ambiguous\_46}: the card does not resolve which
     protocol they measure, and we do not infer from the value. Three cards carry the string
     \texttt{GPQA (Diamond, 0-shot)} --- the Qwen3-8B, Qwen3-14B and

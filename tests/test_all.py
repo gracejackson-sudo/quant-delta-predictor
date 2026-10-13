@@ -957,16 +957,45 @@ def test_external_feedback_doc_cites_only_real_commits():
         # replaced by rebase/amend. Retained on GitHub side by hash;
         # cited in the "Where the value appears in git" bullet.
         "1ba6159",
+        # Rewritten 2026-10-13: these two carried a Co-Authored-By trailer
+        # that a standing instruction forbids, were amended and
+        # force-pushed, and are cited in AUDIT_DISCIPLINE.md's rewrite
+        # disclosure precisely so a reader holding an old hash can follow
+        # it. 1330b28 -> eef93d4, 3921ec5 -> ad1b903.
+        "1330b28",
+        "3921ec5",
     }
-    text = open(os.path.join(root, "EXTERNAL_FEEDBACK.md")).read()
-    hashes = set(re.findall(r"`([0-9a-f]{7})`", text))
-    assert hashes, "the doc should cite commits"
-    for h in hashes:
-        if h in ORPHANS_ALLOWED:
-            continue
-        r = subprocess.run(["git", "cat-file", "-t", h], cwd=root,
-                           capture_output=True, text=True)
-        assert r.stdout.strip() == "commit", f"{h} is not a commit"
+    # EVERY DOC THAT CITES A COMMIT, not just this one. The check was scoped
+    # to EXTERNAL_FEEDBACK.md, so AUDIT_DISCIPLINE.md's vacuous-gate ledger
+    # -- which cites a commit per row -- was outside it, and the history
+    # rewrite on 2026-10-13 broke four of those citations with nothing to
+    # catch it. A doc that cites a hash is making a claim a reader can
+    # follow, or failing to; which doc it is does not change that.
+    docs = sorted(
+        f for f in os.listdir(root)
+        if f.endswith(".md") and os.path.isfile(os.path.join(root, f)))
+    checked, dead = 0, []
+    for doc in docs:
+        text = open(os.path.join(root, doc), encoding="utf-8").read()
+        for h in sorted(set(re.findall(r"`([0-9a-f]{7})`", text))):
+            if h in ORPHANS_ALLOWED:
+                continue
+            checked += 1
+            r = subprocess.run(["git", "cat-file", "-t", h], cwd=root,
+                               capture_output=True, text=True)
+            if r.stdout.strip() != "commit":
+                dead.append(f"{doc}: `{h}` does not resolve to a commit")
+    assert checked, (
+        "no commit citation was checked in any .md file, so this gate "
+        "compared nothing. Either the docs are absent or the citation "
+        "format changed.")
+    assert not dead, (
+        f"{len(dead)} commit citation(s) in the docs do not resolve, so the "
+        f"trail they claim cannot be followed. If a hash was superseded by "
+        f"a rebase or amend, add it to ORPHANS_ALLOWED with a one-line "
+        f"reason AND a disclosure paragraph in the doc that cites it:\n  "
+        + "\n  ".join(dead))
+    print(f"commit citations checked: {checked} across {len(docs)} docs")
 
 
 def test_fair_variance_uses_only_fully_observed_cells():
@@ -3192,7 +3221,12 @@ _REGISTRY_MANIFEST = {
     # WORDS -- two exempted as self-evident, and "about a quarter-point"
     # invisible to the gate entirely because the word vocabulary had no
     # fractional heads.
-    "(scalar)": 388,
+    # +4 when 31.63 and 46.10 came off PENDING_FIGURES: both are acc_before
+    # values of named rows, so they are registered as PER-ROW LOOKUPS --
+    # the keys select the rows and read the column rather than aggregating,
+    # and each asserts what it selected. The fourth is their disagreement,
+    # which the paper had hand-typed as "14pp" and is 14.47.
+    "(scalar)": 392,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

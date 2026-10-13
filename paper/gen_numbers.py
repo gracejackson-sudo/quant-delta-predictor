@@ -39,6 +39,14 @@ M = {
     "LThreeGapMax": ("lofo_l3gap_max_pp", "{:.1f}"),
     "LofoQwenThreeTblDefA": ("lofo_qwen3_tbl_defa_pct", "{:.1f}"),
     "LofoAggBDrift": ("lofo_aggb_drift_pp", "{:.2f}"),
+    # The two figures that sat on PENDING_FIGURES until 2026-10-13. Both are
+    # acc_before values of named rows and both are exact, so the appendix's
+    # "approximately" came off with the macro. The gap rendered 14 by hand
+    # and is 14.47.
+    "GpqaAmbigAccBefore": ("gpqa_ambiguous_acc_before", "{:.2f}"),
+    "GpqaAmbigRows": ("gpqa_ambiguous_rows", "{:.0f}"),
+    "GpqaMainNvfpAccBefore": ("gpqa_main_nvfp4_acc_before", "{:.2f}"),
+    "GpqaAmbigGap": ("gpqa_ambiguous_gap_pp", "{:.1f}"),
     "LofoFoldCovMin": ("lofo_fold_cov_min_pct", "{:.1f}"),
     "LofoFoldCovMax": ("lofo_fold_cov_max_pct", "{:.1f}"),
     "LofoFoldCovQwenThree": ("lofo_fold_cov_pct::qwen3", "{:.1f}"),

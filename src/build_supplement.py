@@ -252,6 +252,33 @@ def rewrite(dst: str) -> None:
 # exists to withhold.
 HASHLIKE = re.compile(r"(?<![0-9a-zA-Z])([0-9a-f]{7,40})(?![0-9a-zA-Z])")
 
+# OURS, BUT NO LONGER REACHABLE. The relabeller asks git whether a token is a
+# commit in this repository, which is the right question and has one blind
+# spot: a hash that was superseded by a rebase or amend stops resolving once
+# the old objects fall out of a clone. It is still OUR hash -- GitHub keeps
+# orphaned commits fetchable by full hash -- so it still resolves to this
+# repository for anyone who pastes it into a search box, and it is exactly
+# the kind of hash a disclosure paragraph cites on purpose.
+#
+# Found 2026-10-13 immediately after rewriting two commits to drop a
+# forbidden trailer: the superseded hashes were relabelled correctly in the
+# working clone ONLY because local backup branches still held the objects.
+# A fresh clone of origin does not resolve them -- measured -- and would have
+# shipped both in plain text. Reachability in whatever clone happens to run
+# the build is not a property the anonymisation should depend on.
+# The repository reached 122 commits when the completeness guard was
+# written. The guard only needs a floor that a shallow or truncated clone
+# falls under; it is not a pin on history length.
+MIN_HISTORY_COMMITS = 100
+
+KNOWN_OURS_ORPHANED = {
+    "1ba6159": "earlier version of 99f1ca5, replaced by rebase/amend; cited "
+               "in EXTERNAL_FEEDBACK.md's M1 disclosure",
+    "1330b28": "amended to eef93d4 on 2026-10-13 to drop a Co-Authored-By "
+               "trailer; cited in AUDIT_DISCIPLINE.md's rewrite disclosure",
+    "3921ec5": "rebased to ad1b903 in the same rewrite; same disclosure",
+}
+
 # REWRITE PROSE, NEVER DATA. The relabeller only edits the file types that
 # discuss commits; data files are read-only to it. The reason is a false
 # positive it would otherwise be free to make: `[0-9a-f]{7,40}` matches a
@@ -311,6 +338,52 @@ def _commit_dates(fulls):
     return d
 
 
+
+def assert_history_is_complete():
+    """Refuse to relabel from a clone that cannot see its own history.
+
+    -> the number of reachable commits.
+
+    THE RELABELLER AND ITS VERIFIER SHARE A DEPENDENCY, which is the
+    shared-assumption trap the paper's float-boundary entry is about. Both
+    ask `git cat-file` whether a token is a commit here. In a shallow clone
+    the answer is "no" for every commit outside the fetched depth -- so the
+    relabeller leaves those hashes alone AND the post-build verifier agrees
+    they are not ours, and the build reports success having shipped most of
+    them in plain text.
+
+    Measured 2026-10-13: a `--depth 50` clone of origin relabelled 10
+    commits at 51 sites where the full clone relabelled 31 at 145, and both
+    builds printed OK. A second check written the same way would not have
+    caught it; only a precondition does.
+    """
+    r = subprocess.run(["git", "rev-parse", "--is-shallow-repository"],
+                       capture_output=True, text=True, cwd=ROOT)
+    if r.stdout.strip() == "true":
+        raise SystemExit(
+            "REFUSING TO BUILD: this is a shallow clone. Commit-hash "
+            "relabelling resolves each hash against local history, and a "
+            "shallow clone cannot resolve the commits outside its depth -- "
+            "so they would ship in plain text and the post-build check, "
+            "which asks the same question, would agree they are clean. "
+            "Run `git fetch --unshallow` and rebuild.")
+    r = subprocess.run(["git", "rev-list", "--count", "HEAD"],
+                       capture_output=True, text=True, cwd=ROOT)
+    try:
+        n = int(r.stdout.strip())
+    except ValueError:
+        raise SystemExit(
+            "REFUSING TO BUILD: cannot count this clone's history, so the "
+            "completeness of commit relabelling cannot be established.")
+    if n < MIN_HISTORY_COMMITS:
+        raise SystemExit(
+            f"REFUSING TO BUILD: this clone reaches {n} commits and the "
+            f"repository had at least {MIN_HISTORY_COMMITS} when this guard "
+            f"was written. A truncated history relabels only what it can "
+            f"see. Fetch the full history and rebuild.")
+    return n
+
+
 def relabel_commits(dst, map_path=None):
     """Replace this repository's own commit hashes with stable labels.
 
@@ -341,10 +414,20 @@ def relabel_commits(dst, map_path=None):
         cands.update(m.group(1) for m in HASHLIKE.finditer(_s))
     # One commit can appear at 7, 8 and 40 hex; they must get ONE label.
     canon = _resolve_hashes(cands)
+    # An orphaned hash of ours gets a label of its own rather than the label
+    # of the commit that replaced it: the disclosure's whole point is that
+    # the two are different objects.
+    for _h in sorted(cands & set(KNOWN_OURS_ORPHANED)):
+        canon.setdefault(_h, _h)
     ours = set(canon)
     skipped_nonours = len(cands) - len(ours)
     dates = _commit_dates(set(canon.values()))
-    order = sorted(set(canon.values()), key=lambda f: dates.get(f, 0))
+    # Orphans have no committer date in this clone, so they sort after the
+    # dated commits by hash rather than silently taking date 0 and landing
+    # at COMMIT-01.
+    order = sorted(set(canon.values()),
+                   key=lambda f: (f in KNOWN_OURS_ORPHANED,
+                                  dates.get(f, 0), f))
     label_of = {full: "COMMIT-%02d" % (i + 1) for i, full in enumerate(order)}
     mapping = {h: label_of[canon[h]] for h in ours}
 
@@ -587,6 +670,7 @@ def verify_no_our_commits(dst):
             for m in HASHLIKE.finditer(body):
                 cands.setdefault(m.group(1), set()).add(rel)
     resolved = _resolve_hashes(set(cands))
+    resolved.update({h: h for h in set(cands) & set(KNOWN_OURS_ORPHANED)})
     remaining = {h: sorted(cands[h]) for h in resolved}
     return remaining, coverage, unreadable
 
@@ -616,7 +700,9 @@ def main() -> int:
             f.write("\n\n<!-- canary: Grace Jackson -->\n")
         log(f"[plant] added canary in {canary_path}, build check must fail")
 
-    log("[3/6] relabelling this repository's own commit hashes")
+    _n_hist = assert_history_is_complete()
+    log(f"[3/6] relabelling this repository's own commit hashes "
+        f"({_n_hist} commits reachable)")
     _, _, _stranded = relabel_commits(dst, map_path=os.path.join(
         os.path.dirname(os.path.abspath(args.out_zip)) or ".",
         "COMMIT_RELABEL_MAP.local.tsv"))

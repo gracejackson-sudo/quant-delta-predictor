@@ -1233,6 +1233,109 @@ sentinel line as `pending=N`, and are a **hard failure under
 `--pre-submission`**, which the pack build now runs. The pack cannot be
 stamped while any remains.
 
+### 2026-10-13 --- the history rewrite, and two leaks it exposed
+
+Two commits carried a `Co-Authored-By:` trailer that a standing instruction
+forbids and that `test_no_co_author_trailer_in_new_commits` gates. I added it
+from a session-level attribution reminder, which itself defers to the user's
+own rules, so the repository's gate was right and the commits were wrong.
+Amended and force-pushed with `--force-with-lease`; both trees are
+byte-identical to the originals and only the messages changed.
+**`1330b28` became `eef93d4` and `3921ec5` became `ad1b903`.**
+
+**The citation gate was scoped to one document.** Four rows of
+`AUDIT_DISCIPLINE.md`'s vacuous-gate ledger cite a commit each, and
+`test_external_feedback_doc_cites_only_real_commits` read only
+`EXTERNAL_FEEDBACK.md` -- so the rewrite broke four citations with nothing to
+catch it. The gate now reads every `.md` in the repository root: **29
+citations across 18 documents**, and it fails if any does not resolve.
+Replayed with a planted dead hash.
+
+**Leak 1: an orphaned hash is still ours, and the relabeller could not see
+it.** The supplement relabeller asks git whether a token is a commit here,
+which is the right question with one blind spot -- a superseded commit stops
+resolving once its objects fall out of a clone, while GitHub keeps it
+fetchable by full hash, so it still identifies this repository to anyone who
+pastes it into a search box. The rewrite produced exactly that: `1330b28` and
+`3921ec5` are cited in the rewrite disclosure on purpose. They relabelled
+correctly in the working clone **only because local backup branches still
+held the objects**. Measured in a fresh clone of origin: neither resolves.
+Both would have shipped in plain text. Fixed with an explicit
+`KNOWN_OURS_ORPHANED` set, relabelled regardless of reachability, and
+verified by running the build in that fresh clone.
+
+**Leak 2, worse: the relabeller and its verifier share the question they
+depend on.** Both resolve hashes against local history. In a shallow clone
+neither can resolve the commits outside the fetched depth, so the relabeller
+leaves them alone **and** the post-build verifier agrees they are not ours,
+and the build prints OK. Measured: a `--depth 50` clone relabelled **10
+commits at 51 sites** where the full clone relabelled **31 at 145**, and both
+builds succeeded. This is the float-boundary lesson again -- two checks that
+share an assumption agree on results the assumption is wrong about -- and a
+second check written the same way would not have caught it. Only a
+precondition does: the build now refuses to run on a shallow or truncated
+clone. Replayed in both directions.
+
+### 2026-10-13 --- the numeral exempt list, swept
+
+Of 99 `EXEMPT` entries, **79 have a site in the paper and 20 match nothing in
+either variant**. Eight of the dead ones (`16`, `0.10`, `2022`, `2023`,
+`2024`, `83.6`, `90.1`, `94.6`) have no connection to any current sentence;
+the other twelve are the pending set. All 20 removed. `PENDING_FIGURES` is
+now empty, and the dead-entry gate that was written for `WORD_EXEMPT` covers
+both numeral lists, so neither can quietly accumulate permissions again.
+
+**Derived figures still carried as exempt-by-name.** The sweep's substantive
+finding is one cluster, and it is the same shape as the LOFO four: figures a
+shipped tool recomputes, which no macro carries.
+
+| cluster | numerals | status |
+| --- | --- | --- |
+| the escaped-percent defect | `132`, `7`, `98`, `91`, `253`, `162`, `841`, `710`, `3.05`, `96.96`, `18`, `103` | **derived**: `tools/measure_percent_defect.py` reproduces every one of them by executing `708a84d`'s own stripper lines against its own document. Hand-typed in the paper. |
+| the float boundary | `118`, `119`, `131`, `1.40`, `1.3999999999999997` | historical, explicitly "at the time"; the live figures beside them are macros |
+| the artifact regeneration | `0.7545`, `0.7553`, `0.764`, `0.776`, `93.4`, `89.15`, `90.01`, `168`, `60` | historical before/after pairs in the error record |
+| retracted claims quoted verbatim | `6.4`, `3.8`, `0.4` | historical, quoted as what was then believed |
+| external citations | `84`, `133`, `500`, `000`, `99`, `1.7` | another paper's figures |
+| construction constants | `19`, `0.9`, `0.05`, `80`, `95`, `1`, `2` | properties of the conformal index, not of this corpus |
+| hyperparameters printed as code | `3`, `300`, `15`, `1.0`, `0`, `0.05` | the recipe, verbatim |
+| model names, sizes, hardware, dates | `3.1`, `3.2`, `3.3`, `2.5`, `11`, `90`, `70`, `8`, `1.5`, `0.5`, `135`, `32`, `14`, `128`, `64`, `40`, `10`, `4`, `26`, `27`, `09`, `2026` | name parts and dates |
+
+The first row is the one that matters and it is not yet converted: twelve
+figures in the appendix entry *about figures no check could see* are
+themselves hand-typed, while a committed tool recomputes them. Reported
+rather than changed, because the LOFO four were handled that way and this is
+the same decision.
+
+### 2026-10-13 --- 31.63 and 46.10 registered as per-row lookups
+
+Both are `acc_before` values of named rows rather than statistics, so the keys
+select the rows and read the column instead of aggregating: a mean over two
+rows that happen to agree would hide the day the cards stop agreeing. Each
+lookup asserts what it selected -- two rows at one value, one NVFP4 row --
+and raises rather than registering a figure about different rows.
+
+`\GpqaAmbigAccBefore` renders 46.10, `\GpqaMainNvfpAccBefore` renders 31.63,
+`\GpqaAmbigRows` renders 2. The `$\approx$` came off: both rows hold 46.10
+exactly. And the hand-typed "by 14pp" was **14.47**, rounded the wrong way;
+`\GpqaAmbigGap` renders **14.5**.
+
+### 2026-10-13 --- the three word-pass dispositions
+
+| site | disposition |
+| --- | --- |
+| "sits several points below its cousins" | **reworded to macros.** It was a vague restatement of a gap the next two sentences give exactly, and wrong at the low end -- 1.3pp is not "several points". Now `\LThreeGapMin--\LThreeGapMax{}pp`. |
+| "a few hundred clustered rows" | **made exact.** The figure is `\Nrows` = 823 rows clustered on `\NBase` = 38 base models. "A few hundred" was not an approximation of 823 so much as a wrong one. |
+| "too few checkpoints to reach that gate" | **made exact.** The cell holds `\CkptsCellWfourSmall` = 2 checkpoints against the `\MinCkpt` = 3 the gate requires. Both were already registered; the sentence was describing a comparison it declined to show. |
+
+With those and `half the schemes`, all four figures the 44-head superset pass
+found are resolved. 29 sites remain and none is a figure: negations ("no cell
+is refused", followed immediately by the macros), back-references ("both
+arms"), ordinals ("a third verdict" is the third kind) and qualitative
+statements.
+
+**`--pre-submission` now passes on both variants, exit 0, nothing pending.**
+The one outstanding reproduction is `out/tuned_baselines.json`.
+
 ### 2026-10-13 --- the pending set, measured rather than listed
 
 **One of the three was never in the paper.** The gate reported three pending

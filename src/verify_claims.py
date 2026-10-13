@@ -1730,6 +1730,44 @@ def registry():
     # Multisets of size k drawn with replacement from k clusters:
     # C(2k-1, k). For qwen3's 3 base models that is C(5,3) = 10, which is
     # how many DISTINCT resamples its cluster bootstrap can produce.
+    # --- The two pending figures, registered 2026-10-13 as PER-ROW LOOKUPS.
+    #     Both are `acc_before` values of named rows, not statistics, so the
+    #     key selects the rows and reads the column rather than aggregating:
+    #     a mean over two rows that happened to agree would hide the day the
+    #     cards stop agreeing. Each lookup asserts what it selected, because
+    #     a lookup that silently matches a different row is the
+    #     correct-number-wrong-object defect with extra steps.
+    _amb = d[(d.benchmark == "gpqa_ambiguous_46")
+             & d.base_model.str.contains("3.3-70B", regex=False)]
+    _ambv = sorted({round(float(_x), 4) for _x in _amb.acc_before})
+    if len(_amb) != 2 or len(_ambv) != 1:
+        raise RuntimeError(
+            f"the gpqa_ambiguous_46 lookup selected {len(_amb)} row(s) with "
+            f"acc_before values {_ambv}; the appendix states two rows at one "
+            f"value. Re-read the cards before changing the figure.")
+    add("gpqa_ambiguous_acc_before", _ambv[0], 0,
+        "acc_before of the two Llama-3.3-70B-Instruct rows (FP8-dynamic and "
+        "w8a8) that carry the placeholder label gpqa_ambiguous_46; both rows "
+        "hold this value exactly, which is why the appendix no longer says "
+        "approximately")
+    add("gpqa_ambiguous_rows", len(_amb), 0,
+        "rows carrying the gpqa_ambiguous_46 placeholder label")
+    _nv = d[(d.benchmark == "gpqa_main")
+            & d.base_model.str.contains("3.3-70B", regex=False)
+            & (d.scheme == "nvfp4")]
+    if len(_nv) != 1:
+        raise RuntimeError(
+            f"the gpqa_main NVFP4 lookup selected {len(_nv)} rows; the "
+            f"appendix states one. Re-read the cards.")
+    add("gpqa_main_nvfp4_acc_before", float(_nv.acc_before.iloc[0]), 0,
+        "acc_before of the same checkpoint's NVFP4 row on gpqa_main -- the "
+        "value the two ambiguous rows disagree with under the same card "
+        "string")
+    add("gpqa_ambiguous_gap_pp",
+        _ambv[0] - float(_nv.acc_before.iloc[0]), 0.005,
+        "the disagreement between them. The appendix said 14pp, which was "
+        "hand-typed and rounded the wrong way; it is 14.47 and renders 14.5")
+
     add("qwen3_boot_distinct_resamples",
         _m_w.comb(2 * _k_q3 - 1, _k_q3), 0,
         "distinct resamples a base-model cluster bootstrap can draw for the "

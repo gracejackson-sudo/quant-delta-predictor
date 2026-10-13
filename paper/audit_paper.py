@@ -55,10 +55,10 @@ print(f"   referenced-but-undefined      : {len(undef)} {undef if undef else ''}
 from texbody import strip_tex  # noqa: E402
 body, BODY_SPANS = strip_tex(TEX)
 NUM = re.compile(r"(?<![\w.\\])\d+(?:\.\d+)?(?![\d])")
-EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
-          "68", "84", "90", "95", "100", "133", "500", "2022", "2023", "2024",
-          "2026", "0", "36", "0.03", "0.36", "89.6", "93.4", "99", "10",
-          "500,000", "118", "131", "83.6", "94.6", "90.1", "68", "9",
+EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "38", 
+          "68", "84", "90", "95", "100", "133", "500", 
+          "2026", "0", "93.4", "99", "10",
+          "118", "131", "68", "9",
           # 119: the strict count immediately after the 2026-09-27 tolerance
           # patch, quoted in the float-boundary bullet beside 118/131 so a
           # reader can see what that patch did and did not change. Same
@@ -93,7 +93,7 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # (~25-32% chance-baseline vs ~46-67% headline) and lists the
           # affected Qwen3 variants (8B, 14B, 32B). These are qualitative
           # ranges and model-name digits, not measured claim-macros.
-          "25", "32", "46", "67", "14",
+          "32", "14",
           # §9 "artifact family regenerated" bullet and the rewritten
           # "regression we nearly shipped" paragraph document before/
           # after values for the day-7 regeneration. Each is present
@@ -106,7 +106,7 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # constant as the 9 already exempt above at alpha=0.10. Neither is
           # a corpus measurement; the count of schemes that HAVE 19 units is
           # a measurement and is \JackknifeSchemesNineteen.
-          "0.10", "19",
+          "19",
           # Hidden until the escaped-percent bug was fixed on 2026-10-11:
           # 0.9 is 1-alpha inside the conformal index formula, and 168 /
           # 90.01 / 91.0 are day-7 before-and-after values in the same
@@ -153,7 +153,6 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # values on the disputed rows: 31.63 (Llama-3.3 NVFP4 "GPQA (0-shot)")
           # and 46.10 (Llama-3.3 FP8-dynamic and w8a8 "GPQA (0-shot)").
           # They are the concrete numbers the ambiguity note points at.
-          "31.63", "46.10",
           "40",    # 40 GB VRAM (A100-SXM4-40GB, on which the day-6 rerun OOM'd)
           "80",    # 80 GB VRAM (the hardware that would make the 3B extension fit)
           "0.85",  # <=0.85pp stochastic GPTQ deviation observed in the day-6 regression
@@ -204,17 +203,27 @@ _U = ("exempt by name and never classified. Of the twelve pre-2026-10-08\n"
       "      outstanding is their disposition, not their value. Classify\n"
       "      before submission: --pre-submission fails while any remains.")
 PENDING_FIGURES = {
-    # The four LOFO figures left this list on 2026-10-13: they reproduce
-    # EXACTLY on the 77873d9 tree under the subgroup estimator, so they were
-    # never computed under the retracted band and were about a quarter-point
-    # stale with the corpus. They are macros now.
+    # EMPTY, and that is the point of the category rather than its failure.
     #
-    # WHAT IS PENDING: exempt numerals that have never been classified. Each
-    # is exempt by name and nobody has said what it is. "Exempt" was doing two
-    # jobs -- a value checked and deliberately frozen, and a value nobody had
-    # looked at -- and these are the second kind.
-    "0.03": _U, "0.36": _U, "25": _U, "31.63": _U, "33": _U, "36": _U,
-    "43": _U, "46": _U, "46.10": _U, "67": _U, "89.6": _U, "500,000": _U,
+    # It held twelve names. Four were the LOFO figures, which left on
+    # 2026-10-13 once they reproduced exactly at 77873d9 and became macros.
+    # Of the remaining twelve exempt-by-name numerals, measurement found that
+    # only 31.63 and 46.10 appeared in the paper at all -- both acc_before
+    # values of named rows, both exact -- and they are now per-row registry
+    # lookups rendered as \GpqaMainNvfpAccBefore and \GpqaAmbigAccBefore.
+    # A thirteenth name, "46", was never in the paper: it matched the leading
+    # digits of 46.10 through a defect in this list's own predicate.
+    #
+    # The other nine had zero whole-numeral sites in either variant. They
+    # were removed rather than carried, because a pending figure that is not
+    # in the paper is a to-do item wearing a gate's clothing, and this list
+    # being non-empty is what --pre-submission refuses on.
+    #
+    # KEEP IT EMPTY BY DEFAULT. The next entry should arrive the way the
+    # first ones did: a figure found to be stale or unclassified, named here
+    # with what is wrong with it, blocking the pack until it is resolved.
+    # The dead-entry gate below fails on any entry that matches nothing, so
+    # it cannot quietly accumulate names again.
 }
 # (?!\d|\.\d), not (?!\d): the old lookahead permitted a following "."
 # and so matched the LEADING DIGITS of a longer decimal. "46" was reported
@@ -400,6 +409,42 @@ if _we_dead:
         + "\n      ".join(repr(e) for e in _we_dead))
 print(f"   dead WORD_EXEMPT entries      : {len(_we_dead)} "
       f"{_we_dead if _we_dead else ''}")
+
+
+# THE SAME RULE FOR THE NUMERAL LISTS. A numeral exempted by name is a
+# standing permission for that literal; if the paper no longer contains it,
+# the permission outlives the sentence it was granted for and the next
+# appearance of that value -- as a real, possibly wrong figure -- passes
+# unremarked. Measured on 2026-10-13: 20 of 99 EXEMPT entries matched
+# nothing in either variant, including eight (`16`, `0.10`, `2022`, `2023`,
+# `2024`, `83.6`, `90.1`, `94.6`) that had no connection to any current
+# sentence at all.
+#
+# PENDING_FIGURES gets the same treatment for a different reason: a pending
+# figure that is not in the paper is a to-do item wearing a gate's clothing,
+# and it is what --pre-submission refuses on. Nine of its twelve names were
+# never in the paper.
+#
+# Checked against the UNION of both variants, as with WORD_EXEMPT: an entry
+# live in one and absent from the other is doing its job.
+_num_seen = set()
+for _nv in ("main.tex", "neurips_main.tex"):
+    _np = os.path.join(HERE, _nv)
+    if not os.path.isfile(_np):
+        continue
+    _nbody, _ = strip_tex(open(_np).read())
+    _num_seen.update(NUM.findall(_nbody))
+for _lname, _lset in (("EXEMPT", EXEMPT),
+                      ("PENDING_FIGURES", set(PENDING_FIGURES))):
+    _nd = sorted(_lset - _num_seen, key=lambda v: (len(v), v))
+    if _nd:
+        fail.append(
+            f"{_lname} entries that match no numeral in either variant. Each "
+            f"is a standing permission for a literal the paper no longer "
+            f"contains; remove it, or say in a comment why it is held:\n      "
+            + ", ".join(repr(v) for v in _nd))
+    print(f"   dead {_lname:<16}entries  : {len(_nd)} "
+          f"{_nd if _nd else ''}")
 
 # ------------------------------------- is the counted-noun list wide enough?
 # _WNOUN above is the word gate's COVERAGE BOUNDARY, and the first version of
@@ -614,6 +659,7 @@ MACRO_UNITS = {
     "StratWidenGained":    r"rows?",
     "StratWidenGainedAll": r"rows?",
     "TuneOuterFolds":      r"folds?",
+    "GpqaAmbigRows":       r"rows?",
     # These two exist only in word form: they open no sentence and read as
     # words wherever they appear, so gen_numbers.py emits no digit macro for
     # them and there is no base declaration to inherit from.
