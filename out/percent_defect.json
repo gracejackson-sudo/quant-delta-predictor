@@ -1,0 +1,40 @@
+{
+  "exposure": {
+    "exposure_commits": 103,
+    "exposure_days": 18,
+    "exposure_days_exact": 18.258796,
+    "fixed": "2aa90e4",
+    "introduced": "db34a29",
+    "measured_at": "708a84d"
+  },
+  "variants": {
+    "main.tex": {
+      "body_that_should_be_read": 103710,
+      "body_that_was_read": 100548,
+      "chars_in_prose_runs": 3253,
+      "escaped_percent_signs": 132,
+      "hidden_characters": 3162,
+      "hidden_pct": 3.048886,
+      "real_comment_marks": 0,
+      "runs_of_prose": 91,
+      "runs_removed": 91,
+      "runs_that_were_comments": 0,
+      "scanned_pct": 96.951114,
+      "space_left_per_run": 91
+    },
+    "neurips_main.tex": {
+      "body_that_should_be_read": 103841,
+      "body_that_was_read": 100679,
+      "chars_in_prose_runs": 3253,
+      "escaped_percent_signs": 132,
+      "hidden_characters": 3162,
+      "hidden_pct": 3.04504,
+      "real_comment_marks": 7,
+      "runs_of_prose": 91,
+      "runs_removed": 98,
+      "runs_that_were_comments": 7,
+      "scanned_pct": 96.95496,
+      "space_left_per_run": 91
+    }
+  }
+}

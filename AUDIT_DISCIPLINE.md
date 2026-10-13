@@ -440,6 +440,19 @@ originals and only the messages changed. `1330b28` became `eef93d4` and
 `3921ec5` became `ad1b903`. If you are holding a reference to either old
 hash, that is why it no longer resolves.
 
+Both old hashes are cited above on purpose, and that has two consequences
+worth stating. They are in `ORPHANS_ALLOWED` in
+`test_external_feedback_doc_cites_only_real_commits`, which otherwise fails
+on a citation that does not resolve -- an orphan is disclosed deliberately
+and its non-resolvability is the point of the disclosure. And they are in
+`KNOWN_OURS_ORPHANED` in `src/build_supplement.py`, because an orphaned
+commit is still ours: GitHub keeps it fetchable by full hash, so it still
+identifies this repository to anyone who pastes it into a search box, while
+`git cat-file` in a fresh clone says it is not a commit here. The relabeller
+asks git that question, so without the explicit list both hashes would have
+shipped in the anonymous supplement in plain text -- measured in a fresh
+clone of origin, where neither resolves.
+
 **What this ledger cannot tell you** is how many vacuous gates remain. Every
 row was found by hand, and the only one found by a check was the dead
 `WORD_EXEMPT` entry -- found by a gate written minutes earlier for a

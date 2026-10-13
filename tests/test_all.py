@@ -3226,7 +3226,13 @@ _REGISTRY_MANIFEST = {
     # the keys select the rows and read the column rather than aggregating,
     # and each asserts what it selected. The fourth is their disagreement,
     # which the paper had hand-typed as "14pp" and is 14.47.
-    "(scalar)": 392,
+    # +18: fifteen for the escaped-percent entry, read from the committed
+    # out/percent_defect.json so that fourteen figures in the entry ABOUT
+    # figures no check could see stop being hand-typed; and three for the
+    # design matrix the sensitivity caveat describes -- its width, and the
+    # smallest and largest leave-one-family-out training set, because the
+    # table is LOFO and no fit ever sees the whole corpus.
+    "(scalar)": 410,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.
@@ -4797,3 +4803,101 @@ def test_requirements_pins_match_the_installed_environment():
         pytest.skip(
             "pinned package(s) not installed, so the pin is unchecked rather "
             "than satisfied: " + ", ".join(absent))
+
+
+def test_percent_defect_json_matches_a_fresh_measurement():
+    """out/percent_defect.json must equal a re-measurement from history.
+
+    The escaped-percent appendix entry quotes fourteen figures. They were
+    hand-typed until 2026-10-13 -- in the entry about figures no check could
+    see -- while tools/measure_percent_defect.py reproduced every one of them
+    by executing 708a84d's own stripper lines against 708a84d's own
+    documents. The tool now writes the JSON, src/verify_claims.py reads it,
+    and paper/gen_numbers.py renders the macros, so the figures take the same
+    path as every other figure in the paper.
+
+    The JSON is committed because the measurement is OF HISTORY: it does not
+    move when the corpus does, and re-measuring inside the registry would
+    make a clone without the history unable to load the registry at all. The
+    cost of committing it is that it could drift from what the history
+    actually says, which is what this test exists to prevent.
+
+    SKIPS LOUDLY, never passes, when the history is absent: a shallow clone
+    cannot read 708a84d, and "could not check" is not "matches". The tool
+    signals that with exit 3.
+
+    Planted failure: change any value in out/percent_defect.json and this
+    fires with the key, the committed value and the measured value.
+    """
+    import json
+    import subprocess
+
+    root = os.path.join(os.path.dirname(__file__), "..")
+    jpath = os.path.join(root, "out", "percent_defect.json")
+    assert os.path.isfile(jpath), (
+        "out/percent_defect.json is missing. The appendix's escaped-percent "
+        "figures are generated from it; regenerate with "
+        "`python tools/measure_percent_defect.py --write`.")
+    committed = json.load(open(jpath))
+
+    probe = subprocess.run(
+        [sys.executable, os.path.join("tools", "measure_percent_defect.py")],
+        capture_output=True, text=True, cwd=root)
+    if probe.returncode == 3:
+        import pytest
+        pytest.skip(
+            "tools/measure_percent_defect.py reported UNCHECKED (exit 3): "
+            "this clone cannot read the history the measurement needs, so "
+            "the committed JSON was not verified against anything. Fetch "
+            "the full history to exercise this. Tool said: "
+            + " ".join(probe.stdout.split())[:300])
+    assert probe.returncode == 0, (
+        f"the measurement tool exited {probe.returncode}:\n"
+        f"{probe.stdout[-1500:]}\n{probe.stderr[-1500:]}")
+
+    # Re-measure into a temp file rather than over the committed one, so a
+    # failing run cannot silently "fix" the thing it is checking.
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        env = dict(os.environ)
+        r = subprocess.run(
+            [sys.executable, "-c",
+             "import sys, json;"
+             "sys.path.insert(0, 'tools');"
+             "import measure_percent_defect as m;"
+             "src = m._show(f'{m.BEFORE}:paper/audit_paper.py');"
+             "lines = [l for l in src.split(chr(10))"
+             " if l.startswith('body = re.sub(')];"
+             "out = {'variants': {v: m.measure_one(lines,"
+             " m._show(f'{m.BEFORE}:paper/' + v)) for v in m.VARIANTS},"
+             " 'exposure': m.measure_exposure()};"
+             "print(json.dumps(out, sort_keys=True))"],
+            capture_output=True, text=True, cwd=root, env=env)
+        assert r.returncode == 0, (
+            f"re-measurement failed:\n{r.stdout[-1500:]}\n{r.stderr[-1500:]}")
+        fresh = json.loads(r.stdout)
+        del td
+
+    drift = []
+    for v in sorted(committed["variants"]):
+        assert v in fresh["variants"], f"{v} missing from the re-measurement"
+        for k in sorted(committed["variants"][v]):
+            a = committed["variants"][v][k]
+            b = fresh["variants"][v].get(k)
+            same = (abs(a - b) < 1e-9 if isinstance(a, float)
+                    else a == b)
+            if not same:
+                drift.append(f"variants.{v}.{k}: committed {a}, measured {b}")
+    for k in ("exposure_days", "exposure_commits", "introduced", "fixed",
+              "measured_at"):
+        a = committed["exposure"].get(k)
+        b = fresh["exposure"].get(k)
+        if a != b:
+            drift.append(f"exposure.{k}: committed {a}, measured {b}")
+    assert not drift, (
+        "out/percent_defect.json disagrees with a fresh measurement from "
+        "history. The appendix's figures are generated from this file, so "
+        "every one of them is now wrong by the same amount. Re-run "
+        "`python tools/measure_percent_defect.py --write`, then "
+        "`python paper/gen_numbers.py`, and commit both:\n  "
+        + "\n  ".join(drift))

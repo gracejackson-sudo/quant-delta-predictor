@@ -501,9 +501,11 @@ particular number as an estimate whose \emph{direction} we claim and whose
 digits we do not. The table above is rendered to match: the predictors that
 lose to the global mean carry three decimals, and only the shipped per-scheme
 mean and the global mean itself---the comparison the paper rests on---carry
-four. The estimator is sensitive to small changes in a 38-column
-design matrix built from \Nrows{} rows clustered on \NBase{} base models,
-which is itself part of the negative result.
+four. The estimator is sensitive to small changes in a
+\FeatCols-column design matrix, and no fit of it sees the whole corpus: the
+table is leave-one-family-out, so each fit is built from
+\LofoTrainRowsMin--\LofoTrainRowsMax{} of the \Nrows{} rows, clustered on
+\NBase{} base models. That is itself part of the negative result.
 
 So the honest statement is narrower than ``no signal'' and stronger than the
 claim it replaces. A sliver of card-feature signal exists; recovering it
@@ -1162,7 +1164,7 @@ reader who wants the list unsorted should read both.
     \LofoHeldoutOneSided\%. We disclose here rather than exclude:
     the shipped pipeline reports the pooled figure, and the reader
     should know what the pool contains.
-  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound, which moved the strict figure from 118/131 to 119/131 at the time. The boundary case no longer arises: W4A16's upper bound is now \HiWfour{}pp rather than $+1.40$, so that row is inside by a clear margin, and the strict figure has since moved to \ProspInside/\ProspN{} for an unrelated reason --- the shipped band was corrected from an in-sample to a split-conformal construction. The tolerance patch should not be credited with that change. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about. Two further instances are on the record, and naming them is more use than counting them: the independent verifier and the pipeline both built the band in-sample and agreed with each other throughout (below), and the test that compared the shipped artifact against a freshly built one agreed because it rebuilt the same wrong construction (Appendix~\ref{sec:process}). An earlier version of this sentence claimed three; we can substantiate two.
+  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound in the 2026-09-27 fix, which moved the strict figure from 118/131 to 119/131 as the corpus then stood; both bounds and both ratios are properties of that revision rather than of the present corpus, which is why they are literals here and not macros, and the commit that produced them is named in the accompanying record. The boundary case no longer arises: W4A16's upper bound is now \HiWfour{}pp rather than $+1.40$, so that row is inside by a clear margin, and the strict figure has since moved to \ProspInside/\ProspN{} for an unrelated reason --- the shipped band was corrected from an in-sample to a split-conformal construction. The tolerance patch should not be credited with that change. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about. Two further instances are on the record, and naming them is more use than counting them: the independent verifier and the pipeline both built the band in-sample and agreed with each other throughout (below), and the test that compared the shipped artifact against a freshly built one agreed because it rebuilt the same wrong construction (Appendix~\ref{sec:process}). An earlier version of this sentence claimed three; we can substantiate two.
   \item \emph{GPQA was multiple protocols under one label.} The label
     \texttt{gpqa} in the harvested corpus conflated several distinct
     GPQA evaluation protocols. Every card was reopened and the label
@@ -1673,20 +1675,24 @@ its first printed percentage.
 The figures below are historical rather than recomputed. They are measured
 against the paper as committed immediately before the fix, by executing that
 revision's own stripper rather than a reimplementation of it: at that revision
-the source held 132 escaped percent signs against 7 real comment marks. The
-broken rule removed 98 runs of text: the 7 comments, which it was for, and 91
-runs of ordinary prose, which it was not. Those 91 runs hold 3{,}253
-characters, and the scanned body came out 3{,}162 characters shorter than it
-should have been --- the 91-character difference is the single space the
-stripper left in place of each run. Against a denominator of 103{,}841
-characters, being the body with the 7 real comments removed, that is
-$3.05\%$ never read by the hand-typed-numeral check, the spelled-out-figure
-check, the counted-noun derivation or the unit declarations. So the clean
-results those four checks had been reporting were computed over $96.96\%$ of
-that revision. The named variant is affected almost identically, 3{,}162 of
-103{,}710, and has no real comments at all --- there the rule removed nothing
-but prose. The defect was present from the commit that introduced the checker
-to the commit that fixed it, a span of 18 days and 103 commits; the fraction
+the source held \PctEscaped{} escaped percent signs against
+\PctRealComments{} real comment marks. The broken rule removed
+\PctRunsRemoved{} runs of text: the \PctRealComments{} comments, which it
+was for, and \PctRunsProse{} runs of ordinary prose, which it was not. Those
+\PctRunsProse{} runs hold \PctProseChars{} characters, and the scanned body
+came out \PctHiddenChars{} characters shorter than it should have been ---
+the \PctSpacePerRun-character difference is the single space the stripper
+left in place of each run. Against a denominator of \PctDenominator{}
+characters, being the body with the \PctRealComments{} real comments
+removed, that is $\PctHidden\%$ never read by the hand-typed-numeral check,
+the spelled-out-figure check, the counted-noun derivation or the unit
+declarations. So the clean results those four checks had been reporting were
+computed over $\PctScanned\%$ of that revision. The named variant is affected
+almost identically, \PctNamedHiddenChars{} of \PctNamedDenominator{}, and
+has no real comments at all --- there the rule removed nothing but prose. The
+defect was present from the commit that introduced the checker to the commit
+that fixed it, a span of \PctExposureDays{} days and \PctExposureCommits{}
+commits; the fraction
 varied as the paper grew, and the figures quoted are for the final revision in
 that span. A script in the accompanying code reproduces them from history.
 

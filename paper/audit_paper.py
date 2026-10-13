@@ -106,6 +106,20 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "38",
           # constant as the 9 already exempt above at alpha=0.10. Neither is
           # a corpus measurement; the count of schemes that HAVE 19 units is
           # a measurement and is \JackknifeSchemesNineteen.
+          # 19: the jackknife+ conformal index at alpha=0.05, which needs
+          # ceil((n+1)*0.95) <= n, i.e. n >= 19 leave-one-out units per
+          # scheme. A property of the construction, not of this corpus.
+          #
+          # READ IT NARROWLY. 19 is also the value of prosp_clus_n -- the
+          # quantized checkpoints the prospective cluster bootstrap
+          # resamples, rendered by \ProspClusN -- and of six other live
+          # keys. This list is keyed by LITERAL, not by site, so one entry
+          # cannot distinguish the index from the checkpoint count; it is
+          # the counted-noun and unit declarations that catch a figure
+          # wearing the wrong object. Checked 2026-10-13: the single site
+          # of 19 in either variant is the index ("19 leave-one-out units
+          # per scheme"), not the checkpoint count. If a 19 ever appears
+          # meaning checkpoints, it must be \ProspClusN.
           "19",
           # Hidden until the escaped-percent bug was fixed on 2026-10-11:
           # 0.9 is 1-alpha inside the conformal index formula, and 168 /
@@ -128,8 +142,7 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "38",
           # 96.96% scanned, over 18 days and 103 commits. Historical and
           # deliberately frozen; tools/measure_percent_defect.py
           # reproduces them from history.
-          "132", "162", "841", "710", "103", "18", "3.05", "96.96",
-          "98", "91", "253",   # 98 runs removed: 7 comments + 91 of prose,
+            # 98 runs removed: 7 comments + 91 of prose,
                                # holding 3{,}253 characters. Same frozen
                                # historical measurement as the figures
                                # above; tools/measure_percent_defect.py
@@ -660,6 +673,23 @@ MACRO_UNITS = {
     "StratWidenGainedAll": r"rows?",
     "TuneOuterFolds":      r"folds?",
     "GpqaAmbigRows":       r"rows?",
+    "LofoTrainRowsMax":    r"rows?",
+    "FeatCols":            r"columns?",
+    # The escaped-percent entry. "runs" and the two percentages take no
+    # counted noun, so they need no declaration.
+    "PctRealComments":     r"comments?",
+    "PctProseChars":       r"characters?",
+    "PctHiddenChars":      r"characters?",
+    "PctDenominator":      r"characters?",
+    "PctExposureDays":     r"days?",
+    "PctExposureCommits":  r"commits?",
+    "PctRunsRemoved":      r"runs?",
+    "PctRunsProse":        r"runs?",
+    # \PctSpacePerRun-character difference: the noun is "character" because
+    # the figure counts characters, and it equals the number of runs because
+    # the stripper left exactly one space per run. Both readings are true
+    # and the sentence states the second.
+    "PctSpacePerRun":      r"characters?",
     # These two exist only in word form: they open no sentence and read as
     # words wherever they appear, so gen_numbers.py emits no digit macro for
     # them and there is no base declaration to inherit from.

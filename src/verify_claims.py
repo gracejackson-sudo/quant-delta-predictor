@@ -1730,6 +1730,82 @@ def registry():
     # Multisets of size k drawn with replacement from k clusters:
     # C(2k-1, k). For qwen3's 3 base models that is C(5,3) = 10, which is
     # how many DISTINCT resamples its cluster bootstrap can produce.
+    # --- The escaped-percent entry's figures, from out/percent_defect.json.
+    #     Registered 2026-10-13. Until then twelve figures in the appendix
+    #     entry ABOUT figures no check could see were themselves hand-typed,
+    #     while tools/measure_percent_defect.py reproduced every one of them
+    #     by executing 708a84d's own stripper lines against 708a84d's own
+    #     documents. The tool now writes that JSON and this reads it, so the
+    #     path from history to the paper is the same one every other figure
+    #     takes: measurement -> registry -> macro.
+    #
+    #     The JSON is committed because the measurement is OF HISTORY and
+    #     does not change when the corpus does; re-measuring on every
+    #     registry run would make a shallow clone unable to load the
+    #     registry at all. The test re-measures and compares, and skips
+    #     loudly when the history is absent.
+    _pd_path = os.path.join(HERE, "..", "out", "percent_defect.json")
+    if not os.path.exists(_pd_path):
+        raise RuntimeError(
+            f"{_pd_path} is missing. The appendix's escaped-percent figures "
+            f"are read from it; regenerate with "
+            f"`python tools/measure_percent_defect.py --write`.")
+    _pd = json.load(open(_pd_path))
+    _pd_anon = _pd["variants"]["neurips_main.tex"]
+    _pd_named = _pd["variants"]["main.tex"]
+    add("pct_escaped_signs", _pd_anon["escaped_percent_signs"], 0,
+        "printed percent signs the broken comment rule treated as comment "
+        "starts, at 708a84d")
+    add("pct_real_comments", _pd_anon["real_comment_marks"], 0,
+        "real comment marks in the anonymous variant at that revision")
+    add("pct_runs_removed", _pd_anon["runs_removed"], 0,
+        "runs of text the broken rule removed")
+    add("pct_runs_prose", _pd_anon["runs_of_prose"], 0,
+        "of those, the runs that were ordinary prose rather than comments")
+    add("pct_chars_in_prose_runs", _pd_anon["chars_in_prose_runs"], 0,
+        "characters held by those prose runs")
+    add("pct_hidden_chars", _pd_anon["hidden_characters"], 0,
+        "characters by which the scanned body fell short")
+    add("pct_space_per_run", _pd_anon["space_left_per_run"], 0,
+        "the difference between the two, being the single space the "
+        "stripper left in place of each removed run")
+    add("pct_denominator", _pd_anon["body_that_should_be_read"], 0,
+        "the body that should have been read: the anonymous variant with "
+        "its real comments removed")
+    add("pct_hidden_pct", _pd_anon["hidden_pct"], 0.005,
+        "the fraction never read by the four checks")
+    add("pct_scanned_pct", _pd_anon["scanned_pct"], 0.005,
+        "the fraction they were in fact reading")
+    add("pct_named_hidden_chars", _pd_named["hidden_characters"], 0,
+        "the same shortfall in the named variant")
+    add("pct_named_denominator", _pd_named["body_that_should_be_read"], 0,
+        "and its denominator; it has no real comments at all, so there the "
+        "rule removed nothing but prose")
+    add("pct_named_real_comments", _pd_named["real_comment_marks"], 0,
+        "real comment marks in the named variant: none")
+    add("pct_exposure_days", _pd["exposure"]["exposure_days"], 0,
+        "whole days the defect was live, db34a29 to 2aa90e4 (floored; the "
+        "exact span is 18.26 days)")
+    add("pct_exposure_commits", _pd["exposure"]["exposure_commits"], 0,
+        "commits in that span")
+
+    # --- What the gradient-boosting design matrix is actually built from.
+    #     The sensitivity caveat said "a few hundred clustered rows", which
+    #     was replaced with \Nrows (823) on 2026-10-13. That was the wrong
+    #     object: the MAE in that table is leave-one-family-out, so NO fit
+    #     ever sees the whole corpus -- each sees one fold's training side.
+    #     The corpus size and the per-fit size are different numbers and the
+    #     sentence is about the second.
+    _gbtr = sorted(len(d[d.family != _f]) for _f in sorted(d.family.unique()))
+    add("lofo_train_rows_min", _gbtr[0], 0,
+        "smallest leave-one-family-out training set: the fewest rows any "
+        "single fit of the card-feature models sees")
+    add("lofo_train_rows_max", _gbtr[-1], 0, "and the largest")
+    import model as _m_feat
+    add("featurize_columns", int(_m_feat.featurize(d)[0].shape[1]), 0,
+        "columns in the card-feature design matrix, which is the same width "
+        "for the corpus and for every training fold")
+
     # --- The two pending figures, registered 2026-10-13 as PER-ROW LOOKUPS.
     #     Both are `acc_before` values of named rows, not statistics, so the
     #     key selects the rows and reads the column rather than aggregating:

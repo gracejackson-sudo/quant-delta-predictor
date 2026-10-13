@@ -297,6 +297,19 @@ KNOWN_OURS_ORPHANED = {
 # exclusion to cover it.
 RELABEL_EXTS = {".md", ".tex", ".py", ".txt", ".bib", ".html", ".cfg", ".ini"}
 
+# Named data files that DO get relabelled, by exception and one at a time.
+# The blanket rule excludes data because `[0-9a-f]{7,40}` matches a
+# seven-digit decimal and rewriting a CSV value would be reported as a
+# successful build. These files are exceptions because their hash-shaped
+# tokens have been looked at: out/percent_defect.json records which
+# revisions a measurement of history was taken at, so its only such tokens
+# are commit hashes of ours, and its numbers are counts and four-place
+# percentages with no token long enough to collide. Adding a file here means
+# having checked that, not having assumed it.
+RELABEL_FILES = {
+    "out/percent_defect.json",
+}
+
 
 def _resolve_hashes(cands):
     """-> {token: full sha} for the tokens that are commits in THIS repo.
@@ -402,7 +415,7 @@ def relabel_commits(dst, map_path=None):
                 body = open(p, encoding="utf-8").read()
             except (UnicodeDecodeError, OSError):
                 continue
-            if ext in RELABEL_EXTS:
+            if ext in RELABEL_EXTS or rel in RELABEL_FILES:
                 texts.append((rel, p, body))
             else:
                 others.append((rel, body))

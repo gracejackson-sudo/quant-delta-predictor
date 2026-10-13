@@ -1233,6 +1233,93 @@ sentinel line as `pending=N`, and are a **hard failure under
 `--pre-submission`**, which the pack build now runs. The pack cannot be
 stamped while any remains.
 
+### 2026-10-13 --- the escaped-percent figures now take the normal path
+
+Fourteen figures in the appendix entry *about figures no check could see*
+were hand-typed, while `tools/measure_percent_defect.py` reproduced every one
+of them by executing `708a84d`'s own stripper lines against `708a84d`'s own
+documents. The tool now writes `out/percent_defect.json`,
+`src/verify_claims.py` reads it, and `paper/gen_numbers.py` renders the
+macros, so these take the same path as every other figure: measurement →
+registry → macro.
+
+The JSON is committed because the measurement is **of history**: it does not
+move when the corpus does, and re-measuring inside the registry would make a
+clone without the history unable to load the registry at all. The cost is
+that the file could drift from what history says, so
+`test_percent_defect_json_matches_a_fresh_measurement` re-measures and
+compares, and **skips loudly** when the history is absent.
+
+| figure | paper said | measured at `708a84d` |
+| --- | --- | --- |
+| escaped percent signs | 132 | 132 |
+| real comment marks (anonymous) | 7 | 7 |
+| runs removed | 98 | 98 |
+| runs of ordinary prose | 91 | 91 |
+| characters in those runs | 3,253 | 3,253 |
+| shortfall in the scanned body | 3,162 | 3,162 |
+| difference, one space per run | 91 | 91 |
+| denominator | 103,841 | 103,841 |
+| fraction never read | 3.05% | 3.0450% |
+| **fraction they were reading** | **96.96%** | **96.9550% → 96.95%** |
+| named variant shortfall / denominator | 3,162 / 103,710 | 3,162 / 103,710 |
+| named variant real comments | none | 0 |
+| exposure | 18 days, 103 commits | 18.26 days floored to 18; 103 |
+
+**One was wrong.** The scanned fraction is 96.95%, not 96.96%: the measured
+value is 96.95496, which is below 96.955, so it rounds down. The paper had it
+from `100 - 3.05`, which rounds the complement of an already-rounded figure
+and gains a hundredth. It now renders from the measurement.
+
+**A third defect of mine, caught only by reading the rendered PDF.** I
+rounded the percentages to four places on the way into the JSON, to keep a
+16-digit float mantissa out of a file the relabeller scans. At four places
+the hidden fraction becomes 3.045, and rendering *that* to the two places the
+paper prints gives **3.04** -- so the published figure moved by a hundredth
+through double rounding, in the same edit that was fixing a rounding error
+one line below. Six places keeps the second rounding faithful and is still
+far too short to look like a hash. The lesson is narrow and worth keeping: a
+stored value feeding a rounded display must carry more precision than the
+display, and the only thing that showed it was looking at the PDF.
+
+Two further defects of my own in the tool, both caught by replay rather than
+review.
+The run classifier tested `run.startswith("\\%")`, but `%.*` matches AT the
+percent sign so no run ever begins with the backslash -- it reported every
+run as a real comment and zero runs of prose, the exact inversion of the
+defect it measures. And `measure_exposure` raised `ValueError` on empty `git
+show` output instead of reporting that it could not check: a `--depth 50`
+clone reaches `708a84d` and `2aa90e4` but **not** `db34a29`, so the variant
+measurements succeed and only the exposure fails. A partially available
+history is the normal shallow-clone state, not an exceptional one; it now
+exits 3 and the test skips with the tool's own message.
+
+### 2026-10-13 --- the float-boundary figures, anchored
+
+`118`, `119`, `131`, `1.40` and `1.3999999999999997` were anchored in the
+paper only by the words "at the time". The paper cites **no commit hashes at
+all** -- deliberately, since a hash in the anonymous variant resolves to this
+repository -- so "tied to a named commit" was not true of any of them, and
+"at the time" is the same shape as the 96.8% counterfactual this record
+already carries: a historical label with nothing behind it.
+
+The commit is **`2de65b1`** (2026-09-27), *"A4: fix the float-boundary miss,
+add the shared-assumption audit note"*. Its own message states the move:
+
+> `- Strict pooled: 118/131 = 90.1% -> 119/131 = 90.8%`
+
+and describes the cause: gemma-3-1b-it W4A16 on TruthfulQA had an observed
+delta of exactly +1.40 and a W4A16 upper bound of exactly +1.40, computed in
+float as +1.3999999999999997, one machine epsilon below, so `delta <= hi`
+returned False at all 12 comparison sites across the pipeline, the
+from-scratch reimplementation and the audit-side recomputation.
+
+The paper now says "in the 2026-09-27 fix ... as the corpus then stood" and
+states plainly that both bounds and both ratios are properties of that
+revision rather than of the present corpus, which is why they are literals
+and not macros. The hash lives here, where hashes are already cited and the
+supplement relabeller rewrites them.
+
 ### 2026-10-13 --- the history rewrite, and two leaks it exposed
 
 Two commits carried a `Co-Authored-By:` trailer that a standing instruction
