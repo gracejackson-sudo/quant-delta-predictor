@@ -12,14 +12,20 @@ import json, os, re, sys, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
-TEXNAME = sys.argv[1] if len(sys.argv) > 1 else "main.tex"
+# --pre-submission turns the tolerated states into failures: pending stale
+# figures, and a bibliography that could not be reached. The dev gate has to
+# stay runnable offline and on a tree with known-stale figures still in it;
+# the pack must not be stamped in either state.
+PRE_SUBMISSION = "--pre-submission" in sys.argv
+_args = [a for a in sys.argv[1:] if not a.startswith("--")]
+TEXNAME = _args[0] if _args else "main.tex"
 TEX = open(os.path.join(HERE, TEXNAME)).read()
 NUMS = open(os.path.join(HERE, "numbers.tex")).read()
 BIB = open(os.path.join(HERE, "refs.bib")).read()
 # `unchecked` is the third state: a check whose INPUT or SERVICE was not
 # available, which is not a defect in the paper. Added 2026-10-12 after an
 # arXiv rate-limit turned the variants test red on a clean tree.
-fail, warn, unchecked = [], [], []
+fail, warn, unchecked, pending = [], [], [], []
 
 
 def head(t): print("\n" + "=" * 68 + f"\n{t}\n" + "=" * 68)
@@ -167,14 +173,58 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # once, each in a specific narrative role and each traceable to
           # a value shown per-family in a supplement table; they are not
           # generalisable figures, so tagging them would be spurious.
-          "87.3",  # aggregate LOFO across 8 folds, before Def B
-          "88.2",  # aggregate LOFO across 6 folds, after Def B
-          "85.1",  # llama-3.3 held-out mean under 8 folds (weakness now
-                   # folded into llama-3, disclosed)
-          "92.2",  # llama-3 held-out mean under 6 folds (the fold the
-                   # weakness folded into)
+          # 87.3 / 88.2 / 85.1 / 92.2 ARE NOT EXEMPT ANY MORE. They moved to
+          # PENDING_FIGURES below on 2026-10-13: the aggregate LOFO figures
+          # entered the paper at 77873d9, BEFORE split conformal replaced the
+          # in-sample band, and 88.2 no longer reproduces -- the same quantity
+          # computes to 91.81% today. They stay in the build as warnings and
+          # fail the pre-submission target.
           }
-hand = sorted({n for n in NUM.findall(body) if n not in EXEMPT})
+# ------------------------------------------------------- PENDING FIGURES
+# Numerals that were exempt, are now known or suspected stale, and have NOT
+# been fixed. They are a counted warning in the dev gate and a FAILURE under
+# --pre-submission, so the paper cannot be stamped while any remains.
+#
+# This list exists because "historical figure" was doing two jobs: a value
+# deliberately frozen with its provenance recorded, and a value nobody had
+# rechecked. The four below are the second kind.
+PENDING_FIGURES = {
+    "88.2": ("post-Definition-B aggregate LOFO coverage. Entered the paper at "
+             "77873d9 (2026-09-27), before split conformal replaced the "
+             "in-sample band. Recomputed 2026-10-13 under the shipped "
+             "construction: 91.81% all-pairs pooled, 92.03% "
+             "fallback-excluded, 91.56% mean over the six held-out families. "
+             "None is 88.2. STALE."),
+    "87.3": ("its 8-family predecessor in the same sentence. Mentioned once in "
+             "PROVENANCE.md but not tied to a commit, and not recomputable "
+             "against the current corpus, which has no 8-family reading."),
+    "85.1": ("Llama-3.3's own held-out fold under an 8-family reading. Zero "
+             "mentions in PROVENANCE.md, so it is not tied to a named "
+             "commit and cannot be called historical. Two sites per variant, "
+             "one of them in the results section rather than the audit."),
+    "92.2": ("the merged Llama-3 fold. Computes to 91.93% today, 0.27 off. "
+             "Zero mentions in PROVENANCE.md. Two sites per variant, one in "
+             "the results section."),
+}
+_pending = sorted(v for v in PENDING_FIGURES if re.search(
+    r"(?<![\w.\\])" + re.escape(v) + r"(?![\d])", body))
+if _pending:
+    _msg = ("figures on the PENDING list are still in the paper. Each is a "
+            "numeral that was exempt and is now known or suspected stale:\n"
+            + "\n".join(f"      {v}: {PENDING_FIGURES[v]}" for v in _pending))
+    if PRE_SUBMISSION:
+        fail.append(_msg)
+    else:
+        # its own category, not a warning: "warnings=0" has to keep meaning
+        # "nothing unexpected", and these four are expected and recorded.
+        pending.append(_msg)
+print(f"   pending (stale) figures       : {len(_pending)} {_pending}")
+
+
+# A pending figure is already reported, and more strictly, above: counting
+# it here as well would say the same thing twice in two categories.
+hand = sorted({n for n in NUM.findall(body)
+               if n not in EXEMPT and n not in PENDING_FIGURES})
 if hand:
     warn.append(f"hand-typed numerals in prose (verify each): {hand}")
 print(f"   hand-typed numerals in prose  : {len(hand)} {hand if hand else ''}")
@@ -617,7 +667,12 @@ except Exception as _e:
     # warning here failed test_both_paper_variants_pass_audit_paper_cleanly
     # on a tree with nothing wrong with it -- observed 2026-10-12. Same
     # confusion src/audit.py had: "could not check" reported as a defect.
-    unchecked.append(f"bib authors against arXiv: {_e}")
+    if PRE_SUBMISSION:
+        fail.append(f"could not verify bib authors against arXiv and this "
+                    f"is the pre-submission target, where an unverified "
+                    f"bibliography is not acceptable: {_e}")
+    else:
+        unchecked.append(f"bib authors against arXiv: {_e}")
 
 # ---------------------------------------------------------------- 3
 head("3. OVERCLAIM SCAN")
@@ -793,8 +848,10 @@ for f in fail:
     print(f"   FAIL     {f}")
 for _u in unchecked:
     print(f"   UNCHECKED  {_u}")
+for _p in pending:
+    print(f"   PENDING    {_p}")
 print(f"\n   {len(fail)} failure(s), {len(warn)} warning(s), "
-      f"{len(unchecked)} unchecked")
+      f"{len(unchecked)} unchecked, {len(pending)} pending")
 # A single machine-readable line, emitted exactly once, so a caller does not
 # have to find the human summary by position. tests/test_all.py read
 # stdout.splitlines()[-6:] and could therefore go red on a truncated or
@@ -802,5 +859,5 @@ print(f"\n   {len(fail)} failure(s), {len(warn)} warning(s), "
 # more than it catches.
 print(f"AUDIT_PAPER_RESULT variant={TEXNAME} "
       f"failures={len(fail)} warnings={len(warn)} "
-      f"unchecked={len(unchecked)}")
+      f"unchecked={len(unchecked)} pending={len(pending)}")
 sys.exit(1 if fail else 0)

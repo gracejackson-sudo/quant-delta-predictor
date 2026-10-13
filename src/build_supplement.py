@@ -89,14 +89,36 @@ TEXT_REPLACEMENTS: list[tuple[str, list[tuple[str, str]]]] = [
         (r"Copyright \(c\) 20\d\d Grace Jackson",
          "Copyright (c) 2026 Anonymous author (TMLR submission)"),
     ]),
+    # THE REPOSITORY NAME IS A DE-ANONYMISER ON ITS OWN. Rewriting only the
+    # host left "https://ANONYMISED/quant-delta-predictor", and that path
+    # resolves to exactly one repository on GitHub -- a reviewer who searches
+    # it finds the public repo, the author's name and the handle. Found
+    # 2026-10-13 by scanning the shipped zip for the repo name rather than
+    # for the identity strings. The path and the bare `cd` form both go.
     ("README.md", [
         (r"https://github\.com/gracejackson-sudo/quant-delta-predictor",
-         "https://ANONYMISED/quant-delta-predictor"),
+         "https://ANONYMISED/REPO"),
+        (r"\bquant-delta-predictor\b", "REPO"),
     ]),
     ("TOOL_SUMMARY.md", [
         (r"https://gracejackson-sudo\.github\.io/quant-delta-predictor/",
-         "https://ANONYMISED/quant-delta-predictor/"),
+         "https://ANONYMISED/REPO/"),
+        (r"\bquant-delta-predictor\b", "REPO"),
     ]),
+    ("BIAS_CORRECTION.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("RANKING.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("NEGATIVE_RESULT.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("ONE_SIDED_COVERAGE.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("EXTERNAL_FEEDBACK.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("ACCOUNTING.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("SCOPE.md", [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("src/qwen35_published.py",
+     [(r"\bquant-delta-predictor\b", "REPO")]),
+    ("src/publisher_census.py",
+     [(r"\bquant-delta-predictor\b", "REPO")]),
+    # the generator that WRITES the cd line into TOOL_SUMMARY.md
+    ("src/gen_bias_doc.py",
+     [(r"\bquant-delta-predictor\b", "REPO")]),
     ("RESEARCH.md", [
         (r"Grace Jackson.*?\d{4}-\d{2}-\d{2}",
          "Anonymous author"),
@@ -126,6 +148,9 @@ IDENT_STRINGS: list[tuple[str, str]] = [
     (r"[A-Za-z0-9._-]+@berkeley\.edu", "berkeley email"),
     # Personal pages (author's own; not the paper's ANONYMISED URL).
     (r"gracejackson(?:-sudo)?\.github\.io", "personal github page"),
+    # The repository name resolves to one repo on GitHub, so it identifies
+    # the author as surely as the handle does. Added 2026-10-13.
+    (r"\bquant-delta-predictor\b", "public repository name"),
     # Formspree: full URL AND the 8-hex-char bare id our form uses.
     (r"formspree\.io/f/[A-Za-z0-9]+", "Formspree endpoint URL"),
     (r"\bmkjgbwyl\b", "Formspree endpoint id (bare)"),

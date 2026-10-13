@@ -305,6 +305,15 @@ def registry():
     # the historical one. That is the same correct-number-wrong-object error
     # the entry is about, which is how it was caught. The figures are frozen
     # in the paper and exempted by name in paper/audit_paper.py.
+    # The nominal level. The paper prints 90% in a dozen places and nothing
+    # held it: alpha lives in strata.ALPHA and the printed figure was a
+    # hand-typed constant on the exempt list. Asked on 2026-10-13 whether the
+    # paper's 90 ties to a registry alpha; it did not, and now it does.
+    import strata as _st_alpha
+    add("alpha", _st_alpha.ALPHA, 0,
+        "the conformal miscoverage level, strata.ALPHA")
+    add("nominal_level_pct", 100.0 * (1.0 - _st_alpha.ALPHA), 0,
+        "the nominal two-sided level the intervals advertise, 100*(1-alpha)")
     add("n_base_models", meta["n_checkpoints"], 0,
         "distinct base models: the unquantized models the corpus's "
         "checkpoints derive from")

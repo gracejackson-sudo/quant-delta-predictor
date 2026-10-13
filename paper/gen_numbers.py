@@ -19,6 +19,8 @@ M = {
     # \Nckpt rendered n_checkpoints, which counted base models, while the
     # prose said "checkpoints". Split into the two objects, 2026-10-11.
     "NBase": ("n_base_models", "{:.0f}"),
+    "Alpha": ("alpha", "{:.2f}"),
+    "NominalPct": ("nominal_level_pct", "{:.0f}"),
     "NQuantCkpt": ("n_quant_checkpoints", "{:.0f}"),
     "Nfam": ("n_families", "{:.0f}"), "Nsch": ("n_schemes", "{:.0f}"),
     "MinCkpt": ("min_cell_checkpoints", "{:.0f}"),

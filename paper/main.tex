@@ -666,7 +666,7 @@ the optimistic one missed, which is the whole point of the exercise.
 Measured under leave-one-base-model-out over all \NBase{} base models, so
 that every row is scored by a band that never saw any checkpoint of its own
 base model, two-sided
-coverage is \CalibCov\% against a nominal \(90\%\). Repeating the partition
+coverage is \CalibCov\% against a nominal \(\NominalPct\%\). Repeating the partition
 over \CalibPartitions{} seeds gives a median of \CalibCovMedian\% and a range
 of \CalibCovMin{}--\CalibCovMax\%; every one of the \CalibPartitions{} clears
 the threshold
@@ -687,7 +687,7 @@ percentiles --- is computed on all \Nrows{} rows, because those describe the
 published evidence and not the construction.
 
 \paragraph{What the widths actually rest on, which is less than the coverage
-suggests.} We fixed in advance that a finite \(90\%\) conformal quantile needs
+suggests.} We fixed in advance that a finite \(\NominalPct\%\) conformal quantile needs
 \CalibUnitsFloor{} calibration units, and that the unit is the checkpoint.
 After the partition, not one scheme meets that: the per-scheme widths rest on
 between \CalibUnitsMin{} and \CalibUnitsMax{} independent checkpoints, and
@@ -699,7 +699,7 @@ worth is the number of exchangeable units behind it, and ours is below the
 floor we set ourselves before looking.
 
 This also explains the over-coverage. On a calibration set of \(n\) rows the
-\(90\%\) index \(\lceil (n+1)\cdot 0.9 \rceil\) falls within a few ranks of
+\(\NominalPct\%\) index \(\lceil (n+1)\cdot 0.9 \rceil\) falls within a few ranks of
 the largest residual --- second-largest on NVFP4's calibration set, fifth on
 the largest schemes --- so the width is effectively a near-maximum and the
 interval overshoots its nominal level. That is a correct conformal quantile at
@@ -1504,7 +1504,7 @@ far the widest-spread scheme in the corpus, and the other five are much
 tighter, so the pooled quantile sits well below what NVFP4 needs: under
 jackknife+ the backoff gave NVFP4 a half-width \emph{narrower} than its own
 in-sample width, and its coverage fell to \JackknifeNvfpCov\% against a
-nominal \(90\%\) --- the worst per-scheme figure anywhere in this work, and
+nominal \(\NominalPct\%\) --- the worst per-scheme figure anywhere in this work, and
 below the threshold we had pre-registered as a scheme-level failure. The
 pooled figure belongs beside it and had been missing: jackknife+ covers
 \JackknifeCov\% across the corpus, close to nominal and comfortably above the
@@ -1525,13 +1525,13 @@ the NVFP4 figure did not.
 That pooled figure obliges us to be exact about why split conformal is the
 shipped construction, because the measurement is not the reason and a reader
 who sees \JackknifeCov\% will ask. Jackknife+ performed acceptably. The reason
-is arithmetic and was fixed in advance: this paper wants to claim a \(90\%\)
+is arithmetic and was fixed in advance: this paper wants to claim a \(\NominalPct\%\)
 interval, split conformal guarantees \(1-\alpha\) and jackknife+ guarantees
-\(1-2\alpha\), so a \(90\%\) \emph{guarantee} from jackknife+ needs
+\(1-2\alpha\), so a \(\NominalPct\%\) \emph{guarantee} from jackknife+ needs
 \(\alpha = 0.05\), whose conformal index needs \(19\) leave-one-out units per
 scheme --- and only \JackknifeSchemesNineteen{} of \Nsch{} schemes have them.
-Jackknife+ at a \(90\%\) guarantee is unavailable for half the schemes
-whatever it scores. It is run at \(\alpha = 0.10\), where its guarantee is
+Jackknife+ at a \(\NominalPct\%\) guarantee is unavailable for half the schemes
+whatever it scores. It is run at \(\alpha = \Alpha\), where its guarantee is
 \(80\%\), and the NVFP4 figure above is its per-scheme worst case rather than
 the grounds for preferring the other construction. What we are
 recording is that the reasoning in the pre-registration was faulty on a point

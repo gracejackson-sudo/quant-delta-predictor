@@ -1316,7 +1316,7 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
         # capture fail as "no sentinel" instead of as a false audit failure.
         hits = re.findall(
             r"^AUDIT_PAPER_RESULT variant=(\S+) failures=(\d+) "
-            r"warnings=(\d+) unchecked=(\d+)$",
+            r"warnings=(\d+) unchecked=(\d+) pending=(\d+)$",
             r.stdout, re.M)
         assert len(hits) == 1, (
             f"{name}: expected exactly one AUDIT_PAPER_RESULT line, got "
@@ -1324,7 +1324,7 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
             f"script died before reporting -- that is a different failure "
             f"from a dirty audit, and the exit code was {r.returncode}.\n"
             f"{r.stdout[-1500:]}{r.stderr[-800:]}")
-        variant, nfail, nwarn, nunchecked = hits[0]
+        variant, nfail, nwarn, nunchecked, npending = hits[0]
         assert variant == name, (
             f"audit_paper.py reported on {variant!r} when asked for {name!r}")
         assert (nfail, nwarn) == ("0", "0"), (
@@ -1338,6 +1338,13 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
         if nunchecked != "0":
             print(f"   note: {name} left {nunchecked} check(s) unrun "
                   f"(a service or input was unavailable); see its output")
+        # PENDING is tolerated here and fatal under --pre-submission: four
+        # LOFO figures are known or suspected stale and have not been fixed.
+        # Tolerating them in the dev gate is deliberate; the pre-submission
+        # target refuses to let the pack be stamped while any remains.
+        if npending != "0":
+            print(f"   note: {name} carries {npending} pending stale "
+                  f"figure(s); `--pre-submission` fails on them")
         assert r.returncode == 0, (
             f"{name}: audit reported 0 failures but exited "
             f"{r.returncode}")
@@ -3152,7 +3159,10 @@ _REGISTRY_MANIFEST = {
     # came back out -> 370. A live measurement answers "what would the broken
     # stripper read of TODAY'S paper", which is not the historical claim the
     # appendix makes; the figures are frozen at 708a84d in the prose instead.
-    "(scalar)": 370,
+    # 2026-10-13: +2 -> 372 for alpha and nominal_level_pct. The paper prints
+    # 90% in a dozen places and nothing held it -- alpha lived in
+    # strata.ALPHA and the printed figure was a hand-typed exempt constant.
+    "(scalar)": 372,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.

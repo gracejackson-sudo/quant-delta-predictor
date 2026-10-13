@@ -1165,6 +1165,115 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-13 --- 88.2 is stale, and so are the three figures beside it
+
+Computed post-Definition-B aggregate LOFO coverage from the data, under the
+shipped construction, mirroring `verify_claims`' own LOFO loop:
+
+| reading | value |
+| --- | --- |
+| all-pairs pooled two-sided | **91.81%** |
+| fallback-excluded pooled (`lofo_heldout_cov_pct`) | 92.03% |
+| mean over the six held-out families | 91.56% |
+| the paper's hand-typed figure | **88.2%** |
+| `calib_cov_min_pct` (a DIFFERENT object: lowest of 20 partition seeds) | 88.21% |
+| `cell_boot_lo::w8a8_int\|>10B` (a cell bootstrap bound) | 88.17% |
+
+**88.2 does not reproduce under any reading.** It is 3.6 points below every
+aggregate LOFO figure the current code produces. Its proximity to 88.21 is a
+coincidence of value between unrelated quantities -- the trap this record is
+full of -- and registering it against that key would have been the defect, not
+the fix.
+
+**Why it is stale.** `git log -S` puts 88.2 into the paper at `77873d9`
+(2026-09-27), the commit that adopted Definition B -- and therefore BEFORE
+`0d95501` (2026-10-08) replaced the in-sample band with split conformal. The
+figure was computed under the retracted construction and never regenerated.
+It is the same class as the seven stale artifacts the audit section already
+records, reaching a figure the registry never held.
+
+**Three more in the same two sentences.** `87.3` is its 8-family predecessor
+and is not recomputable against a corpus that has no 8-family reading. `85.1`
+and `92.2` have **zero** mentions in `PROVENANCE.md`, so by the rule we just
+set they cannot be called historical, and `92.2` computes to **91.93%** today,
+0.27 off. `85.1` and `92.2` each appear at **two** sites per variant, and one
+of those is in the results section rather than the audit section.
+
+**None of the four is fixed, and none is exempt any more.** They are on a new
+`PENDING_FIGURES` list in `paper/audit_paper.py`: reported as their own counted
+category in the dev gate, named in the sentinel line as `pending=N`, and a
+**hard failure under `--pre-submission`**. The pack cannot be stamped while any
+remains. The numeral check no longer double-counts them.
+
+### 2026-10-13 --- the repository name defeated the anonymisation
+
+Scanned the shipped supplement zip for the REPO NAME rather than for the
+identity strings, and found **7 occurrences across 5 files** in the committed
+pack: `README.md`, `TOOL_SUMMARY.md`, `src/gen_bias_doc.py`,
+`src/publisher_census.py`, `src/qwen35_published.py`.
+
+The scrub rewrote the URL HOST and kept the path, so the anonymised form read
+`https://ANONYMISED/` followed by the repository's own name -- and that name
+resolves to exactly one repository on GitHub. A reviewer who searches it finds
+the public repo, the author's name and the handle. The bare `cd <repo>` lines
+in the quick-start blocks and a User-Agent string carried it too.
+
+Fixed: the path is rewritten as well as the host, the `cd` form and the
+User-Agent are covered, and the name is now an entry in `IDENT_STRINGS` so the
+scrub refuses it. A fresh build is clean -- 656 files, zero hits for the repo
+name, the author name or the handle, in entry names and contents.
+
+**This makes the supplement rebuild a hard dependency, not just the PDF.** The
+committed zip carries the string.
+
+### 2026-10-13 --- the seven-pattern scan, with a positive control
+
+| target | result |
+| --- | --- |
+| zip entry names | 0 for all seven |
+| zip contents, 637 files | 3 non-zero, all explained below |
+| pack PDF, text and `/Info` | 0 |
+| repository anonymous PDF, text and `/Info` | 0 |
+| anonymous variant `.tex` | 0 |
+| **named variant `.tex` (positive control)** | **1 author-name hit** |
+| **named PDF text (positive control)** | **1 author-name hit** |
+
+The control fires, so the zeros are measurements rather than a broken scan.
+
+The three non-zero counts in the zip contents: the programme acronym (6) is
+PDF binary noise and URL-encoded emoji in third-party Qwen cards, no real
+occurrence; the university name (12) is a statistics paper's URL in
+`RESEARCH.md` and a function-calling leaderboard named after the university in
+third-party cards, neither an affiliation claim; and the repo name (7) was the
+real finding above.
+
+**The gitignored local literal file is the chosen approach** for keeping the
+scrub's patterns out of public history; the hashed-token idea is dropped.
+
+### 2026-10-13 --- the nominal level had no key
+
+Asked whether the paper's 90 ties to a registry alpha. **It did not.** Alpha
+lived in `strata.ALPHA` and the printed 90 was a hand-typed constant on the
+exempt list; the two registry keys that happen to equal 90.0 are a cell
+bootstrap bound and a bias-correction entry, different objects again. Now
+registered as `alpha` and `nominal_level_pct`, and the paper's seven
+`\(90\%\)` sites and its one `\alpha = 0.10` are macros. Registry 370 -> 372.
+
+### 2026-10-13 --- five folds: my justification was wrong, the figure was not
+
+The reasoning I gave -- "`n_families` is 6, one fold per family" -- yields six
+folds, not five, as pointed out. The correct statement adds the step I elided:
+there are six LOFO folds, the sentence contrasts the other folds with the
+Llama-3 one, and six minus the one being contrasted is five. No family is
+excluded.
+
+**No registry key equals 5.** Nine scalar keys happen to, and all nine are
+different objects (`pooled_pairs_per_row`, `adv_recipes`,
+`prosp_ckpts_with_miss` and so on). So the figure could not have been
+registered without inventing a key for `n_families - 1`, which is why the
+sentence now says "the remaining folds" and carries no count. The wording
+needed no correction; my explanation of it did.
+
 ### 2026-10-12 (third) --- the leak headline was two claims, and I merged them
 
 **Reconciliation.** "Never reached a commit" was true of MY leak and false as
