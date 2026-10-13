@@ -128,7 +128,12 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
                                # historical measurement as the figures
                                # above; tools/measure_percent_defect.py
                                # reproduces all of them.
-          "0.9", "168", "90.01", "91.0",
+          # 91.0 was exempt here and is now \BandEmpCov: the sentence names
+          # the key (band_emp_coverage_pct) and the literal equalled the
+          # live value, so exempting it was the wrong disposition. The other
+          # three are historical before/after values in the regeneration
+          # item, in the same class as 89.15, 60 and 93.4 beside them.
+          "0.9", "168", "90.01",
           "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
           "0.7545",    # pre-regen mae_global_lofo
           "0.7553",    # post-regen mae_global_lofo (approx; live macro)

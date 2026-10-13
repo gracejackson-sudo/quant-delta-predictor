@@ -421,9 +421,9 @@ def test_small_model_queries_state_measured_cell_coverage(table):
     """
     # The loop IS the test, so an empty table would pass having
     # checked nothing. Asserted rather than assumed, 2026-10-12.
-    assert len([k for k in table if k != "_meta"]) >= 6, (
-        "the ranking table holds fewer than the 6 schemes this "
-        "corpus has; the loop below would check almost nothing")
+    assert len([k for k in table if k != "_meta"]) >= _n_schemes_live(), (
+        "the ranking table holds fewer schemes than the registry says "
+        "this corpus has; the loop below would check almost nothing")
     cc = R.load_cell_coverage()
     for s in table:
         if s == "_meta":
@@ -453,8 +453,8 @@ def test_moe_flag(table):
 def test_every_scheme_reports_support_and_coverage(table):
     # The loop IS the test; an empty table would pass having checked
     # nothing. Asserted rather than assumed, 2026-10-12.
-    assert len([k for k in table if k != "_meta"]) >= 6, (
-        "the ranking table holds fewer than the 6 schemes this corpus has")
+    assert len([k for k in table if k != "_meta"]) >= _n_schemes_live(), (
+        "the ranking table holds fewer schemes than the registry reports")
     for s, e in table.items():
         if s == "_meta":
             continue
@@ -468,9 +468,9 @@ def test_every_scheme_states_its_worst_observed_loss(table):
     """Regardless of tier or rank, no scheme may be silent about its tail."""
     # The loop IS the test, so an empty table would pass having
     # checked nothing. Asserted rather than assumed, 2026-10-12.
-    assert len([k for k in table if k != "_meta"]) >= 6, (
-        "the ranking table holds fewer than the 6 schemes this "
-        "corpus has; the loop below would check almost nothing")
+    assert len([k for k in table if k != "_meta"]) >= _n_schemes_live(), (
+        "the ranking table holds fewer schemes than the registry says "
+        "this corpus has; the loop below would check almost nothing")
     for s in table:
         if s == "_meta":
             continue
@@ -1518,6 +1518,19 @@ def _is_inline_code(span, start, doc):
 
 def _is_link_target(span, start, doc):
     return span.startswith("](") and span.endswith(")") and "(" in span
+
+
+def _n_schemes_live():
+    """The scheme count, from the registry rather than typed.
+
+    Three loop-ran guards hard-coded 6 on 2026-10-12. A corpus with a seventh
+    scheme would leave those guards checking 6 of 7, which is the shape of
+    weakness they were added to remove.
+    """
+    import sys as _s
+    _s.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+    import verify_claims as _VC
+    return int(_VC.registry()["n_schemes"][0])
 
 
 def test_no_test_can_pass_without_checking_anything():

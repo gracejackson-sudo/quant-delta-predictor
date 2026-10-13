@@ -94,12 +94,34 @@ def fetch(allow_network=False):
     REFRESHING the corpus, which is a corpus change and needs the manifest
     and every derived figure updated with it.
     """
+    # ONE PINNED CARD IS A FAILED DOWNLOAD, NOT A CARD. The Phi-4-mini file
+    # in the corpus is 15 bytes and its content is Hugging Face's 404 body,
+    # "Entry not found". The old fetch wrote that, the >200-byte floor read it
+    # as absent, and so every regeneration re-attempted the download and got
+    # the same 404 -- silently, forever. No published figure is affected:
+    # Phi-4-mini is one of the name-gated repositories the paper discloses as
+    # never scored, because its repo name carries no <n>B token, so the file
+    # never enters the harvest.
+    #
+    # It is pinned by content hash rather than treated as missing, so this
+    # function does not refuse on it and the artifact reproduces under shipped
+    # code. A card whose content we have IDENTIFIED is not a missing card; a
+    # card that is merely small is.
+    KNOWN_NOT_A_CARD = {
+        "f36668ddf22403a332f978057d527cf285b01468bc3431b04094a7bafa6aba59":
+            "Hugging Face 404 body for the name-gated Phi-4-mini repo",
+    }
     os.makedirs(PCARDS, exist_ok=True)
     missing = []
     for mid in UNSEEN:
         p = os.path.join(PCARDS, mid.replace("/", "_", 1) + ".md")
         if os.path.exists(p) and os.path.getsize(p) > 200:
             continue
+        if os.path.exists(p):
+            import hashlib
+            h = hashlib.sha256(open(p, "rb").read()).hexdigest()
+            if h in KNOWN_NOT_A_CARD:
+                continue
         missing.append((mid, p))
     if not missing:
         return

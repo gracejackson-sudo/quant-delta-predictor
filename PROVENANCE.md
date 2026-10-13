@@ -1165,7 +1165,150 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
-### 2026-10-12 (second) --- the affiliation string never reached a commit
+### 2026-10-12 (third) --- the leak headline was two claims, and I merged them
+
+**Reconciliation.** "Never reached a commit" was true of MY leak and false as
+a statement about the string. The string is present in the tree at **70 of
+118 HEAD-reachable commits**, all of them public (`origin/main` equals HEAD,
+nothing local-only), in four files that must hold it: the scrub, whose pattern
+list cannot search for what it does not contain; the two test files that
+exercise the scrub; and the pack checklist. Five commits add or change it:
+`3de5f2c` and `c95dfd1` (2026-09-27), `0d95501` and `d1b0fe4` (2026-10-08),
+`59f4cd9` (2026-10-11). What never reached a commit is the pair of files I
+edited on 2026-10-12, `tests/test_all.py` and `src/audit.py`: zero commits
+each by `git log -S`.
+
+**Pattern variants, counts only, over all 118 commits.** The project folder
+name, 70 commits / 4 files. The programme's full name, 70 / 2. The programme
+acronym alone, 0. The author's name, 117 / 7. The GitHub handle, 118 / 6. The
+university name, 115 / 8. The personal email, 73 / 2.
+
+Those last four are the expected state of a **named public repository under
+the author's own account** -- the name is in `LICENSE`, the handle in
+`README.md`, and so on. The anonymity requirement is on the SUBMISSION
+ARTIFACTS, not on the repository, which is why the scrub exists. At HEAD every
+file holding any of these patterns is in `DROP_FILES`, with one benign
+exception: three third-party model cards under `data/rh_card_scan_*` match the
+university name because the Nemotron cards cite a function-calling leaderboard
+named after it, which is a benchmark and not an affiliation. The scrub already
+anchors its affiliation patterns on the phrases that name the university AS an
+affiliation rather than on the bare word, for exactly this reason -- and the
+first draft of this paragraph quoted one of those phrases verbatim, so the
+scrub failed the build on it. **Fourth instance in one session** of a finding
+that cannot be recorded by quoting the string: the byline, the orphan-key
+list, the project folder name, and now the scrub's own pattern while
+explaining the scrub's own pattern. The rule in `AUDIT_DISCIPLINE.md` wants
+reading before writing, not after.
+
+**Artifacts: clean.** The supplement zip, 637 files, zero hits for any
+variant, and all four by-design holders absent from it. Zip entry NAMES
+checked as well as contents. The pack PDF and both repository PDFs: zero in
+page text and zero in `/Info` metadata. The anonymous variant: zero.
+
+**Keeping the scrub's patterns out of public history.** They are in history
+already and no rewrite is proposed. For the future the options, in the order I
+would take them: hold the literal strings in a gitignored local file that the
+scrub reads and fails loudly when absent, so the committed code carries only
+labels; or commit sha256 tokens of the strings instead of the strings, which
+keeps the scrub self-testing (it can still verify it catches a planted string
+whose hash it knows) while the committed form reveals nothing. The second is
+better for a public repository because it survives a fresh clone. Neither is
+urgent: the strings being public in a named repository is not the risk the
+scrub guards against.
+
+### 2026-10-12 (third) --- the nine numerals, one by one
+
+| value | where | disposition |
+| --- | --- | --- |
+| `0.9` | `\lceil (n+1)\cdot 0.9 \rceil`, the conformal index | not a figure: it is $1-\alpha$ inside a formula |
+| `1` | the `(n+1)` of the same index | not a figure: formula arithmetic |
+| `3` | "DeepSeek-R1-Distill of Llama-3 and Qwen-2.5 bases" | not a figure: a model-name digit |
+| `88.2` | "aggregate LOFO coverage ... changes from 87.3% to 88.2%" | **needs your call**, see below |
+| `90` | "against a nominal $90\%$" | not a figure: the nominal level |
+| `90.01` | "Regime C mondrian coverage from 89.15% at 168 folds to 90.01% at 60 folds" | historical before/after, same class as the 89.15 and 60 beside it |
+| `91.0` | "`band_emp_coverage_pct` from 93.4% to 91.0%" | **was a figure. Now `\BandEmpCov`** |
+| `95` | "a 95% cluster-robust CI" | not a figure: the chosen confidence level |
+| `168` | the fold count in the same regeneration sentence | historical before/after |
+
+**The four that were exempt only because the fix revealed them**: `0.9`,
+`168`, `90.01`, `91.0`.
+
+**One was a figure and is now traced.** `91.0` is the live value of
+`band_emp_coverage_pct`, which the sentence names in `\texttt{}` two words
+earlier, and `\BandEmpCov` renders exactly `91.0`. Exempting it was the wrong
+disposition: the literal and the macro agree today and would diverge silently
+on the next corpus change. Converted in both variants and removed from
+`EXEMPT`.
+
+**One needs your decision.** `88.2` is the post-Definition-B aggregate LOFO
+coverage across held-out families. No registry key holds that quantity -- the
+nearest values are `calib_cov_min_pct` at 88.21 and a cell bootstrap bound at
+88.17, and attaching either would be the correct-number-wrong-object defect
+this record is full of. So it is either a historical before/after pair like
+`90.01` (the sentence is explicitly about a change) or a current figure that
+wants a new key. I have not guessed.
+
+**`five folds` was correct before it was reworded.** `n_families` is 6, one
+LOFO fold per family, so "the other five folds" was right. What the rewording
+removed was a correct but untraced arithmetic derivative of a registered
+figure, not an error.
+
+### 2026-10-12 (third) --- 16 artifacts under a runner that deletes first
+
+The earlier runner compared without removing the output, so a generator that
+wrote nothing scored IDENTICAL. The fixed runner deletes the artifact, asserts
+it was rewritten, and reports the pinned inputs. All 16 rewritten, all 16
+reproduce:
+
+| result | artifacts |
+| --- | --- |
+| identical (15) | predictor_comparison, diagnostics, final_results, interval_shape, interval_shape_finite, bias_correction, bias_correction_empirical, cell_coverage, one_sided_audit, audit_ranking, strata_compare, census, independent_check, adversarial_audit, real_use_case |
+| identical modulo one field (1) | scheme_envelope, whose `/built` date moved 2026-10-07 to 2026-10-12. It is the ONLY artifact embedding a date; every other value matches exactly |
+| outstanding (1) | tuned_baselines, still running |
+
+**`real_use_case.csv` now reproduces under shipped code**, and getting there
+found something. Its missing prospective card is 15 bytes and its content is
+`Entry not found` -- **Hugging Face's 404 body**. The old fetch wrote that, the
+>200-byte floor read it as absent, and every regeneration silently re-attempted
+the download and got the same 404. No published figure is affected: Phi-4-mini
+is name-gated and the paper discloses it as never scored. It is now pinned by
+content hash as a known-not-a-card, so a file whose content we have identified
+is not treated as missing, while a file that is merely small still is.
+
+`src/tune_baselines.py` is seeded (`random_state=0` throughout) so its output
+should be deterministic; its runtime is over 40 minutes on this machine, which
+is why it belongs in a pre-submission target rather than a gate.
+
+### 2026-10-12 (third) --- the word gate's reach, and a plant it misses
+
+**"four weeks later" is NOT caught**, and the reason is structural. The
+counted-noun vocabulary is derived from the nouns the paper counts with
+NUMERALS, so a noun the paper counts only in WORDS never enters it. `weeks`
+is such a noun. The derivation is reactive by construction.
+
+What the derivation does cover: `characters`, `days`, `commits`, `runs`,
+`comments`, `folds` and `cells` are all derived from numeral usage in the
+current paper, so every noun I declared this week would have been surfaced by
+it rather than guessed -- the gate fired first and I declared in response.
+
+**How the gap closes, measured.** Matching a word-number followed by ANY
+plural head, rather than only a declared noun, gives **60 distinct heads
+across both variants, 18 already declared, 42 to decide**. That is reviewable,
+unlike the 818 the same approach costs for numerals -- because numerals appear
+in tables, model names and shell commands while word-numbers appear almost
+only in prose. The 42 are mostly rhetorical (`things`, `reasons`, `sides`,
+`halves`, `places`) with a handful of real counts (`groups`,
+`implementations`, `bugs`, `disagreements`, `populations`, `versions`).
+Recommended and not built: it is a 42-entry judgement pass that wants its own
+commit.
+
+### 2026-10-12 (third) --- smaller items
+
+The three loop-ran guards derived their floor from a hard-coded 6; they now
+read `n_schemes` from the registry, so a seventh scheme cannot leave them
+checking 6 of 7.
+
+### 2026-10-12 (second) --- my leak never reached a commit (see the reconciliation above)
 
 Searched every commit in the pushed range and all history, with the pattern
 built at run time so this file does not instantiate it.
