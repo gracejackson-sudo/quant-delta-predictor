@@ -188,23 +188,19 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
 # This list exists because "historical figure" was doing two jobs: a value
 # deliberately frozen with its provenance recorded, and a value nobody had
 # rechecked. The four below are the second kind.
+_U = ("exempt by name and never classified. Twelve of the pre-2026-10-08\n      exempt numerals have no recorded disposition; 31.63, 46.10 and 89.6\n      are coverage-shaped and want checking first. Classify before\n      submission: --pre-submission fails while any remains.")
 PENDING_FIGURES = {
-    "88.2": ("post-Definition-B aggregate LOFO coverage. Entered the paper at "
-             "77873d9 (2026-09-27), before split conformal replaced the "
-             "in-sample band. Recomputed 2026-10-13 under the shipped "
-             "construction: 91.81% all-pairs pooled, 92.03% "
-             "fallback-excluded, 91.56% mean over the six held-out families. "
-             "None is 88.2. STALE."),
-    "87.3": ("its 8-family predecessor in the same sentence. Mentioned once in "
-             "PROVENANCE.md but not tied to a commit, and not recomputable "
-             "against the current corpus, which has no 8-family reading."),
-    "85.1": ("Llama-3.3's own held-out fold under an 8-family reading. Zero "
-             "mentions in PROVENANCE.md, so it is not tied to a named "
-             "commit and cannot be called historical. Two sites per variant, "
-             "one of them in the results section rather than the audit."),
-    "92.2": ("the merged Llama-3 fold. Computes to 91.93% today, 0.27 off. "
-             "Zero mentions in PROVENANCE.md. Two sites per variant, one in "
-             "the results section."),
+    # The four LOFO figures left this list on 2026-10-13: they reproduce
+    # EXACTLY on the 77873d9 tree under the subgroup estimator, so they were
+    # never computed under the retracted band and were about a quarter-point
+    # stale with the corpus. They are macros now.
+    #
+    # WHAT IS PENDING: exempt numerals that have never been classified. Each
+    # is exempt by name and nobody has said what it is. "Exempt" was doing two
+    # jobs -- a value checked and deliberately frozen, and a value nobody had
+    # looked at -- and these are the second kind.
+    "0.03": _U, "0.36": _U, "25": _U, "31.63": _U, "33": _U, "36": _U,
+    "43": _U, "46": _U, "46.10": _U, "67": _U, "89.6": _U, "500,000": _U,
 }
 _pending = sorted(v for v in PENDING_FIGURES if re.search(
     r"(?<![\w.\\])" + re.escape(v) + r"(?![\d])", body))
@@ -271,7 +267,8 @@ _WNOUN = ("cells?|rows?|checkpoints?|schemes?|famil(?:y|ies)|seeds?|"
           "questions?|verdicts?|states?|thresholds?|points?|parameters?|"
           "pairs?|bands?|intervals?|predictors?|grounds?|numbers?|losses|"
           "bases|plots?|estimates?|misses|hits|reviewers?|commits?|"
-          "observations?|characters?|days?|commits?|runs?|comments?")
+          "observations?|characters?|days?|commits?|runs?|comments?|"
+          "subgroups?|resamples?|folds?")
 WORDNUM = re.compile(
     rf"\b(?:{_WORD})(?:[ -](?:[a-z]+[ -]){{0,2}}(?:{_WNOUN}))\b", re.I)
 # Hyphenated METHOD NAMES and compound adjectives, not counts.
@@ -312,6 +309,14 @@ WORD_EXEMPT = {
     # on 2026-10-11 (59f4cd9). An earlier draft said "five days", which the
     # word gate surfaced once "days" entered the counted-noun vocabulary.
     "three days",
+    # "the two better-covered subgroups" names Llama-3.1 and 3.2, which the
+    # sentence has just listed, so the count is its own evidence.
+    "two better-covered subgroups",
+    # "ten distinct resamples" is arithmetic, not a measurement: the number
+    # of multisets of size 3 drawn from 3 clusters is C(5,3) = 10. It
+    # follows from \LofoFoldBasesQwenThree and would be wrong to register
+    # as a separate figure.
+    "ten distinct resamples",
     # "one quantization run" is definitional -- it says what a checkpoint
     # IS -- and "let the second one run" uses run as a verb. Surfaced when
     # "runs" entered the vocabulary for the 98-runs reconciliation.
@@ -379,6 +384,8 @@ NOT_COUNTED = {
     # verbs and a preposition that follow a printed percentage. Invisible
     # until the escaped-percent bug was fixed; none is a count.
     "covers", "exceeds", "straddles", "versus",
+    # verbs that follow a figure in the new limitations paragraph
+    "constrains", "includes",
 }
 
 
@@ -473,6 +480,14 @@ MACRO_UNITS = {
     "CalibUnitsMax":       r"checkpoints?|units?",
     "CalibPartitions":     r"seeds?|partitions?",
     "CalibRowsNvfp":       r"rows?",
+    "LThreeGapMin":        r"points?|pp",
+    "LThreeGapMax":        r"points?|pp",
+    "LThreeSubThreeBases": r"models?",
+    "LofoFoldBasesQwenThree": r"models?",
+    "LofoFoldBasesMistral": r"models?",
+    "LofoFoldsBelowNominal": r"folds?",
+    "StripperHiddenFigs": r"figures?",
+    "StripperVisibleFigs": r"figures?",
     # --- declared 2026-10-11 from the derivation: every macro the paper
     # follows with a counted noun. Where the declaration was taken from the
     # prose the macro already had, this is a regression guard rather than a

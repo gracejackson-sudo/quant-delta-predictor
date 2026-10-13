@@ -60,8 +60,8 @@
     "finding": "3 is a judgement call, not a derived quantity. It is the smallest number at which a cell is not one or two models, and it happens to split this data 4/17. A different corpus would want it re-examined; it is exposed as a constant and recorded in the claims registry rather than buried."
   },
   {
-    "tag": "FINDING",
-    "finding": "the independent reimplementation DISAGREES with src/rank.py"
+    "tag": "OK",
+    "finding": "a from-scratch stdlib-only reimplementation reproduces the rank order and every displayed number exactly"
   },
   {
     "tag": "FINDING",

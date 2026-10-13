@@ -18,3 +18,8 @@ out/qwen35_cards/
 # `git add -A` would have committed 178 cards against that policy.
 data/cards
 data/prospective_cards
+COMMIT_RELABEL_MAP.local.tsv
+paper/*.aux
+paper/*.bbl
+paper/*.out
+paper/*.log

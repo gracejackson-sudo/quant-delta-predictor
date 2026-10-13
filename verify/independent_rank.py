@@ -621,10 +621,128 @@ def main():
                 print(f"    {k}: mine={mi}  theirs={th}  "
                       f"|delta|={abs(mi-th):.2f}pp > {CLUS_BOOT_TOL_PP}pp")
 
-    ok = (my_order == their_order) and not bad \
-        and not noise_bad and not boot_bad
+    # ------------------------------------------- LOFO fold CIs, independently
+    # The paper quotes a base-model-cluster bootstrap interval on the qwen3
+    # and mistral LOFO folds, and uses them to say that neither fold is SHOWN
+    # to sit below the nominal level. That is the load-bearing part of the
+    # claim -- a point estimate under 90 with an interval straddling it means
+    # something different from one that does not -- so the bounds get an
+    # independent arm rather than only the point estimates.
+    #
+    # The band and the indicator vector come from verify/independent_check.py,
+    # which reimplements them from the specification in the standard library.
+    # That is a sibling verifier, not src/: reusing its one implementation is
+    # deliberate, because a second reimplementation here would mostly check
+    # that my two copies agree with each other -- the shared-assumption trap
+    # the float-boundary entry in the paper is about.
+    #
+    # Bit-exactness is impossible: the registry draws from numpy's PCG64 and
+    # this file uses the standard library's Mersenne Twister, and the
+    # registry's generator is threaded through all six folds in sequence. The
+    # comparison is therefore statistical equivalence at CLUS_BOOT_TOL_PP per
+    # bound, the same convention as the prospective interval above.
     print("\n" + "=" * 74)
+    print("INDEPENDENT CLUSTER-BOOTSTRAP CI ON THE LOFO FOLDS")
+    print("=" * 74)
+    lofo_bad = []
+    try:
+        _vp = os.path.dirname(os.path.abspath(__file__))
+        if _vp not in sys.path:
+            sys.path.insert(0, _vp)
+        from independent_check import lofo_fold_indicators as _lfi
+        folds = _lfi()
+    except Exception as _e:                                   # pragma: no cover
+        folds = None
+        print(f"  UNCHECKED: cannot reach the independent band: {_e}")
+    if folds is not None and reg is None:
+        print("  UNCHECKED: no registry to compare the bounds against.")
+    elif folds is not None:
+        print(f"  mine (stdlib Mersenne Twister, seed={CLUS_BOOT_SEED}, "
+              f"draws={CLUS_BOOT_DRAWS}), tolerance {CLUS_BOOT_TOL_PP}pp "
+              f"per bound")
+        print(f"\n  {'fold':<10}{'bound':<8}{'paper':>9}{'mine':>9}"
+              f"{'|delta|':>10}   verdict")
+        for _tf in ("qwen3", "mistral"):
+            if _tf not in folds:
+                lofo_bad.append((_tf, "fold absent", "", ""))
+                print(f"  {_tf:<10}{'--':<8}{'--':>9}{'--':>9}{'--':>10}"
+                      f"   FOLD NOT BUILT")
+                continue
+            ind, clus = folds[_tf]
+            by = {}
+            for _i, _c in zip(ind, clus):
+                by.setdefault(_c, []).append(_i)
+            units = sorted(by)
+            _rng = random.Random(CLUS_BOOT_SEED)
+            draws = []
+            for _ in range(CLUS_BOOT_DRAWS):
+                _s = []
+                for _ in units:
+                    _s.extend(by[units[_rng.randrange(len(units))]])
+                draws.append(100.0 * sum(_s) / len(_s))
+            draws.sort()
+
+            def _pct(q):
+                # linear interpolation between order statistics, matching
+                # numpy.percentile's default so the two are comparable
+                _h = (len(draws) - 1) * q / 100.0
+                _f = int(math.floor(_h))
+                _c2 = min(_f + 1, len(draws) - 1)
+                return draws[_f] + (_h - _f) * (draws[_c2] - draws[_f])
+            for _bnd, _q, _key in (("lo", 2.5, f"lofo_fold_lo_pct::{_tf}"),
+                                   ("hi", 97.5, f"lofo_fold_hi_pct::{_tf}")):
+                if _key not in reg:
+                    continue
+                _m = _pct(_q)
+                _t = float(reg[_key][0])
+                _d = abs(_m - _t)
+                _ok = _d <= CLUS_BOOT_TOL_PP
+                if not _ok:
+                    lofo_bad.append((_key, _m, _t, _d))
+                print(f"  {_tf:<10}{_bnd:<8}{_t:>9.2f}{_m:>9.2f}{_d:>10.2f}"
+                      f"   {'agree' if _ok else 'DISAGREE'}")
+        print(f"\n  LOFO bootstrap disagreements: {len(lofo_bad)}")
+        for _row in lofo_bad:
+            print(f"    {_row}")
+
+    # A VERDICT OF "AGREEMENT" HAS TO MEAN THE COMPARISONS RAN. Without
+    # pandas this file still produces its own stdlib figures, cannot load
+    # src/verify_claims to compare them against anything, skips every
+    # registry diff -- and used to print "full agreement = True" and exit 0
+    # anyway. src/audit_ranking.py then recorded that as "a from-scratch
+    # stdlib-only reimplementation reproduces the rank order and every
+    # displayed number exactly", which was an affirmative claim about
+    # checks that had not happened. Found 2026-10-13 when a committed
+    # audit artifact flipped from DISAGREE to OK and neither value turned
+    # out to be evidence about agreement.
+    #
+    # Three states, as everywhere else in this repository: agreement,
+    # disagreement, and could-not-check. Exit 3 is the third one.
+    unchecked = []
+    if reg is None:
+        unchecked.append(
+            "src/verify_claims could not be imported, so none of the "
+            "registry comparisons ran: the noise shares, the prospective "
+            "interval bounds and the LOFO fold bounds are all unchecked. "
+            "Install the project's dependencies and re-run.")
+    if mine_lo is None:
+        unchecked.append(
+            "out/independent_check.csv is absent, so the prospective "
+            "cluster bootstrap had no input.")
+
+    ok = (my_order == their_order) and not bad \
+        and not noise_bad and not boot_bad and not lofo_bad
+    print("\n" + "=" * 74)
+    if unchecked and ok:
+        print("INDEPENDENT VERDICT: UNCHECKED -- not agreement, not "
+              "disagreement")
+        for _u in unchecked:
+            print(f"  - {_u}")
+        print("=" * 74)
+        return 3
     print(f"INDEPENDENT VERDICT: full agreement = {ok}")
+    for _u in unchecked:
+        print(f"  NOTE (also unchecked): {_u}")
     print("=" * 74)
     return 0 if ok else 2
 

@@ -3162,7 +3162,13 @@ _REGISTRY_MANIFEST = {
     # 2026-10-13: +2 -> 372 for alpha and nominal_level_pct. The paper prints
     # 90% in a dozen places and nothing held it -- alpha lived in
     # strata.ALPHA and the printed figure was a hand-typed exempt constant.
-    "(scalar)": 372,
+    # +13 at the day-8 LOFO round: the two LOFO aggregates (Definitions A
+    # and B), the two pooled Llama-3 folds, the qwen3 fold under each
+    # definition, the fold-coverage min/max, the folds-below-nominal count,
+    # the Llama-3.3-to-cousin gap pair, and the two counts the appendix's
+    # stripper entry quotes for what that defect hid and left visible.
+    # Every one of them replaced a hand-typed figure in the paper.
+    "(scalar)": 385,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.
@@ -3204,6 +3210,16 @@ _REGISTRY_MANIFEST = {
     "lofo_fallback_rate_pct::": 6,
     "lofo_l3merged_cov::": 5,
     "lofo_l3sub_cov::": 15,
+    # Per-fold LOFO under the shipped band, its bootstrap bounds for the two
+    # folds the prose names, and the base-model counts behind them. The
+    # cluster is the BASE MODEL: qwen3 has 3 base models and 9 checkpoints,
+    # and naming these "checkpoints" would be the correct-number-wrong-object
+    # defect the audit section documents.
+    "lofo_fold_cov_pct::": 6,
+    "lofo_fold_bases::": 6,
+    "lofo_fold_lo_pct::": 2,
+    "lofo_fold_hi_pct::": 2,
+    "lofo_l3sub_bases::": 3,
     "lossless_mean::": 3,
     "n::": 6,
     "os_above_hi_pct::": 2,

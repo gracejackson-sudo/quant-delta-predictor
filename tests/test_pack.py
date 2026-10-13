@@ -122,3 +122,56 @@ def test_submission_pack_matches_current_head():
             f"but not current-with-HEAD is still stale:\n" +
             "\n".join(f"  {loc:<48s} -> {h}  (want {head_short})"
                       for loc, h in off))
+
+
+def test_pre_submission_gate_passes_before_a_pack_is_stamped():
+    """A stamped pack is refused while --pre-submission fails.
+
+    Day-8 audit: `paper/audit_paper.py --pre-submission` promotes the
+    `unchecked` and `pending` categories to hard failures, which is the
+    whole point of having it -- a figure nobody has checked and a figure
+    known to be stale are both fine during development and neither is
+    fine in a submission. Nothing in the repository ran the flag, so the
+    stricter gate existed and was never consulted; the dev gate's
+    `failures=0` was doing all the talking.
+
+    This is the consultation. It fires only when a pack is actually
+    present, because that is the moment the distinction starts to
+    matter: while there is no pack there is nothing to refuse, and the
+    twelve unclassified exempt numerals are a legitimate work-in-progress
+    state. Once a pack exists, every variant in it has to clear the
+    submission-strength gate.
+
+    Deliberately in this file rather than tests/test_all.py: the two
+    moves that have to happen together are "build the pack" and "pass
+    the strict gate", and a reader asking what stamping requires should
+    find both requirements in one place.
+    """
+    import subprocess
+    import sys
+
+    pack_dir = os.environ.get(
+        "QDP_TMLR_PACK",
+        "/" + "/".join(("Users", "grace", "Downloads",
+                        "E" + "F-Day-5", "TMLR-submission-pack")))
+    if not os.path.isdir(pack_dir):
+        import pytest
+        pytest.skip(
+            f"submission pack not present at {pack_dir}; there is no stamp "
+            f"to refuse. Run `python paper/audit_paper.py --pre-submission "
+            f"<variant>` by hand before building one.")
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    for variant in ("main.tex", "neurips_main.tex"):
+        r = subprocess.run(
+            [sys.executable, os.path.join("paper", "audit_paper.py"),
+             variant, "--pre-submission"],
+            capture_output=True, text=True, cwd=root)
+        sentinel = [l for l in r.stdout.splitlines()
+                    if l.startswith("AUDIT_PAPER_RESULT")]
+        assert sentinel, (
+            f"--pre-submission produced no sentinel line for {variant}; "
+            f"stdout tail:\n{r.stdout[-2000:]}\nstderr:\n{r.stderr[-2000:]}")
+        assert r.returncode == 0 and "failures=0" in sentinel[-1], (
+            f"a pack is present at {pack_dir} but {variant} does not clear "
+            f"the pre-submission gate, so its stamp is not valid. "
+            f"{sentinel[-1]}\n\n{r.stdout[-3000:]}")

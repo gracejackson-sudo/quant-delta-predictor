@@ -1165,45 +1165,73 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
-### 2026-10-13 --- 88.2 is stale, and so are the three figures beside it
+### 2026-10-13 --- 88.2 reproduces exactly; my first reading of it was wrong
 
-Computed post-Definition-B aggregate LOFO coverage from the data, under the
-shipped construction, mirroring `verify_claims`' own LOFO loop:
+**Correcting the entry this replaces.** An earlier version of this section
+said 88.2 "does not reproduce under any reading", put it "3.6 points below
+every aggregate LOFO figure the current code produces", and concluded it had
+been "computed under the retracted construction and never regenerated". All
+three statements were wrong, and the error was mine: I compared the paper's
+figure against the SHIPPED band (`ConservativeStratified.fit_calibrated`) and
+against the fallback-excluded pooled figure, and the four sentences in
+question use neither. They use the SUBGROUP estimator --- a per-scheme mean
+centre with a Mondrian-by-scheme conformal width, calibrated on a family
+disjoint from the fitting pool --- which is the construction the section 6
+subgroup table has always used, and which is genuine split conformal.
 
-| reading | value |
-| --- | --- |
-| all-pairs pooled two-sided | **91.81%** |
-| fallback-excluded pooled (`lofo_heldout_cov_pct`) | 92.03% |
-| mean over the six held-out families | 91.56% |
-| the paper's hand-typed figure | **88.2%** |
-| `calib_cov_min_pct` (a DIFFERENT object: lowest of 20 partition seeds) | 88.21% |
-| `cell_boot_lo::w8a8_int\|>10B` (a cell bootstrap bound) | 88.17% |
+**The reproduction.** Under that estimator, against `77873d9:data/dataset.csv`
+(817 modelling rows):
 
-**88.2 does not reproduce under any reading.** It is 3.6 points below every
-aggregate LOFO figure the current code produces. Its proximity to 88.21 is a
-coincidence of value between unrelated quantities -- the trap this record is
-full of -- and registering it against that key would have been the defect, not
-the fix.
+| paper | recomputed at `77873d9` | rounds to |
+| --- | --- | --- |
+| 87.3 --- aggregate LOFO, Definition A | 87.2587 | 87.3 |
+| 88.2 --- aggregate LOFO, Definition B | 88.1963 | 88.2 |
+| 85.1 --- Llama-3.3's own fold, Definition A | 85.1064 | 85.1 |
+| 92.2 --- merged Llama-3 fold, Definition B | 92.2344 | 92.2 |
 
-**Why it is stale.** `git log -S` puts 88.2 into the paper at `77873d9`
-(2026-09-27), the commit that adopted Definition B -- and therefore BEFORE
-`0d95501` (2026-10-08) replaced the in-sample band with split conformal. The
-figure was computed under the retracted construction and never regenerated.
-It is the same class as the seven stale artifacts the audit section already
-records, reaching a figure the registry never held.
+All four reproduce to the published rounding. They were never computed under
+the retracted in-sample band. What they had done is drift about a quarter
+point as the corpus grew from 817 to 823 modelling rows, which is why they
+needed regenerating --- not because the construction behind them was wrong.
 
-**Three more in the same two sentences.** `87.3` is its 8-family predecessor
-and is not recomputable against a corpus that has no 8-family reading. `85.1`
-and `92.2` have **zero** mentions in `PROVENANCE.md`, so by the rule we just
-set they cannot be called historical, and `92.2` computes to **91.93%** today,
-0.27 off. `85.1` and `92.2` each appear at **two** sites per variant, and one
-of those is in the results section rather than the audit section.
+**The provenance argument was wrong too, and could not have settled it.** I
+also argued from commit order that the estimator post-dated the figures.
+It does not: `77873d9` lands at 12:40 and `d2a90ef` at 13:24 the same day, 44
+minutes later, so commit order pointed AWAY from the estimator. `d2a90ef`
+added only the registry wiring and the table; `src/predictor.py`,
+`src/strata.py` and `src/model.py` are byte-identical between the two
+commits, so the estimator's implementation was already present at `77873d9`
+and the figures could have been --- and were --- computed with it. Only
+re-running the construction settled this. Provenance by timestamp is not
+evidence about which construction produced a number when the construction
+already exists on both sides of the boundary.
 
-**None of the four is fixed, and none is exempt any more.** They are on a new
-`PENDING_FIGURES` list in `paper/audit_paper.py`: reported as their own counted
-category in the dev gate, named in the sentinel line as `pending=N`, and a
-**hard failure under `--pre-submission`**. The pack cannot be stamped while any
-remains. The numeral check no longer double-counts them.
+**Closeness of value, again.** The discarded reading's appeal was that 88.2
+sits beside `calib_cov_min_pct` at 88.21 and `cell_boot_lo::w8a8_int|>10B` at
+88.17. Those are unrelated quantities and the proximity is coincidence;
+registering the figure against either would have been the defect, not the
+fix. The rule this record keeps relearning: do not choose a figure's
+provenance by closeness to a value. Reproduce the construction instead.
+
+**What shipped.** All four figures, and the twenty-eight others in the same
+two paragraphs and the section 6 subgroup table, are now registered in
+`src/verify_claims.py` and consumed as macros, so none is hand-typed. They
+are additionally recomputed from the specification, in the standard library,
+against `data/dataset.csv`, by `verify/independent_check.py` --- which shares
+no code with `src/` --- and the qwen3 and mistral fold intervals get an
+independent cluster bootstrap in `verify/independent_rank.py`. Replanting the
+pre-audit 88.2 into `paper/numbers.tex` makes the independent arm report
+`DISAGREE` and exit 1; replanting the in-sample construction into the arm's
+own band moves nine of the thirty-two and is likewise caught.
+
+**What the PENDING list now holds.** The four LOFO figures are off it: they
+are registered, not frozen. The list is now the twelve pre-2026-10-08 exempt
+numerals with no recorded disposition (`0.03 0.36 25 31.63 33 36 43 46 46.10
+67 89.6 500,000`), of which three are coverage-shaped and reach the paper.
+They are reported as their own counted category in the dev gate, named in the
+sentinel line as `pending=N`, and are a **hard failure under
+`--pre-submission`**, which the pack build now runs. The pack cannot be
+stamped while any remains.
 
 ### 2026-10-13 --- the repository name defeated the anonymisation
 

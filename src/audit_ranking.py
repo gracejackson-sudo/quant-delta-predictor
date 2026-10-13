@@ -336,18 +336,30 @@ def r4_independent():
     print("R4 -- INDEPENDENT RE-IMPLEMENTATION")
     print("=" * 74)
     script = os.path.join(HERE, "..", "verify", "independent_rank.py")
-    res = subprocess.run(["python3", script], capture_output=True, text=True)
+    # sys.executable, NOT bare "python3": this audit ran the verifier under
+    # whatever interpreter happened to be first on PATH, which on this
+    # machine is one without the project's dependencies. The verifier then
+    # skipped every comparison and the audit recorded the result as OK.
+    res = subprocess.run([sys.executable, script],
+                         capture_output=True, text=True)
     tail = [ln for ln in res.stdout.splitlines()
             if "ORDER MATCHES" in ln or "disagreements" in ln
             or "full agreement" in ln]
     for ln in tail:
         print("  " + ln.strip())
-    ok = res.returncode == 0
-    note("OK" if ok else "FINDING",
-         "a from-scratch stdlib-only reimplementation reproduces the rank "
-         "order and every displayed number exactly"
-         if ok else
-         "the independent reimplementation DISAGREES with src/rank.py")
+    if res.returncode == 3:
+        note("UNCHECKED",
+             "the independent reimplementation could not be compared against "
+             "src/rank.py: it reported that an input or dependency it needs "
+             "is absent. This is not agreement and not disagreement. Its "
+             "own output says which. " + (tail[-1].strip() if tail else ""))
+    elif res.returncode == 0:
+        note("OK",
+             "a from-scratch stdlib-only reimplementation reproduces the "
+             "rank order and every displayed number exactly")
+    else:
+        note("FINDING",
+             "the independent reimplementation DISAGREES with src/rank.py")
     note("FINDING",
          "this check earned its keep: it found that fit_calibrated() measured "
          "residuals around the STRATUM mean while ConservativeStratified "

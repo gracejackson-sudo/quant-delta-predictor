@@ -402,12 +402,366 @@ def is_strict(model_id):
     return True
 
 
+# ----------------------------------------------------------------- LOFO ARM
+# Independent recomputation of the leave-one-family-out figures the paper
+# prints, added 2026-10-13. These were hand-typed in the paper until the
+# day-8 audit and had never been recomputed anywhere but src/. Two estimators
+# appear in the paper and they are NOT interchangeable, so both are redone
+# here:
+#
+#   * the SUBGROUP estimator (per-scheme mean + Mondrian-by-scheme split
+#     conformal, disjoint fit/calibration families, no size rule) -- the
+#     aggregates and the per-fold table in the body;
+#   * the SHIPPED band (scheme centre + widen-only size cells, calibrated on
+#     a held-out family) -- the per-fold coverages quoted beside them.
+#
+# Everything below is written from the construction as specified, in the
+# standard library, against data/dataset.csv. It imports nothing from src/
+# and it does not read the registry: the comparison target is
+# paper/numbers.tex, the artifact the PDF is actually built from, so a
+# disagreement catches registry drift and macro-generation drift as well as
+# an arithmetic error. This block needs only the committed dataset, so it
+# runs even in the (normal) case where data/cards is absent and the rest of
+# this file is skipped -- which is why it sits ahead of that gate.
+ALPHA_LOFO = 0.10
+MIN_ROWS_LOFO = 20
+MIN_CKPT_LOFO = 3
+
+
+def _cq(vals, alpha=ALPHA_LOFO):
+    """ceil((n+1)(1-alpha))-th smallest, +inf when n cannot support it."""
+    v = sorted(float(x) for x in vals)
+    n = len(v)
+    k = int(math.ceil((n + 1) * (1.0 - alpha)))
+    return v[k - 1] if k <= n else float("inf")
+
+
+def _band_lofo(p):
+    if p is None or p == "":
+        return "unknown"
+    p = float(p)
+    if p != p:
+        return "unknown"
+    if p < 2:
+        return "<2B"
+    if p <= 10:
+        return "2-10B"
+    return ">10B"
+
+
+def _load_lofo():
+    """-> rows as dicts, filtered exactly as src/model.load does."""
+    path = os.path.join(ROOT, "data", "dataset.csv")
+    out = []
+    with open(path) as fh:
+        for r in csv.DictReader(fh):
+            if float(r["acc_before"]) < 20.0:       # MIN_ACC_BEFORE
+                continue
+            out.append({"delta": float(r["delta"]), "scheme": r["scheme"],
+                        "family": r["family"], "base": r["base_model"],
+                        "band": _band_lofo(r["params_b"])})
+    return out
+
+
+def _mean(xs):
+    return sum(xs) / len(xs)
+
+
+def _cell_lofo(rows):
+    mu = _mean([r["delta"] for r in rows])
+    return {"mean": mu,
+            "hw": _cq([abs(r["delta"] - mu) for r in rows]),
+            "n": len(rows),
+            "nck": len({r["base"] for r in rows})}
+
+
+def _group(rows, key):
+    g = {}
+    for r in rows:
+        g.setdefault(key(r), []).append(r)
+    return g
+
+
+def _shipped_band(tr, cal):
+    """ConservativeStratified().fit_calibrated(tr, cal), as specified.
+
+    Centres from `tr`; half-widths replaced by the conformal quantile of the
+    calibration residuals taken AROUND THE CENTRE predict_interval will use,
+    which for this class is the scheme mean and not the size-cell mean. A
+    size cell may only widen.
+    """
+    glob = _cell_lofo(tr)
+    by_s = {s: _cell_lofo(g) for s, g in _group(tr, lambda r: r["scheme"]).items()}
+    by_b = {}
+    for (s, b), g in _group(tr, lambda r: (r["scheme"], r["band"])).items():
+        c = _cell_lofo(g)
+        if c["n"] >= MIN_ROWS_LOFO and c["nck"] >= MIN_CKPT_LOFO \
+                and math.isfinite(c["hw"]):
+            by_b[(s, b)] = c
+    for r in cal:
+        base = by_s.get(r["scheme"]) or glob
+        r["_resid"] = abs(r["delta"] - base["mean"])
+    for s, g in _group(cal, lambda r: r["scheme"]).items():
+        if s in by_s and len(g) >= 9:
+            by_s[s] = dict(by_s[s], hw=_cq([r["_resid"] for r in g]))
+    keep = {}
+    cal_by_cell = _group(cal, lambda r: (r["scheme"], r["band"]))
+    for (s, b), c in by_b.items():
+        g = cal_by_cell.get((s, b), [])
+        if len(g) >= 9:
+            q = _cq([r["_resid"] for r in g])
+            if math.isfinite(q):
+                keep[(s, b)] = dict(c, hw=q)
+    by_b = keep
+    if len(cal) >= 9:
+        glob = dict(glob, hw=_cq([r["_resid"] for r in cal]))
+
+    def interval(r):
+        base = by_s.get(r["scheme"]) or glob
+        cell = by_b.get((r["scheme"], r["band"]))
+        hw = base["hw"]
+        if cell is not None and cell["hw"] > hw:
+            hw = cell["hw"]
+        return base["mean"] - hw, base["mean"] + hw
+    return interval
+
+
+def _subgroup_band(tr, cal):
+    """SchemeMean().fit(tr) + Conformal(mondrian_by='scheme').fit(model, cal).
+
+    No size cells and no widening rule: a per-scheme centre, a per-scheme
+    conformal quantile, and a marginal quantile to back off to when a scheme
+    has too few calibration rows to support alpha.
+    """
+    gmu = _mean([r["delta"] for r in tr])
+    mu_s = {s: _mean([r["delta"] for r in g])
+            for s, g in _group(tr, lambda r: r["scheme"]).items()}
+
+    def pred(r):
+        return mu_s.get(r["scheme"], gmu)
+    q_marg = _cq([abs(r["delta"] - pred(r)) for r in cal])
+    q_s = {s: _cq([abs(r["delta"] - pred(r)) for r in g])
+           for s, g in _group(cal, lambda r: r["scheme"]).items()}
+
+    def interval(r):
+        q = q_s.get(r["scheme"], float("inf"))
+        if not math.isfinite(q):
+            q = q_marg                                   # backoff=True
+        c = pred(r)
+        return c - q, c + q
+    return interval
+
+
+def _fold_table(rows, build, min_cal, min_tr, require_test=False):
+    """-> {held-out family: coverage %}, pooled over that fold's test points.
+
+    `build(tr, cal) -> interval(row)`. Every eligible calibration family is
+    used in turn and the indicators are pooled, which is the rule the paper
+    states: folds are pooled over test points, aggregates are the mean over
+    folds.
+    """
+    fams = sorted({r["family"] for r in rows})
+    per = {}
+    for tf in fams:
+        te = [r for r in rows if r["family"] == tf]
+        if require_test and not te:
+            continue
+        n = c = 0
+        for cf in fams:
+            if cf == tf:
+                continue
+            cal = [r for r in rows if r["family"] == cf]
+            tr = [r for r in rows if r["family"] not in (tf, cf)]
+            if len(cal) < min_cal or len(tr) < min_tr:
+                continue
+            iv = build(tr, cal)
+            for r in te:
+                lo, hi = iv(r)
+                n += 1
+                c += int(lo - 1e-9 <= r["delta"] <= hi + 1e-9)
+        if n:
+            per[tf] = 100.0 * c / n
+    return per
+
+
+
+def lofo_fold_indicators(rows=None):
+    """-> {held-out family: (indicators, cluster labels)} under the shipped
+    band, pooled over every eligible calibration family.
+
+    Exposed so verify/independent_rank.py can put a cluster bootstrap on the
+    same indicator vector without a second reimplementation of the band --
+    one independent implementation, used by both arms, is the point; two
+    would only agree with each other.
+    """
+    if rows is None:
+        rows = _load_lofo()
+    fams = sorted({r["family"] for r in rows})
+    out = {}
+    for tf in fams:
+        te = [r for r in rows if r["family"] == tf]
+        if not te:
+            continue
+        ind, clus = [], []
+        for cf in fams:
+            if cf == tf:
+                continue
+            cal = [r for r in rows if r["family"] == cf]
+            tr = [r for r in rows if r["family"] not in (tf, cf)]
+            if len(cal) < 19 or len(tr) < 50:
+                continue
+            iv = _shipped_band(tr, cal)
+            for r in te:
+                lo, hi = iv(r)
+                ind.append(int(lo - 1e-9 <= r["delta"] <= hi + 1e-9))
+                clus.append(r["base"])
+        if ind:
+            out[tf] = (ind, clus)
+    return out
+
+def _definition_a(rows):
+    """Definition A: llama-3 split into 3.1 / 3.2 / 3.3 by base model."""
+    out = []
+    for r in rows:
+        if r["family"] != "llama-3":
+            out.append(r)
+            continue
+        m = re.search(r"Llama-?3\.([123])", str(r["base"]), re.I)
+        q = dict(r)
+        q["family"] = "llama-3.%s" % m.group(1) if m else "llama-3.x"
+        out.append(q)
+    return out
+
+
+def _macros():
+    """-> {macro name: literal} from paper/numbers.tex."""
+    p = os.path.join(ROOT, "paper", "numbers.tex")
+    if not os.path.isfile(p):
+        return None
+    return {m.group(1): m.group(2) for m in re.finditer(
+        r"\\newcommand\{\\([A-Za-z]+)\}\{([^}]*)\}", open(p).read())}
+
+
+def lofo_arm():
+    """-> 0 agree, 1 disagree, 3 could not check."""
+    print()
+    print("=" * 72)
+    print("INDEPENDENT LOFO RECOMPUTATION (stdlib only, from the dataset)")
+    print("=" * 72)
+    mac = _macros()
+    if mac is None:
+        print("  UNCHECKED: paper/numbers.tex is absent, so there is nothing "
+              "to compare against.")
+        return 3
+    rows = _load_lofo()
+    print(f"  modelling rows (acc_before >= 20): {len(rows)}")
+
+    tB = _fold_table(rows, _subgroup_band, 19, 50)
+    tA = _fold_table(_definition_a(rows), _subgroup_band, 19, 50)
+    shipped = _fold_table(rows, _shipped_band, 19, 50, require_test=True)
+    gaps = sorted(tA[f"llama-3.{i}"] for i in (1, 2, 3) if f"llama-3.{i}" in tA)
+
+    checks = [
+        # macro                   mine                         tol
+        ("LofoAggDefB",           _mean(list(tB.values())),    0.05),
+        ("LofoAggDefA",           _mean(list(tA.values())),    0.05),
+        ("LThreeSubThreePooled",  tA.get("llama-3.3"),         0.05),
+        ("LThreeMergedPooled",    tB.get("llama-3"),           0.05),
+        ("LofoQwenThreeTblDefA",  tA.get("qwen3"),             0.05),
+        ("LofoFoldCovQwenThree",  shipped.get("qwen3"),        0.05),
+        ("LofoFoldCovMistral",    shipped.get("mistral"),      0.05),
+        ("LofoFoldCovMin",        min(shipped.values()),       0.05),
+        ("LofoFoldCovMax",        max(shipped.values()),       0.05),
+        ("LofoFoldsBelowNominal",
+         float(sum(1 for v in shipped.values() if v < 90.0)),  0.0),
+    ]
+    # The Llama-3 subgroup table (§6) and the gap pair. One held-out fold ---
+    # all of llama-3 under Definition B --- scored under each calibration
+    # family in turn, then split by sub-version. The gap the prose quotes is
+    # between Llama-3.3 and each cousin WITHIN one calibration family, which
+    # is why it cannot be read off the pooled folds above.
+    _SHORT = {"gemma-2": "Gem", "granite": "Gra", "mistral": "Mis",
+              "qwen2.5": "Qtf", "qwen3": "Qth"}
+    te_l3 = [r for r in rows if r["family"] == "llama-3"]
+    pool = [r for r in rows if r["family"] != "llama-3"]
+    for r in te_l3:
+        m = re.search(r"Llama-?3\.([123])", str(r["base"]), re.I)
+        r["_sub"] = m.group(1) if m else "x"
+    sub_cov, merged_cov = {}, {}
+    for cf in sorted({r["family"] for r in pool}):
+        cal = [r for r in pool if r["family"] == cf]
+        tr = [r for r in pool if r["family"] != cf]
+        if len(cal) < 19 or len(tr) < 50:
+            continue
+        iv = _subgroup_band(tr, cal)
+        ind = {}
+        for r in te_l3:
+            lo, hi = iv(r)
+            ind.setdefault(r["_sub"], []).append(
+                int(lo - 1e-9 <= r["delta"] <= hi + 1e-9))
+        allv = [x for v in ind.values() for x in v]
+        merged_cov[cf] = 100.0 * _mean(allv)
+        for s, v in ind.items():
+            sub_cov[(s, cf)] = 100.0 * _mean(v)
+    gapv = []
+    for cf in sorted(merged_cov):
+        if ("3", cf) not in sub_cov:
+            continue
+        t3 = sub_cov[("3", cf)]
+        for s in ("1", "2"):
+            if (s, cf) in sub_cov:
+                gapv.append(sub_cov[(s, cf)] - t3)
+    _WORD = {"1": "SubOne", "2": "SubTwo", "3": "SubThree"}
+    for cf, short in sorted(_SHORT.items()):
+        for s in ("1", "2", "3"):
+            if (s, cf) in sub_cov:
+                checks.append((f"LThree{_WORD[s]}{short}",
+                               sub_cov[(s, cf)], 0.05))
+        if cf in merged_cov:
+            checks.append((f"LThreeMerged{short}", merged_cov[cf], 0.05))
+    if gapv:
+        checks.append(("LThreeGapMin", min(gapv), 0.05))
+        checks.append(("LThreeGapMax", max(gapv), 0.05))
+
+    bad = []
+    print(f"\n  {'macro':<24}{'paper':>9}{'mine':>11}   verdict")
+    for name, mine, tol in checks:
+        if name not in mac:
+            bad.append((name, mine, "absent from numbers.tex"))
+            print(f"  {name:<24}{'--':>9}{mine:>11.4f}   NOT DECLARED")
+            continue
+        theirs = float(mac[name])
+        if mine is None:
+            bad.append((name, None, mac[name]))
+            print(f"  {name:<24}{mac[name]:>9}{'--':>11}   NOT COMPUTED")
+            continue
+        # the paper prints one decimal; agreement means agreeing to the
+        # printed precision plus the registry's own tolerance on the figure.
+        ok = abs(round(mine, 1) - theirs) <= tol + 1e-9
+        if not ok:
+            bad.append((name, mine, theirs))
+        print(f"  {name:<24}{mac[name]:>9}{mine:>11.4f}   "
+              f"{'agree' if ok else 'DISAGREE'}")
+    print(f"\n  per-fold coverage, shipped band   : "
+          f"{ {k: round(v, 2) for k, v in sorted(shipped.items())} }")
+    print(f"  per-fold coverage, subgroup, def B: "
+          f"{ {k: round(v, 2) for k, v in sorted(tB.items())} }")
+    print(f"  Llama-3 subgroup folds, def A     : "
+          f"{ [round(g, 2) for g in gaps] }")
+    print(f"\n  LOFO disagreements: {len(bad)}")
+    return 1 if bad else 0
+
+
 def main():
     print("=" * 72)
     print("INDEPENDENT RE-VERIFICATION (stdlib only, no project imports)")
     print("=" * 72)
     print(f"  python {sys.version.split()[0]}   modules: "
           f"{', '.join(sorted(set(['re','os','csv','math','sys'])))}")
+
+    _lofo_rc = lofo_arm()
+    if _lofo_rc == 1:
+        return 1
 
     # data/cards/ holds raw model cards; they are intentionally NOT committed
     # (they contain PII and licensed text). Absence is documented in

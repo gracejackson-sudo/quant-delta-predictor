@@ -314,6 +314,149 @@ def registry():
         "the conformal miscoverage level, strata.ALPHA")
     add("nominal_level_pct", 100.0 * (1.0 - _st_alpha.ALPHA), 0,
         "the nominal two-sided level the intervals advertise, 100*(1-alpha)")
+    import strata as _st_alpha
+    # ---------------------------------------------------------------- LOFO
+    # Per-fold held-out coverage under the SHIPPED band, and the subgroup
+    # estimator's figures, registered 2026-10-13. Until then the paper carried
+    # four hand-typed LOFO figures (87.3, 88.2, 85.1, 92.2) and the registry
+    # held none of them. They reproduce EXACTLY on the 77873d9 tree under the
+    # subgroup estimator -- 87.2587, 88.1963, 85.1064, 92.2344 -- so they were
+    # never computed under the retracted in-sample band; they had drifted
+    # about a quarter-point with the corpus (817 -> 823 modelling rows).
+    #
+    # THE CLUSTER IS THE BASE MODEL, not the checkpoint. The bootstrap below
+    # resamples base_model, and under this paper's definition a checkpoint is
+    # a (base model, scheme) pair -- qwen3 has 3 base models and 9
+    # checkpoints. Naming these "checkpoints" would be the correct-number-
+    # wrong-object defect the audit section documents.
+    _lf_fams = sorted(d.family.unique())
+    _lf_cov, _lf_lo, _lf_hi = {}, {}, {}
+    _lf_rng = _np1.random.default_rng(0)
+    for _tf in _lf_fams:
+        _te_f = d[d.family == _tf]
+        _ins, _cks = [], []
+        for _cf in _lf_fams:
+            if _cf == _tf:
+                continue
+            _ca_f = d[d.family == _cf]
+            _tr_f = d[~d.family.isin([_tf, _cf])]
+            if len(_te_f) == 0 or len(_ca_f) < 19 or len(_tr_f) < 50:
+                continue
+            _mf = ConservativeStratified().fit_calibrated(_tr_f, _ca_f)
+            _, _lo_f, _hi_f, _ = _mf.predict_interval(_te_f)
+            _y_f = _te_f.delta.to_numpy(float)
+            _ins.append((_y_f >= _lo_f - 1e-9) & (_y_f <= _hi_f + 1e-9))
+            _cks.append(_te_f.base_model.to_numpy())
+        if not _ins:
+            continue
+        _i = _np1.concatenate(_ins)
+        _c = _np1.concatenate(_cks)
+        _lf_cov[_tf] = 100.0 * float(_i.mean())
+        add(f"lofo_fold_cov_pct::{_tf}", _lf_cov[_tf], 0.05,
+            f"held-out LOFO coverage for the {_tf} fold under the shipped "
+            f"band, pooled over test points")
+        add(f"lofo_fold_bases::{_tf}", int(d[d.family == _tf]
+                                          .base_model.nunique()), 0,
+            f"base models behind the {_tf} fold -- the bootstrap cluster, "
+            f"NOT the checkpoint count")
+        _uq = _np1.unique(_c)
+        _bs = []
+        for _ in range(2000):
+            _pick = _lf_rng.choice(_uq, size=len(_uq), replace=True)
+            _bs.append(100.0 * _np1.concatenate(
+                [_i[_c == _u] for _u in _pick]).mean())
+        _lf_lo[_tf], _lf_hi[_tf] = (float(_np1.percentile(_bs, 2.5)),
+                                    float(_np1.percentile(_bs, 97.5)))
+    for _tf in ("qwen3", "mistral"):
+        if _tf in _lf_lo:
+            add(f"lofo_fold_lo_pct::{_tf}", _lf_lo[_tf], 0.3,
+                f"base-model-cluster bootstrap 2.5th percentile, {_tf} fold")
+            add(f"lofo_fold_hi_pct::{_tf}", _lf_hi[_tf], 0.3,
+                f"the 97.5th percentile for the same fold")
+    add("lofo_folds_below_nominal",
+        sum(1 for _v in _lf_cov.values()
+            if _v < 100.0 * (1.0 - _st_alpha.ALPHA)), 0,
+        "folds whose point-estimate LOFO coverage is below the nominal "
+        "level; neither is SHOWN to be below it")
+    add("lofo_fold_cov_min_pct", min(_lf_cov.values()), 0.05,
+        "lowest per-fold LOFO coverage under the shipped band")
+    add("lofo_fold_cov_max_pct", max(_lf_cov.values()), 0.05,
+        "highest per-fold LOFO coverage under the shipped band")
+    # --------------------------------- the subgroup estimator's own figures
+    # A per-scheme-mean centre with a Mondrian-by-scheme conformal width. This
+    # is NOT the shipped band; it is what the section 6 subgroup table has
+    # always used, and it is genuine split conformal (the quantile is taken on
+    # a calibration family disjoint from the model's training pool). The four
+    # hand-typed figures the paper carried came from here.
+    from predictor import SchemeMean as _SMa, Conformal as _Coa  # noqa: E402
+
+    def _tbl_lofo(_df):
+        _f = sorted(_df.family.unique())
+        _per = {}
+        for _t in _f:
+            _te = _df[_df.family == _t]
+            _pool = _df[_df.family != _t]
+            _n = _c = 0
+            for _cf in sorted(_pool.family.unique()):
+                _ca = _pool[_pool.family == _cf]
+                _tr = _pool[_pool.family != _cf]
+                if len(_ca) < 19 or len(_tr) < 50:
+                    continue
+                _mm = _SMa().fit(_tr)
+                _kk = _Coa(alpha=_st_alpha.ALPHA,
+                           mondrian_by="scheme").fit(_mm, _ca)
+                _, _l, _h, _ = _kk.predict_interval(_te)
+                _y = _te.delta.to_numpy(float)
+                _n += len(_y)
+                _c += int(((_y >= _l - 1e-9) & (_y <= _h + 1e-9)).sum())
+            if _n:
+                _per[_t] = 100.0 * _c / _n
+        return _per
+
+    def _defA(_df):
+        _x = _df.copy()
+
+        def _fam(_r):
+            if _r.family != "llama-3":
+                return _r.family
+            _m = _re2.search(r"Llama-?3\.([123])", str(_r.base_model), _re2.I)
+            return "llama-3.%s" % _m.group(1) if _m else "llama-3.x"
+        _x["family"] = _x.apply(_fam, axis=1)
+        return _x
+
+    import re as _re2
+    _tB = _tbl_lofo(d)
+    _dA = _defA(d)
+    _tA = _tbl_lofo(_dA)
+    # AGGREGATES ARE THE MEAN OVER FOLDS; FOLDS ARE POOLED OVER TEST POINTS.
+    # Both rules are stated in the prose because one sentence uses both.
+    add("lofo_agg_cov_pct_defb", sum(_tB.values()) / len(_tB), 0.05,
+        "aggregate LOFO coverage across held-out families under Definition B, "
+        "subgroup estimator, MEAN OVER FOLDS (reproduces the paper's 88.2 at "
+        "77873d9)")
+    add("lofo_agg_cov_pct_defa", sum(_tA.values()) / len(_tA), 0.05,
+        "the same under Definition A, 8 families (reproduces 87.3 at "
+        "77873d9)")
+    add("lofo_l3sub3_pooled_pct", _tA["llama-3.3"], 0.05,
+        "Llama-3.3's own held-out fold, Definition A, subgroup estimator, "
+        "POOLED OVER TEST POINTS (reproduces 85.1 at 77873d9)")
+    add("lofo_l3merged_pooled_pct", _tB["llama-3"], 0.05,
+        "the merged Llama-3 fold, Definition B, same estimator, pooled "
+        "(reproduces 92.2 at 77873d9)")
+    add("lofo_qwen3_tbl_defa_pct", _tA["qwen3"], 0.05,
+        "the qwen3 fold under the subgroup estimator, Definition A: the "
+        "lowest point estimate under that estimator")
+    add("lofo_qwen3_tbl_defb_pct", _tB["qwen3"], 0.05,
+        "the same under Definition B")
+    _l3 = d[d.family == "llama-3"].copy()
+    def _subdigit(_b):
+        _m = _re2.search(r"Llama-?3\.([123])", str(_b), _re2.I)
+        return _m.group(1) if _m else "x"
+    _l3["_s"] = _l3.base_model.map(_subdigit)
+    for _s in ("1", "2", "3"):
+        add(f"lofo_l3sub_bases::3.{_s}",
+            int(_l3[_l3["_s"] == _s].base_model.nunique()), 0,
+            f"base models behind the Llama-3.{_s} subgroup")
     add("n_base_models", meta["n_checkpoints"], 0,
         "distinct base models: the unquantized models the corpus's "
         "checkpoints derive from")
@@ -1510,6 +1653,75 @@ def registry():
         add(f"lofo_l3merged_cov::{_cf}",
             100 * float(_in_l3.mean()), 0.05,
             f"held-out llama-3 merged coverage under {_cf} calibration")
+
+    # The gap the paper described as "5--10pp". It is wider at both ends, so
+    # the prose quotes these two instead of a typed range. Computed here
+    # rather than earlier because it reads the per-cell keys above.
+    _gcals = sorted({_k.split("::")[2] for _k in reg
+                     if _k.startswith("lofo_l3sub_cov::")})
+    _gaps = []
+    for _c2 in _gcals:
+        _t3 = reg["lofo_l3sub_cov::3.3::" + _c2][0]
+        _gaps += [reg["lofo_l3sub_cov::3.1::" + _c2][0] - _t3,
+                  reg["lofo_l3sub_cov::3.2::" + _c2][0] - _t3]
+    add("lofo_l3gap_min_pp", min(_gaps), 0.05,
+        "smallest gap between Llama-3.3 and either cousin under any one "
+        "calibration family; the paper said 5--10pp and it is wider")
+    add("lofo_l3gap_max_pp", max(_gaps), 0.05, "and the largest")
+
+    # --- The two counts the \S9 stripper entry quotes for what the defect
+    #     hid. Measured by replaying 708a84d's own comment-stripper line
+    #     against 708a84d's own document and splitting the numerals of the
+    #     two sentences into removed and retained, because the entry is a
+    #     claim about that revision and not about this one. Llama-3.3 is
+    #     excluded from the retained count: it is a version in a model
+    #     name, not a figure, which is the same judgement the shipped
+    #     numeral check's lookbehind encodes.
+    import subprocess as _sp
+
+    def _show(_rp):
+        _r = _sp.run(["git", "show", _rp], capture_output=True, text=True,
+                     cwd=os.path.join(HERE, ".."))
+        if _r.returncode != 0:
+            raise RuntimeError(
+                f"cannot read {_rp}: the stripper-defect counts in the "
+                f"appendix are measured from history, and this clone does "
+                f"not have it. Fetch the full history (git fetch --unshallow) "
+                f"and re-run.")
+        return _r.stdout
+
+    _sp_src = _show("708a84d:paper/audit_paper.py")
+    _sp_tex = _show("708a84d:paper/neurips_main.tex")
+    _sp_lines = [_l for _l in _sp_src.split("\n")
+                 if _l.startswith("body = re.sub(")]
+    if len(_sp_lines) != 4:
+        raise RuntimeError(
+            f"expected 4 stripper lines at 708a84d, found {len(_sp_lines)}; "
+            f"the reduction moved, so re-derive these counts by hand rather "
+            f"than trusting this block.")
+    _sp_ns = {"re": re, "TEX": _sp_tex}
+    for _l in _sp_lines[:3]:
+        exec(_l, _sp_ns)                                        # noqa: S102
+    _sp_pre = _sp_ns["body"]
+    _sp_i = _sp_pre.find("but every LOFO-derived")
+    _sp_j = _sp_pre.find("92.2\\%.", _sp_i) + len("92.2\\%.")
+    if _sp_i < 0 or _sp_j <= _sp_i:
+        raise RuntimeError("the two sentences the appendix entry describes "
+                           "are not at 708a84d where this block looks for "
+                           "them; re-derive by hand.")
+    _sp_seg = _sp_pre[_sp_i:_sp_j]
+    _sp_cut = re.compile(r"%.*")
+    _sp_num = re.compile(r"(?<![\w.\\-])\d+\.\d+")
+    _sp_hidden = _sp_num.findall(
+        " ".join(_m.group(0) for _m in _sp_cut.finditer(_sp_seg)))
+    _sp_visible = _sp_num.findall(_sp_cut.sub(" ", _sp_seg))
+    add("stripper_hidden_figures", len(_sp_hidden), 0,
+        "figures inside the text 708a84d's comment stripper removed from the "
+        "two sentences the appendix entry quotes, by replaying that "
+        "revision's own stripper line")
+    add("stripper_visible_figures", len(_sp_visible), 0,
+        "figures in the same two sentences the stripper left visible, which "
+        "the checks then passed because each was exempt by name")
 
     # --- Tier 1.1 disclosure: LOFO fallback rate under the 6-family corpus
     #     (day-7 audit). ConservativeStratified.fit_calibrated keeps the

@@ -226,6 +226,169 @@ def rewrite(dst: str) -> None:
             log(f"  rewrote {rel}")
 
 
+
+# ---------------------------------------------------------- commit relabelling
+# A COMMIT HASH DE-ANONYMISES AS WELL AS A NAME. GitHub indexes commit SHAs:
+# pasting one into its search box resolves to the repository that contains it,
+# and from there to the author's name and handle. The paper's audit sections
+# are full of them -- that is the point of the sections -- so dropping them is
+# not an option and neither is leaving them.
+#
+# They are relabelled instead. Every hash-shaped token in the build tree is
+# resolved against THIS repository: if `git cat-file` says it is a commit
+# here, it becomes a stable label; if it is not, it is left exactly as it is.
+# That distinction is the whole design. Most hash-shaped tokens in the tree
+# are not ours at all -- data/redhatai_models.json carries a Hugging Face
+# revision for every card, and those are public identifiers of someone
+# else's artifacts, carry no information about this repository, and must
+# survive the scrub intact for the data to stay usable.
+#
+# Labels are assigned in committer-date order so that `COMMIT-01` is the
+# earliest commit mentioned anywhere in the supplement. A reviewer can still
+# follow "the defect at COMMIT-11 was fixed at COMMIT-14" and can still see
+# that two sites mean the same commit; what they cannot do is search for it.
+# The mapping is written beside the zip, OUTSIDE the build tree and
+# gitignored, because the mapping is exactly the thing the relabelling
+# exists to withhold.
+HASHLIKE = re.compile(r"(?<![0-9a-zA-Z])([0-9a-f]{7,40})(?![0-9a-zA-Z])")
+
+# REWRITE PROSE, NEVER DATA. The relabeller only edits the file types that
+# discuss commits; data files are read-only to it. The reason is a false
+# positive it would otherwise be free to make: `[0-9a-f]{7,40}` matches a
+# seven-digit decimal, and a seven-digit decimal is a perfectly ordinary
+# value in a CSV. If one ever collided with a valid short hash in this
+# repository, the relabeller would silently rewrite a data value, and the
+# build would report a success. No such token exists in the tree today --
+# measured, zero all-digit candidates in the data files -- which is exactly
+# why the guard goes in now rather than after one appears.
+#
+# Excluding them is not the same as knowing they are clean, and
+# "clean because nothing happens to look at it" is the shape this
+# repository keeps finding. So the excluded files are still SCANNED: any of
+# our own commit hashes sitting in one is reported and fails the build,
+# which forces a decision about that specific site instead of leaving the
+# exclusion to cover it.
+RELABEL_EXTS = {".md", ".tex", ".py", ".txt", ".bib", ".html", ".cfg", ".ini"}
+
+
+def _resolve_hashes(cands):
+    """-> {token: full sha} for the tokens that are commits in THIS repo.
+
+    One `git cat-file --batch-check` pass rather than a process per token.
+    The first version shelled out once per candidate and took minutes on a
+    tree whose data file carries a Hugging Face revision per card; the
+    batched form is the same question asked once.
+    """
+    if not cands:
+        return {}
+    toks = sorted(cands)
+    r = subprocess.run(["git", "cat-file", "--batch-check"],
+                       input="\n".join(toks) + "\n",
+                       capture_output=True, text=True, cwd=ROOT)
+    out = {}
+    for tok, line in zip(toks, r.stdout.splitlines()):
+        parts = line.split()
+        # "<sha> commit <size>" for ours; "<tok> missing" otherwise. An
+        # ambiguous short hash reports "ambiguous" and is NOT treated as
+        # ours: it would be guesswork about which commit was meant.
+        if len(parts) >= 2 and parts[1] == "commit":
+            out[tok] = parts[0]
+    return out
+
+
+def _commit_dates(fulls):
+    """-> {full sha: committer timestamp}, in one pass."""
+    if not fulls:
+        return {}
+    r = subprocess.run(["git", "log", "--no-walk", "--format=%H %ct",
+                        *sorted(fulls)], capture_output=True, text=True,
+                       cwd=ROOT)
+    d = {}
+    for line in r.stdout.splitlines():
+        parts = line.split()
+        if len(parts) == 2:
+            d[parts[0]] = int(parts[1])
+    return d
+
+
+def relabel_commits(dst, map_path=None):
+    """Replace this repository's own commit hashes with stable labels.
+
+    -> (mapping {full-ish hash: label}, number of sites rewritten).
+    """
+    texts, others = [], []
+    for root, _dirs, files in os.walk(dst):
+        for fn in files:
+            p = os.path.join(root, fn)
+            rel = os.path.relpath(p, dst)
+            ext = os.path.splitext(fn)[1].lower()
+            if ext in (".pdf", ".zip", ".png", ".jpg", ".jpeg", ".gz",
+                       ".pyc"):
+                continue
+            try:
+                body = open(p, encoding="utf-8").read()
+            except (UnicodeDecodeError, OSError):
+                continue
+            if ext in RELABEL_EXTS:
+                texts.append((rel, p, body))
+            else:
+                others.append((rel, body))
+
+    # Collect first, assign labels second: a label has to be stable across
+    # files, and assigning as we walk would make it depend on walk order.
+    cands = set()
+    for _rel, _p, _s in texts:
+        cands.update(m.group(1) for m in HASHLIKE.finditer(_s))
+    # One commit can appear at 7, 8 and 40 hex; they must get ONE label.
+    canon = _resolve_hashes(cands)
+    ours = set(canon)
+    skipped_nonours = len(cands) - len(ours)
+    dates = _commit_dates(set(canon.values()))
+    order = sorted(set(canon.values()), key=lambda f: dates.get(f, 0))
+    label_of = {full: "COMMIT-%02d" % (i + 1) for i, full in enumerate(order)}
+    mapping = {h: label_of[canon[h]] for h in ours}
+
+    # The excluded file types are not rewritten, but they are not trusted
+    # either: report any of our commits that live in one.
+    stranded = []
+    for rel, body in others:
+        found = sorted({m.group(1) for m in HASHLIKE.finditer(body)}
+                       & set(canon))
+        if found:
+            stranded.append((rel, found))
+
+    sites = 0
+    for rel, p, s in texts:
+        def _sub(m):
+            nonlocal sites
+            if m.group(1) in mapping:
+                sites += 1
+                return mapping[m.group(1)]
+            return m.group(0)
+        out = HASHLIKE.sub(_sub, s)
+        if out != s:
+            open(p, "w", encoding="utf-8").write(out)
+    log(f"  relabelled {len(order)} distinct commit(s) at {sites} site(s); "
+        f"left {skipped_nonours} distinct hash-shaped token(s) that are "
+        f"not commits "
+        f"in this repository (Hugging Face revisions and the like) untouched")
+    if stranded:
+        log("  COMMIT HASHES IN FILES THE RELABELLER WILL NOT REWRITE:")
+        for rel, found in stranded:
+            log(f"    {rel}: {found}")
+        log("  Each is a de-anonymiser the relabelling did not remove. "
+            "Decide per site: drop the file, move the reference into prose, "
+            "or add the extension to RELABEL_EXTS if rewriting it is safe.")
+    if map_path:
+        with open(map_path, "w", encoding="utf-8") as f:
+            f.write("# Commit relabelling for the anonymous supplement.\n"
+                    "# NOT in the repository and NOT in the zip: this file is\n"
+                    "# the de-anonymiser the relabelling removes. Local only.\n")
+            for full in order:
+                f.write(f"{label_of[full]}\t{full}\n")
+        log(f"  mapping written to {map_path} (local, not shipped)")
+    return mapping, sites, stranded
+
 def _pdf_text(path):
     """-> all text in a PDF, or None if it cannot be read.
 
@@ -391,10 +554,10 @@ def main() -> int:
         shutil.rmtree(dst)
     os.makedirs(dst)
 
-    log(f"[1/4] copying tree into {dst}")
+    log(f"[1/5] copying tree into {dst}")
     copy_tree(dst)
 
-    log("[2/4] rewriting per TEXT_REPLACEMENTS")
+    log("[2/5] rewriting per TEXT_REPLACEMENTS")
     rewrite(dst)
 
     if args.plant:
@@ -403,7 +566,18 @@ def main() -> int:
             f.write("\n\n<!-- canary: Grace Jackson -->\n")
         log(f"[plant] added canary in {canary_path}, build check must fail")
 
-    log("[3/4] scanning for identity leaks")
+    log("[3/5] relabelling this repository's own commit hashes")
+    _, _, _stranded = relabel_commits(dst, map_path=os.path.join(
+        os.path.dirname(os.path.abspath(args.out_zip)) or ".",
+        "COMMIT_RELABEL_MAP.local.tsv"))
+
+    if _stranded:
+        log("\nSUPPLEMENT SCRUB FAILED. This repository's own commit "
+            "hashes remain in files the relabeller does not rewrite; see "
+            "the list above. zip NOT written.")
+        return 1
+
+    log("[4/5] scanning for identity leaks")
     hits = scan(dst)
     if hits:
         log(f"\nSUPPLEMENT SCRUB FAILED. {len(hits)} identity string(s) "
@@ -414,7 +588,7 @@ def main() -> int:
             "TEXT_REPLACEMENTS and rerun.")
         return 1
 
-    log(f"[4/4] writing {args.out_zip}")
+    log(f"[5/5] writing {args.out_zip}")
     make_zip(dst, args.out_zip)
     sz = os.path.getsize(args.out_zip)
     log(f"OK  {args.out_zip}  {sz/1e6:.2f} MB")
