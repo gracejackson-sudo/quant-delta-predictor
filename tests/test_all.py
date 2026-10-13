@@ -2513,15 +2513,33 @@ def test_no_duplicate_dict_keys_in_the_registry_or_generator():
 def test_verifiers_exit_zero():
     import subprocess
     root = os.path.join(os.path.dirname(__file__), "..")
+    unchecked = []
     for name in ("independent_rank.py", "independent_check.py"):
         path = os.path.join(root, "verify", name)
         r = subprocess.run([sys.executable, path],
                            capture_output=True, text=True, cwd=root)
+        # THREE STATES, NOT TWO. 0 is agreement, 3 is "an input or
+        # dependency it needs is absent, so it compared nothing", and
+        # anything else is disagreement. These verifiers used to return 0
+        # for the middle case so that this very gate would not fire, which
+        # made "the verifiers exited zero" true of a run that verified
+        # nothing. 3 is reported as a skip -- pytest.ini sets -rs, so the
+        # reason is printed every run and cannot sit unnoticed.
+        if r.returncode == 3:
+            unchecked.append((name, [
+                l for l in r.stdout.splitlines()
+                if "UNCHECKED" in l or "comparisons made" in l]))
+            continue
         assert r.returncode == 0, (
             f"verify/{name} exited {r.returncode}. Gate step for C4: "
             f"any non-zero exit from a verifier must fail the suite.\n"
             f"---stdout tail---\n{r.stdout[-800:]}\n"
             f"---stderr tail---\n{r.stderr[-800:]}")
+    if unchecked:
+        import pytest
+        pytest.skip("verifier(s) reported UNCHECKED rather than agreement: "
+                    + "; ".join(f"{n}: {' | '.join(msgs)}"
+                                for n, msgs in unchecked))
 
 
 # ---------------------------------------------------------------------------
@@ -3168,7 +3186,13 @@ _REGISTRY_MANIFEST = {
     # the Llama-3.3-to-cousin gap pair, and the two counts the appendix's
     # stripper entry quotes for what that defect hid and left visible.
     # Every one of them replaced a hand-typed figure in the paper.
-    "(scalar)": 385,
+    # +3 at the word-figure round: the qwen3 bootstrap's distinct resample
+    # count, the Llama-3 cousin subgroup count, and the drift the appendix's
+    # stripper entry describes. All three were figures the paper stated in
+    # WORDS -- two exempted as self-evident, and "about a quarter-point"
+    # invisible to the gate entirely because the word vocabulary had no
+    # fractional heads.
+    "(scalar)": 388,
     # The retracted in-sample band's nvfp4 bounds and the factor calibration
     # widened it by, kept live so S6's retraction cannot drift from the thing
     # it retracts.
@@ -3591,17 +3615,32 @@ def test_audit_scripts_exit_zero():
     scripts and this test fires with the offender named."""
     import subprocess
     root = os.path.join(os.path.dirname(__file__), "..")
+    audit_unchecked = []
     for name in ("audit_ranking.py", "adversarial_audit.py",
                  "census.py", "check_docs.py"):
         path = os.path.join(root, "src", name)
         r = subprocess.run([sys.executable, path],
                            capture_output=True, text=True, cwd=root)
+        # Exit 3 is "could not check" -- a documented absent input, not a
+        # regression. Collected and reported as a skip rather than silently
+        # accepted, so the audit suite cannot be green on scripts that ran
+        # no comparisons.
+        if r.returncode == 3:
+            audit_unchecked.append(name)
+            continue
         assert r.returncode == 0, (
             f"src/{name} exited {r.returncode}. AUDIT_DISCIPLINE.md "
             f"lists it as required-to-pass; a non-zero exit here means "
             f"the audit-suite gate is broken.\n"
             f"---stdout tail---\n{r.stdout[-800:]}\n"
             f"---stderr tail---\n{r.stderr[-800:]}")
+    if audit_unchecked:
+        import pytest
+        pytest.skip(
+            "audit script(s) compared nothing and reported UNCHECKED (exit "
+            "3) rather than passing: " + ", ".join(audit_unchecked)
+            + ". AUDIT_DISCIPLINE.md names which shipped-repo audits are "
+            "live and which rest on uncommitted corpora.")
 
 
 def test_scope_md_nvfp4_severe_rate_matches_live_registry():
@@ -4345,6 +4384,51 @@ def test_every_src_and_verify_module_parses_and_compiles():
 #
 # It skips when data/cards/ is absent, because the corpus is not in git.
 # ---------------------------------------------------------------------------
+
+def _assert_card_corpus_matches_manifest_first(root):
+    """Verify the pinned card hashes BEFORE anything re-harvests them.
+
+    data/CARD_MANIFEST.sha256.README recorded the ordering defect: the
+    manifest test verifies hashes, but the re-harvest tests read whatever
+    cards are on disk without checking them first. So "the corpus fails its
+    manifest" and "the re-harvest reproduces the dataset" could both be true
+    in one run, and a reader had to know which to believe. A re-harvest of
+    the wrong cards that happens to agree is not evidence about the shipped
+    corpus.
+
+    Raises AssertionError on a hash mismatch, so the re-harvest never runs
+    against cards that are not the pinned ones. Returns the number of cards
+    verified; 0 means none of the pinned cards is present and the caller
+    should skip.
+    """
+    import hashlib
+    man = os.path.join(root, "data", "CARD_MANIFEST.sha256")
+    if not os.path.isfile(man):
+        return 0
+    want = {}
+    for line in open(man, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        h, _, rel = line.partition("  ")
+        want[rel.strip().lstrip("./")] = h
+    bad, checked = [], 0
+    for rel, h in sorted(want.items()):
+        p = os.path.join(root, rel)
+        if not os.path.isfile(p):
+            continue
+        checked += 1
+        got = hashlib.sha256(open(p, "rb").read()).hexdigest()
+        if got != h:
+            bad.append(f"{rel}: pinned {h[:12]}, on disk {got[:12]}")
+    assert not bad, (
+        "the card corpus on disk does not match data/CARD_MANIFEST.sha256, "
+        "so a re-harvest from it says nothing about the shipped dataset. "
+        "Fix the corpus before trusting any re-harvest result:\n  "
+        + "\n  ".join(bad))
+    return checked
+
+
 def test_reharvest_reproduces_committed_dataset_on_every_column():
     import pandas as pd
     root = os.path.join(os.path.dirname(__file__), "..")
@@ -4356,6 +4440,9 @@ def test_reharvest_reproduces_committed_dataset_on_every_column():
                     "(PROVENANCE.md 2026-09-27); extract the snapshot in "
                     "the card-corpus snapshot archive to run this. Until "
                     "2026-10-12 this returned silently and counted as a pass.")
+
+    # Manifest FIRST: never re-harvest cards that are not the pinned ones.
+    _assert_card_corpus_matches_manifest_first(root)
 
     sys.path.insert(0, os.path.join(root, "src"))
     import harvest
@@ -4416,6 +4503,9 @@ def test_gpqa_protocol_labels_survive_a_reharvest():
                     "cards to re-read. Extract the snapshot in "
                     "the card-corpus snapshot archive. Until 2026-10-12 "
                     "this returned silently and counted as a pass.")
+
+    # Manifest FIRST, same reason as the column-wise re-harvest above.
+    _assert_card_corpus_matches_manifest_first(root)
 
     sys.path.insert(0, os.path.join(root, "src"))
     import harvest
@@ -4612,3 +4702,64 @@ def test_predictor_ordering_matches_the_papers_negative_claim():
             f"selection as evidence that the best card-feature model is one "
             f"shrunk almost to a constant; if tuning has moved off the edge "
             f"that reading needs revisiting.")
+
+
+def test_requirements_pins_match_the_installed_environment():
+    """requirements.txt is the environment the figures were measured under.
+
+    Day-8: the working tree's virtual environment was lost and nothing in
+    the repository recorded which versions the published figures came from.
+    The rebuild landed on newer pandas/numpy/scipy/scikit-learn and every
+    tagged claim still verified, which was luck -- the registry recomputes
+    everything, so a figure that moved would have shown up as a mismatch
+    rather than as a silently different number. The pins exist so the next
+    rebuild is reproduction rather than luck.
+
+    This fails when the installed version drifts from the pin, in either
+    direction. Bumping a dependency is then an explicit act: change the pin,
+    re-run the registry, and the diff shows whether any figure moved.
+
+    Skips loudly (not passes) when a pinned package is not installed at all,
+    because an absent package is an unchecked pin, not a satisfied one.
+    """
+    import importlib.metadata as md
+    import pytest
+
+    root = os.path.join(os.path.dirname(__file__), "..")
+    req = os.path.join(root, "requirements.txt")
+    assert os.path.isfile(req), (
+        "requirements.txt is missing. The figures in paper/numbers.tex were "
+        "measured under a specific set of versions and nothing else records "
+        "which.")
+    pins = {}
+    for line in open(req, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#") or "==" not in line:
+            continue
+        name, _, ver = line.partition("==")
+        pins[name.strip()] = ver.strip()
+    assert len(pins) >= 5, (
+        f"requirements.txt pins only {len(pins)} packages; it pinned 9 when "
+        f"it was written, so it has been truncated rather than updated")
+
+    drift, absent = [], []
+    for name, want in sorted(pins.items()):
+        try:
+            got = md.version(name)
+        except md.PackageNotFoundError:
+            absent.append(name)
+            continue
+        if got != want:
+            drift.append(f"{name}: pinned {want}, installed {got}")
+    assert not drift, (
+        "the installed environment does not match requirements.txt, so the "
+        "figures this run produces were not measured under the pinned "
+        "versions:\n  " + "\n  ".join(drift)
+        + "\n\nEither reinstall from requirements.txt, or -- if the bump is "
+        "intended -- update the pin, re-run src/verify_claims.py and "
+        "paper/gen_numbers.py, and commit any figure that moved in the same "
+        "change.")
+    if absent:
+        pytest.skip(
+            "pinned package(s) not installed, so the pin is unchecked rather "
+            "than satisfied: " + ", ".join(absent))

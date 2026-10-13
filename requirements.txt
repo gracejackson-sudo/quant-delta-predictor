@@ -1,0 +1,26 @@
+# Exact pins for the figures in this repository.
+#
+# WHY EXACT, NOT RANGES: on 2026-10-13 the working tree's virtual environment
+# was lost with the scratchpad it lived in, and nothing in the repository said
+# which versions the published figures had been measured under. The rebuild
+# happened to land on newer pandas, numpy, scipy and scikit-learn, and all
+# 675 tagged claims still verified -- which was luck, not evidence, and the
+# only reason it could be stated at all is that the registry recomputes every
+# figure. A reader who cannot reconstruct the environment cannot reproduce
+# the paper, and a silent dependency bump is a figure change nobody declared.
+#
+# These are the versions every figure in the paper and in paper/numbers.tex
+# was measured under, and the versions tools/reproduce_tuned_baselines.sh
+# records in its verdict so a mismatch is visible rather than inferred.
+#
+# Python 3.12.13 (CPython). Install with:
+#     python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+pandas==3.0.6
+numpy==2.5.4
+scipy==1.18.1
+scikit-learn==1.9.1
+pypdf==6.20.1
+reportlab==5.0.1
+xhtml2pdf==0.2.23
+Markdown==3.11
+pytest==9.1.1

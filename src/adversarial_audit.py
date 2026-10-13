@@ -603,8 +603,13 @@ def main():
         print("SKIPPED: data/prospective_cards/ is not present in this checkout.")
         print("The prospective card corpus is not committed (PII / license).")
         print("Rerun with the corpus to regenerate the adversarial-audit report.")
+        print("comparisons made: 0")
         print("=" * 72)
-        return 0
+        # EXIT 3, not 0. This returned 0 so that the audit-suite gate would
+        # not fire on a documented absence -- but exit 0 is the code for "I
+        # checked and it was fine", and nothing was checked. The gate now
+        # distinguishes the two and reports this as unchecked.
+        return 3
     d = load(DATA)
     conf, _ = frozen_predictor(d)
     p = score(build_prospective(), conf)

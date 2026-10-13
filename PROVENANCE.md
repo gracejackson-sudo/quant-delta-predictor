@@ -1233,6 +1233,98 @@ sentinel line as `pending=N`, and are a **hard failure under
 `--pre-submission`**, which the pack build now runs. The pack cannot be
 stamped while any remains.
 
+### 2026-10-13 --- the pending set, measured rather than listed
+
+**One of the three was never in the paper.** The gate reported three pending
+figures, `31.63`, `46`, `46.10`. The predicate was
+`(?<![\w.\\])` + value + `(?![\d])`, and that lookahead permits a following
+`.`, so `46` matched the leading digits of `46.10`. The paper contains no
+figure `46`; it contains the label `gpqa_ambiguous_46`, in which the digits
+are part of an identifier. A value that is a prefix of a longer decimal
+anywhere in the body reported as present, in the one category whose whole job
+is to say what is still there. Fixed to `(?!\d|\.\d)` and replayed in both
+directions.
+
+**The other two reproduce exactly.** Both are `acc_before` values of specific
+rows, not derived statistics:
+
+| figure | object | recomputed from `data/dataset.csv` |
+| --- | --- | --- |
+| 46.10 | `acc_before` of the two Llama-3.3-70B-Instruct rows (FP8-dynamic, w8a8) labelled `gpqa_ambiguous_46` | 46.1000 and 46.1000 |
+| 31.63 | `acc_before` of the same checkpoint's NVFP4 row on `gpqa_main` | 31.6300 |
+
+Both are exact, so the paper's `$\approx$ 46.10` is more hedged than the data
+warrants --- the two rows agree to the digit. The adjacent "by 14pp" is the
+difference between them, which is 14.4700pp.
+
+**The remaining nine were never in the paper either.** `0.03`, `0.36`, `25`,
+`33`, `36`, `43`, `67`, `89.6` and `500,000` have zero whole-numeral sites in
+the reduced body of either variant. The PENDING entry's own message said
+"31.63, 46.10 and 89.6 are coverage-shaped and want checking first", which
+implied 89.6 was in the paper. It is not. Twelve names were carried as
+pending figures; two were figures.
+
+### 2026-10-13 --- the 42-head word-number pass, and why only fractions landed
+
+"about a quarter-point" shipped as an untraced figure that no check could
+see. `_WNOUN` already covered `points?`; the HEAD was the gap --- the
+vocabulary had no fractions, so "quarter" could not match however many
+counted nouns followed it.
+
+A superset of 44 heads the shipped vocabulary did not contain --- fractions,
+magnitudes (hundred, thousands, dozens), multiplicatives (double, twofold,
+tenfold) and vague quantifiers (several, most, many, both, no, a few) ---
+returned **34 sites across both variants, of which 4 are figures**: `half the
+schemes` (3 of 6, already stated as macros in the previous sentence), `several
+points` (the gap now registered as 1.3--12.1pp), `a few hundred clustered
+rows` (`\Nrows` is 823) and `few checkpoints`. The other 30 are negations
+("no cell is refused", followed immediately by the macros), back-references
+("both arms", "both bands"), ordinals ("a third verdict" is the third KIND)
+and qualitative statements.
+
+An 88% false-positive rate is the shape of the 818-entry noun allowlist and
+the 290-entry word allowlist this project measured and refused. So only the
+fraction heads were added. They fire on exactly three sites: `half the
+schemes`, which was reworded to stop restating a figure the previous sentence
+gives as macros, and the two `a third verdict` ordinals, which are exempted
+with that reason. The other 30 heads are recorded here instead of becoming an
+allowlist nobody can review.
+
+**Three figures registered out of this**: the qwen3 bootstrap's distinct
+resample count (10, = C(2k-1,k) for k=3 base models), the Llama-3 cousin
+subgroup count (2), and the drift the stripper entry describes (0.2446pp,
+measured by replaying the same estimator over `77873d9`'s 817 rows and
+today's 823). `paper/gen_numbers.py` now also emits `\XWord` and `\XWordCap`
+beside `\X` for integer counts, so a count opening a sentence is spelled from
+the registry instead of by hand; `paper/audit_paper.py` inherits each word
+macro's unit from its digit macro rather than re-declaring it.
+
+### 2026-10-13 --- the 29 keys that rest on inputs a clone cannot verify
+
+`data/CARD_MANIFEST.sha256` pins 178 of 584 card files. The other 406 ---
+`out/publisher_cards` (260), `out/lora_cards` (136), `out/qwen35_cards` (10)
+--- are not committed, so they cannot be hashed from a checkout. Naming the
+keys they feed, with the figures:
+
+| group | keys | the figures they carry |
+| --- | --- | --- |
+| `pub_*` | 14 | 260 cards inspected across 10 publishers; 38 Red Hat cards, 26 paired, 147 verified rows; 40 Intel cards, 9 paired, 0 verified rows; 222 cards from 9 other publishers, 10 paired, 1 verifiable, 6 verified rows |
+| `lk_*` | 11 | pooled Pearson -0.078 and Spearman 0.207 over 6 rows; rank Spearman -0.6997 at p = 0.0534; 4 kurtosis models, 3 LoRA models, 8 LoRA pairs, 2 overlapping; forgetting -2.2pp to +0.2pp |
+| `qwen35_*` | 4 | 10 publisher repos, 40 rows, 40 verified, 32 rejects |
+
+What a clone can verify is the artifact each card set was reduced to, and that
+artifact is what the registry reads: `out/publisher_census.json`,
+`out/track2_lowrank.json`, `data/qwen35/published_rows.csv` and
+`published_rejects.csv`. Those four are now pinned in
+`data/DERIVED_INPUTS.sha256` and checked by `tools/pin_derived_inputs.py`.
+One unverifiable hop remains, cards to artifact, and it is named rather than
+standing in for the whole chain.
+
+**The ordering defect is fixed.** Both re-harvest tests verify the card
+manifest before reading a card, so a corpus that fails its manifest can no
+longer coexist with a re-harvest that passes. Replayed by corrupting one
+pinned card: the re-harvest refuses and names it.
+
 ### 2026-10-13 --- the repository name defeated the anonymisation
 
 Scanned the shipped supplement zip for the REPO NAME rather than for the

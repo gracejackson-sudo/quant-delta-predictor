@@ -633,6 +633,37 @@ def _definition_a(rows):
     return out
 
 
+_WORDVALS = {w: i for i, w in enumerate(
+    ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+     "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+     "sixteen", "seventeen", "eighteen", "nineteen", "twenty"])}
+
+
+def _macro_value(mac, name):
+    """-> the numeric value the paper prints for `name`, or None.
+
+    A count may be published as a digit (\\X) or as a generated word
+    (\\XWord / \\XWordCap), and three of them have no digit macro at all
+    now that every site reads as a word. Resolving the word back to an
+    integer here keeps those figures inside the independent check: without
+    it, converting a site from "2 folds" to "Two folds" would quietly drop
+    the figure out of verification, which is a worse defect than the digit
+    it replaced.
+    """
+    if name in mac:
+        try:
+            return float(mac[name])
+        except ValueError:
+            return None
+    for suffix in ("Word", "WordCap"):
+        lit = mac.get(name + suffix)
+        if lit is not None:
+            v = _WORDVALS.get(lit.strip().lower())
+            if v is not None:
+                return float(v)
+    return None
+
+
 def _macros():
     """-> {macro name: literal} from paper/numbers.tex."""
     p = os.path.join(ROOT, "paper", "numbers.tex")
@@ -726,21 +757,21 @@ def lofo_arm():
     bad = []
     print(f"\n  {'macro':<24}{'paper':>9}{'mine':>11}   verdict")
     for name, mine, tol in checks:
-        if name not in mac:
+        theirs = _macro_value(mac, name)
+        if theirs is None:
             bad.append((name, mine, "absent from numbers.tex"))
             print(f"  {name:<24}{'--':>9}{mine:>11.4f}   NOT DECLARED")
             continue
-        theirs = float(mac[name])
         if mine is None:
-            bad.append((name, None, mac[name]))
-            print(f"  {name:<24}{mac[name]:>9}{'--':>11}   NOT COMPUTED")
+            bad.append((name, None, theirs))
+            print(f"  {name:<24}{theirs:>9}{'--':>11}   NOT COMPUTED")
             continue
         # the paper prints one decimal; agreement means agreeing to the
         # printed precision plus the registry's own tolerance on the figure.
         ok = abs(round(mine, 1) - theirs) <= tol + 1e-9
         if not ok:
             bad.append((name, mine, theirs))
-        print(f"  {name:<24}{mac[name]:>9}{mine:>11.4f}   "
+        print(f"  {name:<24}{theirs:>9.2f}{mine:>11.4f}   "
               f"{'agree' if ok else 'DISAGREE'}")
     print(f"\n  per-fold coverage, shipped band   : "
           f"{ {k: round(v, 2) for k, v in sorted(shipped.items())} }")
@@ -748,7 +779,15 @@ def lofo_arm():
           f"{ {k: round(v, 2) for k, v in sorted(tB.items())} }")
     print(f"  Llama-3 subgroup folds, def A     : "
           f"{ [round(g, 2) for g in gaps] }")
-    print(f"\n  LOFO disagreements: {len(bad)}")
+    n_cmp = sum(1 for _n, _m, _t in checks
+                if _macro_value(mac, _n) is not None and _m is not None)
+    print(f"\n  comparisons made  : {n_cmp} of {len(checks)} macros "
+          f"(the rest were not declared or not computed)")
+    print(f"  LOFO disagreements: {len(bad)}")
+    if n_cmp == 0:
+        print("  UNCHECKED: no macro was compared, so this is not "
+              "agreement.")
+        return 3
     return 1 if bad else 0
 
 
@@ -762,6 +801,8 @@ def main():
     _lofo_rc = lofo_arm()
     if _lofo_rc == 1:
         return 1
+    if _lofo_rc == 3:
+        return 3
 
     # data/cards/ holds raw model cards; they are intentionally NOT committed
     # (they contain PII and licensed text). Absence is documented in
@@ -770,10 +811,17 @@ def main():
     # documented absence — the stand-in gate is
     # test_independent_check_csv_matches_tolerance_recomputation.
     if not os.path.isdir(TRAIN_DIR):
-        print(f"\n  SKIPPED: {TRAIN_DIR} is not present in this checkout.")
+        print(f"\n  UNCHECKED: {TRAIN_DIR} is not present in this checkout.")
         print("  The card corpus is not committed (PII / licensed text).")
         print("  See PROVENANCE.md 2026-09-27 for the stand-in gate.")
-        return 0
+        print("  card-corpus comparisons made: 0")
+        print(f"  (the LOFO arm above ran and made its own comparisons; this "
+              f"is only the card-parsing half.)")
+        # Exit 3, not 0: the card-parsing half of this verifier compared
+        # nothing. It returned 0 for years so the gate step would not fire on
+        # a documented absence, which made "the independent verifier passed"
+        # true of a run that re-verified nothing from the cards.
+        return 3
     train = load_dir(TRAIN_DIR, allow_no_size=False)
     train = [r for r in train if r["before"] >= MIN_ACC]
     print(f"\n  training rows parsed independently : {len(train)}")

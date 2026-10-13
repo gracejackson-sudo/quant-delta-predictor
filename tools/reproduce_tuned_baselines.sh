@@ -37,6 +37,24 @@ echo "log    : $WORK/tune.log"
   {
     echo "commit under test : $HEAD_SHA"
     echo "finished          : $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+    # VERSIONS IN THE VERDICT, NOT INFERRED LATER. tuned_baselines.json is
+    # the one artifact in this repository never reproduced, and it holds the
+    # negative result. If it comes back DIFFERS, the first question is
+    # whether the environment moved -- so the environment is recorded beside
+    # the answer instead of being reconstructed from memory afterwards.
+    echo "interpreter       : $("$REPO/.venv/bin/python" -c 'import sys;print(sys.version.replace(chr(10)," "))')"
+    echo "pinned versions   : (requirements.txt)"
+    "$REPO/.venv/bin/python" - <<'PYV' | sed 's/^/                    /'
+import importlib.metadata as md
+for p in ("pandas","numpy","scipy","scikit-learn"):
+    try:
+        print(f"{p}=={md.version(p)}")
+    except md.PackageNotFoundError:
+        print(f"{p}==ABSENT")
+PYV
+    echo "requirements.txt  :"
+    grep -E '^[A-Za-z]' "$REPO/requirements.txt" | sed 's/^/                    /'
+    echo "seed              : random_state=0 (src/tune_baselines.py)"
     if [ ! -f "$NEW" ]; then
       echo "RESULT: NO ARTIFACT -- the run did not write one. Tail of log:"
       tail -40 "$WORK/tune.log"

@@ -188,7 +188,21 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
 # This list exists because "historical figure" was doing two jobs: a value
 # deliberately frozen with its provenance recorded, and a value nobody had
 # rechecked. The four below are the second kind.
-_U = ("exempt by name and never classified. Twelve of the pre-2026-10-08\n      exempt numerals have no recorded disposition; 31.63, 46.10 and 89.6\n      are coverage-shaped and want checking first. Classify before\n      submission: --pre-submission fails while any remains.")
+# The earlier version of this message said "31.63, 46.10 and 89.6 are
+# coverage-shaped and want checking first", which implied 89.6 was in the
+# paper. It is not: of the twelve names carried here, only 31.63 and 46.10
+# have a whole-numeral site in either variant, and both are acc_before
+# values of named rows that reproduce EXACTLY from data/dataset.csv
+# (46.1000, 46.1000 and 31.6300). They stay on this list until their
+# disposition is decided -- registered as keys or left as card-verbatim
+# values -- because "reproduces" and "classified" are different states and
+# this list tracks the second.
+_U = ("exempt by name and never classified. Of the twelve pre-2026-10-08\n"
+      "      exempt numerals, only 31.63 and 46.10 appear in the paper at\n"
+      "      all; both are acc_before values of named rows and both\n"
+      "      reproduce exactly (PROVENANCE.md 2026-10-13). What is\n"
+      "      outstanding is their disposition, not their value. Classify\n"
+      "      before submission: --pre-submission fails while any remains.")
 PENDING_FIGURES = {
     # The four LOFO figures left this list on 2026-10-13: they reproduce
     # EXACTLY on the 77873d9 tree under the subgroup estimator, so they were
@@ -202,8 +216,15 @@ PENDING_FIGURES = {
     "0.03": _U, "0.36": _U, "25": _U, "31.63": _U, "33": _U, "36": _U,
     "43": _U, "46": _U, "46.10": _U, "67": _U, "89.6": _U, "500,000": _U,
 }
+# (?!\d|\.\d), not (?!\d): the old lookahead permitted a following "."
+# and so matched the LEADING DIGITS of a longer decimal. "46" was reported
+# as a pending figure in the paper for 5 days on the strength of the "46"
+# in "46.10" -- a figure that is not in the paper at all, reported as
+# present, in the one category whose whole job is to say what is still
+# there. Found 2026-10-13 while classifying the pending set: of the three
+# names the gate listed, one was this artifact.
 _pending = sorted(v for v in PENDING_FIGURES if re.search(
-    r"(?<![\w.\\])" + re.escape(v) + r"(?![\d])", body))
+    r"(?<![\w.\\])" + re.escape(v) + r"(?!\d|\.\d)", body))
 if _pending:
     _msg = ("figures on the PENDING list are still in the paper. Each is a "
             "numeral that was exempt and is now known or suspected stale:\n"
@@ -245,8 +266,23 @@ _WUNIT = ("zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|"
           "twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|"
           "nineteen|twenty")
 _WTENS = "thirty|forty|fifty|sixty|seventy|eighty|ninety"
+# FRACTIONS. Added 2026-10-13 after "which had drifted about a quarter-point"
+# shipped as an untraced figure that no check could see: _WNOUN already had
+# "points?", so the noun was covered and the HEAD was not, and "quarter"
+# could never match however many counted nouns followed it.
+#
+# Only the fraction heads were added. A 44-head superset pass over both
+# variants -- magnitudes (hundred, thousands, dozens), multiplicatives
+# (double, twofold, tenfold), and vague quantifiers (several, most, many,
+# both, no, a few) -- returned 34 sites of which 4 were figures: an 88%
+# false-positive rate, the same shape as the 818-noun and 290-word designs
+# this project measured and refused. The findings are recorded in
+# PROVENANCE.md rather than turned into an allowlist nobody can review.
+_WFRAC = ("a quarter|a half|a third|a fifth|a tenth|quarter|half|"
+          "two-thirds|three-quarters|one-third|one-half")
 _WORD = (rf"(?:{_WTENS})-(?:one|two|three|four|five|six|seven|eight|nine)"
-         rf"|(?:{_WTENS})|(?:{_WUNIT})|a dozen|a handful|a couple")
+         rf"|(?:{_WTENS})|(?:{_WUNIT})|(?:{_WFRAC})"
+         rf"|a dozen|a handful|a couple")
 # What this project counts. The first version of this list was chosen by
 # hand, which made the GATE'S COVERAGE BOUNDARY a guess: a figure counting a
 # noun nobody thought of was invisible again. So the list is now checked
@@ -281,7 +317,7 @@ WORDTERM = re.compile(r"^(?:leave-)?(?:one|two|three|four|six|eight|twenty)-"
 WORD_EXEMPT = {
     # --- enumerated right there in the sentence, so the count is its own
     #     evidence and a macro would add nothing
-    "four parameters", "seven files", "three cards", "two grounds",
+    "seven files", "three cards", "two grounds",
     "one of two grounds", "two operative verdicts", "two verdicts",
     "three verdicts", "two states", "two size bands",
     # --- definitional, not measured: these sentences DEFINE the object
@@ -295,7 +331,11 @@ WORD_EXEMPT = {
     "three separate families", "three separate scripts", "two cells",
     "two specific cells", "two rows", "three scripts", "four arms",
     "three paths", "eight band-constructing paths", "two further instances",
-    "four rows", "three schemes",
+    "four rows",
+    # ORDINALS, not counts: "a third verdict" is the third KIND of verdict,
+    # not three of them. They arrive with the fraction heads and are the
+    # only two sites those heads mis-fire on.
+    "a third verdict",
     # --- mathematical constants of the construction, not corpus figures:
     #     the 90% conformal index needs n >= 9 whatever the corpus is
     "nine rows",
@@ -309,14 +349,6 @@ WORD_EXEMPT = {
     # on 2026-10-11 (59f4cd9). An earlier draft said "five days", which the
     # word gate surfaced once "days" entered the counted-noun vocabulary.
     "three days",
-    # "the two better-covered subgroups" names Llama-3.1 and 3.2, which the
-    # sentence has just listed, so the count is its own evidence.
-    "two better-covered subgroups",
-    # "ten distinct resamples" is arithmetic, not a measurement: the number
-    # of multisets of size 3 drawn from 3 clusters is C(5,3) = 10. It
-    # follows from \LofoFoldBasesQwenThree and would be wrong to register
-    # as a separate figure.
-    "ten distinct resamples",
     # "one quantization run" is definitional -- it says what a checkpoint
     # IS -- and "let the second one run" uses run as a verb. Surfaced when
     # "runs" entered the vocabulary for the 98-runs reconciliation.
@@ -325,8 +357,7 @@ WORD_EXEMPT = {
     # definite article, and the cell is named in the same parenthesis
     "one cell",
     # --- deliberately vague quantifiers
-    "a handful of rows",
-}
+    }
 wordhits = []
 for m in WORDNUM.finditer(body):
     g = m.group(0).strip()
@@ -339,6 +370,36 @@ if wordhits:
                 "WORD_EXEMPT with a reason):\n      "
                 + "\n      ".join(wordhits))
 print(f"   figures written as words      : {len(wordhits)}")
+
+
+# A DEAD EXEMPTION IS A STANDING PERMISSION FOR A DEFECT THAT LEFT. Five of
+# the fifty WORD_EXEMPT entries matched nothing in either variant on
+# 2026-10-13: three were exemptions for prose that had since been rewritten,
+# and two had just been replaced by generated word macros. An entry that
+# matches nothing is not harmless -- it silently pre-authorises the exact
+# phrase it names, so the next time that phrase appears as a real figure the
+# gate waves it through and nobody revisits a decision made for different
+# prose. The set has to earn its keep entry by entry.
+#
+# Checked against the UNION of both variants, because an entry that is live
+# in one and absent from the other is doing its job.
+_we_hits = set()
+for _wv in ("main.tex", "neurips_main.tex"):
+    _wp = os.path.join(HERE, _wv)
+    if not os.path.isfile(_wp):
+        continue
+    _wbody, _ = strip_tex(open(_wp).read())
+    for _wm in WORDNUM.finditer(_wbody):
+        _we_hits.add(" ".join(_wm.group(0).lower().split()))
+_we_dead = sorted(e for e in WORD_EXEMPT if e not in _we_hits)
+if _we_dead:
+    fail.append(
+        "WORD_EXEMPT entries that match nothing in either variant. Each is a "
+        "standing permission for a phrase the paper no longer contains; "
+        "remove it, or say in a comment why it is being held:\n      "
+        + "\n      ".join(repr(e) for e in _we_dead))
+print(f"   dead WORD_EXEMPT entries      : {len(_we_dead)} "
+      f"{_we_dead if _we_dead else ''}")
 
 # ------------------------------------- is the counted-noun list wide enough?
 # _WNOUN above is the word gate's COVERAGE BOUNDARY, and the first version of
@@ -553,7 +614,24 @@ MACRO_UNITS = {
     "StratWidenGained":    r"rows?",
     "StratWidenGainedAll": r"rows?",
     "TuneOuterFolds":      r"folds?",
+    # These two exist only in word form: they open no sentence and read as
+    # words wherever they appear, so gen_numbers.py emits no digit macro for
+    # them and there is no base declaration to inherit from.
+    "LThreeCousinsWord":          r"subgroups?",
+    "QwenThreeBootResamplesWord": r"resamples?",
 }
+
+# A WORD MACRO COUNTS THE SAME THING AS ITS DIGIT MACRO. paper/gen_numbers.py
+# emits \XWord and \XWordCap beside \X so that a count opening a sentence
+# can be spelled without hand-typing it. Each of those is a counting macro
+# and needs a declared unit -- but re-declaring it by hand is how two names
+# for one figure drift apart, which is the aliasing defect this file already
+# has a gate for. So the unit is INHERITED, and a word macro whose base has
+# no declaration still fails, exactly as the base does.
+for _stem, _unit in list(MACRO_UNITS.items()):
+    for _suffix in ("Word", "WordCap"):
+        MACRO_UNITS.setdefault(_stem + _suffix, _unit)
+
 unit_fail = []
 for mac, allowed in sorted(MACRO_UNITS.items()):
     pat = re.compile(r"\\" + mac + r"\b\{?\}?\s*(?:\\?%)?\s*(.{0,42})", re.S)

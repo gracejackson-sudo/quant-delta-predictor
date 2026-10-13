@@ -403,6 +403,42 @@ replayed and none was missed. And the three tests that returned silently on a
 missing input could not fail at all; that is the no-assertion class, which
 `test_no_test_can_pass_without_checking_anything` now covers.
 
+### The vacuous-gate ledger
+
+A gate can report a clean result without having looked at anything. That is a
+different failure from reporting the wrong answer, and it is harder to see,
+because the output is indistinguishable from success. Every instance found is
+recorded here with the replay that now catches it. **A row is only admitted
+once the defect has been replayed against the code that ships** -- not against
+a copy, and not against a description of it.
+
+Note on placement: an earlier brief called for this as a paper section 8
+table. Section 8 is Limitations in the current numbering, and a ledger of
+internal gate replays is not a limitation of the method; it belongs to the
+discipline record. It lives here instead, and the paper's process-errors
+section cites the classes rather than the table.
+
+| date | commit | gate | what was vacuous | defect replayed | result |
+| --- | --- | --- | --- | --- | --- |
+| 2026-10-08 | `708a84d` | `paper/audit_paper.py` numeral, word, counted-noun and unit checks | `re.sub(r"%.*", ...)` cut every line from the first escaped `\%`, so 3.05% of the body was never scanned and four checks reported clean over 96.96% of it | re-plant the unescaped pattern in the shipped module; `tools/measure_percent_defect.py` re-executes `708a84d`'s own four stripper lines against its own document | caught; the hidden span held a live figure (the aggregate LOFO coverage) |
+| 2026-10-13 | `88bcfa1` | `verify/independent_rank.py` | with pandas absent the registry import failed, every registry comparison was skipped, and it printed `full agreement = True` and exited 0 | run it under an interpreter without the dependencies | now prints `comparisons made: 0`, reports UNCHECKED and exits 3 |
+| 2026-10-13 | `88bcfa1` | `src/audit_ranking.py` R4 | invoked the verifier as bare `python3` -- an interpreter without the dependencies -- and recorded the result as "reproduces the rank order and every displayed number exactly" | same | uses `sys.executable`; exit 3 maps to UNCHECKED, which is neither OK nor FINDING |
+| 2026-10-13 | `88bcfa1` | `src/audit_traceability.py` | with the outward-facing docs absent it printed "every number in every outward-facing doc is registry-traced" -- a universal claim over an empty set -- and exited 0 | run with `OUTWARD = []` | prints the comparison count; zero tagged numbers exits 3 |
+| 2026-10-13 | `88bcfa1` | `src/check_prose.py` | a path that did not exist was silently `continue`d, so a missing variant scanned clean and the exit code agreed | run against a non-existent `.tex` | reports `files scanned` and `absent`; zero scanned exits 3 |
+| 2026-10-13 | `88bcfa1` | `src/verify_claims.py` | zero tagged claims printed `FAIL`, which sends a reader looking for a wrong number when there is no number | run with `DOCS = []` | prints `comparisons made`; zero claims exits 3 as UNCHECKED |
+| 2026-10-13 | `88bcfa1` | `src/adversarial_audit.py`, `verify/independent_check.py` | both returned 0 on a documented absent corpus, specifically so the audit-suite gate would not fire -- which made "the audits exited zero" true of runs that compared nothing | run without `data/prospective_cards` / `data/cards` | both exit 3; the two suite gates collect those and report them as loud skips |
+| 2026-10-13 | `1330b28` | `paper/audit_paper.py` PENDING list | the lookahead `(?![\d])` permitted a following `.`, so `46` matched the leading digits of `46.10` and was reported as a pending figure in the paper for five days although the paper never contained it | search for `46` with the shipped predicate, then remove `46.10` from the body and search again | fixed to `(?!\d|\.\d)`; the pending set is now `31.63` and `46.10`, both of which reproduce exactly |
+| 2026-10-13 | `1330b28` | `paper/audit_paper.py` `WORD_EXEMPT` | five of fifty entries matched nothing in either variant, each a standing permission for a phrase the paper no longer contains | re-add a dead entry | new gate fails on any entry matching neither variant |
+| 2026-10-13 | `1330b28` | `src/build_supplement.py` | the relabeller edits prose types and the stranded check reads the rest, but nothing verified the finished tree; a hash inside a PDF would have been caught by neither | drop `.py` from `RELABEL_EXTS` and rebuild | the post-build pass reads every extension (15 types, 63 `.py` files, 0 unreadable) and the build refuses to write the zip |
+| 2026-10-13 | `1330b28` | `tests/test_all.py` re-harvest pair | the re-harvest tests read whatever cards were on disk without checking the manifest first, so a corpus failing its manifest and a passing re-harvest could both be true in one run | corrupt one pinned card and call the new precondition | both re-harvest tests now verify the manifest first and refuse, naming the card |
+
+**What this ledger cannot tell you** is how many vacuous gates remain. Every
+row was found by hand, and the only one found by a check was the dead
+`WORD_EXEMPT` entry -- found by a gate written minutes earlier for a
+different reason. The common shape is an absent input plus a two-state
+verdict, so the standing rule is now: a check reports how many comparisons it
+made, and zero comparisons is `UNCHECKED` and exit 3, never agreement.
+
 The corollary to all of this is that bands are a weak form. A quantity can be
 right while the mechanism is wrong -- `audit_traceability` removed fenced
 blocks by backtick pairing rather than by the rule written for them, and the
@@ -442,7 +478,7 @@ ordering within one second. What replaces it there is the content hash of
 check is meaningful only in a working tree where files were written at
 different times.
 
-### The escaped percent sign: 3% of the paper was never read### The escaped percent sign: 3% of the paper was never read
+### The escaped percent sign: 3% of the paper was never read
 
 `paper/audit_paper.py` built its scan body with `re.sub(r"%.*", " ", body)`.
 An escaped `\%` is a percent sign, not a comment, and there are 132 of them in

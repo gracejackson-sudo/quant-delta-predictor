@@ -438,7 +438,9 @@ folds but \emph{loses to it on qwen3} (\LofoSchemeMeanMax{}pp vs the
 global mean's per-fold MAE on the same fold). Within the merged
 Llama-3 fold, subgroup coverage varies too---Llama-3.3 alone sits
 \LThreeGapMin--\LThreeGapMax{}pp below Llama-3.1 and Llama-3.2 across every
-calibration family;
+calibration family. That subgroup rests on \LThreeSubThreeBasesWord{} base
+model, so the gap describes a single model's behaviour and not a subgroup
+average;
 the \S\ref{sec:results} subgroup table keeps that visible.
 Ridge regression (\(\alpha=3.0\), standardised features) and histogram
 gradient boosting (\texttt{max\_depth=3}, \texttt{max\_iter=300},
@@ -802,13 +804,13 @@ qwen3    & \LThreeSubOneQth\% & \LThreeSubTwoQth\% & \LThreeSubThreeQth\% & \LTh
 \end{center}
 Under every calibration family Llama-3.3 sits below both Llama-3.1 and
 Llama-3.2, by \LThreeGapMin{} to \LThreeGapMax{} points, and the merged mean
-is pulled up by the two better-covered subgroups. The table and the fold
+is pulled up by the \LThreeCousinsWord{} better-covered subgroups. The table and the fold
 figures in this paragraph come from a per-scheme-mean centre with a
 Mondrian-by-scheme conformal width, which is not the band this paper ships;
 cell values are coverage on the held-out Llama-3 rows under one calibration
 family, and the fold figures are pooled over test points. Under an 8-family
 reporting this weakness would show as Llama-3.3's own held-out fold at
-\LThreeSubThreePooled\%, which rests on \LThreeSubThreeBases{} base model;
+\LThreeSubThreePooled\%, which rests on \LThreeSubThreeBasesWord{} base model;
 under Definition B it is folded into \LThreeMergedPooled\% on the merged
 Llama-3 mean. It is the weakest of the three Llama-3 subgroups and not the
 lowest fold in the corpus: under this estimator Qwen-3 covers
@@ -991,14 +993,14 @@ and we have only \ExcessN{} rows from two models.
 
 \paragraph{Held-out coverage is not uniform across families.}
 Leave-one-family-out coverage under the shipped band ranges from
-\LofoFoldCovMin\% to \LofoFoldCovMax\% across the \Nfam{} folds. \LofoFoldsBelowNominal{} folds
-have point estimates below the \NominalPct\% nominal level: Qwen-3 at
+\LofoFoldCovMin\% to \LofoFoldCovMax\% across the \Nfam{} folds.
+\LofoFoldsBelowNominalWordCap{} folds have point estimates below the \NominalPct\% nominal level: Qwen-3 at
 \LofoFoldCovQwenThree\% on \LofoFoldBasesQwenThree{} base models and Mistral
 at \LofoFoldCovMistral\% on \LofoFoldBasesMistral{}. Neither is shown to fall
 below nominal. Mistral's base-model-cluster interval,
 [\LofoFoldLoMistral, \LofoFoldHiMistral]\%, includes it. Qwen-3's fold rests
 on \LofoFoldBasesQwenThree{} base models, for which a cluster bootstrap has
-only ten distinct resamples, so its interval
+only \QwenThreeBootResamplesWord{} distinct resamples, so its interval
 [\LofoFoldLoQwenThree, \LofoFoldHiQwenThree]\% constrains little in either
 direction. The strict prospective validation contains no Qwen-3 checkpoint and
 does not address this fold.
@@ -1586,7 +1588,8 @@ interval, split conformal guarantees \(1-\alpha\) and jackknife+ guarantees
 \(1-2\alpha\), so a \(\NominalPct\%\) \emph{guarantee} from jackknife+ needs
 \(\alpha = 0.05\), whose conformal index needs \(19\) leave-one-out units per
 scheme --- and only \JackknifeSchemesNineteen{} of \Nsch{} schemes have them.
-Jackknife+ at a \(\NominalPct\%\) guarantee is unavailable for half the schemes
+Jackknife+ at a \(\NominalPct\%\) guarantee is therefore unavailable for the
+remaining schemes
 whatever it scores. It is run at \(\alpha = \Alpha\), where its guarantee is
 \(80\%\), and the NVFP4 figure above is its per-scheme worst case rather than
 the grounds for preferring the other construction. What we are
@@ -1686,10 +1689,9 @@ varied as the paper grew, and the figures quoted are for the final revision in
 that span. A script in the accompanying code reproduces them from history.
 
 What it hid was not hypothetical. The unread text contained
-\StripperHiddenFigs{} figure, the aggregate leave-one-family-out coverage
-this paper reports in \S\ref{sec:audit}, which had drifted about a
-quarter-point as the corpus grew and which no check could see while the
-stripper was cutting the line it sat on. A further \StripperVisibleFigs{}
+\StripperHiddenFigsWord{} figure, the aggregate leave-one-family-out coverage
+this paper reports in \S\ref{sec:audit}, which had drifted \LofoAggBDrift{}pp as the corpus grew and which no check could see while the
+stripper was cutting the line it sat on. A further \StripperVisibleFigsWord{}
 figures in the same two sentences were visible to the checks and passed
 anyway, because each was exempt by name --- the other half of the same
 problem, and the reason an exemption now has to say what it is exempting.

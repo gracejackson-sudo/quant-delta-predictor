@@ -182,8 +182,21 @@ def main():
         print("REVIEW NEEDED:")
         for x in problems:
             print("  -", x)
+    elif total_t == 0:
+        # ZERO TAGGED NUMBERS IS NOT A CLEAN BILL OF HEALTH. With the
+        # outward-facing docs absent from a checkout this printed "every
+        # number in every outward-facing doc is registry-traced" and exited
+        # 0 -- a universal claim quantified over an empty set. Three states,
+        # and this is the third.
+        print("UNCHECKED: no tagged numbers were found in any outward-facing "
+              "doc, so nothing was traced and nothing was checked. Either "
+              "the docs are absent from this checkout or they carry no "
+              "tags. This is not a clean result.")
+        print("=" * 70)
+        return 3
     else:
-        print("every number in every outward-facing doc is registry-traced")
+        print(f"every number in every outward-facing doc is registry-traced "
+              f"({total_t} compared)")
     print("=" * 70)
     return 1 if total_u else 0
 

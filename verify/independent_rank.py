@@ -732,6 +732,20 @@ def main():
 
     ok = (my_order == their_order) and not bad \
         and not noise_bad and not boot_bad and not lofo_bad
+    # HOW MANY COMPARISONS DID THIS MAKE? Printed before the verdict so the
+    # verdict can be read against it: "full agreement" over two comparisons
+    # and over two hundred are different statements.
+    _n_cmp = (len(their_order) if their_order else 0) + len(nf.get("shares", {})) \
+        + (2 if reg is not None else 0) \
+        + (2 if (reg is not None and mine_lo is not None) else 0) \
+        + sum(1 for _tf in ("qwen3", "mistral")
+              for _b in ("lo", "hi")
+              if reg is not None and f"lofo_fold_{_b}_pct::{_tf}" in reg)
+    print(f"\n  comparisons made: {_n_cmp}")
+    if _n_cmp == 0 and not unchecked:
+        unchecked.append(
+            "no comparison was made at all, which is not agreement; check "
+            "that src/rank.py and the registry are both reachable.")
     print("\n" + "=" * 74)
     if unchecked and ok:
         print("INDEPENDENT VERDICT: UNCHECKED -- not agreement, not "

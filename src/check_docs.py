@@ -137,7 +137,13 @@ def main():
 
     # ---- report
     print("\n" + "=" * 70)
-    print(f"RESULT: {len(problems)} problems, {len(warnings)} warnings")
+    print(f"RESULT: {len(problems)} problems, {len(warnings)} warnings, "
+          f"{len(texts)} doc(s) examined")
+    if not texts:
+        print("UNCHECKED: no documents were read, so there is nothing behind "
+              "a count of zero problems.")
+        print("=" * 70)
+        return 3
     print("=" * 70)
     for p in problems:
         print(f"  PROBLEM  {p}")

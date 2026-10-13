@@ -1,0 +1,23 @@
+# Hashes for the committed artifacts that the 29 registry keys with
+# UNPINNED upstream card inputs actually read.
+#
+# data/CARD_MANIFEST.sha256 pins 178 of the 584 files in the card-corpus
+# snapshot. The other 406 -- out/publisher_cards (260), out/lora_cards (136),
+# out/qwen35_cards (10) -- are not committed and are not in the snapshot
+# archive's verifiable part, so a clone cannot hash them and this manifest
+# does not pretend to. What a clone CAN verify is the artifact each of those
+# card sets was reduced to, which is what the registry reads. Pinning those
+# closes the distance between a published figure and the nearest input a
+# reader actually has, and leaves exactly one unverifiable hop -- cards to
+# artifact -- named rather than implied.
+#
+# Regenerate with: python tools/pin_derived_inputs.py --write
+
+# 14 pub_* keys; the publisher census, built from the 260 uncommitted out/publisher_cards/ files
+36399fd40ccda1952dc8ecb6c665b3a04bed18506473cf46da29c27aff448f4c  out/publisher_census.json
+# 11 lk_* keys; the kurtosis/LoRA analysis, built from the 136 uncommitted out/lora_cards/ files
+f2fc8d5287a4766c351bedb5e750d946ad00589d59ebdbfeac757e885226b2dd  out/track2_lowrank.json
+# qwen35_pub_rows / qwen35_pub_verified; built from the 10 uncommitted out/qwen35_cards/ files
+060ff539b4375d16fe4aa354b0ab1b2eef04883cc4b7f09cf6162e9c671287ae  data/qwen35/published_rows.csv
+# qwen35_pub_rejects / qwen35_pub_repos; same source
+2993531d408fd7fb3977190e2a2d7d7d57c753f49518be611d54e645febf5940  data/qwen35/published_rejects.csv

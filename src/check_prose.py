@@ -203,14 +203,28 @@ def main(argv):
           f"{len(CLEAN)} clean strings not flagged")
     paths = argv or DEFAULTS
     total = 0
+    scanned, absent = 0, []
     for p in paths:
         if not os.path.exists(p):
+            # Was `continue`, silently: a missing .tex scanned clean and the
+            # exit code said so. A file that is not there has not been
+            # checked.
+            absent.append(p)
             continue
         h = hits(open(p, encoding="utf-8").read())
+        scanned += 1
         total += len(h)
         print(f"\n{os.path.relpath(p, ROOT)}: {len(h)} candidate(s)")
         for why, got, ctx in h:
             print(f"  [{why}] {got!r}\n     ...{ctx}...")
+    print(f"\nfiles scanned: {scanned}; absent: {len(absent)}")
+    for p in absent:
+        print(f"  UNCHECKED  {p} is not present, so it was not scanned")
+    if scanned == 0:
+        print("UNCHECKED: no input was scanned, so this is not a pass.")
+        return 3
+    if absent:
+        return 3 if total == 0 else 1
     return 1 if total else 0
 
 

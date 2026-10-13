@@ -10,11 +10,25 @@
 #   out/qwen35_cards         10   4 qwen35* keys
 # Those three sets are pinned only inside the snapshot archive, which is
 # outside git, so a clone cannot verify them. Recorded rather than implied
-# covered; extending the manifest to them is cheap and not yet done.
+# covered.
 #
-# ORDERING. test_the_card_corpus_matches_its_committed_manifest verifies the
-# hashes, but the re-harvest tests do NOT check them before running: they read
-# whatever cards are present. So a corpus that fails the manifest and a
-# re-harvest that passes can both be true in one run, and the manifest test is
-# the one to believe. Making the re-harvest depend on the manifest check is
-# the right fix and is not yet done.
+# 2026-10-13: as far as a clone can go, it now goes. The 406 card files
+# cannot be hashed from a checkout because they are not in one. What IS in a
+# checkout is the artifact each of those card sets was reduced to, and that
+# artifact is what the registry reads:
+#   out/publisher_census.json        -> 14 pub_*    keys
+#   out/track2_lowrank.json          -> 11 lk_*     keys
+#   data/qwen35/published_rows.csv   -> 2  qwen35_* keys
+#   data/qwen35/published_rejects.csv-> 2  qwen35_* keys
+# Those four are pinned in data/DERIVED_INPUTS.sha256 and checked by
+# tools/pin_derived_inputs.py. One unverifiable hop remains -- cards to
+# artifact -- and it is now named rather than standing in for the whole
+# chain. The 29 keys and the figures they carry are listed in PROVENANCE.md
+# under the 2026-10-13 entry.
+#
+# ORDERING -- FIXED 2026-10-13. Both re-harvest tests now call
+# _assert_card_corpus_matches_manifest_first() before reading a single card,
+# so a corpus that fails its manifest can no longer coexist with a
+# re-harvest that passes. Replayed: corrupt one pinned card and the
+# re-harvest refuses with that card named, instead of reproducing the
+# dataset from the wrong inputs.

@@ -540,6 +540,56 @@ def make_zip(dst: str, out_zip: str) -> None:
                 z.write(src, arc)
 
 
+
+def verify_no_our_commits(dst):
+    """Scan the FINISHED build tree for this repository's commit hashes.
+
+    -> (remaining, coverage) where coverage maps extension -> (files read,
+    files unreadable).
+
+    The relabeller rewrites prose file types and reports our hashes found in
+    the types it will not rewrite. Neither of those is a check that the
+    output is clean: one edits, the other looks at a subset. This reads the
+    tree the zip is about to be made from, EVERY extension, with no
+    allowlist -- .py and .csv and .json included, and PDFs through the text
+    extractor -- and resolves every hash-shaped token it finds against this
+    repository. A file it cannot read at all is reported as unreadable
+    rather than counted as clean, which is the distinction the old
+    skip-by-extension rule collapsed.
+    """
+    cands, coverage, unreadable = {}, {}, []
+    for root, _dirs, files in os.walk(dst):
+        for fn in sorted(files):
+            fp = os.path.join(root, fn)
+            rel = os.path.relpath(fp, dst)
+            ext = os.path.splitext(fn)[1].lower() or "(none)"
+            read, bad = coverage.get(ext, (0, 0))
+            body = None
+            if ext == ".pdf":
+                body = _pdf_text(fp)
+                if body is not None:
+                    # _pdf_metadata_text returns (label, text) pairs, not a
+                    # string: the document info dictionary and the XMP
+                    # packet are separate leak paths and it reports which.
+                    _meta = _pdf_metadata_text(fp) or []
+                    body = body + "\n" + "\n".join(
+                        str(_t) for _, _t in _meta)
+            else:
+                try:
+                    body = open(fp, encoding="utf-8").read()
+                except (UnicodeDecodeError, OSError):
+                    body = None
+            if body is None:
+                coverage[ext] = (read, bad + 1)
+                unreadable.append(rel)
+                continue
+            coverage[ext] = (read + 1, bad)
+            for m in HASHLIKE.finditer(body):
+                cands.setdefault(m.group(1), set()).add(rel)
+    resolved = _resolve_hashes(set(cands))
+    remaining = {h: sorted(cands[h]) for h in resolved}
+    return remaining, coverage, unreadable
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("out_dir", help="build directory, will be emptied")
@@ -554,10 +604,10 @@ def main() -> int:
         shutil.rmtree(dst)
     os.makedirs(dst)
 
-    log(f"[1/5] copying tree into {dst}")
+    log(f"[1/6] copying tree into {dst}")
     copy_tree(dst)
 
-    log("[2/5] rewriting per TEXT_REPLACEMENTS")
+    log("[2/6] rewriting per TEXT_REPLACEMENTS")
     rewrite(dst)
 
     if args.plant:
@@ -566,7 +616,7 @@ def main() -> int:
             f.write("\n\n<!-- canary: Grace Jackson -->\n")
         log(f"[plant] added canary in {canary_path}, build check must fail")
 
-    log("[3/5] relabelling this repository's own commit hashes")
+    log("[3/6] relabelling this repository's own commit hashes")
     _, _, _stranded = relabel_commits(dst, map_path=os.path.join(
         os.path.dirname(os.path.abspath(args.out_zip)) or ".",
         "COMMIT_RELABEL_MAP.local.tsv"))
@@ -577,7 +627,24 @@ def main() -> int:
             "the list above. zip NOT written.")
         return 1
 
-    log("[4/5] scanning for identity leaks")
+    log("[4/6] verifying no commit hash of ours survives anywhere")
+    _left, _cov, _unread = verify_no_our_commits(dst)
+    log(f"  files read by extension: "
+        + ", ".join(f"{_e} {_r}" + (f" (+{_b} unreadable)" if _b else "")
+                    for _e, (_r, _b) in sorted(_cov.items())))
+    if _unread:
+        log(f"  UNREADABLE, so NOT verified clean: {_unread}")
+    if _left or _unread:
+        log("\nSUPPLEMENT SCRUB FAILED.")
+        for _h, _where in sorted(_left.items()):
+            log(f"  {_h} still present in: {_where}")
+        if _unread:
+            log("  Files that could not be read cannot be declared clean; "
+                "drop them in DROP_FILES or make them readable.")
+        log("  zip NOT written.")
+        return 1
+
+    log("[5/6] scanning for identity leaks")
     hits = scan(dst)
     if hits:
         log(f"\nSUPPLEMENT SCRUB FAILED. {len(hits)} identity string(s) "
@@ -588,7 +655,7 @@ def main() -> int:
             "TEXT_REPLACEMENTS and rerun.")
         return 1
 
-    log(f"[5/5] writing {args.out_zip}")
+    log(f"[6/6] writing {args.out_zip}")
     make_zip(dst, args.out_zip)
     sz = os.path.getsize(args.out_zip)
     log(f"OK  {args.out_zip}  {sz/1e6:.2f} MB")

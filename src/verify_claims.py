@@ -1678,6 +1678,8 @@ def registry():
     #     name, not a figure, which is the same judgement the shipped
     #     numeral check's lookbehind encodes.
     import subprocess as _sp
+    import subprocess as _sp_mod
+    import pandas as _pd_w
 
     def _show(_rp):
         _r = _sp.run(["git", "show", _rp], capture_output=True, text=True,
@@ -1715,6 +1717,51 @@ def registry():
     _sp_hidden = _sp_num.findall(
         " ".join(_m.group(0) for _m in _sp_cut.finditer(_sp_seg)))
     _sp_visible = _sp_num.findall(_sp_cut.sub(" ", _sp_seg))
+    # --- Three figures this paper stated in WORDS, registered 2026-10-13.
+    #     Each had been exempted as self-evident or arithmetic. They are
+    #     neither: a reader cannot check them and nothing recomputes them,
+    #     which is the whole objection to a spelled-out figure. The gate
+    #     caught the first two and MISSED the third entirely -- "about a
+    #     quarter-point" -- because the word vocabulary had no fractional
+    #     heads, so "quarter" could never match however many counted nouns
+    #     followed it.
+    import math as _m_w
+    _k_q3 = int(d[d.family == "qwen3"].base_model.nunique())
+    # Multisets of size k drawn with replacement from k clusters:
+    # C(2k-1, k). For qwen3's 3 base models that is C(5,3) = 10, which is
+    # how many DISTINCT resamples its cluster bootstrap can produce.
+    add("qwen3_boot_distinct_resamples",
+        _m_w.comb(2 * _k_q3 - 1, _k_q3), 0,
+        "distinct resamples a base-model cluster bootstrap can draw for the "
+        "qwen3 fold: multisets of size k from k clusters, C(2k-1, k)")
+    add("lofo_l3_cousin_subgroups",
+        max(0, len({_v for _v in _l3["_s"] if _v in ("1", "2", "3")}) - 1), 0,
+        "Llama-3 subgroups other than 3.3 -- the ones the merged mean is "
+        "pulled up by")
+
+    # The drift the appendix calls "about a quarter-point": the aggregate
+    # under Definition B as it stood on 77873d9's corpus, against the same
+    # construction on today's. Measured by replaying the SAME estimator over
+    # the OLD rows, so the difference is corpus growth and nothing else.
+    _old = _sp_mod.run(["git", "show", "77873d9:data/dataset.csv"],
+                       capture_output=True, text=True,
+                       cwd=os.path.join(HERE, ".."))
+    if _old.returncode != 0:
+        raise RuntimeError(
+            "cannot read 77873d9:data/dataset.csv; the drift figure in the "
+            "appendix is measured against that revision's corpus. Fetch the "
+            "full history and re-run.")
+    import io as _io_w
+    _d_old = _pd_w.read_csv(_io_w.StringIO(_old.stdout))
+    _d_old = _d_old[_d_old.acc_before >= 20.0].reset_index(drop=True)
+    _t_old = _tbl_lofo(_d_old)
+    add("lofo_aggb_drift_pp",
+        abs(sum(_t_old.values()) / len(_t_old)
+            - sum(_tB.values()) / len(_tB)), 0.01,
+        "how far the Definition-B aggregate moved between 77873d9's corpus "
+        "and this one under the same estimator -- the drift the appendix's "
+        "stripper entry describes")
+
     add("stripper_hidden_figures", len(_sp_hidden), 0,
         "figures inside the text 708a84d's comment stripper removed from the "
         "two sentences the appendix entry quotes, by replaying that "
@@ -1882,11 +1929,25 @@ def main():
         print(f"  MISMATCH        {key}: doc says {stated}, computed "
               f"{computed:.4f}  [{how}]")
 
+    # HOW MANY COMPARISONS DID THIS MAKE? Zero is not a pass and it is not a
+    # failure either: with the instrumented docs absent, or present and
+    # untagged, there is nothing to compare and the honest verdict is
+    # "could not check". It used to print FAIL, which is wrong in the other
+    # direction -- a reader fixing a FAIL looks for a wrong number, and
+    # there is no number.
+    n_compared = len(claims) - len(bad) - len(unknown)
+    print(f"\ncomparisons made : {len(claims)} "
+          f"({n_compared} agreed, {len(bad)} mismatched, "
+          f"{len(unknown)} not in the registry)")
     if not claims:
-        print("  no tagged claims found -- docs are not instrumented")
-    ok = not bad and not unknown and claims
-    print(f"\n{'PASS' if ok else 'FAIL'}: "
-          f"{len(claims)-len(bad)-len(unknown)}/{len(claims)} claims verified")
+        print("UNCHECKED: no tagged claims found. Either the instrumented "
+              "docs are absent from this checkout or they carry no "
+              "<!-- claim: ... --> tags, so no figure was compared against "
+              "the registry. This is not agreement.")
+        return 3
+    ok = not bad and not unknown
+    print(f"{'PASS' if ok else 'FAIL'}: {n_compared}/{len(claims)} "
+          f"claims verified")
     return 0 if ok else 1
 
 
