@@ -33,8 +33,24 @@ def read(f):
     return open(os.path.join(ROOT, f), encoding="utf-8").read()
 
 
+TAG_RULES = [("HTML comment", re.compile(r"<!--.*?-->", re.S))]
+
+
 def strip_tags(s):
-    return re.sub(r"<!--.*?-->", "", s, flags=re.S)
+    return TAG_RULES[0][1].sub("", s)
+
+
+def strip_tags_with_spans(s):
+    """-> (text, spans) for the span-rule test in tests/test_all.py, which
+    imports this rather than keeping a copy of the pattern."""
+    spans = []
+    out, last = [], 0
+    for m in TAG_RULES[0][1].finditer(s):
+        spans.append(("HTML comment", m.group(0), m.start()))
+        out.append(s[last:m.start()])
+        last = m.end()
+    out.append(s[last:])
+    return "".join(out), spans
 
 
 def main():

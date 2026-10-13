@@ -1613,8 +1613,8 @@ When that error was first raised we registered the missing figure as a claim
 key and converted the sentence that had prompted the complaint. That looked
 like closure: the key existed, the macro resolved, the sentence quoted it, the
 build was green. A near-duplicate paragraph two pages earlier still carried the
-hand-typed version of the same figure, and it was found five days later by a
-sweep looking for something else. Converting one site of a figure and
+hand-typed version of the same figure, and it survived the fix by three days,
+until a sweep for something else reached it. Converting one site of a figure and
 registering its key produces every visible sign of having fixed it. So a fix
 must enumerate the figure's sites rather than the site that prompted it ---
 which is the enumeration lesson in this appendix applied to our own
@@ -1632,16 +1632,19 @@ pattern that treated every \texttt{\%} as the start of one. An escaped
 \texttt{\textbackslash\%} is a printed percent sign, so every line was cut at
 its first printed percentage.
 
-The figures below are measured against the paper as committed immediately
-before the fix, and are historical rather than recomputed: at that revision
+The figures below are historical rather than recomputed. They are measured
+against the paper as committed immediately before the fix, by executing that
+revision's own stripper rather than a reimplementation of it: at that revision
 the source held 132 escaped percent signs against 7 real comment marks, and
-3{,}162 characters --- $3.0\%$ of the body --- were never read by the
-hand-typed-numeral check, the spelled-out-figure check, the counted-noun
+3{,}162 of 103{,}841 characters --- $3.05\%$ of the body --- were never read by
+the hand-typed-numeral check, the spelled-out-figure check, the counted-noun
 derivation or the unit declarations. So the clean results those four checks
-had been reporting were computed over $97.0\%$ of that revision of the paper.
-The fraction varied as the paper grew and we do not claim a single number for
-the whole period the defect was live; what is quoted is one revision, named in
-the provenance record, where the defect was still present.
+had been reporting were computed over $96.96\%$ of that revision. The named
+variant of this paper is affected identically, 3{,}162 characters of
+103{,}710. The defect was present from the commit that introduced the checker
+to the commit that fixed it, a span of 18 days and 103 commits; the fraction
+varied as the paper grew, and the figures quoted are for the final revision in
+that span. A script in the accompanying code reproduces them from history.
 
 The retroactive part matters more than the fix. Nothing in the output
 distinguished a partial pass from a complete one: a check reading most of a

@@ -1165,6 +1165,190 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-12 --- a test that validated a copy of the code under test
+
+**The span-rule test was hollow.** It was written to assert what each stripper
+removed, and it held private copies of their patterns: `CMT` re-declared in
+the test file, `HTML` likewise, and the claim-tag rule importing
+`audit_traceability.CLAIM` directly. Planting the escaped-percent bug in the
+SHIPPED `paper/audit_paper.py` left it green. Worse, `audit_paper.py` itself
+then reported zero failures and zero warnings, because with 3% of the body
+hidden again the figures that would have fired were out of scope. A test that
+validates a copy of the code under test is not a test of that code, and the
+previous commit's "plant-verified against both real defects" has been
+corrected above.
+
+**The fix is structural.** The reduction for the paper now lives in
+`paper/texbody.py` as `strip_tex(tex) -> (body, spans)`, which
+`paper/audit_paper.py` imports; `audit_traceability.visible_with_spans` and
+`check_docs.strip_tags_with_spans` do the same for the documents, and
+`audit_traceability.classify` was repeating the four substitutions inline, so
+it now calls the single reduction too. `check_prose.strip_comment_lines` is
+named for the same reason. Behaviour is byte-identical: all five reported
+counts match across both variants before and after.
+
+The test's predicates are character walkers with backslash parity, not
+regexes, and the claim-tag predicate deliberately does not import `CLAIM` --
+it walks `<!--`, `claim:`, a key, `=`, and a numeric value. Acceptance,
+replayed against the shipped modules rather than copies:
+
+```
+plant: escaped-percent bug in paper/texbody.py
+  removed_span_matches  -> FAIL      stripper_keeps -> FAIL
+  numeral_hidden canary -> FAIL      (audit_paper.py itself still 0/0)
+plant: fence/inline order swapped in audit_traceability.VISIBLE_RULES
+  removed_span_matches  -> FAIL      stripper_keeps -> FAIL
+```
+
+**An end-to-end canary.** `test_the_real_audit_fails_on_a_numeral_hidden_
+behind_a_percent` copies the paper, plants an untraced numeral immediately
+after a printed percentage on the same line, and runs the actual script. With
+the stripper correct the audit reports it; with the stripper broken the audit
+passes while a hand-typed figure sits in the paper. That second state is what
+shipped for 18 days.
+
+**`foo\% real comment`, both directions**, through the shipped `strip_tex`:
+the text after the escaped percent is KEPT, the text after a bare percent is
+REMOVED, and exactly one span comes back, classified as a comment.
+
+**Sweep of every plant test.** 35 tests mention a plant, canary, non-vacuity
+or replay. After the refactor the only one declaring its own `re.compile` is
+`test_no_secret_shaped_strings_in_tracked_tree`, whose patterns ARE the check
+rather than a copy of another module's. The caveat worth stating: the sweep
+finds assigned patterns, so a test inlining `re.search(r"...")` to duplicate a
+shipped pattern would not show up -- which is how
+`test_each_input_stripper_keeps_what_it_must` still held two inline copies
+after the first pass, found by reading it rather than by the sweep.
+
+### 2026-10-12 --- tests that could not fail, and a script that could not say "unchecked"
+
+**Three silent returns.** `test_reharvest_reproduces_committed_dataset_on_
+every_column` and `test_gpqa_protocol_labels_survive_a_reharvest` returned
+bare when `data/cards` was absent, which is every clone; the co-author trailer
+test returned bare when its baseline commit did not resolve, which is every
+shallow clone. All three counted as passes. They skip loudly now, naming the
+missing input and how to supply it.
+
+**The gate prints the three-way split.** `tests/conftest.py` adds a GATE
+SUMMARY line and `pytest.ini` adds `-rs`, so skips are always named. The
+number that mattered for weeks was the one nobody printed.
+
+**`src/audit.py` is three-state.** Its card re-read counted an absent card as
+a MISS, so on every clone it reported "60 misses" and exited 1: "could not
+check" reported as "checked and failed". Now 0 clean, 1 a check ran and
+failed, 3 an input was absent. `test_the_audit_scripts_exit_zero` skips on 3
+and still fails on 1 -- which removes one of the two persistent reds by
+distinguishing the states rather than by weakening the check.
+
+**A gate against tests that check nothing.**
+`test_no_test_can_pass_without_checking_anything` requires every test to hold
+an assert, a `pytest.skip`/`fail`/`raises`, or an explicit `raise`; and a test
+whose assertions are ALL inside a loop must either assert the loop ran or sit
+on a hand-checked allowlist with the reason its iterable cannot be empty. It
+found two tests with no assertion at all --
+`test_logging_failure_never_breaks_the_tool`, a bare call with a
+`# must not raise` comment, and
+`test_every_src_and_verify_module_parses_and_compiles`, which raises
+`AssertionError` explicitly and which my first version of the gate flagged
+wrongly, so the gate was too narrow before it was right. Four tests whose
+loops iterate registry data now assert the loop ran.
+
+### 2026-10-12 --- the 17 artifacts, regenerated and compared
+
+Regenerated into a temp copy from the committed `data/dataset.csv` and
+compared byte for byte. **12 reproduce, 0 differ, 5 blocked. No stale
+artifact.**
+
+| | artifacts |
+| --- | --- |
+| reproduces (12) | predictor_comparison, diagnostics, final_results, interval_shape, interval_shape_finite, bias_correction, bias_correction_empirical, cell_coverage, one_sided_audit, audit_ranking, strata_compare, scheme_envelope |
+| differs (0) | --- |
+| blocked (5) | tuned_baselines (slow: killed at 22 minutes of nested CV), adversarial_audit and census (script-skipped, absent input), real_use_case.csv and independent_check.csv (need `data/prospective_cards`) |
+
+**The exhaustive grep behind the open gap.** Every test was searched for
+`build_artifact`, `main()`, a subprocess into `src/`, `import_module`,
+`runpy`, `read_bytes`, `sha256`, `md5`, `filecmp` and `json.load` over `out/`.
+No test regenerates an artifact and compares it. There is no Makefile and no
+CI configuration in the repository, so there is no regenerate-and-diff step
+anywhere. The gap claim no longer rests on two candidates.
+
+**The cards are now pinned in the repository.** Until today the only hashes
+lived in a manifest inside a snapshot archive outside git, so a clone could
+not tell whether a card corpus it obtained was the one the figures were
+computed from. `data/CARD_MANIFEST.sha256` pins all 178 cards;
+`test_the_card_corpus_matches_its_committed_manifest` verifies them when
+present and skips loudly when not.
+
+**`src/real_use_case.py` refuses to fetch.** A missing prospective card was
+silently downloaded from Hugging Face at regeneration time, so rerunning the
+chain without the cards would rebuild the headline prospective figure from
+whatever the cards say today, with no hash to tell the difference. It now
+raises with the count of missing cards and requires `allow_network=True`,
+which is a deliberate corpus refresh.
+
+**Both gate configurations.** Without the corpus: 3 skipped, and the skips are
+named. With the 2026-09-30 snapshot extracted (hash-verified, `dataset.csv`
+unchanged before and after): **201 passed, 1 failed, 0 skipped** -- the
+re-harvest tests do reproduce the committed dataset from those cards, which I
+had expected might fail since the GPQA protocol split came later. The one
+failure in both configurations is the submission pack's stale LIVE stamp.
+
+**The affiliation folder name leaked while I was writing these skip
+messages**, and then leaked a second time into this very paragraph. The path
+went into `tests/test_all.py` and `src/audit.py`, neither of which is dropped
+from the supplement, and the scrub failed the build on it. I then named it
+here to record that -- and PROVENANCE.md ships too, so the scrub failed again
+on the write-up. Third instance of the same shape this fortnight: the byline
+that leaked by being documented, the orphan-key list that made its own keys
+look referenced, and this. The rule is now explicit in
+`AUDIT_DISCIPLINE.md`: a finding about a forbidden string cannot be recorded
+by quoting the string. Both uses are gone; the snapshot is referred to by what
+it is.
+
+### 2026-10-12 --- the frozen figures, re-measured from history
+
+`tools/measure_percent_defect.py` lifts the four `body = re.sub(...)` lines
+verbatim out of `708a84d:paper/audit_paper.py` and executes them against that
+revision's paper. It exits 3 with a reason on a shallow clone.
+
+| | anonymous | named |
+| --- | --- | --- |
+| escaped percent signs | 132 | 132 |
+| real comment marks | 7 | 0 |
+| N, body that should be read | 103,841 | 103,710 |
+| body that was read | 100,679 | 100,548 |
+| hidden characters | 3,162 | 3,162 |
+| hidden fraction | 3.0450% | 3.0489% |
+| scanned fraction | 96.9550% | 96.9511% |
+
+All four original figures confirmed. **I was wrong to report that the paper's
+`3.0%` needed correcting**: 3.0450 rounds to 3.0 at one decimal. The entry now
+quotes two decimals anyway, states N, and covers both variants. The named
+variant has zero real comments -- the 7 are NeurIPS style comments in the
+anonymous preamble -- so there the broken rule removed nothing but prose.
+
+`708a84d` is confirmed as the parent of `2aa90e4` (`git rev-parse 2aa90e4^`).
+The exposure interval is `db34a29` (2026-09-23, the commit that ADDED
+`paper/audit_paper.py` -- the defect was there from the file's first line) to
+`2aa90e4` (2026-10-11): 18 days, and `git rev-list --count db34a29..2aa90e4`
+= 103 commits. The paper today holds 108 escaped percent signs per variant.
+
+**What the hidden text contained**, read by the fixed stripper at `708a84d`:
+the broken rule removed 98 spans, of which 7 were real comments and **91 were
+ordinary prose** following an escaped percent, 3,253 characters in all. Inside
+them: 9 distinct numerals (`0.9`, `88.2`, `91.0`, `168`, `90.01`, and already-
+exempt ones), and 6 word-number phrases including `five folds` and `one cell`,
+both of which the word gate caught once it could see them. The longest hidden
+fragments are plain argument -- a sentence about OpenLLM v1 scores, the
+name-gate withdrawal passage, the noise-variance passage.
+
+**And a figure in my own correction was wrong.** The remediation entry said
+the second hand-typed site "was found five days later". `git log -S` puts the
+key's registration and first conversion at `0d95501` (2026-10-08) and the
+second site at `59f4cd9` (2026-10-11): three days. Surfaced by the word gate
+only after `days` entered the counted-noun vocabulary, which is the derivation
+earning its place.
+
 ### 2026-10-11 (fifth) --- the entry's own figure was the error it describes
 
 **The 96.8% was a present-tense counterfactual labelled as a historical
@@ -1199,7 +1383,17 @@ and ends on a fence, an inline span is not adjacent to another backtick.
 Content-independent, nothing to loosen, no drift. Retention percentages are
 printed for a reader and deliberately not asserted.
 
-Plant-verified against both real defects:
+**CORRECTION, 2026-10-12.** The claim below was wrong, and wrong in the way
+this entry is about. Both plants were applied to the test's own private copies
+of the strippers' patterns, not to the code that ships. Planting the
+escaped-percent bug in `paper/audit_paper.py` itself left the span test GREEN,
+and left `audit_paper.py` reporting zero problems, because the defect re-hides
+the evidence that would have fired. See the 2026-10-12 entry: the reductions
+now live in importable modules that the gate and the test both use, and the
+acceptance test breaks the shipped module.
+
+Plant-verified against both real defects --- against copies of the patterns,
+which is the defect, not the verification:
 
 ```
 pct    -> the 'LaTeX comment' rule removed a span that is not a LaTeX comment: '%'

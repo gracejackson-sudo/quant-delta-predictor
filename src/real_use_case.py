@@ -78,12 +78,43 @@ UNSEEN = [
 TRAINED_FAMILIES = {"gemma-2", "granite", "llama-3", "mistral", "qwen2.5", "qwen3"}
 
 
-def fetch():
+def fetch(allow_network=False):
+    """Ensure every prospective card is present locally.
+
+    REFUSES BY DEFAULT rather than fetching. Until 2026-10-12 a missing card
+    was silently downloaded from huggingface.co at regeneration time, so
+    rerunning the chain on a checkout without data/prospective_cards would
+    reach the network and rebuild the headline prospective figure from
+    whatever the cards said TODAY -- not from the cards the published figure
+    was computed on, and with no hash to tell the difference. A published
+    number must not depend on an unpinned fetch.
+
+    The cards are pinned in data/CARD_MANIFEST.sha256. Supply them from the
+    snapshot archive, or pass allow_network=True deliberately when
+    REFRESHING the corpus, which is a corpus change and needs the manifest
+    and every derived figure updated with it.
+    """
     os.makedirs(PCARDS, exist_ok=True)
+    missing = []
     for mid in UNSEEN:
         p = os.path.join(PCARDS, mid.replace("/", "_", 1) + ".md")
         if os.path.exists(p) and os.path.getsize(p) > 200:
             continue
+        missing.append((mid, p))
+    if not missing:
+        return
+    if not allow_network:
+        raise SystemExit(
+            f"SKIPPED: {len(missing)} of {len(UNSEEN)} prospective cards are "
+            f"absent from {PCARDS}. This script will NOT download them: the "
+            f"prospective figures are computed from pinned cards "
+            f"(data/CARD_MANIFEST.sha256) and a silent fetch would rebuild "
+            f"them from whatever the cards say today. Extract the card-corpus "
+            f"snapshot archive, or call fetch(allow_network=True) to refresh "
+            f"the corpus deliberately.\n  missing: "
+            + ", ".join(m for m, _ in missing[:5])
+            + (" ..." if len(missing) > 5 else ""))
+    for mid, p in missing:
         subprocess.run(
             ["curl", "-sL", "--max-time", "30",
              f"https://huggingface.co/{mid}/raw/main/README.md", "-o", p],

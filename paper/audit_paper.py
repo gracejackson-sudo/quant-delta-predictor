@@ -37,19 +37,14 @@ print(f"   macros defined in numbers.tex : {len(defined)}")
 print(f"   macros referenced in main.tex : {len(used & defined)}")
 print(f"   referenced-but-undefined      : {len(undef)} {undef if undef else ''}")
 
-# hand-typed numbers in prose (exempt: section refs, years, structural)
-body = re.sub(r"\\input\{[^}]*\}", " ", TEX)
-body = re.sub(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}", " ", body)
-body = re.sub(r"\\begin\{tabular\}.*?\\end\{tabular\}", " ", body, flags=re.S)
-# An ESCAPED \% is a percent sign, not a comment. Reading it as one
-# truncated every line at its first printed percentage and hid 3,162
-# characters -- 3% of the body, 132 sites -- from every check below: the
-# numeral gate, the word gate, the derived-noun check and the unit gate all
-# ran on a body with the text after each percentage deleted. Found
-# 2026-10-11 while deriving which macros count things, when \RefuseBelow\%
-# appeared to be followed by a noun from two lines further down. There are
-# 132 escaped percent signs in this paper and 7 real comments.
-body = re.sub(r"(?<!\\)%.*", " ", body)
+# hand-typed numbers in prose (exempt: section refs, years, structural).
+# The reduction and the list of what it removed both come from
+# paper/texbody.py, which tests/test_all.py imports as well -- so the
+# span-rule test reads THIS reduction rather than a copy of its
+# patterns. It used to hold copies, and planting the escaped-percent
+# bug here left that test green.
+from texbody import strip_tex  # noqa: E402
+body, BODY_SPANS = strip_tex(TEX)
 NUM = re.compile(r"(?<![\w.\\])\d+(?:\.\d+)?(?![\d])")
 EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           "68", "84", "90", "95", "100", "133", "500", "2022", "2023", "2024",
@@ -116,7 +111,15 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # against the current paper would answer a different question,
           # which is the error the entry itself is about. 7 and 3.0 are
           # already exempt above. See PROVENANCE.md 2026-10-11 (fifth).
-          "132", "162", "97.0",
+          # The escaped-percent entry quotes the defect at 708a84d,
+          # measured by executing that revision's own stripper:
+          # 132 escaped percent signs, 7 real comments, 3{,}162 of
+          # 103{,}841 characters hidden in the anonymous variant and
+          # 3{,}162 of 103{,}710 in the named one, 3.05% hidden and
+          # 96.96% scanned, over 18 days and 103 commits. Historical and
+          # deliberately frozen; tools/measure_percent_defect.py
+          # reproduces them from history.
+          "132", "162", "841", "710", "103", "18", "3.05", "96.96",
           "0.9", "168", "90.01", "91.0",
           "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
           "0.7545",    # pre-regen mae_global_lofo
@@ -205,7 +208,7 @@ _WNOUN = ("cells?|rows?|checkpoints?|schemes?|famil(?:y|ies)|seeds?|"
           "questions?|verdicts?|states?|thresholds?|points?|parameters?|"
           "pairs?|bands?|intervals?|predictors?|grounds?|numbers?|losses|"
           "bases|plots?|estimates?|misses|hits|reviewers?|commits?|"
-          "observations?|characters?")
+          "observations?|characters?|days?|commits?")
 WORDNUM = re.compile(
     rf"\b(?:{_WORD})(?:[ -](?:[a-z]+[ -]){{0,2}}(?:{_WNOUN}))\b", re.I)
 # Hyphenated METHOD NAMES and compound adjectives, not counts.
@@ -241,6 +244,11 @@ WORD_EXEMPT = {
     # --- rhetorical singulars in the remediation entry: "converting one
     #     site of a figure", "the one instance in this record"
     "one site", "one instance",
+    # A verified interval between two named commits: the key was registered
+    # and its first site converted on 2026-10-08 (0d95501), the second site
+    # on 2026-10-11 (59f4cd9). An earlier draft said "five days", which the
+    # word gate surfaced once "days" entered the counted-noun vocabulary.
+    "three days",
     # "the one cell whose upper bound does sit below it (w4a16|<2B...)" --
     # definite article, and the cell is named in the same parenthesis
     "one cell",

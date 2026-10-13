@@ -135,10 +135,23 @@ _EXEMPT = re.compile(
     r"\.py\b|\.csv\b|\.json\b|\.tex\b|\.md\b|\.sty\b")
 
 
+def strip_comment_lines(text):
+    """-> text with whole LaTeX comment lines removed.
+
+    A named function because tests/test_all.py exercises it directly. It used
+    to be an inline generator here and the test kept a copy of the condition,
+    which is how paper/audit_paper.py's escaped-percent bug stayed green under
+    a test written for exactly that defect. Dropping whole LINES is why this
+    one is safe where a mid-line `%.*` was not: a line can only START with a
+    percent if the percent is a comment mark.
+    """
+    return "\n".join(l for l in text.split("\n")
+                      if not l.lstrip().startswith("%"))
+
+
 def hits(text):
     """-> [(why, matched_text, context)]."""
-    body = "\n".join(l for l in text.split("\n")
-                     if not l.lstrip().startswith("%"))
+    body = strip_comment_lines(text)
     raw = re.sub(r"\s+", " ", body)
     stripped = re.sub(r"\\paragraph\{[^{}]*\}", " ", body)
     stripped = re.sub(r"\\(?:section|subsection)\{[^{}]*\}", " ", stripped)

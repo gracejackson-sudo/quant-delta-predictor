@@ -86,6 +86,40 @@ EXEMPT = {
 }
 
 
+# Every rule that removes text before the numerals are counted, in order.
+# tests/test_all.py imports VISIBLE_RULES and visible_with_spans rather than
+# keeping copies: a test that validates a copy of these patterns is not a
+# test of this file. See paper/texbody.py for what that cost.
+VISIBLE_RULES = [
+    ("claim tag", CLAIM),
+    # FENCED BLOCKS BEFORE INLINE CODE. The other order let the inline
+    # pattern chew each fence three backticks at a time, so this rule matched
+    # zero bytes on every document and fences were removed by accident of
+    # pairing rather than by the rule written for them.
+    ("fenced block", re.compile(r"```.*?```", re.S)),
+    ("inline code", re.compile(r"`[^`]*`")),
+    ("link target", re.compile(r"\]\([^)]*\)")),
+]
+
+
+def visible_with_spans(doc_text):
+    """-> (visible, spans). Same reduction classify() applies, and a list of
+    (rule, text, start) for every run removed. Lengths are preserved so an
+    offset into `visible` still indexes `doc_text`."""
+    visible = doc_text
+    spans = []
+    for name, pat in VISIBLE_RULES:
+        out, last = [], 0
+        for m in pat.finditer(visible):
+            spans.append((name, m.group(0), m.start()))
+            out.append(visible[last:m.start()])
+            out.append(" " * len(m.group(0)))
+            last = m.end()
+        out.append(visible[last:])
+        visible = "".join(out)
+    return visible, spans
+
+
 def classify(doc_text):
     """-> (tagged_values, untraced_values)
 
@@ -95,18 +129,11 @@ def classify(doc_text):
     report false failures.
     """
     tagged = [float(v) for _, v in CLAIM.findall(doc_text)]
-    # strip the tags, then look at what a reader actually sees
-    visible = CLAIM.sub("", doc_text)
-    # FENCED BLOCKS FIRST. The inline-code pattern ran first and chewed the
-    # fences three backticks at a time, so the fenced-block pattern never
-    # matched anything (measured: 0 bytes removed by it on every document)
-    # and a fence's content was removed by accident of pairing rather than on
-    # purpose. It cost 18 characters of README on 2026-10-11, which is small
-    # and was luck: a fence whose backticks happened to pair differently
-    # would have left shell commands in the scan or eaten prose around them.
-    visible = re.sub(r"```.*?```", " ", visible, flags=re.S)
-    visible = re.sub(r"`[^`]*`", " ", visible)       # inline code
-    visible = re.sub(r"\]\([^)]*\)", " ", visible)   # link targets
+    # ONE reduction, defined once in VISIBLE_RULES above and reported span by
+    # span by visible_with_spans. This function used to repeat the four subs
+    # inline, which is how the fence/inline ordering bug lived here while a
+    # test asserted the ordering against its own copy of the patterns.
+    visible, _spans = visible_with_spans(doc_text)
     untraced = []
     for m in NUM.finditer(visible):
         raw = m.group(0)

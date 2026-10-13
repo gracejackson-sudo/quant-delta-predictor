@@ -419,6 +419,11 @@ def test_small_model_queries_state_measured_cell_coverage(table):
     blanket 'not validated at this size' claim was removed because it was
     itself unverified prose.
     """
+    # The loop IS the test, so an empty table would pass having
+    # checked nothing. Asserted rather than assumed, 2026-10-12.
+    assert len([k for k in table if k != "_meta"]) >= 6, (
+        "the ranking table holds fewer than the 6 schemes this "
+        "corpus has; the loop below would check almost nothing")
     cc = R.load_cell_coverage()
     for s in table:
         if s == "_meta":
@@ -446,6 +451,10 @@ def test_moe_flag(table):
 
 
 def test_every_scheme_reports_support_and_coverage(table):
+    # The loop IS the test; an empty table would pass having checked
+    # nothing. Asserted rather than assumed, 2026-10-12.
+    assert len([k for k in table if k != "_meta"]) >= 6, (
+        "the ranking table holds fewer than the 6 schemes this corpus has")
     for s, e in table.items():
         if s == "_meta":
             continue
@@ -457,6 +466,11 @@ def test_every_scheme_reports_support_and_coverage(table):
 # ------------------------------------------------- standing rule + refusals
 def test_every_scheme_states_its_worst_observed_loss(table):
     """Regardless of tier or rank, no scheme may be silent about its tail."""
+    # The loop IS the test, so an empty table would pass having
+    # checked nothing. Asserted rather than assumed, 2026-10-12.
+    assert len([k for k in table if k != "_meta"]) >= 6, (
+        "the ranking table holds fewer than the 6 schemes this "
+        "corpus has; the loop below would check almost nothing")
     for s in table:
         if s == "_meta":
             continue
@@ -796,9 +810,20 @@ def test_request_log_is_append_only_and_local(tmp_path, monkeypatch):
 
 
 def test_logging_failure_never_breaks_the_tool(monkeypatch):
+    """An unwritable log must not take the tool down with it.
+
+    This used to be a bare call with a `# must not raise` comment, which is a
+    test that cannot fail for the right reason OR announce that it checked
+    anything -- found 2026-10-12 by the no-assertion gate. The assertion is
+    now explicit: the call returns, and it did not somehow create the path.
+    """
     import feedback as F
-    monkeypatch.setattr(F, "REQUEST_LOG", "/nonexistent-dir/x/y.log")
-    F.log_request(["w4a16"])        # must not raise
+    bad = "/nonexistent-dir/x/y.log"
+    monkeypatch.setattr(F, "REQUEST_LOG", bad)
+    assert F.log_request(["w4a16"]) is None, (
+        "log_request should swallow the write failure and return None")
+    assert not os.path.exists(bad), (
+        "log_request created a path under a nonexistent directory")
 
 
 def test_form_spec_covers_what_the_validator_requires():
@@ -1351,148 +1376,300 @@ def test_prose_scanner_catches_its_own_plants():
         f"one to make the scanner pass is the failure mode this guards.")
 
 
-def test_every_removed_span_matches_the_rule_that_removed_it():
-    """Assert WHAT each stripper removed, not how much.
+# ---------------------------------------------------------------------------
+# Independent predicates for the span-rule test below. CHARACTER WALKERS, NOT
+# REGEXES, and deliberately not the patterns under test.
+#
+# The first version of that test held private copies of the strippers'
+# patterns. Planting the escaped-percent bug in paper/audit_paper.py left the
+# test GREEN -- it validated its copy -- and left audit_paper.py itself
+# reporting zero problems, because the defect re-hides the evidence that would
+# have fired. A test that validates a copy of the code under test is not a
+# test of that code. So the reductions are imported from the shipped modules
+# (paper/texbody.py, audit_traceability.visible_with_spans,
+# check_docs.strip_tags_with_spans) and judged by these.
+# ---------------------------------------------------------------------------
+def _escaped(text, i):
+    """True if text[i] is escaped: an ODD number of backslashes precede it."""
+    n = 0
+    j = i - 1
+    while j >= 0 and text[j] == "\\":
+        n += 1
+        j -= 1
+    return n % 2 == 1
 
-    WHY NOT A RETENTION BAND. The first version of this test pinned the
-    retained fraction. It could not do the job, twice over.
 
-    It failed to catch its own target: pinned at 93-98%, the reintroduced
-    escaped-percent bug passed at 93.0%. Tightening to 96-98% worked, but that
-    is a number chosen against one day's content -- add a section dense in
-    printed percentages, retention legitimately moves, somebody widens the
-    band, and it is vacuous again with nothing to say so.
+def _is_comment(span, start, doc):
+    """A LaTeX comment: an unescaped %, then the rest of one line."""
+    if not span.startswith("%"):
+        return False
+    if _escaped(doc, start):
+        return False
+    return "\n" not in span
 
-    And a band cannot see the more interesting failure at all.
-    audit_traceability removed fenced code blocks by backtick pairing rather
-    than by the rule written for them: the quantity removed was right, the
-    mechanism was wrong, and no percentage check can tell. Retention was
-    correct while the stripper was doing something nobody intended.
 
-    So each stripper reports its removed spans with the rule that removed
-    each, and every span must match the construct its rule names. A comment
-    must begin with an UNESCAPED percent. A claim tag must look like a claim
-    tag. A fenced span must begin and end on a fence, and an inline-code span
-    must not cross one. Content-independent, nothing to loosen, and it catches
-    both of the defects found on 2026-10-11: the escaped-percent spans are not
-    comments, and the inline-code spans were straddling fence boundaries.
+def _is_braced_macro(span, start, doc, names=None):
+    """\\name{...} with balanced braces and nothing after the close."""
+    if not span.startswith("\\"):
+        return False
+    i = 1
+    while i < len(span) and (span[i].isalpha() or span[i] == "*"):
+        i += 1
+    if names is not None and span[1:i] not in names:
+        return False
+    if i >= len(span) or span[i] != "{":
+        return False
+    depth = 0
+    for k in range(i, len(span)):
+        if span[k] == "{" and not _escaped(span, k):
+            depth += 1
+        elif span[k] == "}" and not _escaped(span, k):
+            depth -= 1
+            if depth == 0:
+                return k == len(span) - 1
+    return False
 
-    Retention percentages are printed for a reader and deliberately not
-    asserted. They are useful to read and useless to pin.
+
+def _is_env(span, start, doc, name):
+    """\\begin{name} ... \\end{name}, both present and at the ends."""
+    return (span.startswith("\\begin{" + name + "}")
+            and span.endswith("\\end{" + name + "}"))
+
+
+def _is_claim_tag(span, start, doc):
+    """An HTML comment whose body declares a claim. Walked, not matched, and
+    deliberately NOT audit_traceability.CLAIM -- importing the pattern under
+    test is the defect this file exists to avoid."""
+    if not (span.startswith("<!--") and span.endswith("-->")):
+        return False
+    inner = span[4:-3].strip()
+    if not inner.startswith("claim:"):
+        return False
+    rest = inner[len("claim:"):].strip()
+    if "=" not in rest:
+        return False
+    key, _, val = rest.partition("=")
+    if not key.strip():
+        return False
+    val = val.strip()
+    if not val:
+        return False
+    body = val[1:] if val[0] in "+-" else val
+    return body.replace(".", "", 1).isdigit()
+
+
+def _is_html_comment(span, start, doc):
+    return span.startswith("<!--") and span.endswith("-->") and len(span) >= 7
+
+
+def _fence_run(doc, i):
+    """Length of the backtick run that doc[i] belongs to, scanning both ways."""
+    if i < 0 or i >= len(doc) or doc[i] != "`":
+        return 0
+    a = i
+    while a > 0 and doc[a - 1] == "`":
+        a -= 1
+    b = i
+    while b + 1 < len(doc) and doc[b + 1] == "`":
+        b += 1
+    return b - a + 1
+
+
+def _is_fence(span, start, doc):
+    """A fenced block: a run of >=3 backticks at each end, and the runs are
+    not continued by a backtick just outside the span."""
+    if not (span.startswith("```") and span.endswith("```")):
+        return False
+    if start > 0 and doc[start - 1] == "`":
+        return False
+    end = start + len(span)
+    return not (end < len(doc) and doc[end] == "`")
+
+
+def _is_inline_code(span, start, doc):
+    """A single-backtick span of its own: one backtick at each end, no
+    backtick immediately outside either end (which would make it part of a
+    fence, the 2026-10-11 defect), and no fence inside."""
+    if len(span) < 2 or span[0] != "`" or span[-1] != "`":
+        return False
+    if "```" in span:
+        return False
+    if start > 0 and doc[start - 1] == "`":
+        return False
+    end = start + len(span)
+    if end < len(doc) and doc[end] == "`":
+        return False
+    return _fence_run(doc, start) == 1
+
+
+def _is_link_target(span, start, doc):
+    return span.startswith("](") and span.endswith(")") and "(" in span
+
+
+def test_no_test_can_pass_without_checking_anything():
+    """A test with no assertion, or whose only assertions sit inside a loop
+    that may never run, passes while checking nothing.
+
+    This is the same defect as a silent early return, one level in. Three
+    tests returned silently on a missing input until 2026-10-12 and counted
+    as passes; a test whose `for` loop iterates an empty list is the version
+    of that which no skip can announce, because nothing decided to skip.
+
+    PART ONE is exact: every test function must contain an assert, a
+    pytest.skip, a pytest.fail or a pytest.raises somewhere.
+
+    PART TWO is static and therefore advisory, so it is an allowlist rather
+    than a pattern: a test whose assertions are ALL inside a loop body must
+    also assert that the loop ran. The allowlist carries the ones checked by
+    hand, each with the reason its iterable cannot be empty.
     """
-    import re
+    import ast
+    root = os.path.join(os.path.dirname(__file__), "..")
+    # Tests whose assertions are all loop-interior and whose iterable is
+    # fixed in the source, so it cannot be empty. Checked by hand 2026-10-12.
+    LOOP_OK = {
+        # iterates a literal tuple of filenames
+        "test_both_paper_variants_pass_audit_paper_cleanly",
+        "test_both_paper_variants_have_no_mangled_prose",
+        "test_the_audit_scripts_exit_zero",
+        "test_the_error_record_is_complete_across_both_its_halves",
+        "test_the_term_base_checkpoint_does_not_come_back",
+        # iterates a literal range or list of constants
+        "test_the_checkpoint_floor_is_checked_before_anything_else",
+        "test_bootstrap_rounding_does_not_hide_straddle_at_the_85_line",
+        "test_risk_25_does_not_silently_drop_tail_risk_flag",
+        # iterables written out in the source, so they cannot be empty
+        # without the test file itself being edited
+        "test_worst_case_discrepancy_is_always_surfaced",
+        "test_no_banned_prose_in_user_facing_output",
+        "test_download_scripts_are_guarded",
+        "test_verifiers_exit_zero",
+        "test_paper_section6_protocol_sentence_states_both_grounds",
+        "test_audit_scripts_exit_zero",
+        "test_mae_floor_and_headroom_are_deterministic_across_calls",
+        # iterates the three registry keys written out in its own source,
+        # then the documents that quote them; both are checked non-empty by
+        # the surrounding asserts on the values themselves
+        "test_three_shipped_interval_figures_stay_qualified_by_subset",
+    }
+    missing, loop_only = [], []
+    for rel in ("tests/test_all.py", "tests/test_supplement.py",
+                "tests/test_pack.py"):
+        p = os.path.join(root, rel)
+        tree = ast.parse(open(p, encoding="utf-8").read(), filename=rel)
+        for fn in [n for n in tree.body
+                   if isinstance(n, ast.FunctionDef)
+                   and n.name.startswith("test")]:
+            checks = []
+            for node in ast.walk(fn):
+                if isinstance(node, ast.Assert):
+                    checks.append(node)
+                elif (isinstance(node, ast.Call)
+                      and getattr(node.func, "attr", "") in
+                      ("skip", "fail", "raises", "xfail")):
+                    checks.append(node)
+                elif isinstance(node, ast.Raise):
+                    # an explicit `raise AssertionError(...)` is a check. The
+                    # first version of this test missed it and flagged
+                    # test_every_src_and_verify_module_parses_and_compiles,
+                    # which does exactly that inside an except clause.
+                    checks.append(node)
+            if not checks:
+                missing.append(f"  {rel}::{fn.name} contains no assert, "
+                               f"pytest.skip, pytest.fail or pytest.raises")
+                continue
+            # is every check inside a for/while body?
+            loops = [n for n in ast.walk(fn)
+                     if isinstance(n, (ast.For, ast.While))]
+            if not loops:
+                continue
+            inner = set()
+            for lp in loops:
+                for n in ast.walk(lp):
+                    inner.add(id(n))
+            if all(id(c) in inner for c in checks) and fn.name not in LOOP_OK:
+                loop_only.append(
+                    f"  {rel}::{fn.name} asserts only inside a loop; if the "
+                    f"iterable is ever empty it passes having checked "
+                    f"nothing")
+    assert not missing, (
+        "these tests cannot fail, so they cannot pass either:\n"
+        + "\n".join(missing))
+    assert not loop_only, (
+        "these tests assert only inside a loop body and are not on the "
+        "hand-checked allowlist. Either assert that the loop ran -- a count, "
+        "or a check on the iterable before it -- or add the test to LOOP_OK "
+        "with the reason its iterable cannot be empty:\n"
+        + "\n".join(loop_only))
+
+
+def test_every_removed_span_matches_the_rule_that_removed_it():
+    """Assert WHAT each stripper removed, not how much, against the SHIPPED
+    reduction rather than a copy of its patterns.
+
+    WHY NOT A RETENTION BAND. A band could not do the job twice over. It
+    missed its own target: pinned 93-98%, the replanted escaped-percent bug
+    scored 93.0%. And it is blind to a mechanism failure --
+    audit_traceability removed fenced blocks by backtick pairing rather than
+    by the rule written for them, and the quantity removed was correct.
+
+    WHY NOT A PRIVATE COPY OF THE PATTERNS. That was the first version of
+    this test, and planting the bug in paper/audit_paper.py left it green.
+    The reductions are now imported from the modules that ship them, and the
+    predicates above are character walkers with backslash parity.
+
+    Acceptance, replayed in the companion test below: break the shipped
+    stripper and this fails.
+    """
     root = os.path.join(os.path.dirname(__file__), "..")
     sys.path.insert(0, os.path.join(root, "src"))
-    bad = []
-    report = []
-
-    def check(label, text, rules):
-        """rules: [(name, compiled pattern, predicate(span_text, start))]"""
-        removed = 0
-        for name, pat, ok in rules:
-            for m in pat.finditer(text):
-                removed += len(m.group(0))
-                if not ok(m.group(0), m.start(), text):
-                    bad.append(f"  {label}: the {name!r} rule removed a span "
-                               f"that is not a {name}: "
-                               f"{m.group(0)[:70]!r}")
-        report.append((label, len(text), len(text) - removed))
-
-    # ---- paper/audit_paper.py
-    IN_ = re.compile(r"\\input\{[^}]*\}")
-    XREF = re.compile(r"\\(?:label|ref|cite\w*|eprint|url|href)\{[^}]*\}")
-    TAB = re.compile(r"\\begin\{tabular\}.*?\\end\{tabular\}", re.S)
-    CMT = re.compile(r"(?<!\\)%.*")
-    for v in ("neurips_main.tex", "main.tex"):
-        t = open(os.path.join(root, "paper", v), encoding="utf-8").read()
-        check(f"audit_paper / {v}", t, [
-            ("\\input", IN_,
-             lambda g, i, t: g.startswith("\\input{") and g.endswith("}")),
-            ("cross-reference", XREF,
-             lambda g, i, t: g.startswith("\\") and g.endswith("}")
-             and "{" in g),
-            ("tabular block", TAB,
-             lambda g, i, t: g.startswith("\\begin{tabular}")
-             and g.endswith("\\end{tabular}")),
-            # the 2026-10-11 defect: an ESCAPED percent is not a comment
-            ("LaTeX comment", CMT,
-             lambda g, i, t: g.startswith("%") and "\n" not in g
-             and (i == 0 or t[i - 1] != "\\")),
-        ])
-
-    # ---- src/check_prose.py drops whole lines and heading titles
-    PARA = re.compile(r"\\paragraph\{[^{}]*\}")
-    HEAD = re.compile(r"\\(?:section|subsection)\{[^{}]*\}")
-    for v in ("neurips_main.tex", "main.tex"):
-        t = open(os.path.join(root, "paper", v), encoding="utf-8").read()
-        for ln, line in enumerate(t.split("\n"), 1):
-            if line.lstrip().startswith("%") and not line.lstrip().startswith("\\"):
-                continue                      # a real comment line, correct
-            if line.lstrip().startswith("%"):
-                bad.append(f"  check_prose / {v}:{ln}: dropped a line that "
-                           f"starts with an escaped percent")
-        check(f"check_prose headings / {v}", t, [
-            ("paragraph title", PARA,
-             lambda g, i, t: g.startswith("\\paragraph{") and g.endswith("}")),
-            ("section title", HEAD,
-             lambda g, i, t: g.startswith("\\") and g.endswith("}")),
-        ])
-
-    # ---- src/audit_traceability.py
+    sys.path.insert(0, os.path.join(root, "paper"))
     import audit_traceability as AT
-    FENCE = re.compile(r"```.*?```", re.S)
-    INLINE = re.compile(r"`[^`]*`")
-    LINK = re.compile(r"\]\([^)]*\)")
+    import check_docs as CD
+    from texbody import strip_tex
+
+    XREF = {"label", "ref", "cite", "citep", "citet", "eprint", "url", "href"}
+    judge = {
+        "input": lambda g, i, d: _is_braced_macro(g, i, d, {"input"}),
+        "cross-reference": lambda g, i, d: _is_braced_macro(g, i, d, XREF),
+        "tabular block": lambda g, i, d: _is_env(g, i, d, "tabular"),
+        "comment": _is_comment,
+        "claim tag": _is_claim_tag,
+        "fenced block": _is_fence,
+        "inline code": _is_inline_code,
+        "link target": _is_link_target,
+        "HTML comment": _is_html_comment,
+    }
+
+    bad, report = [], []
+
+    def run(label, doc, spans):
+        for rule, span, start in spans:
+            assert rule in judge, f"no predicate for the {rule!r} rule"
+            if not judge[rule](span, start, doc):
+                bad.append(f"  {label}: the {rule!r} rule removed a span that "
+                           f"is not a {rule}: {span[:70]!r} at {start}")
+        removed = sum(len(s) for _, s, _ in spans)
+        report.append((label, len(doc), len(doc) - removed))
+
+    for v in ("neurips_main.tex", "main.tex"):
+        t = open(os.path.join(root, "paper", v), encoding="utf-8").read()
+        run(f"texbody / {v}", t, strip_tex(t)[1])
+
     for f in AT.OUTWARD:
         p = os.path.join(root, f)
         if not os.path.exists(p):
             continue
         t = open(p, encoding="utf-8").read()
-        check(f"traceability / {f}", t, [
-            ("claim tag", AT.CLAIM,
-             lambda g, i, t: g.startswith("<!--") and g.endswith("-->")
-             and "claim:" in g),
-        ])
-        # fences are stripped first, so classify inline code on what is LEFT
-        after_fence = FENCE.sub(lambda m: " " * len(m.group(0)), t)
-        check(f"traceability fences / {f}", t, [
-            ("fenced block", FENCE,
-             lambda g, i, t: g.startswith("```") and g.endswith("```")),
-        ])
-        # The 2026-10-11 defect: inline code was stripped BEFORE fences, so
-        # the inline pattern matched the first two backticks of each opening
-        # fence. Such a span contains no backtick and no fence -- it IS part
-        # of one -- so the test is adjacency: a genuine inline span has a
-        # non-backtick on each side. Checking for "```" inside the span does
-        # not catch it, which is how the first version of this check passed
-        # with the bug replanted.
-        for m in INLINE.finditer(after_fence):
-            g = m.group(0)
-            before = after_fence[m.start() - 1] if m.start() else ""
-            after = (after_fence[m.end()]
-                     if m.end() < len(after_fence) else "")
-            if "```" in g or before == "`" or after == "`":
-                bad.append(f"  traceability / {f}: an 'inline code' span is "
-                           f"part of a fence rather than a span of its own: "
-                           f"{g[:40]!r} between {before!r} and {after!r}")
-        check(f"traceability links / {f}", t, [
-            ("link target", LINK,
-             lambda g, i, t: g.startswith("](") and g.endswith(")")),
-        ])
+        run(f"traceability / {f}", t, AT.visible_with_spans(t)[1])
 
-    # ---- src/check_docs.py
-    import check_docs as CD
-    HTML = re.compile(r"<!--.*?-->", re.S)
     for f in CD.DOCS:
         t = CD.read(f)
-        check(f"check_docs / {f}", t, [
-            ("HTML comment", HTML,
-             lambda g, i, t: g.startswith("<!--") and g.endswith("-->")),
-        ])
+        run(f"check_docs / {f}", t, CD.strip_tags_with_spans(t)[1])
 
-    for label, n_in, n_kept in report[:8]:
-        print(f"   {label:<44} {n_in:>7} in, {n_kept:>7} kept "
-              f"({n_kept / n_in:.1%})" if n_in else label)
+    for label, n_in, n_kept in report[:6]:
+        print(f"   {label:<40} {n_in:>7} in, {n_kept:>7} kept "
+              f"({n_kept / n_in:.1%})")
     assert not bad, (
         "a stripper removed a span that is not the construct its rule names. "
         "The quantity removed may be perfectly normal; what is wrong is the "
@@ -1500,58 +1677,121 @@ def test_every_removed_span_matches_the_rule_that_removed_it():
         + "\n".join(bad))
 
 
+def test_the_real_audit_fails_on_a_numeral_hidden_behind_a_percent():
+    """END-TO-END CANARY. The checks are only worth their output if the real
+    script, run the way the gate runs it, fails on the defect class.
+
+    The escaped-percent bug was invisible twice over: the span test validated
+    its own copy of the pattern, and paper/audit_paper.py reported zero
+    problems BECAUSE the defect hid the evidence that would have fired. So
+    this plants an untraced numeral immediately after a printed percentage on
+    the same line -- exactly the position the broken stripper deleted -- in a
+    COPY of the paper, and runs the actual script against it.
+
+    With the stripper correct, the numeral is in scope and the audit fails.
+    With the stripper broken, the numeral is cut away with the rest of the
+    line and the audit passes while a hand-typed figure sits in the paper.
+    That second state is what shipped for 18 days.
+    """
+    import shutil
+    import subprocess
+    import tempfile
+    root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+    with tempfile.TemporaryDirectory() as tmp:
+        shutil.copytree(os.path.join(root, "paper"),
+                        os.path.join(tmp, "paper"))
+        src = os.path.join(tmp, "paper", "neurips_main.tex")
+        s = open(src, encoding="utf-8").read()
+        # A line that already prints a percentage, so the canary sits
+        # behind one rather than inventing the condition. Kept short so it
+        # cannot straddle a line break in either variant.
+        anchor = "coverage is \\CalibCov\\%"
+        assert anchor in s, (
+            "the canary needs a line with a printed percentage on it; "
+            f"{anchor!r} is no longer in the paper, so pick another anchor")
+        s = s.replace(anchor, anchor + " (canary 4567.89 untraced)", 1)
+        open(src, "w", encoding="utf-8").write(s)
+
+        r = subprocess.run(
+            [sys.executable, os.path.join(tmp, "paper", "audit_paper.py"),
+             "neurips_main.tex"],
+            cwd=root, capture_output=True, text=True)
+        assert "4567.89" in r.stdout, (
+            "paper/audit_paper.py did not report a numeral planted after a "
+            "printed percentage on the same line. Either the comment "
+            "stripper is reading an escaped percent as a comment again -- the "
+            "2026-10-11 defect -- or the numeral gate stopped running.\n"
+            f"exit {r.returncode}\n{r.stdout[-2500:]}{r.stderr[-800:]}")
+        assert r.returncode != 0 or "4567.89" in r.stdout, (
+            "the numeral was reported but the script exited 0")
+
+
 def test_each_input_stripper_keeps_what_it_must():
-    """Plant a construct every stripper should keep, and confirm it survives.
+    """Plant a construct every stripper should keep, and run the SHIPPED
+    stripper over it.
 
     The \\% case is the template: an escaped construct that looks like syntax
-    to a naive regex. These probes cover the same shape in each stripper.
+    to a naive regex. Every probe below calls the function the gate calls --
+    paper/texbody.strip_tex, audit_traceability.visible_with_spans,
+    check_docs.strip_tags, check_prose's own line filter -- because the first
+    version of this test inlined copies of their patterns and stayed green
+    when the shipped code was broken.
+
+    Each probe asserts both directions: the construct that must survive does,
+    and the construct the stripper exists for still goes. "Keeps everything"
+    must not pass either.
     """
-    import re
     root = os.path.join(os.path.dirname(__file__), "..")
     sys.path.insert(0, os.path.join(root, "src"))
+    sys.path.insert(0, os.path.join(root, "paper"))
+    import audit_traceability as AT
+    import check_docs as CD
+    import check_prose as CP
+    from texbody import strip_tex
     bad = []
 
-    # 1. audit_paper.py -- an escaped percent must not start a comment.
-    probe = "coverage is 93.5\\% and twelve cells cleared the floor\n"
-    out = re.sub(r"(?<!\\)%.*", " ", probe)
-    if "twelve cells" not in out:
-        bad.append("audit_paper: text after an escaped \\% is being dropped "
-                   "(this is the 2026-10-11 bug, reintroduced)")
-    # and a REAL comment must still go
-    if "secret" in re.sub(r"(?<!\\)%.*", " ", "visible % secret\n"):
-        bad.append("audit_paper: real comments are no longer stripped")
+    # 1. paper/texbody.py -- an escaped percent is a percent sign.
+    probe = "line one foo\\% real comment\nline two % an actual comment\n"
+    body, spans = strip_tex(probe)
+    if "real comment" not in body:
+        bad.append("texbody: text after an ESCAPED percent is being dropped "
+                   "-- the 2026-10-11 defect, reintroduced")
+    if "an actual comment" in body:
+        bad.append("texbody: a real comment is no longer stripped")
+    rules = [n for n, _, _ in spans]
+    if rules != ["comment"]:
+        bad.append(f"texbody: expected exactly one comment span on the probe, "
+                   f"got {rules}")
 
-    # 2. check_prose.py -- strips whole comment lines, so a mid-line escaped
-    #    percent is safe; assert that rather than assume it.
-    body = "a line with 50\\% and nine rows\n% a real comment line\n"
-    kept = "\n".join(l for l in body.split("\n")
-                     if not l.lstrip().startswith("%"))
+    # 2. src/check_prose.py drops whole comment LINES, which is why a
+    #    mid-line escaped percent is safe there. Exercise its own filter.
+    pl = "a line with 50\\% and nine rows\n% a real comment line\n"
+    kept = CP.strip_comment_lines(pl)
     if "nine rows" not in kept:
         bad.append("check_prose: a mid-line escaped percent now truncates")
     if "a real comment line" in kept:
         bad.append("check_prose: comment lines are no longer dropped")
 
-    # 3. audit_traceability.py -- a figure in prose must survive; one inside
-    #    inline code must not. And an unpaired backtick must not swallow the
-    #    document.
-    import audit_traceability as AT
-    def visible(s):
-        v = AT.CLAIM.sub("", s)
-        v = re.sub(r"```.*?```", " ", v, flags=re.S)
-        v = re.sub(r"`[^`]*`", " ", v)
-        return re.sub(r"\]\([^)]*\)", " ", v)
-    if "41.7" not in visible("coverage reached 41.7 points\n"):
+    # 3. src/audit_traceability.py -- prose figures survive, inline code and
+    #    fenced blocks do not, and a fence is removed as a block.
+    def vis(x):
+        return AT.visible_with_spans(x)[0]
+    if "41.7" not in vis("coverage reached 41.7 points\n"):
         bad.append("traceability: a figure in plain prose is being stripped")
-    if "0.4.1" in visible("pinned at `llmcompressor==0.4.1` here\n"):
+    if "0.4.1" in vis("pinned at `llmcompressor==0.4.1` here\n"):
         bad.append("traceability: inline code is no longer stripped")
-    # fenced blocks must be removed as blocks, not chewed by the inline rule
-    fenced = visible("before\n```bash\nrun --flag 7\n```\nafter 12.5 points\n")
+    fenced_src = "before\n```bash\nrun --flag 7\n```\nafter 12.5 points\n"
+    fenced, fspans = AT.visible_with_spans(fenced_src)
     if "12.5" not in fenced or "run --flag" in fenced:
-        bad.append("traceability: fenced blocks are not being removed cleanly "
-                   f"(got {fenced!r})")
+        bad.append(f"traceability: fenced blocks not removed cleanly "
+                   f"({fenced!r})")
+    if not any(n == "fenced block" for n, _, _ in fspans):
+        bad.append("traceability: the fenced-block RULE removed nothing on a "
+                   "document with a fence in it -- the block is being eaten "
+                   "by the inline-code rule again")
 
-    # 4. check_docs.py -- an unclosed HTML comment must not swallow the rest.
-    import check_docs as CD
+    # 4. src/check_docs.py -- an unclosed HTML comment must not swallow.
     if "the rest of it" not in CD.strip_tags("start\n<!-- unclosed\n"
                                              "the rest of it\n"):
         bad.append("check_docs: an unclosed <!-- now swallows the document")
@@ -1561,6 +1801,63 @@ def test_each_input_stripper_keeps_what_it_must():
     assert not bad, ("an input stripper is removing text the check needs, or "
                      "has stopped removing what it should:\n  "
                      + "\n  ".join(bad))
+
+
+def test_the_card_corpus_matches_its_committed_manifest():
+    """The cards are the raw input to every published figure and they are not
+    in git. Until 2026-10-12 nothing in the repository pinned them either:
+    the only hashes lived in MANIFEST.sha256 inside a snapshot archive OUTSIDE
+    git, so a clone had no way to tell whether a card corpus it obtained was
+    the one the figures were computed from.
+
+    data/CARD_MANIFEST.sha256 now pins all 178 cards under data/cards and
+    data/prospective_cards. This verifies them when they are present and
+    skips loudly when they are not -- the convention in AUDIT_DISCIPLINE.md.
+
+    IF THIS FAILS: a card changed. That is a corpus change, so every derived
+    figure moves with it. Rerun the chain, check what moved, and update the
+    manifest in the same commit.
+    """
+    import hashlib
+    root = os.path.join(os.path.dirname(__file__), "..")
+    man = os.path.join(root, "data", "CARD_MANIFEST.sha256")
+    assert os.path.exists(man), "data/CARD_MANIFEST.sha256 is missing"
+    want = {}
+    for line in open(man, encoding="utf-8"):
+        line = line.strip()
+        if not line:
+            continue
+        h, _, rel = line.partition("  ")
+        want[rel.lstrip("./")] = h
+    assert len(want) >= 170, (
+        f"the manifest pins only {len(want)} cards; it covered 178 when it "
+        f"was committed, so it has been truncated rather than updated")
+
+    present = [r for r in want if os.path.exists(os.path.join(root, r))]
+    if not present:
+        import pytest
+        pytest.skip(
+            f"none of the {len(want)} pinned cards is present in this "
+            f"checkout. The corpus is deliberately not committed; extract "
+            f"the card-corpus snapshot archive into data/ to verify it.")
+
+    bad, absent = [], []
+    for rel, h in sorted(want.items()):
+        p = os.path.join(root, rel)
+        if not os.path.exists(p):
+            absent.append(rel)
+            continue
+        got = hashlib.sha256(open(p, "rb").read()).hexdigest()
+        if got != h:
+            bad.append(f"  {rel}\n    pinned {h}\n    actual {got}")
+    assert not bad, (
+        f"{len(bad)} card(s) do not match data/CARD_MANIFEST.sha256. A card "
+        f"change is a corpus change and every derived figure moves with "
+        f"it:\n" + "\n".join(bad[:10]))
+    assert not absent, (
+        f"{len(present)} pinned cards are present and {len(absent)} are "
+        f"missing. A partial corpus is worse than none: the harvest would "
+        f"silently produce fewer rows. Missing: {absent[:5]}")
 
 
 def test_cards_and_quantized_checkpoints_agree_on_this_corpus():
@@ -1763,11 +2060,27 @@ def test_the_audit_scripts_exit_zero():
         r = subprocess.run([sys.executable, path], capture_output=True,
                            text=True, cwd=root,
                            env={**os.environ, "OMP_NUM_THREADS": "1"})
+        tail = "\n".join((r.stdout + r.stderr).strip().split("\n")[-25:])
+        # EXIT 3 MEANS "AN INPUT WAS ABSENT", not "a check failed". src/
+        # audit.py re-reads 60 sampled rows against their source cards, and
+        # data/cards is deliberately not committed -- so on every clone this
+        # test used to fail on a tree with nothing wrong with it. The script
+        # is three-state since 2026-10-12; a skip here records that the
+        # property was not checked rather than pretending it holds.
+        if r.returncode == 3:
+            import pytest
+            pytest.skip(
+                f"src/{name} exited 3: an input it needs is absent in this "
+                f"checkout, so some of its checks could not run. Extract "
+                f"the committed card-corpus snapshot archive into data/ to "
+                f"exercise them. "
+                f"Unchecked items it named:\n{tail}")
         assert r.returncode == 0, (
             f"src/{name} exited {r.returncode}. It is in README's reproduce "
-            f"section, so a reader runs it.\n"
-            f"--- last 25 lines ---\n"
-            + "\n".join((r.stdout + r.stderr).strip().split("\n")[-25:]))
+            f"section, so a reader runs it. Exit 1 means a check RAN and "
+            f"failed; exit 3 means an input was absent and this test would "
+            f"have skipped.\n"
+            f"--- last 25 lines ---\n{tail}")
 
 
 def test_no_dead_macros_in_numbers_tex():
@@ -2959,7 +3272,13 @@ def test_no_co_author_trailer_in_new_commits():
         ["git", "cat-file", "-t", _TRAILER_GATE_BASELINE],
         cwd=root, capture_output=True, text=True)
     if r.returncode != 0 or r.stdout.strip() != "commit":
-        return
+        import pytest
+        pytest.skip(f"the trailer-gate baseline {_TRAILER_GATE_BASELINE[:7]} "
+                    f"does not resolve in this clone (shallow clone, or a "
+                    f"worktree without the history). Until 2026-10-12 this "
+                    f"returned silently and counted as a pass, so a shallow "
+                    f"CI clone would have reported the trailer gate green "
+                    f"without checking a single commit.")
     r = subprocess.run(
         ["git", "log", f"{_TRAILER_GATE_BASELINE}..HEAD", "--format=%H%x00%s%x00%B%x00---END---"],
         cwd=root, capture_output=True, text=True)
@@ -3935,11 +4254,13 @@ def test_paper_audit_reads_the_live_registry_not_hard_coded_literals():
 def test_every_src_and_verify_module_parses_and_compiles():
     import ast
     root = os.path.join(os.path.dirname(__file__), "..")
+    seen = 0
     for sub in ("src", "verify"):
         d = os.path.join(root, sub)
         for name in sorted(os.listdir(d)):
             if not name.endswith(".py"):
                 continue
+            seen += 1
             path = os.path.join(d, name)
             src = open(path).read()
             try:
@@ -3950,6 +4271,11 @@ def test_every_src_and_verify_module_parses_and_compiles():
                     f"{sub}/{name} does not parse: {e.__class__.__name__} "
                     f"at line {e.lineno}: {e.msg}"
                 )
+    # The loop is the test, so an empty listdir would pass having compiled
+    # nothing. 40 modules on 2026-10-12; the floor is deliberately loose.
+    assert seen >= 30, (
+        f"only {seen} modules were compiled, which is too few for this "
+        f"repository -- src/ or verify/ is not where this test thinks it is")
 
 
 # ---------------------------------------------------------------------------
@@ -3971,7 +4297,12 @@ def test_reharvest_reproduces_committed_dataset_on_every_column():
     root = os.path.join(os.path.dirname(__file__), "..")
     cards = os.path.join(root, "data", "cards")
     if not os.path.isdir(cards) or not os.listdir(cards):
-        return  # corpus not present in this checkout; nothing to compare
+        import pytest
+        pytest.skip("data/cards is absent, so the re-harvest has nothing to "
+                    "read. The card corpus is deliberately not committed "
+                    "(PROVENANCE.md 2026-09-27); extract the snapshot in "
+                    "the card-corpus snapshot archive to run this. Until "
+                    "2026-10-12 this returned silently and counted as a pass.")
 
     sys.path.insert(0, os.path.join(root, "src"))
     import harvest
@@ -4027,7 +4358,11 @@ def test_gpqa_protocol_labels_survive_a_reharvest():
     root = os.path.join(os.path.dirname(__file__), "..")
     cards = os.path.join(root, "data", "cards")
     if not os.path.isdir(cards) or not os.listdir(cards):
-        return
+        import pytest
+        pytest.skip("data/cards is absent; the label check has no "
+                    "cards to re-read. Extract the snapshot in "
+                    "the card-corpus snapshot archive. Until 2026-10-12 "
+                    "this returned silently and counted as a pass.")
 
     sys.path.insert(0, os.path.join(root, "src"))
     import harvest

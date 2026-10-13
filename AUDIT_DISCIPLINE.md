@@ -347,37 +347,102 @@ pages later still said "only two cells are the same in both". Registering the
 key and converting one of its two sites looked like closing the item. Nothing
 could tell the difference.
 
-### A threshold chosen by reasoning is untested until the defect is replayed
+### A gate is untested until its own defect is replayed against it
 
-Four times on 2026-10-11 a gate was written, reasoned about, believed, and
-found vacuous the moment the defect it was written for was replayed against
-it.
+One entry per instance, dated. A gate written against an argument about a
+defect, rather than against the defect, has not been tested -- and in every
+case below it was believed, reported, and then found hollow the moment the
+defect was replayed.
 
-- A retention band of 93-98% for the escaped-percent bug. The bug costs 2.9
-  points; reintroducing it scored 93.0%, inside the band.
-- A noun-phrase declaration set that produced nine false positives on correct
-  prose, because the declarations were whole phrases where the paper writes
-  modifiers.
-- An inline-code predicate that looked for "```" inside the removed span. The
-  defect produces a span that contains no fence because it IS part of one, so
-  the check passed with the bug replanted.
-- And earlier in the week, a plant set that the prose scanner failed three
-  times before the plants were made the primary artifact.
+**2026-10-08 --- the prose scanner's plants.** The scanner failed its own
+plant set three times: `re.I` defeated a case-sensitive pattern, one pattern
+did not match the defect it was written for, and one plant was miscalibrated.
+Fixed by making the plant set the primary artifact and the patterns the thing
+that must satisfy it.
 
-The common shape is that the number or the predicate was derived from an
-argument about the defect rather than from the defect. **Reasoning about the
-threshold is exactly what produced 93%.** So: every threshold, band or
-predicate must be validated by replaying the specific defect it exists to
-catch, and a gate whose target cannot be replayed is not yet a gate.
+**2026-10-11 --- the retention band.** Pinned at 93-98% to catch the
+escaped-percent bug. The bug costs 2.9 points, so replaying it scored 93.0%
+and passed. Tightened to 96-98%, which does fail on it -- and that band was
+then withdrawn anyway, because a percentage cannot see a mechanism failure
+(see the fence entry below).
 
-The corollary is that bands are a weak form. A quantity can be right while the
-mechanism is wrong --- `audit_traceability` removed fenced blocks by backtick
-pairing rather than by the rule written for them, and the amount removed was
-correct --- so where a check reduces its input, assert WHAT was removed against
-the construct each rule names, not how much. That has no number to loosen and
-does not drift with content.
+**2026-10-11 --- the inline-code predicate.** Written to catch fenced blocks
+being eaten by the inline-code rule, by looking for ``` inside the removed
+span. The defect produces a span that contains no fence *because it is part of
+one* -- the first two backticks of an opening fence, with nothing between
+them. It passed with the bug replanted. The working predicate is adjacency: a
+genuine inline span has a non-backtick on each side.
 
-### The escaped percent sign: 3% of the paper was never read
+**2026-10-11 --- the artifact freshness gate.** It compares mtimes, and was
+believed to cover staleness. Replaying the unsafe direction -- change the
+corpus content, restore the timestamp -- passed. It covers one direction of
+two. `data/dataset.csv` is now pinned by content hash as well.
+
+**2026-10-12 --- the span-rule test, the sharpest of them.** Written
+explicitly to assert what each stripper removed, and it held private copies of
+the strippers' patterns. Planting the escaped-percent bug in the shipped
+`paper/audit_paper.py` left the test green, and left `audit_paper.py` itself
+reporting zero problems, because the defect re-hides the evidence that would
+have fired. A test that validates a copy of the code under test is not a test
+of that code. The reductions now live in importable modules
+(`paper/texbody.py`, `audit_traceability.visible_with_spans`,
+`check_docs.strip_tags_with_spans`) that the gate and the test both import,
+and the predicates are character walkers with backslash parity rather than a
+second copy of the regexes. Acceptance: breaking either shipped module fails
+three tests.
+
+**The rule.** Every threshold, band or predicate must be validated by
+replaying the specific defect it exists to catch, against the code that
+ships. A gate whose target cannot be replayed is not yet a gate, and a gate
+whose replay exercises a copy is a test of the copy.
+
+**Two things that do not belong in this list**, recorded so the list is not
+padded. The noun-phrase declaration set that produced nine false positives on
+correct prose was a predicate too broad, found by running it -- no defect was
+replayed and none was missed. And the three tests that returned silently on a
+missing input could not fail at all; that is the no-assertion class, which
+`test_no_test_can_pass_without_checking_anything` now covers.
+
+The corollary to all of this is that bands are a weak form. A quantity can be
+right while the mechanism is wrong -- `audit_traceability` removed fenced
+blocks by backtick pairing rather than by the rule written for them, and the
+amount removed was correct -- so where a check reduces its input, assert WHAT
+was removed against the construct each rule names, not how much. That has no
+number to loosen and does not drift with content.
+
+### A test with an absent input skips loudly; it never passes and never errors
+
+Three tests returned silently when `data/cards` or a git baseline was missing,
+and counted as passes. The gate reported "198 passed" over a suite in which
+two tests had read nothing, and a shallow clone would have reported the
+co-author trailer gate green without reading a commit.
+
+**The convention.** A check whose input is absent must skip, name the missing
+input, and say how to supply it. It must not pass, because passing asserts a
+property that was never examined. It must not error either, because "could not
+check" and "checked and failed" are different states and conflating them
+trains a reader to ignore the red -- which is exactly what
+`src/audit.py` did, reporting 60 card-reread misses and exiting 1 on every
+clone, where the cards are deliberately not committed. That script is
+three-state now: 0 clean, 1 a check ran and failed, 3 an input was absent.
+
+Scripts follow the same rule: print `SKIPPED:` with the path, and exit 3.
+`src/census.py` and `src/adversarial_audit.py` already did.
+
+**Slow artifacts are a separate target.** `src/tune_baselines.py` runs nested
+cross-validation and takes longer than twenty minutes, so it does not belong
+in a gate anyone runs before committing. Regeneration checks over it are a
+pre-submission step, reported as such, and the gate covers the artifacts that
+regenerate in seconds.
+
+**The mtime freshness check is not meaningful on a clone.** Checkout gives
+every file the same timestamp, so "artifact older than dataset" is decided by
+ordering within one second. What replaces it there is the content hash of
+`data/dataset.csv` plus the byte-for-byte regeneration comparison; the mtime
+check is meaningful only in a working tree where files were written at
+different times.
+
+### The escaped percent sign: 3% of the paper was never read### The escaped percent sign: 3% of the paper was never read
 
 `paper/audit_paper.py` built its scan body with `re.sub(r"%.*", " ", body)`.
 An escaped `\%` is a percent sign, not a comment, and there are 132 of them in
@@ -431,6 +496,25 @@ vocabulary already covers it.
 commoner in this paper as verbs and adjectives than as count heads, so the
 vocabulary carries only the plurals. The derivation produces plural heads
 anyway, which is why the mechanical filter and the vocabulary agree.
+
+### A finding about a forbidden string cannot be recorded by quoting it
+
+Three instances now, and the third was while writing up the second.
+
+- Documenting a PDF byline leak put the byline verbatim into a tracked file,
+  and the scrub failed the next build on `PROVENANCE.md`.
+- Writing the orphan-key list into `PROVENANCE.md` made six of those keys
+  match the check that identified them, because its criterion was "the key
+  string appears in a tracked file".
+- On 2026-10-12 the project folder name went into two shipped files inside
+  skip messages; the scrub caught it; and the paragraph recording that caught
+  it again, because `PROVENANCE.md` ships as well.
+
+**The rule.** Record what class the string belongs to and where it was, not
+the string. "The affiliation folder name" is as useful to a reader as the path
+and cannot fail the build. The same applies to any check whose criterion is
+"this text must not appear": its findings have to be written in terms that do
+not instantiate the thing being forbidden.
 
 ### A check that reads the tree cannot be documented in the tree
 

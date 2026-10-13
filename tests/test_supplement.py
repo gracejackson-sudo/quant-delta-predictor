@@ -329,6 +329,11 @@ PLANT_VARIANTS = [
 
 
 def test_scan_catches_every_ident_variant_the_audit_named(tmp_path):
+    # The plant set IS the artifact here, so an empty one would pass having
+    # scanned nothing. Asserted rather than assumed, 2026-10-12.
+    assert len(PLANT_VARIANTS) >= 8, (
+        f"PLANT_VARIANTS holds {len(PLANT_VARIANTS)} plants; the audit named "
+        f"more than that and the scrub is only as good as this list")
     """Direct unit test of the scan(): plant one variant per file and
     check every one is caught. A future edit that drops a regex would
     make one of these silently pass, and this test breaks."""

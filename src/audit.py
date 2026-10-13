@@ -26,7 +26,10 @@ HERE = os.path.dirname(__file__)
 DATA = os.path.join(HERE, "..", "data", "dataset.csv")
 CARDS = os.path.join(HERE, "..", "data", "cards")
 
-FAILS, WARNS = [], []
+# UNCHECKED is the third state: a check whose INPUT was absent, which is
+# not the same as a check that ran and failed. Added 2026-10-12 after the
+# card re-read reported 60 misses on every clone and exited 1.
+FAILS, WARNS, UNCHECKED = [], [], []
 
 
 def check(ok, msg, hard=True):
@@ -95,11 +98,18 @@ def audit1():
     #    in the card, independent of the table parser
     rng = np.random.default_rng(0)
     samp = draw.iloc[rng.choice(len(draw), 60, replace=False)]
+    # THREE-STATE. Until 2026-10-12 an absent card counted as a MISS, so on
+    # any checkout without data/cards -- which is every clone, the corpus
+    # being deliberately uncommitted -- this reported "60 misses" and the
+    # script exited 1. "Could not check" was being reported as "checked and
+    # failed", which is the worst of the three states to confuse: it makes a
+    # clean tree look broken and trains a reader to ignore the red.
     miss = 0
+    absent = 0
     for _, r in samp.iterrows():
         p = card_path(r.model)
         if not os.path.exists(p):
-            miss += 1
+            absent += 1
             continue
         txt = open(p, encoding="utf-8", errors="replace").read()
         # compare NUMERICALLY against every number in the card, so that a card
@@ -110,8 +120,21 @@ def audit1():
                 miss += 1
                 print(f"        {r.model} {r.benchmark}: {v} not in card")
                 break
-    check(miss == 0, f"60 random rows: both numbers present in the source "
-                     f"card ({miss} misses)")
+    if absent == len(samp):
+        UNCHECKED.append(
+            f"60 random rows against their source cards: data/cards is not "
+            f"present in this checkout, so none of the {len(samp)} sampled "
+            f"rows could be re-read. This is not a failure; it is an absent "
+            f"input. Extract the card-corpus snapshot archive to run it.")
+        print(f"   SKIP  60 random rows: data/cards absent "
+              f"({absent}/{len(samp)} cards missing)")
+    elif absent:
+        check(False, f"60 random rows: {absent} of {len(samp)} source cards "
+                     f"are missing while others are present -- a partial "
+                     f"corpus, which is worse than none")
+    else:
+        check(miss == 0, f"60 random rows: both numbers present in the source "
+                         f"card ({miss} misses)")
 
     # 1g large |delta| rows: which were machine-verified, and which rest on
     #     header order alone (the genuine risk set)?
@@ -397,13 +420,21 @@ def main():
     audit2()
     audit3()
     print("\n" + "=" * 70)
-    print(f"RESULT: {len(FAILS)} hard failures, {len(WARNS)} warnings")
+    print(f"RESULT: {len(FAILS)} hard failures, {len(WARNS)} warnings, "
+          f"{len(UNCHECKED)} unchecked")
     for f in FAILS:
         print(f"  FAILED: {f}")
     for w in WARNS:
         print(f"  WARNING: {w}")
+    for u in UNCHECKED:
+        print(f"  UNCHECKED: {u}")
     print("=" * 70)
-    return 1 if FAILS else 0
+    # 0 = checked and clean, 1 = checked and failed, 3 = an input was absent
+    # so a check could not run. The third exit code exists because 1 was
+    # doing both jobs and a clone always got it.
+    if FAILS:
+        return 1
+    return 3 if UNCHECKED else 0
 
 
 if __name__ == "__main__":
