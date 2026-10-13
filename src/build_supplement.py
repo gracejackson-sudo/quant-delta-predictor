@@ -271,12 +271,17 @@ HASHLIKE = re.compile(r"(?<![0-9a-zA-Z])([0-9a-f]{7,40})(?![0-9a-zA-Z])")
 # falls under; it is not a pin on history length.
 MIN_HISTORY_COMMITS = 100
 
+#
+# ONLY WHAT A DOCUMENT ACTUALLY CITES BELONGS HERE. An entry is a standing
+# instruction to relabel a token that git says is not ours, so an entry for
+# a hash no document mentions is a permission with nothing behind it -- the
+# dead-exemption shape this repository has now found in three separate
+# lists. Two entries were removed on 2026-10-13 when the commits they named
+# were taken out of every document; with nothing citing them there is no
+# orphan to relabel.
 KNOWN_OURS_ORPHANED = {
     "1ba6159": "earlier version of 99f1ca5, replaced by rebase/amend; cited "
                "in EXTERNAL_FEEDBACK.md's M1 disclosure",
-    "1330b28": "amended to eef93d4 on 2026-10-13 to drop a Co-Authored-By "
-               "trailer; cited in AUDIT_DISCIPLINE.md's rewrite disclosure",
-    "3921ec5": "rebased to ad1b903 in the same rewrite; same disclosure",
 }
 
 # REWRITE PROSE, NEVER DATA. The relabeller only edits the file types that

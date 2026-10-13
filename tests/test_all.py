@@ -957,13 +957,12 @@ def test_external_feedback_doc_cites_only_real_commits():
         # replaced by rebase/amend. Retained on GitHub side by hash;
         # cited in the "Where the value appears in git" bullet.
         "1ba6159",
-        # Rewritten 2026-10-13: these two carried a Co-Authored-By trailer
-        # that a standing instruction forbids, were amended and
-        # force-pushed, and are cited in AUDIT_DISCIPLINE.md's rewrite
-        # disclosure precisely so a reader holding an old hash can follow
-        # it. 1330b28 -> eef93d4, 3921ec5 -> ad1b903.
-        "1330b28",
-        "3921ec5",
+        # Two more entries lived here from the 2026-10-13 history rewrite,
+        # for the superseded hashes the ledger then cited. Both were removed
+        # when those hashes came out of every document: an allowed orphan
+        # that no document cites is an exception for a citation that does
+        # not exist, and this gate is the one place that would otherwise
+        # keep it alive. Nothing to allow, so nothing allowed.
     }
     # EVERY DOC THAT CITES A COMMIT, not just this one. The check was scoped
     # to EXTERNAL_FEEDBACK.md, so AUDIT_DISCIPLINE.md's vacuous-gate ledger

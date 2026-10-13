@@ -1327,8 +1327,12 @@ forbids and that `test_no_co_author_trailer_in_new_commits` gates. I added it
 from a session-level attribution reminder, which itself defers to the user's
 own rules, so the repository's gate was right and the commits were wrong.
 Amended and force-pushed with `--force-with-lease`; both trees are
-byte-identical to the originals and only the messages changed.
-**`1330b28` became `eef93d4` and `3921ec5` became `ad1b903`.**
+byte-identical to the originals and only the messages changed. **The
+superseded hashes are deliberately not recorded**, here or in the ledger: an
+orphaned commit of ours still resolves to this repository through GitHub's
+search, and naming it would mean carrying a dead citation plus a standing
+exception in two places to keep it. The commits as they now stand are
+`eef93d4` and `ad1b903`.
 
 **The citation gate was scoped to one document.** Four rows of
 `AUDIT_DISCIPLINE.md`'s vacuous-gate ledger cite a commit each, and
@@ -1343,13 +1347,16 @@ it.** The supplement relabeller asks git whether a token is a commit here,
 which is the right question with one blind spot -- a superseded commit stops
 resolving once its objects fall out of a clone, while GitHub keeps it
 fetchable by full hash, so it still identifies this repository to anyone who
-pastes it into a search box. The rewrite produced exactly that: `1330b28` and
-`3921ec5` are cited in the rewrite disclosure on purpose. They relabelled
-correctly in the working clone **only because local backup branches still
-held the objects**. Measured in a fresh clone of origin: neither resolves.
-Both would have shipped in plain text. Fixed with an explicit
-`KNOWN_OURS_ORPHANED` set, relabelled regardless of reachability, and
-verified by running the build in that fresh clone.
+pastes it into a search box. The rewrite produced exactly that pair, and
+while they were cited they relabelled correctly in the working clone **only
+because local backup branches still held the objects**. Measured in a fresh
+clone of origin: neither resolved, and both would have shipped in plain text.
+Fixed two ways. `KNOWN_OURS_ORPHANED` in `src/build_supplement.py` relabels
+a named orphan regardless of reachability, verified by running the build in
+that fresh clone; it now carries only `1ba6159`, the M1 orphan that
+`EXTERNAL_FEEDBACK.md` cites on purpose. And the two hashes this entry is
+about were removed from every document, so there is no orphan left to
+protect -- the class is closed at the source as well as guarded downstream.
 
 **Leak 2, worse: the relabeller and its verifier share the question they
 depend on.** Both resolve hashes against local history. In a shallow clone

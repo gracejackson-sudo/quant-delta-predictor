@@ -432,26 +432,21 @@ section cites the classes rather than the table.
 | 2026-10-13 | `eef93d4` | `src/build_supplement.py` | the relabeller edits prose types and the stranded check reads the rest, but nothing verified the finished tree; a hash inside a PDF would have been caught by neither | drop `.py` from `RELABEL_EXTS` and rebuild | the post-build pass reads every extension (15 types, 64 `.py` files, 0 unreadable) and the build refuses to write the zip |
 | 2026-10-13 | `eef93d4` | `tests/test_all.py` re-harvest pair | the re-harvest tests read whatever cards were on disk without checking the manifest first, so a corpus failing its manifest and a passing re-harvest could both be true in one run | corrupt one pinned card and call the new precondition | both re-harvest tests now verify the manifest first and refuse, naming the card |
 
-**Hashes in this table were rewritten on 2026-10-13.** Two commits carried a
-`Co-Authored-By:` trailer that a standing instruction forbids and that
-`test_no_co_author_trailer_in_new_commits` gates. They were amended and
+**Two hashes in this table were rewritten on 2026-10-13.** Two commits
+carried a `Co-Authored-By:` trailer that a standing instruction forbids and
+that `test_no_co_author_trailer_in_new_commits` gates. They were amended and
 force-pushed with `--force-with-lease`; the trees are byte-identical to the
-originals and only the messages changed. `1330b28` became `eef93d4` and
-`3921ec5` became `ad1b903`. If you are holding a reference to either old
-hash, that is why it no longer resolves.
+originals and only the messages changed. The rows above cite the commits as
+they now stand.
 
-Both old hashes are cited above on purpose, and that has two consequences
-worth stating. They are in `ORPHANS_ALLOWED` in
-`test_external_feedback_doc_cites_only_real_commits`, which otherwise fails
-on a citation that does not resolve -- an orphan is disclosed deliberately
-and its non-resolvability is the point of the disclosure. And they are in
-`KNOWN_OURS_ORPHANED` in `src/build_supplement.py`, because an orphaned
-commit is still ours: GitHub keeps it fetchable by full hash, so it still
-identifies this repository to anyone who pastes it into a search box, while
-`git cat-file` in a fresh clone says it is not a commit here. The relabeller
-asks git that question, so without the explicit list both hashes would have
-shipped in the anonymous supplement in plain text -- measured in a fresh
-clone of origin, where neither resolves.
+The superseded hashes are deliberately not recorded here. Recording them
+would have meant carrying two hashes that no longer resolve, each needing a
+standing exception in the citation gate and another in the supplement
+relabeller -- and an orphaned commit is still ours: GitHub keeps it fetchable
+by full hash, so it identifies this repository to anyone who pastes it into a
+search box, while `git cat-file` in a fresh clone says it is not a commit
+here. Not naming them is the cheaper answer. Anyone holding a reference from
+before that date will find it does not resolve, and this paragraph is why.
 
 **What this ledger cannot tell you** is how many vacuous gates remain. Every
 row was found by hand, and the only one found by a check was the dead
