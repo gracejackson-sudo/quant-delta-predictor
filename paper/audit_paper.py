@@ -16,7 +16,10 @@ TEXNAME = sys.argv[1] if len(sys.argv) > 1 else "main.tex"
 TEX = open(os.path.join(HERE, TEXNAME)).read()
 NUMS = open(os.path.join(HERE, "numbers.tex")).read()
 BIB = open(os.path.join(HERE, "refs.bib")).read()
-fail, warn = [], []
+# `unchecked` is the third state: a check whose INPUT or SERVICE was not
+# available, which is not a defect in the paper. Added 2026-10-12 after an
+# arXiv rate-limit turned the variants test red on a clean tree.
+fail, warn, unchecked = [], [], []
 
 
 def head(t): print("\n" + "=" * 68 + f"\n{t}\n" + "=" * 68)
@@ -120,6 +123,11 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "16", "33", "38", "43",
           # deliberately frozen; tools/measure_percent_defect.py
           # reproduces them from history.
           "132", "162", "841", "710", "103", "18", "3.05", "96.96",
+          "98", "91", "253",   # 98 runs removed: 7 comments + 91 of prose,
+                               # holding 3{,}253 characters. Same frozen
+                               # historical measurement as the figures
+                               # above; tools/measure_percent_defect.py
+                               # reproduces all of them.
           "0.9", "168", "90.01", "91.0",
           "0.1",       # +/- 0.1 rounding in "roughly 40%" prose approx
           "0.7545",    # pre-regen mae_global_lofo
@@ -208,7 +216,7 @@ _WNOUN = ("cells?|rows?|checkpoints?|schemes?|famil(?:y|ies)|seeds?|"
           "questions?|verdicts?|states?|thresholds?|points?|parameters?|"
           "pairs?|bands?|intervals?|predictors?|grounds?|numbers?|losses|"
           "bases|plots?|estimates?|misses|hits|reviewers?|commits?|"
-          "observations?|characters?|days?|commits?")
+          "observations?|characters?|days?|commits?|runs?|comments?")
 WORDNUM = re.compile(
     rf"\b(?:{_WORD})(?:[ -](?:[a-z]+[ -]){{0,2}}(?:{_WNOUN}))\b", re.I)
 # Hyphenated METHOD NAMES and compound adjectives, not counts.
@@ -249,6 +257,10 @@ WORD_EXEMPT = {
     # on 2026-10-11 (59f4cd9). An earlier draft said "five days", which the
     # word gate surfaced once "days" entered the counted-noun vocabulary.
     "three days",
+    # "one quantization run" is definitional -- it says what a checkpoint
+    # IS -- and "let the second one run" uses run as a verb. Surfaced when
+    # "runs" entered the vocabulary for the 98-runs reconciliation.
+    "one quantization run", "one run",
     # "the one cell whose upper bound does sit below it (w4a16|<2B...)" --
     # definite article, and the cell is named in the same parenthesis
     "one cell",
@@ -596,7 +608,11 @@ try:
             fail.append(f"bib authors differ from arXiv for {_m.group(1)}: "
                         f"{_sur} vs {_want}")
 except Exception as _e:
-    warn.append(f"could not compare bib authors against arXiv: {_e}")
+    # NOT a warning. arXiv rate-limits (HTTP 429) and times out, and a
+    # warning here failed test_both_paper_variants_pass_audit_paper_cleanly
+    # on a tree with nothing wrong with it -- observed 2026-10-12. Same
+    # confusion src/audit.py had: "could not check" reported as a defect.
+    unchecked.append(f"bib authors against arXiv: {_e}")
 
 # ---------------------------------------------------------------- 3
 head("3. OVERCLAIM SCAN")
@@ -770,12 +786,16 @@ for w in warn:
     print(f"   WARNING  {w}")
 for f in fail:
     print(f"   FAIL     {f}")
-print(f"\n   {len(fail)} failure(s), {len(warn)} warning(s)")
+for _u in unchecked:
+    print(f"   UNCHECKED  {_u}")
+print(f"\n   {len(fail)} failure(s), {len(warn)} warning(s), "
+      f"{len(unchecked)} unchecked")
 # A single machine-readable line, emitted exactly once, so a caller does not
 # have to find the human summary by position. tests/test_all.py read
 # stdout.splitlines()[-6:] and could therefore go red on a truncated or
 # interleaved capture while nothing was wrong -- a gate that cries wolf costs
 # more than it catches.
 print(f"AUDIT_PAPER_RESULT variant={TEXNAME} "
-      f"failures={len(fail)} warnings={len(warn)}")
+      f"failures={len(fail)} warnings={len(warn)} "
+      f"unchecked={len(unchecked)}")
 sys.exit(1 if fail else 0)

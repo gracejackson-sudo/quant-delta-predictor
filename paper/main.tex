@@ -1612,13 +1612,19 @@ its first printed percentage.
 The figures below are historical rather than recomputed. They are measured
 against the paper as committed immediately before the fix, by executing that
 revision's own stripper rather than a reimplementation of it: at that revision
-the source held 132 escaped percent signs against 7 real comment marks, and
-3{,}162 of 103{,}841 characters --- $3.05\%$ of the body --- were never read by
-the hand-typed-numeral check, the spelled-out-figure check, the counted-noun
-derivation or the unit declarations. So the clean results those four checks
-had been reporting were computed over $96.96\%$ of that revision. The named
-variant of this paper is affected identically, 3{,}162 characters of
-103{,}710. The defect was present from the commit that introduced the checker
+the source held 132 escaped percent signs against 7 real comment marks. The
+broken rule removed 98 runs of text: the 7 comments, which it was for, and 91
+runs of ordinary prose, which it was not. Those 91 runs hold 3{,}253
+characters, and the scanned body came out 3{,}162 characters shorter than it
+should have been --- the 91-character difference is the single space the
+stripper left in place of each run. Against a denominator of 103{,}841
+characters, being the body with the 7 real comments removed, that is
+$3.05\%$ never read by the hand-typed-numeral check, the spelled-out-figure
+check, the counted-noun derivation or the unit declarations. So the clean
+results those four checks had been reporting were computed over $96.96\%$ of
+that revision. The named variant is affected almost identically, 3{,}162 of
+103{,}710, and has no real comments at all --- there the rule removed nothing
+but prose. The defect was present from the commit that introduced the checker
 to the commit that fixed it, a span of 18 days and 103 commits; the fraction
 varied as the paper grew, and the figures quoted are for the final revision in
 that span. A script in the accompanying code reproduces them from history.

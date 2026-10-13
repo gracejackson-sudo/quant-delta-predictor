@@ -1165,6 +1165,152 @@ overall. Removing keys on the strength of the check as it stands would have
 deleted the trace for two live claims and buried a third. Deferred, with the
 class recorded in `AUDIT_DISCIPLINE.md`.
 
+### 2026-10-12 (second) --- the affiliation string never reached a commit
+
+Searched every commit in the pushed range and all history, with the pattern
+built at run time so this file does not instantiate it.
+
+Across ALL history the string has only ever existed in four files, every one
+of them a by-design holder and every one in `DROP_FILES`: the scrub itself
+(its pattern list must contain what it searches for), the two test files that
+exercise the scrub, and the pack checklist. `tests/test_all.py`, `src/audit.py`,
+`PROVENANCE.md`, `AUDIT_DISCIPLINE.md`, `README.md` and both paper variants:
+**zero commits touching it, by `git log -S` per path.** So the leak I caused
+on 2026-10-12 lived only in the working tree between the edit and the scrub
+failing. It was caught twice pre-commit and never pushed.
+
+The shipped artifacts are clean too: 637 files in the supplement zip, zero
+hits; the pack PDF and both repository PDFs, zero hits in page text and zero
+in metadata; the anonymous variant, zero. The four by-design holders are
+absent from the zip, which is the drop list working.
+
+No history rewrite is needed.
+
+### 2026-10-12 (second) --- the blocked artifacts, and a 15-byte card
+
+Re-ran the five blocked artifacts with the hash-verified snapshot extracted.
+Four reproduce byte-identically: `census.json`, `independent_check.csv`,
+`adversarial_audit.json`, and `real_use_case.csv`.
+
+**`real_use_case.csv` took a second attempt and the first was a false
+positive.** My runner labelled it IDENTICAL on a run where the script had
+actually REFUSED and written nothing -- identical because untouched, which is
+the shape of result this project keeps finding. The refusal was correct:
+`data/prospective_cards/RedHatAI_Phi-4-mini-instruct-quantized.w8a8.md` is
+**15 bytes**, empty but for whitespace, in the snapshot. Phi-4-mini is one of
+the name-gated repositories the paper already discloses as never scored, so
+the stub contributes nothing -- and the old code silently re-downloaded it from
+Hugging Face on every regeneration rather than saying so. With `fetch()`
+bypassed the artifact reproduces exactly.
+
+`tuned_baselines.json` is still running after 25 minutes of nested
+cross-validation and is reported as unmeasured, not as reproducing.
+
+**So: 16 of 17 measured, 16 reproduce, 0 differ, 1 outstanding.** The earlier
+"no stale artifact" was scoped to the 12 then measured and should have said so.
+
+### 2026-10-12 (second) --- what the hidden text actually held
+
+Every numeral and number-word in the 91 hidden prose spans, with its
+disposition against the current gates:
+
+**Nine numerals, all nine exempt by name, none untraced.** `3` (x4), `0.9`,
+`1`, `88.2`, `90`, `90.01`, `91.0`, `95`, `168`. Four of them -- `0.9`, `168`,
+`90.01`, `91.0` -- are exempt only BECAUSE the fix revealed them; the other
+five were already exempt.
+
+**Six word-number phrases, one of them a real finding.** `two-sided` (x5) and
+`one-sided` (x2) are terminology excluded by WORDTERM. `one cell` and
+`one scheme` are rhetorical and named in WORD_EXEMPT. `one of` is
+`every one of the \CalibPartitions{} clears`, where the figure beside it is a
+macro. And **`five folds`** was a genuine untraced figure, `\Nfam` minus one;
+it is gone from both variants, reworded to "the remaining folds" rather than
+registered, because an arithmetic derivative of a registered figure should not
+become a key.
+
+**3,253 against 3,162 reconciled, and the gap is exactly the span count.** The
+broken rule removed 98 runs: the 7 real comments it was for, and 91 runs of
+ordinary prose it was not. Those 91 runs hold 3,253 characters. The body came
+out 3,162 shorter because the stripper left one space in place of each run,
+and 3,253 - 91 = 3,162. The denominator, 103,841, is the body with the 7 real
+comment TEXTS removed and a space left in each place -- so it does not include
+comment text. The paper entry and the reproduce script both say this now.
+
+### 2026-10-12 (second) --- 203 in both configurations
+
+The 203-against-202 discrepancy was mine, not the configurations'. Both
+collect **203 nodes with identical node IDs**; no test exists in one and not
+the other. The corpus-extracted run totalling 202 predated
+`test_the_card_corpus_matches_its_committed_manifest`, so I was comparing two
+runs of different suites.
+
+### 2026-10-12 (second) --- the word gate's allowlist, measured before replacing
+
+Asked to replace the counted-noun allowlist with a check that flags any
+numeral or number-word followed by an UNDECLARED noun, and to report the count
+first. Across the paper and 18 documents: **906 distinct head nouns, 88
+declared, 818 undeclared.**
+
+The list is dominated by things that are not nouns: `yes` (150, table cells),
+`redhatai` (135), `sided`, `nvfp`, `b-instruct-quantized` (58),
+`b-quantized` (46), `shot`, `alpha`, `texttt`, `https`. Declaring or
+exempting 818 entries is the 290-entry allowlist problem at triple the scale
+and would be the gate nobody trusts, which is the failure this document is
+about. **Not implemented**, with the measurement as the reason.
+
+What the derived check already does and the proposal drops: it keeps plural
+head nouns only, and abandons on a function word, a finite verb or a macro
+name. That is why it yields 29 counted nouns rather than 906, and it already
+fails the build when the paper begins counting something new.
+
+### 2026-10-12 (second) --- the refactor, verified span by span
+
+Span LISTS, not counts, are identical before and after: 104 spans in the
+anonymous variant and 97 in the named one, equal element for element in rule
+and text. The two inline pattern copies in
+`test_each_input_stripper_keeps_what_it_must` are gone -- zero `re.*` calls in
+it.
+
+**An AST scan replaces the grep sweep**: every regex literal anywhere in
+`tests/`, 32 of them. One was still a copy of a shipped stripper's pattern --
+`re.sub(r"<!--.*?-->")` in the ranking-doc test -- and it now calls
+`check_docs.strip_tags`. The remaining 31 are the secret scanner's own
+patterns, parsers of script output, and document-structure queries; none
+duplicates code under test.
+
+**The six items from item 1, accounted for.** The two `.git`-gated silent
+returns both RUN in this clone (`.git` is present and the trailer baseline
+resolves), so they were latent rather than active; the shallow-clone one now
+skips loudly. The two no-assertion tests have explicit assertions --
+`log_request` must return None and must not create the path, and the compile
+sweep must see at least 30 modules. The four registry-loop tests assert the
+table holds at least the 6 schemes before looping.
+
+### 2026-10-12 (second) --- the manifest covers 178 of 584
+
+`data/CARD_MANIFEST.sha256` pins `data/cards` (144) and
+`data/prospective_cards` (34). It does NOT cover `out/publisher_cards` (260,
+14 `pub_*` keys), `out/lora_cards` (136, 11 `lk_*` keys) or
+`out/qwen35_cards` (10, 4 keys) -- 406 files feeding 29 registry keys, pinned
+only inside the archive, outside git. Recorded in
+`data/CARD_MANIFEST.sha256.README` rather than implied covered.
+
+**And the re-harvest does not check the hashes before running.** It reads
+whatever cards are present, so a corpus failing the manifest and a re-harvest
+passing can both be true in one run. The manifest test is the one to believe;
+making the re-harvest depend on it is the right fix and is not done.
+
+### 2026-10-12 (second) --- a network rate-limit was reported as a paper defect
+
+`paper/audit_paper.py` compares the bibliography's author surnames against
+arXiv over the network and recorded a failure to reach it as a WARNING. arXiv
+rate-limited us mid-session (HTTP 429, then a read timeout) and
+`test_both_paper_variants_pass_audit_paper_cleanly`, which requires zero
+warnings, went red on a clean tree. Third instance of the state confusion
+`src/audit.py` had: the script is now three-state as well, the sentinel line
+carries `unchecked=N`, and the test tolerates and prints unchecked while still
+failing on a real warning.
+
 ### 2026-10-12 --- a test that validated a copy of the code under test
 
 **The span-rule test was hollow.** It was written to assert what each stripper

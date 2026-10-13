@@ -1243,7 +1243,12 @@ def test_ranking_doc_labels_each_cell_with_the_tools_own_verdict():
     root = os.path.join(os.path.dirname(__file__), "..")
     text = open(os.path.join(root, "RANKING.md")).read()
     cc = R.load_cell_coverage()["cells"]
-    text = re.sub(r"<!--.*?-->", "", text)
+    # check_docs owns this reduction. This held a copy of its pattern until
+    # the 2026-10-12 AST scan of every regex literal in tests/ found it --
+    # the same defect as the span test validating its own copies, one file
+    # along.
+    import check_docs as _CD
+    text = _CD.strip_tags(text)
     rows = {}
     # the per-cell COVERAGE table: cell | rows | checkpoints | one-sided (verdict) | two-sided
     # Round item 2: three cells with a collapsed checkpoint bootstrap now
@@ -1310,7 +1315,8 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
         # on 2026-10-08. Requiring exactly one sentinel makes a truncated
         # capture fail as "no sentinel" instead of as a false audit failure.
         hits = re.findall(
-            r"^AUDIT_PAPER_RESULT variant=(\S+) failures=(\d+) warnings=(\d+)$",
+            r"^AUDIT_PAPER_RESULT variant=(\S+) failures=(\d+) "
+            r"warnings=(\d+) unchecked=(\d+)$",
             r.stdout, re.M)
         assert len(hits) == 1, (
             f"{name}: expected exactly one AUDIT_PAPER_RESULT line, got "
@@ -1318,12 +1324,20 @@ def test_both_paper_variants_pass_audit_paper_cleanly():
             f"script died before reporting -- that is a different failure "
             f"from a dirty audit, and the exit code was {r.returncode}.\n"
             f"{r.stdout[-1500:]}{r.stderr[-800:]}")
-        variant, nfail, nwarn = hits[0]
+        variant, nfail, nwarn, nunchecked = hits[0]
         assert variant == name, (
             f"audit_paper.py reported on {variant!r} when asked for {name!r}")
         assert (nfail, nwarn) == ("0", "0"), (
             f"{name} audit is not clean: {nfail} failure(s), {nwarn} "
             f"warning(s).\n{r.stdout[-2500:]}")
+        # UNCHECKED is tolerated and reported, not asserted to zero. The bib
+        # authors are compared against arXiv over the network, and arXiv rate-
+        # limits; a 429 used to be a WARNING, which turned this test red on a
+        # clean tree (2026-10-12). "Could not check" is not "the paper is
+        # wrong" -- the same distinction src/audit.py needed.
+        if nunchecked != "0":
+            print(f"   note: {name} left {nunchecked} check(s) unrun "
+                  f"(a service or input was unavailable); see its output")
         assert r.returncode == 0, (
             f"{name}: audit reported 0 failures but exited "
             f"{r.returncode}")

@@ -1,0 +1,20 @@
+# What data/CARD_MANIFEST.sha256 covers, and what it does not
+#
+# 178 of the 584 files in the 2026-09-30 card-corpus snapshot:
+#   data/cards              144   the training corpus, every lo::/hi::/cell_*/pooled_* figure
+#   data/prospective_cards   34   the prospective headline and every prosp_* key
+#
+# NOT COVERED, 406 files feeding 29 registry keys:
+#   out/publisher_cards     260   the publisher census, 14 pub_* keys
+#   out/lora_cards          136   the kurtosis/LoRA analysis, 11 lk_* keys
+#   out/qwen35_cards         10   4 qwen35* keys
+# Those three sets are pinned only inside the snapshot archive, which is
+# outside git, so a clone cannot verify them. Recorded rather than implied
+# covered; extending the manifest to them is cheap and not yet done.
+#
+# ORDERING. test_the_card_corpus_matches_its_committed_manifest verifies the
+# hashes, but the re-harvest tests do NOT check them before running: they read
+# whatever cards are present. So a corpus that fails the manifest and a
+# re-harvest that passes can both be true in one run, and the manifest test is
+# the one to believe. Making the re-harvest depend on the manifest check is
+# the right fix and is not yet done.
