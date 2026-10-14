@@ -1320,6 +1320,59 @@ revision rather than of the present corpus, which is why they are literals
 and not macros. The hash lives here, where hashes are already cited and the
 supplement relabeller rewrites them.
 
+### 2026-10-14 --- tuned_baselines reproduces; the DIFFERS was my script
+
+**The last outstanding artifact is closed.** `out/tuned_baselines.json` is
+the one artifact that had never been reproduced, and it carries the negative
+result -- the tuned-vs-untuned MAE comparison the paper's headline rests on.
+It reproduces.
+
+| | |
+| --- | --- |
+| commit under test | `ad1b903` |
+| finished | 2026-10-13T21:13:49Z |
+| runtime | 9,771 s on a MacBook Air, with a duplicate run competing for the same cores |
+| runtime originally | 491 s |
+| versions | pandas 3.0.6, numpy 2.5.4, scipy 1.18.1, scikit-learn 1.9.1, Python 3.12.13 -- the pins in `requirements.txt`, listed in the verdict itself |
+| seeds | `random_state=0` (step 1); `DRAWS=20000`, `SEED=0` (step 2) |
+| result | **IDENTICAL**: every key outside `seconds` matches exactly. The first 128 lines matched byte for byte. |
+
+**The earlier DIFFERS was my script's fault, not the artifact's.** The
+committed artifact is the product of TWO steps: `src/tune_baselines.py`
+writes the hyperparameter selections, and `src/tune_baseline_cis.py` reads
+them back, adds the checkpoint-bootstrap CIs and **merges into the same
+file**. `tools/reproduce_tuned_baselines.sh` ran only step 1, so it compared
+a one-step rebuild against a two-step artifact and reported DIFFERS. Replayed
+against the committed artifact: a one-step rebuild differs in exactly the
+four keys step 2 writes --- `difference_clusters`, `difference_draws`,
+`difference_seed`, `differences` --- and in nothing else.
+
+That is the same defect shape this record keeps finding, now in a tool I
+wrote to check for it: **a comparison that answers a different question from
+the one it claims to**. The band comparison that agreed with itself
+in-sample, the verifier that printed "full agreement" with the comparisons
+skipped, and this -- a reproduction check that rebuilt less than the thing it
+compared against. Had the artifact genuinely been stale, this script would
+have said so for the wrong reason, and the reason would have been accepted.
+
+**The script now runs both steps** and normalizes **one named field,
+`seconds`**, the top-level wall clock `src/tune_baselines.py` records.
+Nothing else is excused, the two values are printed side by side rather than
+hidden -- a 20x runtime difference is worth seeing even when every figure
+matches -- and a DIFFERS verdict now ends by telling the reader to check that
+step 2 ran before concluding the artifact is stale. Validated on four
+fixtures: an identical copy, a copy differing only in `seconds` (the actual
+verdict case, which must read IDENTICAL), a copy with one `weighted_mae`
+moved by 0.001 (must read DIFFERS), and a one-step rebuild (must read DIFFERS
+and name the four keys).
+
+**17 of 17 artifacts are now measured and 17 reproduce.** The earlier tallies
+in this record -- "16 of 17 measured, 16 reproduce, 0 differ, 1 outstanding"
+on 2026-10-12, and "the one outstanding reproduction is
+`out/tuned_baselines.json`" on 2026-10-13 -- were true when written and are
+superseded here. `scheme_envelope` remains identical modulo its `/built`
+date, the only artifact embedding one.
+
 ### 2026-10-13 --- the history rewrite, and two leaks it exposed
 
 Two commits carried a `Co-Authored-By:` trailer that a standing instruction
@@ -1428,7 +1481,8 @@ arms"), ordinals ("a third verdict" is the third kind) and qualitative
 statements.
 
 **`--pre-submission` now passes on both variants, exit 0, nothing pending.**
-The one outstanding reproduction is `out/tuned_baselines.json`.
+The one outstanding reproduction is `out/tuned_baselines.json`. *(Closed
+2026-10-14: it reproduces; see that entry.)*
 
 ### 2026-10-13 --- the pending set, measured rather than listed
 
@@ -1690,7 +1744,7 @@ reproduce:
 | --- | --- |
 | identical (15) | predictor_comparison, diagnostics, final_results, interval_shape, interval_shape_finite, bias_correction, bias_correction_empirical, cell_coverage, one_sided_audit, audit_ranking, strata_compare, census, independent_check, adversarial_audit, real_use_case |
 | identical modulo one field (1) | scheme_envelope, whose `/built` date moved 2026-10-07 to 2026-10-12. It is the ONLY artifact embedding a date; every other value matches exactly |
-| outstanding (1) | tuned_baselines, still running |
+| outstanding (1) | tuned_baselines, still running *(reproduced 2026-10-14)* |
 
 **`real_use_case.csv` now reproduces under shipped code**, and getting there
 found something. Its missing prospective card is 15 bytes and its content is
@@ -1773,9 +1827,11 @@ Hugging Face on every regeneration rather than saying so. With `fetch()`
 bypassed the artifact reproduces exactly.
 
 `tuned_baselines.json` is still running after 25 minutes of nested
-cross-validation and is reported as unmeasured, not as reproducing.
+cross-validation and is reported as unmeasured, not as reproducing. *(It
+reproduces; measured 2026-10-14 in 9,771 s.)*
 
-**So: 16 of 17 measured, 16 reproduce, 0 differ, 1 outstanding.** The earlier
+**So: 16 of 17 measured, 16 reproduce, 0 differ, 1 outstanding.** *(17 of 17
+as of 2026-10-14.)* The earlier
 "no stale artifact" was scoped to the 12 then measured and should have said so.
 
 ### 2026-10-12 (second) --- what the hidden text actually held

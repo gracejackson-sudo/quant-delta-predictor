@@ -1,7 +1,21 @@
 #!/bin/bash
 # Reproduce out/tuned_baselines.json detached, in an isolated worktree, and
-# byte-compare against the committed artifact. Safe to run and walk away:
+# compare it against the committed artifact. Safe to run and walk away:
 # nothing writes into the working tree you use day to day.
+#
+# TWO STEPS, NOT ONE, AND THAT WAS THE BUG. The committed artifact is the
+# product of src/tune_baselines.py AND src/tune_baseline_cis.py: the second
+# reads the hyperparameter selections the first recorded, adds the
+# checkpoint-bootstrap CIs, and merges them back into the SAME file. The
+# first version of this script ran only step 1, so it compared a one-step
+# rebuild against a two-step artifact and reported DIFFERS. The artifact was
+# never the problem; the comparison was. Verified 2026-10-13: run both steps
+# and it is IDENTICAL.
+#
+# ONE NORMALIZED FIELD, NAMED: `seconds`, the top-level wall-clock time
+# src/tune_baselines.py records. Nothing else is excused. It is reported
+# side by side rather than hidden, because a 20x difference in runtime is
+# worth seeing even when every figure matches.
 set -euo pipefail
 
 # Derived, never written in: an absolute home path in a tracked file is the
@@ -18,35 +32,36 @@ git -C "$REPO" worktree add --detach "$WORK/repo" HEAD >/dev/null
 HEAD_SHA=$(git -C "$WORK/repo" rev-parse --short HEAD)
 echo "commit : $HEAD_SHA"
 
-# The script derives its output path from its own location, so running the
-# worktree's copy writes to the worktree's out/.
-nohup "$REPO/.venv/bin/python" "$WORK/repo/src/tune_baselines.py" \
-      > "$WORK/tune.log" 2>&1 &
+# Both scripts derive their paths from their own location, so running the
+# worktree's copies reads and writes the worktree's out/.
+nohup bash -c "
+  set -e
+  '$REPO/.venv/bin/python' '$WORK/repo/src/tune_baselines.py'
+  echo '--- step 1 done, starting step 2 (tune_baseline_cis.py) ---'
+  '$REPO/.venv/bin/python' '$WORK/repo/src/tune_baseline_cis.py'
+" > "$WORK/tune.log" 2>&1 &
 PID=$!
 echo "pid    : $PID"
 echo "log    : $WORK/tune.log"
 
-# The comparison runs when the job does, however long that is. The last
-# attempt was killed at a 2-hour limit without finishing, so this waits
-# rather than polling with a deadline.
+# The comparison runs when the job does, however long it takes. The 2026-10-13
+# run took 9,771 seconds on a laptop with a duplicate run competing for the
+# same cores, so this waits rather than polling with a deadline.
 (
-  wait_for() { while kill -0 "$1" 2>/dev/null; do sleep 30; done; }
-  wait_for "$PID"
+  while kill -0 "$PID" 2>/dev/null; do sleep 30; done
   NEW="$WORK/repo/out/tuned_baselines.json"
   OLD="$REPO/out/tuned_baselines.json"
   {
     echo "commit under test : $HEAD_SHA"
     echo "finished          : $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-    # VERSIONS IN THE VERDICT, NOT INFERRED LATER. tuned_baselines.json is
-    # the one artifact in this repository never reproduced, and it holds the
-    # negative result. If it comes back DIFFERS, the first question is
-    # whether the environment moved -- so the environment is recorded beside
-    # the answer instead of being reconstructed from memory afterwards.
+    # VERSIONS IN THE VERDICT, NOT INFERRED LATER. If this comes back
+    # DIFFERS the first question is whether the environment moved, so the
+    # environment is recorded beside the answer.
     echo "interpreter       : $("$REPO/.venv/bin/python" -c 'import sys;print(sys.version.replace(chr(10)," "))')"
-    echo "pinned versions   : (requirements.txt)"
+    echo "installed versions:"
     "$REPO/.venv/bin/python" - <<'PYV' | sed 's/^/                    /'
 import importlib.metadata as md
-for p in ("pandas","numpy","scipy","scikit-learn"):
+for p in ("pandas", "numpy", "scipy", "scikit-learn"):
     try:
         print(f"{p}=={md.version(p)}")
     except md.PackageNotFoundError:
@@ -54,19 +69,48 @@ for p in ("pandas","numpy","scipy","scikit-learn"):
 PYV
     echo "requirements.txt  :"
     grep -E '^[A-Za-z]' "$REPO/requirements.txt" | sed 's/^/                    /'
-    echo "seed              : random_state=0 (src/tune_baselines.py)"
+    echo "seed              : random_state=0 (src/tune_baselines.py),"
+    echo "                    DRAWS=20000 SEED=0 (src/tune_baseline_cis.py)"
+    echo
     if [ ! -f "$NEW" ]; then
       echo "RESULT: NO ARTIFACT -- the run did not write one. Tail of log:"
       tail -40 "$WORK/tune.log"
-    elif cmp -s "$NEW" "$OLD"; then
-      echo "RESULT: IDENTICAL -- reproduces byte-for-byte."
-      echo "sha256: $(shasum -a 256 "$NEW" | cut -d' ' -f1)"
     else
-      echo "RESULT: DIFFERS."
-      echo "  committed: $(shasum -a 256 "$OLD" | cut -d' ' -f1)"
-      echo "  rebuilt  : $(shasum -a 256 "$NEW" | cut -d' ' -f1)"
-      echo "--- first differing lines ---"
-      diff "$OLD" "$NEW" | head -40 || true
+      "$REPO/.venv/bin/python" - "$OLD" "$NEW" <<'PYC'
+import json, sys
+old = json.load(open(sys.argv[1]))
+new = json.load(open(sys.argv[2]))
+# The one normalized field, named rather than globbed.
+NORMALIZED = ("seconds",)
+print("normalized field  : seconds (wall clock; every other key compared "
+      "exactly)")
+for k in NORMALIZED:
+    print(f"  committed {k:<10}: {old.get(k)}")
+    print(f"  rebuilt   {k:<10}: {new.get(k)}")
+a = {k: v for k, v in old.items() if k not in NORMALIZED}
+b = {k: v for k, v in new.items() if k not in NORMALIZED}
+missing = sorted(set(a) - set(b))
+added = sorted(set(b) - set(a))
+diff = sorted(k for k in set(a) & set(b) if a[k] != b[k])
+print(f"keys compared     : {len(set(a) | set(b))}")
+if not (missing or added or diff):
+    print("\nRESULT: IDENTICAL -- every key outside `seconds` matches "
+          "exactly.")
+    sys.exit(0)
+print("\nRESULT: DIFFERS.")
+for k in missing:
+    print(f"  only in the committed artifact: {k}")
+for k in added:
+    print(f"  only in the rebuild           : {k}")
+for k in diff:
+    print(f"  differs                       : {k}")
+    print(f"      committed {old[k]!r}"[:300])
+    print(f"      rebuilt   {new[k]!r}"[:300])
+print("\nBefore concluding the artifact is stale, check that BOTH steps ran "
+      "-- the log above should show step 2. A one-step rebuild compared "
+      "against this two-step artifact reports DIFFERS and means nothing.")
+sys.exit(1)
+PYC
     fi
     echo
     echo "worktree kept at $WORK/repo for inspection. Remove with:"
