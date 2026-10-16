@@ -1014,6 +1014,29 @@ def test_fair_variance_uses_only_fully_observed_cells():
     assert ve > 0.999
 
 
+
+def _tex_section(src, name):
+    """-> one \\section{name} block, bounded by the NEXT \\section.
+
+    BOUNDED BY STRUCTURE, NOT BY A NAMED SUCCESSOR. Two gates sliced the
+    Audit section with `.split("\\section{Audit}")[1]
+    .split("\\section{Conclusion}")[0]`, which encodes an assumption about
+    section ORDER. When the audit record moved into an appendix on
+    2026-10-16 -- to bring the main content inside TMLR's 12-page guidance
+    -- Audit came after Conclusion, the slice ran to end-of-file or
+    collapsed to empty, and both gates failed on a document in which nothing
+    was wrong. The content they check had not changed at all; only its
+    position had.
+
+    Same shape as the stripper that read 97% of the paper and the gates that
+    scanned a hardcoded variant list: a correct check over a reduction whose
+    input had moved.
+    """
+    import re
+    a = src.index("\\section{" + name + "}")
+    nxt = [m.start() for m in re.finditer(r"\\section\{", src[a + 5:])]
+    return src[a:(nxt[0] + a + 5) if nxt else len(src)]
+
 def test_paper_describes_the_verdicts_that_actually_fire():
     """The paper must describe the verdicts the tool actually reaches.
 
@@ -1057,7 +1080,7 @@ def test_paper_describes_the_verdicts_that_actually_fire():
             f"item 3 retired that claim because the third does not fire on "
             f"this corpus; if it now fires, restore the wording deliberately "
             f"and update this test.")
-        tail = s.split("\\section{Conclusion}")[1]
+        tail = _tex_section(s, "Conclusion")
         assert "insufficient evidence" in tail, (
             f"{name}: conclusion lacks the middle verdict")
         assert "three verdicts" not in tail, (
@@ -1067,7 +1090,7 @@ def test_paper_describes_the_verdicts_that_actually_fire():
         # and taking [1] read to end-of-file, so text in the Conclusion -- or,
         # after the audit record was split, anywhere in the appendix -- would
         # have satisfied it. The claim is that the BODY keeps the reasoning.
-        audit = s.split("\\section{Audit}")[1].split("\\section{Conclusion}")[0]
+        audit = _tex_section(s, "Audit")
         assert "could have made fire" in audit, (
             f"{name}: the audit section no longer records the decision not to "
             f"lower the support floor. Retiring a claim from the abstract is "
@@ -2039,9 +2062,15 @@ def test_the_error_record_is_complete_across_both_its_halves():
     TOTAL_PARAS = 16
     for name in ("main.tex", "neurips_main.tex"):
         s = open(os.path.join(root, "paper", name), encoding="utf-8").read()
-        a, c = s.index("\\section{Audit}"), s.index("\\section{Conclusion}")
-        ap = s.index("\\appendix")
-        body, appx = s[a:c], s[ap:]
+        # THE TWO HALVES ARE TWO SECTIONS, not "the Audit section" and
+        # "everything after \\appendix". Once the audit record moved into
+        # the appendix on 2026-10-16, the second slice contained the first
+        # one -- plus the new supporting-tables appendix -- and the item
+        # count read 26 against an expected 17 while nothing had been added
+        # or deleted. Naming both sections makes the pairing explicit and
+        # immune to where either one sits.
+        body = _tex_section(s, "Audit")
+        appx = _tex_section(s, "Process errors")
         assert "\\label{sec:process}" in appx, (
             f"{name}: the process-error appendix has lost its label, so the "
             f"body's cross-references into it will render as '??'")
@@ -4910,11 +4939,11 @@ def test_percent_defect_json_matches_a_fresh_measurement():
         else:
             yield path, o
 
-    # ONE NAMED EXCLUSION. `snapshot_taken` records when the measurement was
+    # ONE NAMED EXCLUSION. `snapshot_taken_utc` records when the measurement was
     # read, which is not a property of the history being measured and cannot
     # be re-derived from it. Named rather than pattern-matched, so a second
     # non-reproducible field cannot slip in beside it.
-    NOT_REDERIVABLE = {"snapshot_taken"}
+    NOT_REDERIVABLE = {"snapshot_taken_utc"}
     flat_c = {k: v for k, v in _flat(committed) if k not in NOT_REDERIVABLE}
     flat_f = {k: v for k, v in _flat(fresh) if k not in NOT_REDERIVABLE}
     drift = []

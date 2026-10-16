@@ -1320,6 +1320,63 @@ revision rather than of the present corpus, which is why they are literals
 and not macros. The hash lives here, where hashes are already cited and the
 supplement relabeller rewrites them.
 
+### 2026-10-16 (second) --- the main content trimmed to 12 pages, nothing cut
+
+TMLR counts main content as everything before the references; appendices may
+follow them in the same PDF. Measured on the first TMLR build, that was **19
+pages**, not the 13 reported earlier -- 13 was sections 1--8 only, and the
+audit section and conclusion also sat before the references. The earlier
+figure answered a different question from the one asked.
+
+**Moved, not cut.** Every table, figure and sentence is intact and every
+cross-reference resolves:
+
+| moved to the appendix | chars | est. pages |
+| --- | --- | --- |
+| the Audit section (a process record; no claim, result or limitation) | 24,770 | ~5.3 |
+| Results: the merged-fold disclosure and its subgroup table | 2,229 | ~0.5 |
+| Results: what the prospective set does and does not cover, and its table | 2,327 | ~0.5 |
+| Results: prospective composition, and what it does not support | 1,730 | ~0.4 |
+| Results: where these figures are computed (protocol detail) | 1,054 | ~0.2 |
+| Results: independent verification, what and when (process detail) | 1,654 | ~0.35 |
+
+The core claims, the negative result, the headline coverage results, the
+measured left tail and the limitations all stayed in the main text. No
+`\vspace`, no font or margin change, no table shrinking, no edit to
+`tmlr.sty`.
+
+**Result: references begin on page 13, so the main content is 12 pages.**
+Appendices A (supporting tables), B (audit) and C (process errors) run from
+page 13 to 23. Total 23 pages, down from 24. 0 undefined references, 0
+undefined citations, 0 `??`, 0 overfull boxes.
+
+Two references needed repointing, because what they pointed at moved: the
+abstract's "we report the groups and do not difference them; X says why" and
+section 5's "the X subgroup table keeps that visible" now point at the
+supporting appendix.
+
+**The body stayed shared across all three variants** -- byte-identical, and
+the gate that asserts it still passes. The named long-form variant had to be
+brought along: it was NOT updated by the first pass, the variants-say-the-
+same-thing gate caught the drift, and that is the gate working.
+
+**Three gates failed on a document in which nothing was wrong**, and all
+three for the same reason: they sliced sections with
+`.split("\\section{Audit}")[1].split("\\section{Conclusion}")[0]`, which
+encodes an assumption about section ORDER. With the audit record after the
+conclusion, one slice ran to end-of-file, one collapsed, and one counted the
+error-record items twice -- 26 against an expected 17 -- because "everything
+after `\appendix`" now contained the Audit section as well. The content they
+check had not changed; only its position had. They are now bounded by the
+next `\section` and the two halves of the error record are named as two
+sections. Same shape as the stripper that read 97% of the paper: a correct
+check over a reduction whose input had moved.
+
+`snapshot_taken` became **`snapshot_taken_utc`** in `out/percent_defect.json`
+and in README.md. The zone had been implied by the code that wrote it, and
+the value is already a day ahead of the local date it was taken on, so a
+reader could have read it a day wrong. Current value **2026-10-16 UTC**.
+
 ### 2026-10-16 --- the TMLR variant, and the style files it is built from
 
 The pack's file 01 had been built from the NeurIPS source for a day. The

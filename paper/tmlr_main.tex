@@ -99,7 +99,7 @@ checkpoints from \ProspGThreeBases{} base models, \ProspGThreeCov\%), and
 SmolLM, SmolLM3 and Nemotron-Nano together (\ProspTailRows{} rows,
 \ProspTailCkpts{} checkpoints from \ProspTailBases{} base models, all
 covered). We report the groups and do not difference them;
-\S\ref{sec:results} says why. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
+\S\ref{sec:supporting} says why. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
 and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
 Each (scheme, size-band) cell returns one of two operative verdicts: trusted,
 or insufficient evidence, where the interval is still shown but the scheme is
@@ -460,7 +460,7 @@ Llama-3 fold, subgroup coverage varies too---Llama-3.3 alone sits
 calibration family. That subgroup rests on \LThreeSubThreeBasesWord{} base
 model, so the gap describes a single model's behaviour and not a subgroup
 average;
-the \S\ref{sec:results} subgroup table keeps that visible.
+the \S\ref{sec:supporting} subgroup table keeps that visible.
 Ridge regression (\(\alpha=3.0\), standardised features) and histogram
 gradient boosting (\texttt{max\_depth=3}, \texttt{max\_iter=300},
 \texttt{learning\_rate=0.05}, \texttt{min\_samples\_leaf=15},
@@ -597,22 +597,6 @@ envelope, before the size rule, and
 \(\ProspInside/\ProspN = \ProspCov\%\) once the widen-only size rule is applied
 as the tool applies it, against a nominal 90\% two-sided
 level, with a 95\% cluster-robust CI of \([\ProspCrLo, \ProspCrHi]\).
-
-\paragraph{Where these figures are computed, which is not where a reader
-would assume.} Every prospective figure in this section --- the row count, the
-covered count, the coverage percentage and both Clopper--Pearson bounds ---
-is computed by \texttt{verify/independent\_check.py}, a standard-library
-reimplementation that parses the raw cards itself and imports nothing from
-the pipeline. They are not the pipeline's own numbers. The pipeline computes
-the same five independently, and \texttt{paper/audit\_paper.py} compares the
-two arms row by row on every build; they agree exactly, and a disagreement
-fails the build. We report it this way round deliberately: a headline
-validation figure produced by the code under test is worth less than one
-produced by a second implementation, and if the two ever diverge we would
-rather the published number be the independent one. The cost is that the
-cross-check in \texttt{audit\_paper.py} is the only place the pipeline's own
-figure is held against it, so that check is load-bearing rather than
-decorative.
 
 \paragraph{Why the interval is clustered, and why it is narrower.} The
 \ProspN{} rows come from \ProspClusN{} quantization runs, up to
@@ -776,132 +760,6 @@ carry more risk. Where a cell has no calibrated size-specific width the tool
 prints the scheme interval and says which of two reasons applies: the cell is
 below the support floor, or it has the rows but not enough held-out evidence
 to justify a separate width.
-
-\paragraph{Independent verification --- what and when.} The strict protocol
-above is implemented in \texttt{verify/independent\_check.py}, a from-scratch
-reimplementation that shares no code with the pipeline. It parses the raw
-model cards independently and recomputes the prospective-coverage figures
-this section reports. It is run against the card corpus on every corpus
-change, and its output \texttt{out/independent\_check.csv} holds
-\ProspAllRows{} prospective rows, of which \ProspN{} are the strict subset
-behind the numbers above. An earlier version of this paragraph said it had
-been run once, on a single date, and that its training-row comparisons had
-never fired against the shipped data. Both were out of date: the file has
-been regenerated repeatedly, and the training comparisons have fired and
-caught real defects --- a parser bug that silently dropped two rows, and a
-label-vocabulary divergence after the GPQA protocol split. It now reports
-\Nrows{} training rows on both sides, with zero rows found by only one side
-and zero delta or verdict disagreements.
-
-The card corpus itself is not committed (license and PII constraints;
-\texttt{PROVENANCE.md} 2026-09-27), so a reader without the cards cannot
-re-run the parse. What ships in its place is a tolerance-integrity gate on the
-committed output
-(\texttt{tests/test\_all.py::test\_independent\_check\_csv\_matches\_tolerance\_recomputation}):
-the gate recomputes each row's \texttt{inside} flag from its \texttt{lo},
-\texttt{hi} and \texttt{delta} under a $10^{-9}$ boundary tolerance, and
-fires if the frozen CSV disagrees with its own bounds. It is not a fresh
-independent parse.
-
-\paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
-Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3
-into one Llama-3 fold. The merged mean can conceal that Llama-3.3
-alone consistently sits \LThreeGapMin--\LThreeGapMax{}pp below its cousins
-under every calibration family, so we break out the held-out Llama-3 fold by
-subgroup. Rows are the calibration family; columns are the three
-subgroups the merged fold contains.
-\begin{center}
-\begin{tabular}{lrrrr}
-\toprule
-calibration & Llama-3.1 & Llama-3.2 & Llama-3.3 & merged \\
-\midrule
-gemma-2  & \LThreeSubOneGem\% & \LThreeSubTwoGem\% & \LThreeSubThreeGem\% & \LThreeMergedGem\% \\
-granite  & \LThreeSubOneGra\% & \LThreeSubTwoGra\% & \LThreeSubThreeGra\% & \LThreeMergedGra\% \\
-mistral  & \LThreeSubOneMis\% & \LThreeSubTwoMis\% & \LThreeSubThreeMis\% & \LThreeMergedMis\% \\
-qwen2.5  & \LThreeSubOneQtf\% & \LThreeSubTwoQtf\% & \LThreeSubThreeQtf\% & \LThreeMergedQtf\% \\
-qwen3    & \LThreeSubOneQth\% & \LThreeSubTwoQth\% & \LThreeSubThreeQth\% & \LThreeMergedQth\% \\
-\bottomrule
-\end{tabular}
-\end{center}
-Under every calibration family Llama-3.3 sits below both Llama-3.1 and
-Llama-3.2, by \LThreeGapMin{} to \LThreeGapMax{} points, and the merged mean
-is pulled up by the \LThreeCousinsWord{} better-covered subgroups. The table and the fold
-figures in this paragraph come from a per-scheme-mean centre with a
-Mondrian-by-scheme conformal width, which is not the band this paper ships;
-cell values are coverage on the held-out Llama-3 rows under one calibration
-family, and the fold figures are pooled over test points. Under an 8-family
-reporting this weakness would show as Llama-3.3's own held-out fold at
-\LThreeSubThreePooled\%, which rests on \LThreeSubThreeBasesWord{} base model;
-under Definition B it is folded into \LThreeMergedPooled\% on the merged
-Llama-3 mean. It is the weakest of the three Llama-3 subgroups and not the
-lowest fold in the corpus: under this estimator Qwen-3 covers
-\LofoQwenThreeTblDefA\% as its own fold, on \LofoFoldBasesQwenThree{} base
-models. We report the breakdown here so the merge does not hide the subgroup
-gap, and \S\ref{sec:limits} reports per-fold coverage under the shipped
-band.
-
-\paragraph{Prospective composition, and what it does not support.} The
-\ProspN{} strict rows are not a balanced sample across the groups they come from.
-DeepSeek-R1-Distill checkpoints of Llama-3 and Qwen-2.5 bases contribute
-\ProspDsRows{} rows from \ProspDsCkpts{} checkpoints at \ProspDsCov\%;
-Gemma-3 contributes \ProspGThreeRows{} rows from \ProspGThreeCkpts{}
-checkpoints (\ProspGThreeBases{} base models) at \ProspGThreeCov\%; SmolLM,
-SmolLM3 and Nemotron-Nano contribute \ProspTailRows{} rows from
-\ProspTailCkpts{} checkpoints (\ProspTailBases{} base models) between them,
-all covered. Throughout, a \emph{checkpoint} is a quantized model artifact
---- one (base model, scheme) pair that was evaluated --- and a base model is
-the unquantized model several of those derive from. The \ProspClusN{}
-checkpoints come from \ProspBases{} base models. An earlier version of this section split those into
-``in-family'' and ``out-of-family'' and compared the halves, and also noted
-that Gemma-3 sat below nominal while the small groups pulled the aggregate
-up. We have withdrawn both. On the shipped band Gemma-3 sits \emph{above}
-nominal and the pull-up more than halves, so neither leg of that argument
-survives; and a comparison that reverses when the band is corrected is not one
-we should have been making. We state the per-group coverages and claim nothing
-from their differences in either direction. The reason is the composition
-rather than the arithmetic: the ``out-of-family'' half was four-fifths
-Gemma-3, and the three groups behind the remaining \ProspTailRows{} rows are
-one checkpoint each, so what read as a result about transfer across families
-was Gemma-3 against DeepSeek-R1-Distill with a label implying more.
-
-\paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
-not \ProspN{} independent observations, which is why the headline interval is
-clustered on the checkpoint. A bootstrap that resamples whole checkpoints
-agrees with the sandwich estimator at \([\ProspClusLo, \ProspClusHi]\)\%.
-Neither is wider than the row-level interval, and the reason is measured
-rather than assumed: the coverage indicator has an intraclass correlation of
-\ProspIcc{} across checkpoints, so there is no within-run dependence left for
-a clustered interval to absorb. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4
-have no prospective rows, so the figure says nothing about them.
-
-\begin{center}
-\begin{tabular}{lccc}
-\toprule
-scheme & strict rows & checkpoints & covered (\%) \\
-\midrule
-w4a16       & \ProspRowsWfour & \ProspCkptsWfour & \ProspCovWfour \\
-w8a8\_int   & \ProspRowsWeightint & \ProspCkptsWeightint & \ProspCovWeightint \\
-fp8\_dynamic& \ProspRowsFpdyn & \ProspCkptsFpdyn & \ProspCovFpdyn \\
-w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeightsixteen \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-W4A16, the most common scheme, dominates the pooled figure; the other schemes rest on few
-checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
-did not manufacture the headline. That said, the pooled scheme-only
-\ProspCovScheme\% is
-pulled up by \ProspRowsFpdyn{} FP8-dynamic rows from \ProspCkptsFpdyn{}
-checkpoints and \ProspRowsWeightsixteen{} W8A16 rows from \ProspCkptsWeightsixteen{}
-checkpoint, both at \ProspCovFpdyn\% coverage. W4A16, at \ProspRowsWfour{}
-of the \ProspN{} strict rows (\ProspRowsWfourShare\%), covers at
-\ProspCovWfour\%, above nominal. The one scheme below nominal is W8A8-int at
-\ProspCovWeightint\% on \ProspRowsWeightint{} rows from
-\ProspCkptsWeightint{} checkpoints. Earlier versions of this paragraph named
-W4A16 as the below-nominal scheme; that was true of the in-sample band and
-reversed when the shipped band was corrected (\S\ref{sec:audit}). The pooled
-number should be read as an average across schemes with very different sample
-sizes, not as a coverage claim uniform across schemes.
 
 \paragraph{Size stratification: what survives and what does not.} Size
 enters the shipped envelope only through a widen-only rule --- a (scheme, size
@@ -1102,6 +960,185 @@ property of this corpus rather than a general result. The leave-family-out cover
 same dependence: each row is scored once under each of \PairsPerRow{} calibration families, so
 the \PooledPairs{} evaluations are not independent, and every coverage judgment in this paper
 resamples whole checkpoints rather than counting evaluations.
+
+\section{Conclusion}
+
+Per-model prediction of quantization accuracy damage from card-level
+features does not work on published data, and the reason is largely
+measurement noise rather than model capacity; predictors that use
+checkpoint-level statistics were not tested and remain open. What does
+work is narrower: a per-scheme calibrated envelope that is validated at
+\(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
+unseen checkpoints
+for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
+widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
+split in-family against out-of-family; the composition behind that split does
+not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
+either trusted or insufficient evidence, and in the latter case the interval
+is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
+\NCellsTotal{} cells are insufficient evidence. A third verdict that
+withholds the interval is implemented and does not fire here
+(\S\ref{sec:audit}). The more useful contribution may be the limitation
+itself---the published record of quantized models is outcome-truncated, and we
+measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
+estimate built on that record is a floor on risk, not a ceiling, and should say
+so.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+
+% Moved here on 2026-10-16 to bring the main content within TMLR's
+% 12-page convention. Nothing was cut: every table, figure and sentence
+% is intact and every cross-reference still resolves. What moved is
+% supporting material -- two composition tables, the subgroup
+% breakdown, protocol detail and the process record -- and the core
+% claims, the headline results and the limitations stayed in the main
+% text.
+
+\section{Supporting tables and composition}\label{sec:supporting}
+\paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
+Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3
+into one Llama-3 fold. The merged mean can conceal that Llama-3.3
+alone consistently sits \LThreeGapMin--\LThreeGapMax{}pp below its cousins
+under every calibration family, so we break out the held-out Llama-3 fold by
+subgroup. Rows are the calibration family; columns are the three
+subgroups the merged fold contains.
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+calibration & Llama-3.1 & Llama-3.2 & Llama-3.3 & merged \\
+\midrule
+gemma-2  & \LThreeSubOneGem\% & \LThreeSubTwoGem\% & \LThreeSubThreeGem\% & \LThreeMergedGem\% \\
+granite  & \LThreeSubOneGra\% & \LThreeSubTwoGra\% & \LThreeSubThreeGra\% & \LThreeMergedGra\% \\
+mistral  & \LThreeSubOneMis\% & \LThreeSubTwoMis\% & \LThreeSubThreeMis\% & \LThreeMergedMis\% \\
+qwen2.5  & \LThreeSubOneQtf\% & \LThreeSubTwoQtf\% & \LThreeSubThreeQtf\% & \LThreeMergedQtf\% \\
+qwen3    & \LThreeSubOneQth\% & \LThreeSubTwoQth\% & \LThreeSubThreeQth\% & \LThreeMergedQth\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+Under every calibration family Llama-3.3 sits below both Llama-3.1 and
+Llama-3.2, by \LThreeGapMin{} to \LThreeGapMax{} points, and the merged mean
+is pulled up by the \LThreeCousinsWord{} better-covered subgroups. The table and the fold
+figures in this paragraph come from a per-scheme-mean centre with a
+Mondrian-by-scheme conformal width, which is not the band this paper ships;
+cell values are coverage on the held-out Llama-3 rows under one calibration
+family, and the fold figures are pooled over test points. Under an 8-family
+reporting this weakness would show as Llama-3.3's own held-out fold at
+\LThreeSubThreePooled\%, which rests on \LThreeSubThreeBasesWord{} base model;
+under Definition B it is folded into \LThreeMergedPooled\% on the merged
+Llama-3 mean. It is the weakest of the three Llama-3 subgroups and not the
+lowest fold in the corpus: under this estimator Qwen-3 covers
+\LofoQwenThreeTblDefA\% as its own fold, on \LofoFoldBasesQwenThree{} base
+models. We report the breakdown here so the merge does not hide the subgroup
+gap, and \S\ref{sec:limits} reports per-fold coverage under the shipped
+band.
+
+\paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
+not \ProspN{} independent observations, which is why the headline interval is
+clustered on the checkpoint. A bootstrap that resamples whole checkpoints
+agrees with the sandwich estimator at \([\ProspClusLo, \ProspClusHi]\)\%.
+Neither is wider than the row-level interval, and the reason is measured
+rather than assumed: the coverage indicator has an intraclass correlation of
+\ProspIcc{} across checkpoints, so there is no within-run dependence left for
+a clustered interval to absorb. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4
+have no prospective rows, so the figure says nothing about them.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+scheme & strict rows & checkpoints & covered (\%) \\
+\midrule
+w4a16       & \ProspRowsWfour & \ProspCkptsWfour & \ProspCovWfour \\
+w8a8\_int   & \ProspRowsWeightint & \ProspCkptsWeightint & \ProspCovWeightint \\
+fp8\_dynamic& \ProspRowsFpdyn & \ProspCkptsFpdyn & \ProspCovFpdyn \\
+w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeightsixteen \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+W4A16, the most common scheme, dominates the pooled figure; the other schemes rest on few
+checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
+did not manufacture the headline. That said, the pooled scheme-only
+\ProspCovScheme\% is
+pulled up by \ProspRowsFpdyn{} FP8-dynamic rows from \ProspCkptsFpdyn{}
+checkpoints and \ProspRowsWeightsixteen{} W8A16 rows from \ProspCkptsWeightsixteen{}
+checkpoint, both at \ProspCovFpdyn\% coverage. W4A16, at \ProspRowsWfour{}
+of the \ProspN{} strict rows (\ProspRowsWfourShare\%), covers at
+\ProspCovWfour\%, above nominal. The one scheme below nominal is W8A8-int at
+\ProspCovWeightint\% on \ProspRowsWeightint{} rows from
+\ProspCkptsWeightint{} checkpoints. Earlier versions of this paragraph named
+W4A16 as the below-nominal scheme; that was true of the in-sample band and
+reversed when the shipped band was corrected (\S\ref{sec:audit}). The pooled
+number should be read as an average across schemes with very different sample
+sizes, not as a coverage claim uniform across schemes.
+
+\paragraph{Prospective composition, and what it does not support.} The
+\ProspN{} strict rows are not a balanced sample across the groups they come from.
+DeepSeek-R1-Distill checkpoints of Llama-3 and Qwen-2.5 bases contribute
+\ProspDsRows{} rows from \ProspDsCkpts{} checkpoints at \ProspDsCov\%;
+Gemma-3 contributes \ProspGThreeRows{} rows from \ProspGThreeCkpts{}
+checkpoints (\ProspGThreeBases{} base models) at \ProspGThreeCov\%; SmolLM,
+SmolLM3 and Nemotron-Nano contribute \ProspTailRows{} rows from
+\ProspTailCkpts{} checkpoints (\ProspTailBases{} base models) between them,
+all covered. Throughout, a \emph{checkpoint} is a quantized model artifact
+--- one (base model, scheme) pair that was evaluated --- and a base model is
+the unquantized model several of those derive from. The \ProspClusN{}
+checkpoints come from \ProspBases{} base models. An earlier version of this section split those into
+``in-family'' and ``out-of-family'' and compared the halves, and also noted
+that Gemma-3 sat below nominal while the small groups pulled the aggregate
+up. We have withdrawn both. On the shipped band Gemma-3 sits \emph{above}
+nominal and the pull-up more than halves, so neither leg of that argument
+survives; and a comparison that reverses when the band is corrected is not one
+we should have been making. We state the per-group coverages and claim nothing
+from their differences in either direction. The reason is the composition
+rather than the arithmetic: the ``out-of-family'' half was four-fifths
+Gemma-3, and the three groups behind the remaining \ProspTailRows{} rows are
+one checkpoint each, so what read as a result about transfer across families
+was Gemma-3 against DeepSeek-R1-Distill with a label implying more.
+
+\paragraph{Where these figures are computed, which is not where a reader
+would assume.} Every prospective figure in this section --- the row count, the
+covered count, the coverage percentage and both Clopper--Pearson bounds ---
+is computed by \texttt{verify/independent\_check.py}, a standard-library
+reimplementation that parses the raw cards itself and imports nothing from
+the pipeline. They are not the pipeline's own numbers. The pipeline computes
+the same five independently, and \texttt{paper/audit\_paper.py} compares the
+two arms row by row on every build; they agree exactly, and a disagreement
+fails the build. We report it this way round deliberately: a headline
+validation figure produced by the code under test is worth less than one
+produced by a second implementation, and if the two ever diverge we would
+rather the published number be the independent one. The cost is that the
+cross-check in \texttt{audit\_paper.py} is the only place the pipeline's own
+figure is held against it, so that check is load-bearing rather than
+decorative.
+
+\paragraph{Independent verification --- what and when.} The strict protocol
+above is implemented in \texttt{verify/independent\_check.py}, a from-scratch
+reimplementation that shares no code with the pipeline. It parses the raw
+model cards independently and recomputes the prospective-coverage figures
+this section reports. It is run against the card corpus on every corpus
+change, and its output \texttt{out/independent\_check.csv} holds
+\ProspAllRows{} prospective rows, of which \ProspN{} are the strict subset
+behind the numbers above. An earlier version of this paragraph said it had
+been run once, on a single date, and that its training-row comparisons had
+never fired against the shipped data. Both were out of date: the file has
+been regenerated repeatedly, and the training comparisons have fired and
+caught real defects --- a parser bug that silently dropped two rows, and a
+label-vocabulary divergence after the GPQA protocol split. It now reports
+\Nrows{} training rows on both sides, with zero rows found by only one side
+and zero delta or verdict disagreements.
+
+The card corpus itself is not committed (license and PII constraints;
+\texttt{PROVENANCE.md} 2026-09-27), so a reader without the cards cannot
+re-run the parse. What ships in its place is a tolerance-integrity gate on the
+committed output
+(\texttt{tests/test\_all.py::test\_independent\_check\_csv\_matches\_tolerance\_recomputation}):
+the gate recomputes each row's \texttt{inside} flag from its \texttt{lo},
+\texttt{hi} and \texttt{delta} under a $10^{-9}$ boundary tolerance, and
+fires if the frozen CSV disagrees with its own bounds. It is not a fresh
+independent parse.
 
 \section{Audit}\label{sec:audit}
 
@@ -1457,33 +1494,6 @@ somebody's judgement --- that list is itself derived from the nouns the paper
 counts with numerals, and the build fails when the paper begins counting
 something the list does not cover.
 
-\section{Conclusion}
-
-Per-model prediction of quantization accuracy damage from card-level
-features does not work on published data, and the reason is largely
-measurement noise rather than model capacity; predictors that use
-checkpoint-level statistics were not tested and remain open. What does
-work is narrower: a per-scheme calibrated envelope that is validated at
-\(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
-unseen checkpoints
-for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
-widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
-split in-family against out-of-family; the composition behind that split does
-not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
-either trusted or insufficient evidence, and in the latter case the interval
-is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
-\NCellsTotal{} cells are insufficient evidence. A third verdict that
-withholds the interval is implemented and does not fire here
-(\S\ref{sec:audit}). The more useful contribution may be the limitation
-itself---the published record of quantized models is outcome-truncated, and we
-measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
-estimate built on that record is a floor on risk, not a ceiling, and should say
-so.
-
-\bibliographystyle{plainnat}
-\bibliography{refs}
-
-\appendix
 
 \section{Process errors}\label{sec:process}
 

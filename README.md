@@ -215,7 +215,7 @@ and what one leave-one-family-out figure was before the corpus grew. They
 cannot be recomputed from the files here, because measuring them needs the
 git history and this artifact ships none. They are read from
 `out/percent_defect.json`, which records the date it was taken
-(`snapshot_taken`, currently **2026-10-16**) alongside each value, and
+(`snapshot_taken_utc`, currently **2026-10-16 UTC**) alongside each value, and
 `src/verify_claims.py` reads them from there rather than calling git — so the
 registry loads with no history at all. In the repository,
 `tests/test_all.py::test_percent_defect_json_matches_a_fresh_measurement`
