@@ -1320,6 +1320,36 @@ revision rather than of the present corpus, which is why they are literals
 and not macros. The hash lives here, where hashes are already cited and the
 supplement relabeller rewrites them.
 
+### 2026-10-16 (fourth) --- the disclosure footnote widened to cover drafting
+
+The page-1 footnote said the assistant was used "to write and audit analysis
+code". It now says "to write and audit analysis code **and to help draft and
+edit the text**". The earlier wording described a narrower use than occurred:
+the assistant drafted prose that ships, including passages in sections 5, 6
+and the appendices, the limitations paragraph, and most of PROVENANCE.md and
+AUDIT_DISCIPLINE.md. A disclosure that understates is worth widening before a
+submission rather than after, and TMLR asks for an explicit first-page
+footnote when an LLM assisted in writing.
+
+The footnote lives in each variant's preamble, not in the shared body, so all
+three carry it and it is byte-identical in all three. **Main content is still
+12 pages**: the references heading stays on page 12 with the conclusion
+entirely above it and page 13 continues the bibliography. 24 pages total, 0
+undefined references, 0 undefined citations, 0 `??`, 0 overfull boxes.
+
+**All three PDFs were rebuilt**, not just the submission one. `main.pdf` had
+been stale since the first trim and `neurips_main.pdf` since this footnote
+change; neither ships, but a committed artifact that disagrees with its own
+source is the stale-artifact class this record already documents seven times,
+and leaving two of them while fixing a third would have been the same
+mistake. `main.pdf` reports 8 overfull boxes: it is the named long-form
+variant at 11pt with 1in margins, a different layout from the submission, and
+it is not the submitted document.
+
+The dual-submission row in the submission form is confirmed accurate by the
+author: this work is not under review at any other venue, has not been
+published elsewhere, and has never been submitted elsewhere.
+
 ### 2026-10-16 (third) --- the caveats the trim left behind
 
 An audit of the trim asked a question the trim had not: when a paragraph
