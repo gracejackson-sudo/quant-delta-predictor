@@ -139,10 +139,13 @@ Our contributions:
     both on the same rows, and \S\ref{sec:results} records what that cost.
     Size enters only through a widen-only rule whose membership does not
     survive calibration, so we report it and do not claim the size band as a
-    risk signal. A
+    risk signal; \S\ref{sec:supporting} shows what the rule does and does not survive. A
     third verdict that withholds the interval outright is implemented and does
-    not fire on this corpus; \S\ref{sec:audit} records that as a decision
-    rather than an omission.
+    not fire on this corpus. We considered lowering the support floor until it
+    did and decided against it, because moving a pre-registered threshold in
+    response to a result is the retuning the pre-registration existed to
+    prevent; \S\ref{sec:audit} records that as a decision rather than an
+    omission.
   \item \textbf{An existence proof that the corpus omits severe outcomes}
     (\S\ref{sec:tail}), via GPU experiments on deliberately-faulted
     configurations---data the published record structurally cannot contain.
@@ -721,64 +724,6 @@ this sample size, and it is a statement about the corpus rather than about the
 construction. A reviewer should read the coverage figure as real and the
 guarantee behind it as thinner than a 90\% label normally implies.
 
-\paragraph{Size stratification does not survive calibration.} The envelope is
-conditioned on scheme alone; size enters only through a widen-only rule, where
-a (scheme, size-band) cell may raise the scheme's half-width and never lower
-it. The narrowing half was discarded earlier because it did not survive
-contact with unseen checkpoints. The widening half does not survive honest
-calibration either.
-
-Under the in-sample band, \SizeWidthsOld{} of the \StratCellsInSample{} cells
-it fitted raised their scheme's width. Under the calibrated band,
-\SizeWidths{} of \CalibCellsSurvived{} do. The two populations are not the
-same cells --- that is part of what fails here, not a detail of presentation
---- and only \StratCellsBoth{} cells widen under both. \StratWidenGone{} of
-the old widenings disappear and \StratWidenNew{} new ones appear, and for
-W8A16 the two size bands exchange places: the
-in-sample band flags \(>\)10B as the wider-spread case, the calibrated band
-flags 2--10B instead. Membership and direction both move. We therefore report
-the per-cell verdicts, which are measured per cell and unaffected by this, and
-we do not claim that the size band identifies which models within a scheme
-carry more risk. Where a cell has no calibrated size-specific width the tool
-prints the scheme interval and says which of two reasons applies: the cell is
-below the support floor, or it has the rows but not enough held-out evidence
-to justify a separate width.
-
-\paragraph{Size stratification: what survives and what does not.} Size
-enters the shipped envelope only through a widen-only rule --- a (scheme, size
-band) cell may raise its scheme's half-width and never lower it. Measured
-against the shipped band on the \StratRows{} strict prospective rows, that
-rule covers \StratWidenInside{} of them against \StratSchemeInside{} for the
-scheme-only envelope: \StratWidenGained{} rows more, and \StratWidenLost{}
-fewer. The direction is forced by the construction rather than observed,
-because a rule that can only raise a half-width cannot drop a covered row, so
-the widen-only inside-set must contain the scheme-only one and the only cost
-is width (\StratWidenWidth{}pp against \StratSchemeWidth{}pp). The data agrees
-on both populations: \StratWidenGainedAll{} rows gained and
-\StratWidenLostAll{} lost on the full prospective set as well. That
-monotonicity is why the rule is defensible rather than merely harmless --- no
-cell can be made falsely tight, and the worst case is an interval wider than
-it needed to be, which is the safer direction for a risk tool to err.
-
-Full stratification, a per-cell centre and width free to narrow, covers
-\StratFullInside{} of the same \StratRows{} rows at essentially unchanged mean
-width (\StratFullWidth{}pp). Against the scheme-only envelope it loses
-\StratFullLost{} rows and gains \StratFullGained{}: a two-way churn that only
-a rule permitted to narrow can produce. It tightens cells it should not and
-the prospective rows fall outside. That variant was discarded in an earlier
-version on a weaker measurement, in which the half-width was fitted in-sample;
-the conclusion survives the correction.
-
-What does not survive is any claim that the size band \emph{identifies} risk.
-Of the \StratCellsInSample{} cells the retracted in-sample band fitted,
-\SizeWidthsOld{} raised their scheme's width. Of the \CalibCellsSurvived{}
-the shipped band fits, \SizeWidths{} do, and \StratCellsBoth{} are the same
-cells. \StratBandReplaced{} scheme has its
-widening band \emph{replaced} rather than added or dropped --- W8A16, from
-\(>\)10B under the in-sample band to 2--10B under the shipped one. So the rule
-earns its place as a one-directional conservatism for thin small-model cells,
-and not as evidence that size predicts damage.
-
 \paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
 intervals exclude zero: the tool can never state that a scheme \emph{will}
 cost accuracy. And \BigLossBelow{} of \BigLosses{} observed losses worse
@@ -954,9 +899,15 @@ work is narrower: a per-scheme calibrated envelope that is validated at
 \(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
 unseen checkpoints
 for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
-widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
+widen-only size rule applied, as the tool applies it). The strict rows are concentrated: W4A16
+supplies \ProspRowsWfour{} of the \ProspN{} rows and they reach
+\ProspSchemes{} of the \Nsch{} schemes, so the envelope is far better
+evidenced for some schemes than others; \S\ref{sec:supporting} gives the
+breakdown. Coverage is reported per group rather than
 split in-family against out-of-family; the composition behind that split does
-not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
+not support a claim in either direction --- the out-of-family side is
+predominantly one family --- and \S\ref{sec:supporting} gives the
+composition (\S\ref{sec:results} reports the groups). The envelope also says which of its own cells it cannot judge: a cell is
 either trusted or insufficient evidence, and in the latter case the interval
 is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
 \NCellsTotal{} cells are insufficient evidence. A third verdict that
@@ -981,6 +932,64 @@ so.
 % text.
 
 \section{Supporting tables and composition}\label{sec:supporting}
+\paragraph{Size stratification does not survive calibration.} The envelope is
+conditioned on scheme alone; size enters only through a widen-only rule, where
+a (scheme, size-band) cell may raise the scheme's half-width and never lower
+it. The narrowing half was discarded earlier because it did not survive
+contact with unseen checkpoints. The widening half does not survive honest
+calibration either.
+
+Under the in-sample band, \SizeWidthsOld{} of the \StratCellsInSample{} cells
+it fitted raised their scheme's width. Under the calibrated band,
+\SizeWidths{} of \CalibCellsSurvived{} do. The two populations are not the
+same cells --- that is part of what fails here, not a detail of presentation
+--- and only \StratCellsBoth{} cells widen under both. \StratWidenGone{} of
+the old widenings disappear and \StratWidenNew{} new ones appear, and for
+W8A16 the two size bands exchange places: the
+in-sample band flags \(>\)10B as the wider-spread case, the calibrated band
+flags 2--10B instead. Membership and direction both move. We therefore report
+the per-cell verdicts, which are measured per cell and unaffected by this, and
+we do not claim that the size band identifies which models within a scheme
+carry more risk. Where a cell has no calibrated size-specific width the tool
+prints the scheme interval and says which of two reasons applies: the cell is
+below the support floor, or it has the rows but not enough held-out evidence
+to justify a separate width.
+
+\paragraph{Size stratification: what survives and what does not.} Size
+enters the shipped envelope only through a widen-only rule --- a (scheme, size
+band) cell may raise its scheme's half-width and never lower it. Measured
+against the shipped band on the \StratRows{} strict prospective rows, that
+rule covers \StratWidenInside{} of them against \StratSchemeInside{} for the
+scheme-only envelope: \StratWidenGained{} rows more, and \StratWidenLost{}
+fewer. The direction is forced by the construction rather than observed,
+because a rule that can only raise a half-width cannot drop a covered row, so
+the widen-only inside-set must contain the scheme-only one and the only cost
+is width (\StratWidenWidth{}pp against \StratSchemeWidth{}pp). The data agrees
+on both populations: \StratWidenGainedAll{} rows gained and
+\StratWidenLostAll{} lost on the full prospective set as well. That
+monotonicity is why the rule is defensible rather than merely harmless --- no
+cell can be made falsely tight, and the worst case is an interval wider than
+it needed to be, which is the safer direction for a risk tool to err.
+
+Full stratification, a per-cell centre and width free to narrow, covers
+\StratFullInside{} of the same \StratRows{} rows at essentially unchanged mean
+width (\StratFullWidth{}pp). Against the scheme-only envelope it loses
+\StratFullLost{} rows and gains \StratFullGained{}: a two-way churn that only
+a rule permitted to narrow can produce. It tightens cells it should not and
+the prospective rows fall outside. That variant was discarded in an earlier
+version on a weaker measurement, in which the half-width was fitted in-sample;
+the conclusion survives the correction.
+
+What does not survive is any claim that the size band \emph{identifies} risk.
+Of the \StratCellsInSample{} cells the retracted in-sample band fitted,
+\SizeWidthsOld{} raised their scheme's width. Of the \CalibCellsSurvived{}
+the shipped band fits, \SizeWidths{} do, and \StratCellsBoth{} are the same
+cells. \StratBandReplaced{} scheme has its
+widening band \emph{replaced} rather than added or dropped --- W8A16, from
+\(>\)10B under the in-sample band to 2--10B under the shipped one. So the rule
+earns its place as a one-directional conservatism for thin small-model cells,
+and not as evidence that size predicts damage.
+
 \paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
 Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3
 into one Llama-3 fold. The merged mean can conceal that Llama-3.3

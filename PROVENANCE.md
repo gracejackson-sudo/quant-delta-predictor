@@ -1320,6 +1320,49 @@ revision rather than of the present corpus, which is why they are literals
 and not macros. The hash lives here, where hashes are already cited and the
 supplement relabeller rewrites them.
 
+### 2026-10-16 (third) --- the caveats the trim left behind
+
+An audit of the trim asked a question the trim had not: when a paragraph
+moves to an appendix, does the caveat it carried still appear in the main
+text? Checked paragraph by paragraph, three did not.
+
+| caveat | state after the first trim |
+| --- | --- |
+| the merged Llama-3 fold hides a subgroup gap | in the main text, pointing at the right appendix |
+| the third verdict does not fire | in the main text twice, pointing at the right appendix |
+| what the composition does not support | in the main text, but **pointing at section 6**, where the composition no longer is |
+| what the prospective set does and does not cover | **absent from the main body entirely** -- the W4A16 concentration survived only in the abstract and the appendix |
+| the size band is not a risk signal | in the main text, but with **no pointer** once its evidence moved |
+
+Fixed by adding one sentence or one pointer each, no number and no
+conclusion changed: the composition pointer now names the supporting
+appendix, the main text states that W4A16 supplies most of the strict rows
+and that the envelope is better evidenced for some schemes than others, and
+the size-band caveat points at where the rule's behaviour is shown.
+
+**The abstract leaned on two appendices.** Its three cross-references now
+resolve to 3, A and B. The first is Data, in the main text. The other two
+were "we report the groups and do not difference them; A says why" and "B
+records why we left the thresholds alone" -- both pointing at reasoning that
+had moved out of the main text. That also corrects something I wrote: I
+described the audit section as holding no claim, result or limitation, and
+the threshold decision it holds is none of those, but the abstract leaned on
+it for a justification, which makes it load-bearing. The reason is now stated
+in the main text in one clause -- moving a pre-registered threshold in
+response to a result is the retuning the pre-registration existed to prevent
+-- so the abstract no longer depends on an appendix for its support, and the
+pointers remain for the detail.
+
+**The first fix broke the page budget, which is why the measurement is the
+check and not the plan.** Adding those sentences pushed the conclusion's last
+three lines onto page 13 ahead of the references, making the main content 13
+pages by exactly the rule it was supposed to satisfy. The two
+size-stratification paragraphs -- an ablation, and the category explicitly
+preferred for moving -- went to the supporting appendix as well. The
+references heading now sits on page 12 with the conclusion entirely above it
+and nothing of the main body on page 13: **main content 12 pages**, 24 total,
+0 undefined references, 0 undefined citations, 0 `??`, 0 overfull boxes.
+
 ### 2026-10-16 (second) --- the main content trimmed to 12 pages, nothing cut
 
 TMLR counts main content as everything before the references; appendices may
