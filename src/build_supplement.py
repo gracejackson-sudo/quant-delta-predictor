@@ -101,6 +101,32 @@ DROP_FILES: list[str] = [
     # "DAY_1/DAY_2" beside outreach drafts says accelerator cadence, which
     # is a soft de-anonymiser in a double-blind submission. Found 2026-10-15.
     ".gitignore",
+    # --- 2026-10-15: the submission is to TMLR, so only the TMLR source
+    #     ships. A supplement carrying a NeurIPS style file and a
+    #     NeurIPS-styled source states a competing venue to the reviewers
+    #     of this one, and the pack's own file 01 was built from the wrong
+    #     variant for a day because the two sat side by side.
+    #
+    #     paper/main.tex and paper/main.pdf (the NAMED variant) were already
+    #     excluded by not being collected; they are named here so the
+    #     exclusion is explicit rather than incidental -- "clean because
+    #     nothing happens to include it" is the shape this repository keeps
+    #     finding.
+    "paper/neurips_main.tex",
+    "paper/neurips_main.pdf",
+    "paper/neurips_2026.sty",
+    "paper/main.tex",
+    "paper/main.pdf",
+    # LaTeX intermediates. Not leaks on this machine -- the tectonic log
+    # carries no absolute path and no username, checked -- but they are
+    # build scratch, they are gitignored, and a log is exactly the kind of
+    # file that carries a path on somebody else's machine. DROP_FILES
+    # already treated paper/main.log this way; these are its siblings.
+    "paper/tmlr_main.aux",
+    "paper/tmlr_main.bbl",
+    "paper/tmlr_main.blg",
+    "paper/tmlr_main.log",
+    "paper/tmlr_main.out",
 ]
 # Whole directories to skip.
 DROP_DIRS: list[str] = [
@@ -768,8 +794,16 @@ def main() -> int:
     _n_hist = assert_history_is_complete()
     log(f"[3/6] relabelling this repository's own commit hashes "
         f"({_n_hist} commits reachable)")
+    # THE MAP GOES BESIDE THE BUILD TREE, NEVER BESIDE THE ZIP. It was
+    # written to the zip's own directory, which is right when the zip is
+    # built to a scratch path and wrong when it is built straight into the
+    # submission pack -- and that mapping is precisely the de-anonymiser the
+    # relabelling exists to withhold. It landed in the pack twice: once on
+    # 2026-10-14, moved out by hand and recorded as a latent hazard, and
+    # again on 2026-10-16 because moving the file had fixed nothing. The
+    # build tree is scratch by construction, so that is where it belongs.
     _, _, _stranded = relabel_commits(dst, map_path=os.path.join(
-        os.path.dirname(os.path.abspath(args.out_zip)) or ".",
+        os.path.dirname(os.path.abspath(dst)) or ".",
         "COMMIT_RELABEL_MAP.local.tsv"))
 
     if _stranded:

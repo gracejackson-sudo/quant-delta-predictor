@@ -73,7 +73,7 @@ sub-2B models there are too few independent published checkpoints to trust a num
 
 ## Where to go next
 
-1. [`paper/main.tex`](paper/main.tex) / [`paper/neurips_main.tex`](paper/neurips_main.tex): the current write-up. **This is the source of truth for every figure** — it is regenerated from the claims registry (`src/verify_claims.py`) on every build and audited by `paper/audit_paper.py`.
+1. [`paper/tmlr_main.tex`](paper/tmlr_main.tex): the current write-up. **This is the source of truth for every figure** — it is regenerated from the claims registry (`src/verify_claims.py`) on every build and audited by `paper/audit_paper.py`.
 2. [TOOL_SUMMARY.md](TOOL_SUMMARY.md): one page, what it does, what it flags, what it cannot do
 3. [FINDINGS.md](FINDINGS.md): the original 2026-09-21 narrative; kept for the record, but its figures are frozen at that date and sit outside every gate (see AUDIT_DISCIPLINE.md). Where it differs from the paper, the paper is correct.
 
@@ -204,9 +204,33 @@ python3 verify/independent_check.py            # AFTER real_use_case.py, BEFORE 
 ./.venv/bin/python src/gen_negative_result.py
 ./.venv/bin/python src/gen_bias_doc.py
 ./.venv/bin/python src/gen_one_sided_doc.py
-./.venv/bin/python src/gen_feedback_doc.py
 ./.venv/bin/python paper/gen_numbers.py
 ./.venv/bin/python src/verify_claims.py        # re-verify every tagged number
+```
+
+Some figures in the paper's appendix are **recorded measurements of this
+repository's own history**, not recomputations of the present corpus: how
+much of the paper a defective comment-stripper hid, how long it was live,
+and what one leave-one-family-out figure was before the corpus grew. They
+cannot be recomputed from the files here, because measuring them needs the
+git history and this artifact ships none. They are read from
+`out/percent_defect.json`, which records the date it was taken
+(`snapshot_taken`, currently **2026-10-16**) alongside each value, and
+`src/verify_claims.py` reads them from there rather than calling git — so the
+registry loads with no history at all. In the repository,
+`tests/test_all.py::test_percent_defect_json_matches_a_fresh_measurement`
+re-measures them against the real history and fails on any drift; here it
+skips, loudly, because the input is absent.
+
+`EXTERNAL_FEEDBACK.md` is generated too, by a script that is **not** included
+here: it embeds this repository's commit hashes in the text it emits, and a
+commit hash identifies the repository through a code-host search, so it is
+withheld from the anonymous supplement along with
+`tools/measure_percent_defect.py` and `tests/_git_constants.py`. The
+generated document ships; the generator does not. Nothing else in the
+pipeline depends on them.
+
+```bash
 ./.venv/bin/python -m pytest tests -q          # LAST: the suite checks artifact freshness
 ```
 

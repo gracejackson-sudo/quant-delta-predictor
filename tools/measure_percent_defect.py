@@ -260,6 +260,13 @@ def main() -> int:
               f"history to run this.")
         return 3
     out["exposure"] = _exp
+    # WHEN THE MEASUREMENT WAS TAKEN. These figures are measurements of
+    # history, not recomputations of the present, so a reader needs to know
+    # when they were read as well as what they say. README.md cites this
+    # field.
+    import datetime as _dt
+    out["snapshot_taken"] = _dt.datetime.now(
+        _dt.timezone.utc).strftime("%Y-%m-%d")
     _hf = measure_hidden_figures(lines, _show(f"{BEFORE}:paper/neurips_main.tex"))
     if _hf is None:
         print("UNCHECKED: the two sentences the appendix describes are not "

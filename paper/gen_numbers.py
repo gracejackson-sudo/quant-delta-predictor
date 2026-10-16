@@ -470,7 +470,9 @@ def main():
     # the .tex first makes the set self-maintaining: write the reference,
     # re-run the generator, and the macro appears.
     _refs = ""
-    for _v in ("main.tex", "neurips_main.tex"):
+    sys.path.insert(0, HERE)
+    from texbody import variant_paths as _vp_fn       # noqa: E402
+    for _v in _vp_fn(HERE):
         _vp = os.path.join(HERE, _v)
         if os.path.isfile(_vp):
             _refs += open(_vp, encoding="utf-8").read()

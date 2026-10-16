@@ -1320,6 +1320,50 @@ revision rather than of the present corpus, which is why they are literals
 and not macros. The hash lives here, where hashes are already cited and the
 supplement relabeller rewrites them.
 
+### 2026-10-16 --- the TMLR variant, and the style files it is built from
+
+The pack's file 01 had been built from the NeurIPS source for a day. The
+submission is to TMLR, so `paper/tmlr_main.tex` now exists and is built
+against the TMLR template's own style files, copied **unmodified** from the
+style distribution. The template warns that tweaking them may be grounds for
+rejection, so they are not touched, and their hashes are recorded here so a
+reader can confirm that:
+
+| file | sha256 |
+| --- | --- |
+| `paper/tmlr.sty` | `816214ff5919aa457b6b443bee52b15d9561421417b7f8a50cc84651519f0002` |
+| `paper/tmlr.bst` | `306fd454cf40771bee01293eeb98d2c1cd5f4e11ed0cd7296b335f354fc45206` |
+| `paper/math_commands.tex` | `90473c4d0542070db244cea73ef962d6cddc5b2a746757e6a40ddf5fdfb90ba9` |
+| `paper/fancyhdr.sty` | `3d2922548e0e5f1a6c5676eda6ebb6dc20d7d305b4d8c2be5f1c833fb1084e6d` |
+
+`\usepackage{tmlr}` takes **no option**, which is the anonymous submission
+mode: it prints "Under review as submission to TMLR" and suppresses the
+author block. `[accepted]` is camera-ready and `[preprint]` de-anonymises;
+the template says a non-anonymous submission is rejected without review, so
+neither is used.
+
+**Everything from the document body down is byte-identical to the other
+variant** -- 114,247 characters -- and both read `paper/numbers.tex`, so no
+figure can drift between them. Only the preamble differs.
+
+Built with `tectonic`, because `latexmk`, `pdflatex` and `bibtex` are not
+installed on this machine; the audit asked for latexmk and this is the
+substitution. The log carries **0 undefined references, 0 undefined
+citations, 0 `??` and 0 overfull boxes**, and 5 underfull boxes, which are
+spacing warnings rather than errors. **24 pages**, header confirmed on all
+24, and the page-1 LLM-disclosure footnote present.
+
+**The bibliography style did not change.** It remains `plainnat`, as the
+`.blg` confirms. `tmlr.bst` is copied in as instructed but not selected: the
+standing rule was to keep the current style unless the build breaks, and it
+did not break. TMLR accepts any consistent style.
+
+**Main content is 13 pages, not 9.** Sections 1--8 run to page 13; section 9
+(Audit) starts on page 14 and the appendix material runs to 24. The
+submission form claimed "9 pages" and "main content is well under 12 pages".
+Both were true of an older, shorter draft and are not true of this build;
+the form is corrected and the editorial claim is the author's to make.
+
 ### 2026-10-14 --- tuned_baselines reproduces; the DIFFERS was my script
 
 **The last outstanding artifact is closed.** `out/tuned_baselines.json` is

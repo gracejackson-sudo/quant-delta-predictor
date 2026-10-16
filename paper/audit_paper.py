@@ -52,7 +52,7 @@ print(f"   referenced-but-undefined      : {len(undef)} {undef if undef else ''}
 # span-rule test reads THIS reduction rather than a copy of its
 # patterns. It used to hold copies, and planting the escaped-percent
 # bug here left that test green.
-from texbody import strip_tex  # noqa: E402
+from texbody import strip_tex, variant_paths  # noqa: E402
 body, BODY_SPANS = strip_tex(TEX)
 NUM = re.compile(r"(?<![\w.\\])\d+(?:\.\d+)?(?![\d])")
 EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "38", 
@@ -405,8 +405,11 @@ print(f"   figures written as words      : {len(wordhits)}")
 #
 # Checked against the UNION of both variants, because an entry that is live
 # in one and absent from the other is doing its job.
+_VARIANTS = variant_paths(HERE)
+if TEXNAME not in _VARIANTS:                 # the one under test, always
+    _VARIANTS.append(TEXNAME)
 _we_hits = set()
-for _wv in ("main.tex", "neurips_main.tex"):
+for _wv in _VARIANTS:
     _wp = os.path.join(HERE, _wv)
     if not os.path.isfile(_wp):
         continue
@@ -420,6 +423,7 @@ if _we_dead:
         "standing permission for a phrase the paper no longer contains; "
         "remove it, or say in a comment why it is being held:\n      "
         + "\n      ".join(repr(e) for e in _we_dead))
+print(f"   variants scanned for exemptions: {_VARIANTS}")
 print(f"   dead WORD_EXEMPT entries      : {len(_we_dead)} "
       f"{_we_dead if _we_dead else ''}")
 
@@ -441,7 +445,7 @@ print(f"   dead WORD_EXEMPT entries      : {len(_we_dead)} "
 # Checked against the UNION of both variants, as with WORD_EXEMPT: an entry
 # live in one and absent from the other is doing its job.
 _num_seen = set()
-for _nv in ("main.tex", "neurips_main.tex"):
+for _nv in _VARIANTS:
     _np = os.path.join(HERE, _nv)
     if not os.path.isfile(_np):
         continue

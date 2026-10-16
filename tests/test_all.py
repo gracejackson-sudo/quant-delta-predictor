@@ -4877,7 +4877,13 @@ def test_percent_defect_json_matches_a_fresh_measurement():
              " if l.startswith('body = re.sub(')];"
              "out = {'variants': {v: m.measure_one(lines,"
              " m._show(f'{m.BEFORE}:paper/' + v)) for v in m.VARIANTS},"
-             " 'exposure': m.measure_exposure()};"
+             " 'exposure': m.measure_exposure(),"
+             # Assembled from the tool's own functions, not reimplemented
+             # here: a re-measurement that builds the structure its own way
+             # is a test of this test.
+             " 'stripper': m.measure_hidden_figures(lines,"
+             " m._show(f'{m.BEFORE}:paper/neurips_main.tex')),"
+             " 'lofo_at_before': m.measure_lofo_at_before()};"
              "print(json.dumps(out, sort_keys=True))"],
             capture_output=True, text=True, cwd=root, env=env)
         assert r.returncode == 0, (
@@ -4885,7 +4891,39 @@ def test_percent_defect_json_matches_a_fresh_measurement():
         fresh = json.loads(r.stdout)
         del td
 
+    # EVERY BLOCK, NOT THE TWO I HAPPENED TO WRITE FIRST. This compared
+    # only `variants` and `exposure`. When `stripper` and `lofo_at_before`
+    # were added on 2026-10-15 -- the figures the registry had stopped
+    # taking from live git -- nothing compared them, so a corrupted value
+    # in either would have flowed into the paper through its macro while
+    # this test and `675/675 claims verified` both stayed green. Found by
+    # mutating stripper.hidden_figures from 1 to 2: both passed.
+    #
+    # Walking the structure instead of naming blocks means the next block
+    # added is covered by default rather than by remembering to come back.
+    def _flat(o, path=""):
+        if isinstance(o, dict):
+            for k in sorted(o):
+                yield from _flat(o[k], f"{path}.{k}" if path else k)
+        elif isinstance(o, list):
+            yield path, tuple(o)
+        else:
+            yield path, o
+
+    # ONE NAMED EXCLUSION. `snapshot_taken` records when the measurement was
+    # read, which is not a property of the history being measured and cannot
+    # be re-derived from it. Named rather than pattern-matched, so a second
+    # non-reproducible field cannot slip in beside it.
+    NOT_REDERIVABLE = {"snapshot_taken"}
+    flat_c = {k: v for k, v in _flat(committed) if k not in NOT_REDERIVABLE}
+    flat_f = {k: v for k, v in _flat(fresh) if k not in NOT_REDERIVABLE}
     drift = []
+    for key in sorted(set(flat_c) | set(flat_f)):
+        a, b = flat_c.get(key, "<absent>"), flat_f.get(key, "<absent>")
+        same = (abs(a - b) < 1e-9
+                if isinstance(a, float) and isinstance(b, float) else a == b)
+        if not same:
+            drift.append(f"{key}: committed {a!r}, measured {b!r}")
     for v in sorted(committed["variants"]):
         assert v in fresh["variants"], f"{v} missing from the re-measurement"
         for k in sorted(committed["variants"][v]):
@@ -4901,6 +4939,7 @@ def test_percent_defect_json_matches_a_fresh_measurement():
         b = fresh["exposure"].get(k)
         if a != b:
             drift.append(f"exposure.{k}: committed {a}, measured {b}")
+    drift = sorted(set(drift))
     assert not drift, (
         "out/percent_defect.json disagrees with a fresh measurement from "
         "history. The appendix's figures are generated from this file, so "

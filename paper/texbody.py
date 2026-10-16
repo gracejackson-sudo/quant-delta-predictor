@@ -59,3 +59,25 @@ def strip_tex(tex: str):
         "strip_tex changed the length of the document; offsets into `body` "
         "would no longer index the source")
     return body, spans
+
+
+def variant_paths(here):
+    """-> the paper variants that actually exist in `here`, in order.
+
+    DISCOVERED, NOT HARDCODED. Two gates scanned the literal tuple
+    ("main.tex", "neurips_main.tex") to decide whether an exemption still
+    matched anything. When the supplement stopped shipping those two -- the
+    submission is to TMLR, so only the TMLR source ships -- both gates found
+    no variants, concluded every exemption was dead, and failed the paper
+    gate with 46 spurious findings. Exit 1 on a correct document, from a
+    reduction whose input had moved.
+
+    The same shape as the stripper that read 97% of the paper and the
+    verifier that printed agreement over zero comparisons: the check was
+    fine and its input was not. So the list is derived from the directory,
+    and a caller that finds none can say so rather than inferring from an
+    empty set.
+    """
+    import os
+    return [f for f in ("tmlr_main.tex", "neurips_main.tex", "main.tex")
+            if os.path.isfile(os.path.join(here, f))]

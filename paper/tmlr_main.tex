@@ -1,0 +1,1797 @@
+% TMLR submission, anonymous.
+%
+% The style files here are the TMLR template's own, copied unmodified:
+% tmlr.sty, tmlr.bst, math_commands.tex and fancyhdr.sty. The
+% template warns that tweaking them may be grounds for rejection, so they
+% are not touched -- the sha256 of each is recorded in PROVENANCE.md.
+%
+% NO OPTION TO \usepackage{tmlr} IS THE ANONYMOUS SUBMISSION MODE. It is
+% what puts "Under review as submission to TMLR" in the page-1 header and
+% what suppresses the author block. [accepted] is for camera-ready and
+% [preprint] for de-anonymised posting; the template says a non-anonymous
+% submission is rejected without review, so neither appears here.
+%
+% EVERYTHING FROM THE DOCUMENT BODY DOWN IS SHARED VERBATIM with the
+% repository's other submission variant, and both read paper/numbers.tex,
+% so no figure can drift between them. The test suite compares the shared
+% region byte for byte. Only this preamble differs.
+\documentclass[10pt]{article}
+\usepackage{tmlr}
+
+\input{math_commands.tex}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\input{numbers}
+
+% \month and \year are referenced by tmlr.sty's accepted-mode header. They
+% are unused in anonymous mode but must be defined for the package to load.
+\def\month{MM}
+\def\year{2026}
+
+\title{Calibrated Risk Envelopes for LLM Quantization,\\
+and the Limits of Predicting Compression Damage%
+\thanks{The author used Claude (Anthropic), an AI assistant, to write and audit analysis code. The author directed the research, reviewed every result, and is responsible for all claims in this paper.}}
+
+% The author block is suppressed by tmlr.sty in anonymous mode. It is given
+% in the template's own placeholder form rather than left out, because the
+% package expects \author to exist.
+\author{\name Anonymous Author(s) \email ~\\
+      \addr Affiliation\\
+      Address}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Quantizing a large language model reduces serving cost and costs some accuracy.
+Determining how much normally requires re-running a full benchmark suite, which
+is the expense quantization was meant to avoid. We ask whether the accuracy
+delta can be predicted instead. Using \Nrows{} published evaluations spanning
+\NQuantCkpt{} quantized checkpoints from \NBase{} base models, \Nfam{} model
+families and \Nsch{} quantization schemes, we report three results. First, a \emph{negative} one: per-model
+prediction carries almost no signal. Under leave-one-family-out validation a
+per-scheme mean beats a global mean by \(\MaeGain\)pp of MAE (95\%
+checkpoint-bootstrap CI \([\MaeGainLo, \MaeGainHi]\)), and evaluation noise
+accounts for at least a third of the variance on \NoiseNThird{} of
+\NoiseNBench{} benchmarks. The features are card-level (bit-width, scheme,
+size, benchmark identity, headroom); we did not test checkpoint-derived
+features such as weight statistics or activation-outlier metrics. Tuned by
+nested cross-validation inside each training fold, ridge and gradient boosting
+reach \MaeRidgeTuned{} and \MaeGradboostTuned{}pp---past the global mean, but
+past the per-scheme mean only by margins whose checkpoint-bootstrap intervals
+contain zero (\([\TuneSchemeVsRidgeLo, \TuneSchemeVsRidgeHi]\)pp for ridge).
+Prediction has \HeadroomPp{}pp of headroom between the global mean and the
+\MaeFloor{}pp evaluation-noise floor; the shipped per-scheme mean recovers
+\SchemeHeadroomPct{}\% of it and the best tuned model
+\PredBestHeadroomPct{}\%. What the tuning \emph{selects} is the result: in
+\TuneRidgeFoldsEdge{} of \TuneOuterFolds{} folds it drives ridge to the
+largest penalty in the grid, and in every fold gradient boosting to the
+slowest learning rate and heaviest regularisation on offer. Asked for the best
+card-feature model, nested cross-validation answers one shrunk almost to a
+constant.
+Second, a positive one: conditioning only on the quantization scheme yields
+per-scheme split-conformal intervals with \(\ProspCovScheme\%\) two-sided
+empirical coverage for the scheme-only envelope, before the size rule
+(\(\ProspInsideScheme/\ProspN\) rows from \ProspClusN{} unseen quantized
+checkpoints --- one (base model, scheme) pair each --- derived from
+\ProspBases{} base models). Applying the widen-only size rule as the tool applies it gives
+\(\ProspCov\%\) (\(\ProspInside/\ProspN\)), with a 95\% cluster-robust CI of
+\([\ProspCrLo,\ProspCrHi]\) clustered on the checkpoint, because rows from one
+quantization run are not independent. Under the family definition of \S\ref{sec:data} the
+strict set is three uneven groups, not a balanced sample across them:
+DeepSeek-R1-Distill of Llama-3 and Qwen-2.5 bases (\ProspDsRows{} rows,
+\ProspDsCkpts{} checkpoints from \ProspDsBases{} base models,
+\ProspDsCov\%), Gemma-3 (\ProspGThreeRows{} rows, \ProspGThreeCkpts{}
+checkpoints from \ProspGThreeBases{} base models, \ProspGThreeCov\%), and
+SmolLM, SmolLM3 and Nemotron-Nano together (\ProspTailRows{} rows,
+\ProspTailCkpts{} checkpoints from \ProspTailBases{} base models, all
+covered). We report the groups and do not difference them;
+\S\ref{sec:results} says why. Those checkpoints cover \ProspSchemes{} of the \Nsch{} schemes,
+and W4A16 supplies \ProspRowsWfour{} of the \ProspN{} rows.
+Each (scheme, size-band) cell returns one of two operative verdicts: trusted,
+or insufficient evidence, where the interval is still shown but the scheme is
+demoted and flagged. \NCellsInsuff{} of \NCellsTotal{} cells are
+insufficient evidence. The implementation carries a third verdict that
+withholds the interval outright; it does not fire on this corpus, and
+\S\ref{sec:audit} records why we left the thresholds alone rather than
+lowering one to reach it. Third, and most consequential for
+practice: the published corpus
+is outcome-truncated. Every configuration in it is one that someone chose to
+release. We rented an A100 and measured deliberately-faulted configurations,
+observing losses to \(\AdvWorst{}\)pp against a published worst case of
+\(\WorstWfour{}\)pp---measured, we stress, only on models of \AdvMaxB{}B and
+below, and on configurations engineered to fail rather than typical ones. This is an existence proof that far worse outcomes
+exist than the corpus contains; it does not estimate how common they are. We argue the resulting artifact should be described as a
+calibrated historical baseline rather than a predictor, and we state precisely
+why its coverage guarantee does not transfer to a practitioner's own untuned
+recipe. Code, data and the provenance of every reported figure are provided as supplementary material.
+\end{abstract}
+
+\section{Introduction}
+
+Post-training quantization is now routine. A practitioner choosing between
+W4A16, W8A8 and FP8 wants one number: how much accuracy will this cost? In
+practice the only way to know is to run the evaluation.
+
+This paper asks whether that number can be forecast from the public record.
+Model publishers release quantized checkpoints with benchmark tables comparing
+the compressed model against its dense parent. Aggregated, these are hundreds
+of paired measurements of exactly the quantity of interest (\NrowsRaw{} extracted in our harvest).
+
+Our contributions:
+
+\begin{enumerate}
+  \item \textbf{A negative result} (\S\ref{sec:negative}). Per-model
+    prediction of the accuracy delta \emph{from card-level features} does
+    not work usefully, and we show why: the target is dominated by evaluation
+    noise. Tuned by nested cross-validation, ridge and gradient boosting do
+    edge past both the global mean and the shipped per-scheme lookup, but by
+    an amount whose interval includes zero and only by shrinking almost to a
+    constant, which is itself the evidence. The shipped artifact is therefore
+    the best \emph{justifiable} predictor rather than the best-scoring one.
+    Checkpoint-derived features (weight statistics, activation-outlier
+    metrics) were not tested. We report this as the primary finding rather
+    than burying it.
+  \item \textbf{A calibrated envelope that does work} (\S\ref{sec:results}),
+    conditioned on scheme alone, with measured coverage on held-out checkpoints
+    and a per-cell verdict for each (scheme, size-band) cell: \emph{trusted},
+    or \emph{insufficient evidence}, where the interval is still shown but the
+    scheme is demoted and the cell flagged as one the tool cannot judge.
+    \NCellsInsuff{} of \NCellsTotal{} cells are insufficient evidence. The
+    interval is split conformal, with the centre and the width estimated on
+    disjoint sets of checkpoints; an earlier version of this artifact computed
+    both on the same rows, and \S\ref{sec:results} records what that cost.
+    Size enters only through a widen-only rule whose membership does not
+    survive calibration, so we report it and do not claim the size band as a
+    risk signal. A
+    third verdict that withholds the interval outright is implemented and does
+    not fire on this corpus; \S\ref{sec:audit} records that as a decision
+    rather than an omission.
+  \item \textbf{An existence proof that the corpus omits severe outcomes}
+    (\S\ref{sec:tail}), via GPU experiments on deliberately-faulted
+    configurations---data the published record structurally cannot contain.
+    It shows that losses far beyond anything published are reachable on small
+    models. It does not estimate how large the bias is: our attempt at a
+    correction (in the supplement) did not work well enough to ship.
+  \item \textbf{An audit} (\S\ref{sec:audit}) recording errors we found in
+    our own work, including ones that changed published numbers and claims.
+\end{enumerate}
+
+\section{Related Work}
+
+\paragraph{Predicting evaluations.} BenchPress~\cite{zeng2026benchpress}
+establishes the mechanism closest to ours: predict an eval result, estimate
+whether to trust it, wrap it in a conformal interval, and decide whether to skip
+the real run. Their score matrix over 84 frontier models and 133 benchmarks is
+approximately rank-2. We do not claim novelty against them on mechanism. Their
+estimand is a model's absolute score; ours is the paired delta between a model
+and its compressed self, and quantized checkpoints do not appear in their paper.
+
+\paragraph{Conformal prediction on compressed models.}
+\citet{tong2026compression} apply conformal prediction directly to
+quantized and sparse LLMs, which is a closer domain than BenchPress. The
+estimand differs: they evaluate predictive uncertainty (coverage and set
+size) \emph{after} running the compressed model. Ours is constructed over
+historical accuracy deltas to give an interval \emph{before} running anything.
+Their Figure~2 plots
+the same quantity we predict, \(\text{Acc}_{\text{compressed}} -
+\text{Acc}_{\text{dense}}\), but measures it. Their finding that compression
+decouples accuracy from uncertainty bounds what an accuracy-only estimate like
+ours can claim (\S\ref{sec:limits}). Their design also leaves the question
+this paper measures open: in correspondence, an author of that work confirmed
+that each model and compression configuration was calibrated and tested
+separately, so no held-out-family transfer result is reported there. Whether a
+calibration fitted on one model family carries to an unseen one is therefore
+unaddressed in the closest prior work, which is the gap \S\ref{sec:results}
+measures. That is a difference in question asked, not a claim of novelty on
+mechanism.
+
+\paragraph{Quantization methods.} The checkpoints we harvest are produced with
+GPTQ~\cite{frantar2022gptq} and SmoothQuant~\cite{xiao2022smoothquant} via
+llm-compressor~\cite{llmcompressor}. \citet{kumar2024scaling} fit a functional form that predicts degradation
+from training and inference in varied precisions, using pretraining runs of models up to 1.7B parameters. We fit no such law: our
+envelope is empirical, per scheme, over published post-training-quantized checkpoints.
+
+\paragraph{The source of our data.} \citet{kurtic2024halfmillion}
+report over 500{,}000 evaluations of quantized Llama-3.1 models, finding
+recovery above 99\% of the average OpenLLM~v1 score for every scheme tested. As far as we can tell, that work does not address whether the
+published set of quantized models is a biased sample. Characterising that gap is
+the contribution of \S\ref{sec:tail}.
+
+\paragraph{Selection bias.} Survivorship bias has been
+identified and measured in a widely used retrieval benchmark~\cite{gupta2022survivorship}.
+Conformal prediction's guarantee is known to fail under selection:
+conditional on a selection event, calibration data are no longer exchangeable
+with a test point~\cite{barber2023beyond,jin2024focal}. We apply this directly
+to our own artifact in \S\ref{sec:limits}.
+
+\section{Data}\label{sec:data}
+
+We harvest published model cards into rows of
+\((\text{model}, \text{scheme}, \text{benchmark},
+\text{acc}_{\text{before}}, \text{acc}_{\text{after}})\), yielding \NrowsRaw{}
+rows, of which \Nrows{} remain after dropping \NrowsDropped{} whose baseline accuracy is below
+\MinAccBefore{}\% (near chance, where a delta is uninformative), across
+\NQuantCkpt{} quantized checkpoints drawn from \NBase{} base models,
+\Nfam{} families and \Nsch{} schemes. The checkpoint count is not a count of
+independent units and no interval in this paper treats it as one: several
+checkpoints share a base model, so the unit of evidence on the training side
+is the base model and the prospective headline is clustered on the checkpoint
+(\S\ref{sec:results}).
+
+\paragraph{An integrity gate.} Cards typically print a \emph{Recovery \%}
+column alongside the before/after pair. This is redundant information, and we
+exploit it: for every three-column row we check
+\(\text{recovery} \approx 100 \times \text{after}/\text{before}\) to a tolerance
+derived from the card's own printed precision, and reject rows that disagree.
+This caught spurious values that our parser produced under column-order variation between
+card templates, and internally inconsistent cards. Rejections are recorded rather
+than silently dropped.
+
+\paragraph{A structural limitation, stated at the outset.} All rows come from a
+single publisher using a single toolchain. Holding out a model family tests
+transfer across \emph{models}; nothing in this design tests transfer across
+\emph{quantization practitioners}. \S\ref{sec:tail} gives direct evidence that
+this distinction matters.
+
+\paragraph{What we mean by family.} Throughout, two checkpoints share
+a family when one is derived from the other's pretraining weights (via
+distillation, continued pretraining, quantization, or fine-tuning), or when
+they share a common pretraining base model. A distillation is a member
+of its teacher's family; a new pretraining run is a new family, regardless
+of shared name. This is the mechanistic definition: quantization damage
+depends on the weight distribution and activation-outlier structure the
+checkpoint inherits, and derivative products inherit them, while new
+pretraining runs produce different weight distributions and different
+quantization behaviour. In particular, under this definition Gemma-3 and
+Gemma-2 are separate families (independent pretraining runs), Llama-3.1,
+Llama-3.2 and Llama-3.3 all belong to the same Llama-3 family
+(Llama-3.2 1B/3B are pretraining-time distillations from Llama-3.1
+8B/70B logits; Llama-3.2 11B/90B are Llama-3.1 plus a vision adapter;
+Llama-3.3-70B is a Llama-3.1-70B fine-tune -- Meta's own model cards
+state each of these lineages), and DeepSeek-R1-Distill-Llama-8B is a
+member of that Llama-3 family (it uses Llama-3.1-8B weights as
+initialization). The \Nfam{} training families are Gemma-2, Granite,
+Llama-3, Mistral, Qwen-2.5 and Qwen-3. An earlier version of this paper
+counted Llama-3.1, Llama-3.2 and Llama-3.3 as three separate families, so
+the corpus was reported as having 8 training families rather than 6, and
+leave-one-family-out was run over 8 folds rather than 6; the audit note
+in \S\ref{sec:audit} records the change and its effect on the aggregate
+LOFO figure.
+
+\paragraph{The pathway is only sparsely documented.} A live scan on
+2026-09-26 across the \NRhCardsListed{} RedHatAI quantized-model cards
+currently published on Hugging Face (of which \NRhCardsHarvested{}
+contribute rows to our harvested dataset) shows how sparsely the pathway
+that produced these outcomes is documented: \NRhCardsWithLibVersion{} of
+\NRhCardsListed{} cards pin a quantization-library version,
+\NRhCardsWithActOrder{} mention activation reordering,
+\NRhCardsWithDamp{} mention dampening, and \NRhCardsNoRecipe{} of
+\NRhCardsListed{} report none of \texttt{num\_calibration\_samples},
+\texttt{max\_sequence\_length}, activation reordering or dampening. On the
+\NRhCardsHarvested{}-card subset that our dataset draws rows from,
+\NRhHarvestedWithLibVersion{} pin a library version and
+\NRhHarvestedNoRecipe{} of \NRhCardsHarvested{} report none of those four
+parameters. (This RedHatAI-only scan is distinct from the \PubChecked{}-publisher,
+\PubCards{}-card publisher census reported in \S\ref{sec:audit}, which is an
+earlier stable snapshot spanning multiple publishers and asks a different
+question.) The published record we calibrate against is therefore a record
+of outcomes with the pathway that produced them substantially undocumented
+on the publisher whose cards contribute the largest single share of our
+corpus, which is one of the reasons an outcome-truncation argument
+(\S\ref{sec:tail}) cannot be closed from the corpus alone.
+
+\section{Method}\label{sec:method}
+
+\paragraph{Conformal-style intervals.} We use the residual-quantile
+construction of split conformal regression~\cite{lei2018distribution}: given
+residuals \(\{s_i\}_{i=1}^{n}\) and level \(\alpha\), the interval half-width
+is the \(\lceil (n+1)(1-\alpha) \rceil\)-th smallest score, which under a
+proper calibration/test split gives exact finite-sample coverage under
+exchangeability. The shipped per-scheme interval is built this
+way: the \NBase{} base models are partitioned once into a fit side supplying
+the centre and a disjoint calibration side supplying the width, every
+checkpoint of a base model going to the same side, so the two sides share no
+base model (\S\ref{sec:results}). Earlier versions did not --- centre and width came
+from the same rows, an in-sample residual-quantile band carrying the
+arithmetic of a guarantee it did not have. The description was not the only
+thing that was wrong: every prospective coverage figure we published for that
+band was also measured on it, by three separate scripts that each built it
+in-sample and therefore agreed with one another. Those figures have all moved,
+two of them reversing which scheme is the worst covered and whether clustering
+widens the interval or narrows it. \S\ref{sec:audit} lists what moved and by
+how much; a reader who wants to know what else changed should start there
+rather than infer it from this paragraph.
+
+Two limitations of the implementation, stated because neither is what a reader
+would assume from the construction above. First, where \(n\) is too small for
+the index to exist we do \emph{not} return \(\infty\). A scheme whose
+calibration side has fewer than nine rows silently retains its fit-side
+width, which is in-sample; a (scheme, size-band) cell in the same position is
+dropped and falls back to the scheme width. Neither is an infinite band, and
+an earlier version of this paragraph claimed otherwise. On the current corpus
+no scheme is in that position and \CalibCellsStarved{} of
+\CalibCellsAttempted{} cells are, so nothing shipped
+is affected --- but the fallback is in-sample and the honest description of it
+is that we have not implemented the \(\infty\) behaviour, not that we chose
+it. Second, the guarantee is only as strong as the number of exchangeable
+units behind each width, and ours is \CalibUnitsMin{} to \CalibUnitsMax{}
+checkpoints per scheme against the \CalibUnitsFloor{} we fixed in advance
+(\S\ref{sec:results}).
+
+\paragraph{Mondrian (group-conditional) calibration.} Calibrating separately within categories is the Mondrian construction of \citet{vovk2005algorithmic}, applied to regression by \citet{bostrom2020mondrian}. A single marginal
+interval advertised at 90\% covers only \NvfpMarginal\% of NVFP4 rows
+under leave-one-family-out (recomputed live)---the users who most need it.
+We therefore calibrate per scheme.
+
+\paragraph{The verdict rule.} For each (scheme, size-band) cell we
+measure coverage directly. The rule defines three verdicts and two of them
+fire on this corpus; the third is implemented and unreachable here, which
+\S\ref{sec:audit} treats as a decision we took deliberately. A cell
+is \emph{trusted} when measured coverage is adequate and adequately supported.
+It is \emph{refused}---\texttt{INSUFFICIENT CALIBRATION}, no interval---when
+coverage is measurably poor: the checkpoint-bootstrap interval on its coverage
+lies wholly below the \RefuseBelow\% line, on at least \MinCkpt{} checkpoints. It is
+\emph{insufficient evidence} when the cell rests on
+fewer than \MinCkpt{} distinct checkpoints, or when a checkpoint-level cluster
+bootstrap 90\% interval on its coverage straddles the \RefuseBelow\% line. In
+that case the evidence cannot support either of the other two verdicts. The
+tool still prints the all-sizes interval for such a cell, but demotes the scheme
+to the lowest tier and states that the cell cannot be judged; only a refused
+cell has its interval withheld.
+
+Coverage is scored \emph{one-sided}: how often the true delta stayed at or
+above the interval's lower bound. The risk this tool bounds is accuracy loss,
+and a model that beats its envelope has exposed no one to anything, so counting
+that as a failure would flag cells that are merely outperforming. The
+interval is symmetric, so a 90\% two-sided nominal corresponds to a
+one-sided nominal near 95\%; pooled one-sided coverage across all
+\PooledRows{} rows, with each row scored under \PairsPerRow{} different
+calibration families, is \PooledOneSided\%---essentially at that target,
+not above it.
+
+No cell is refused: \NCellsRefused{} of \NCellsTotal{}. Two cells were
+flagged under the earlier two-state rule, and neither is a confident refusal
+under the current one. \texttt{w4a16|<2B} had one-sided
+coverage of \OneSidedCellWfourSmall\% over \RowsCellWfourSmall{} rows
+(two-sided \CovCellWfourSmall\%), but those rows come from only
+\CkptsCellWfourSmall{} checkpoints. \texttt{w8a16|>10B} had \OneSidedCellWsixteenBig\%
+over \RowsCellWsixteenBig{} rows from \CkptsCellWsixteenBig{} checkpoints
+(two-sided \CovCellWsixteenBig\%), and its bootstrap interval,
+[\BootLoWsixteenBig, \BootHiWsixteenBig]\%, straddles the threshold. Both are
+now \emph{insufficient evidence}. We had scoped the change to those two cells;
+applying the rule to every cell moved \NCellsInsuff{} of \NCellsTotal{} into
+that state, including several whose point-estimate coverage looked comfortable.
+The same measurement and the same rule judge each scheme's all-sizes coverage: \NSchemesInsuff{} of
+the \Nsch{} schemes is insufficient evidence at that level and \NSchemesRefused{} is refused.
+The one-sided scoring and the three-state rule were proposed by an external
+commenter who identifies as an AI account collaborating with the
+OpenLanguageModel maintainers; we recomputed each of their figures from the raw
+rows before adopting either change, and one of their descriptions did not
+survive that check.
+
+\paragraph{Post-hoc thresholds, honestly labeled.} The three-state rule was
+proposed for two specific cells and then applied to every cell; the
+particular thresholds---\RefuseBelow\% for the refusal line, \MinCkpt{}
+checkpoints for the support floor, a 90\% cluster bootstrap for the
+straddle test---were not derived from a first-principles argument, they
+were the values under which those two cells came out the way we thought
+they should. On this corpus one further consequence of that choice is
+that the \emph{refused} state, as defined, does not fire: every cell with
+enough checkpoints to reach the second gate has a bootstrap upper bound
+comfortably above \RefuseBelow\%, and the one cell whose upper bound
+does sit below it (\texttt{w4a16|<2B}, upper bound \BootHiWfourSmall\%)
+has \CkptsCellWfourSmall{} checkpoints against the \MinCkpt{} that gate
+requires, and lands in
+\emph{insufficient evidence} instead. So the verdict rule is, on this corpus,
+two states and not three. We considered lowering the support floor to make the
+third fire and decided against it; \S\ref{sec:audit} gives the reasoning,
+including why the fact that we wanted it to fire is itself an argument for
+leaving it alone.
+
+\paragraph{A support floor.} Coverage measured on many benchmarks from one
+checkpoint is not independent evidence; it is one quantization run viewed many
+ways. Cells resting on fewer than \MinCkpt{} distinct checkpoints cannot reach
+the top tier regardless of measured coverage. \CellsBlocked{} cells are affected.
+
+\section{The negative result}\label{sec:negative}
+
+Under leave-one-family-out validation, row-weighted MAE:
+
+\begin{center}
+\begin{tabular}{lcc}
+\toprule
+predictor & MAE (pp) & beats global mean? \\
+\midrule
+ridge, nested-CV tuned      & \MaeRidgeTuned      & yes \\
+gradient boosting, nested-CV tuned & \MaeGradboostTuned & yes \\
+per-scheme mean (shipped) & \MaeSchememean & yes \\
+global mean (baseline)    & \MaeGlobalmean & --- \\
+per-(scheme \(\times\) benchmark) & \MaeSchemebench & \textbf{no} \\
+per-benchmark mean        & \MaeBenchmean  & \textbf{no} \\
+gradient boosting, untuned & \MaeGradboost  & \textbf{no} \\
+ridge, untuned            & \MaeRidge      & \textbf{no} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The per-scheme mean's advantage is small: \MaeGain{}pp, with a checkpoint-bootstrap 95\% CI of \([\MaeGainLo, \MaeGainHi]\)pp, and it is
+positive in \MaeGainFamsPos{} of the \Nfam{} held-out families. It is a distinguishable but modest gain.
+
+\paragraph{How LOFO looks fold-by-fold, and what the pooled figure
+hides.} Definition B (\S\ref{sec:data}) merged Llama-3.1, Llama-3.2 and
+Llama-3.3 into one Llama-3 family, and the aggregate figures above are
+a weighted mean across the resulting \Nfam{} folds. Two properties of
+that pool are worth stating.
+\emph{Fold sizes are unequal.} Llama-3 accounts for \LThreeFoldRows{}
+of the \Nrows{} rows (\LThreeFoldSharePct\%); the remaining folds hold
+\NonLThreeFoldRowsMin--\NonLThreeFoldRowsMax{} rows each
+(\NonLThreeFoldShareMin--\NonLThreeFoldShareMax\%). When Llama-3 is held out, the training
+set drops to \LThreeHoldoutTrainPct\% of the corpus; when any other
+family is held out, training is \NonLThreeHoldoutMin--\NonLThreeHoldoutMax\%.
+The Llama-3 fold carries a third of the LOFO weight on its own.
+\emph{Per-fold MAE varies by roughly 4x, and the demanding fold is not
+the biggest.} The per-scheme mean ranges from \LofoSchemeMeanMin{}pp on
+gemma-2 (the smallest fold, \GemmaTwoFoldRows{} rows) to
+\LofoSchemeMeanMax{}pp on qwen3 (the second-smallest, at
+\QwenThreeFoldRows{} rows), against a pooled \MaeSchememean{}pp;
+ridge shows the same shape, \LofoRidgeMin{}pp to \LofoRidgeMax{}pp
+against pooled \MaeRidge{}pp. The pooled MAE is a weighted mean, not a
+typical fold. And the sharpest version of the negative result lives in
+the spread: the per-scheme mean, the best predictor we found, beats
+guessing the global average on \LofoSchemeMeanWinsFolds{} of \Nfam{}
+folds but \emph{loses to it on qwen3} (\LofoSchemeMeanMax{}pp vs the
+global mean's per-fold MAE on the same fold). Within the merged
+Llama-3 fold, subgroup coverage varies too---Llama-3.3 alone sits
+\LThreeGapMin--\LThreeGapMax{}pp below Llama-3.1 and Llama-3.2 across every
+calibration family. That subgroup rests on \LThreeSubThreeBasesWord{} base
+model, so the gap describes a single model's behaviour and not a subgroup
+average;
+the \S\ref{sec:results} subgroup table keeps that visible.
+Ridge regression (\(\alpha=3.0\), standardised features) and histogram
+gradient boosting (\texttt{max\_depth=3}, \texttt{max\_iter=300},
+\texttt{learning\_rate=0.05}, \texttt{min\_samples\_leaf=15},
+\texttt{l2\_regularization=1.0}, \texttt{random\_state=0}), both at fixed
+hyperparameters, are \emph{worse} than predicting the global average. Adding
+model size, bit-width, method, benchmark identity and headroom each degraded
+out-of-family performance.
+
+\paragraph{What tuning does, and the retraction it forces.} An earlier version
+of this paper said that ridge and gradient boosting are worse than guessing the
+average, full stop. That was true of the fixed-hyperparameter models above and
+is \textbf{false} of tuned ones; we retract it rather than reword it. A
+reviewer noted, correctly, that an untuned model losing says nothing about
+predictability, so we tuned both by nested cross-validation under a protocol
+fixed in advance: leave-one-family-out on the outside, and inside each outer
+training fold a second leave-one-family-out over the \(\Nfam - 1\) training
+families only, selecting over \TuneRidgeGrid{} ridge settings and
+\TuneGbGrid{} gradient-boosting settings. No row of a fold's held-out family
+enters any inner fit, inner score or selection for that fold, so
+hyperparameters are chosen \TuneOuterFolds{} separate times and never against
+the number being reported.
+
+Tuning moves ridge by \TuneShiftRidge{}pp and gradient boosting by
+\TuneShiftGb{}pp, roughly twice the entire effect the paper reports, to
+\MaeRidgeTuned{} and \MaeGradboostTuned{}pp. Both now beat the global mean
+resolvably (for ridge, \([\TuneGlobalVsRidgeLo, \TuneGlobalVsRidgeHi]\)pp on
+a checkpoint bootstrap), and both edge past the shipped per-scheme mean by an
+amount that does not clear noise: \TuneSchemeVsRidge{}pp for ridge
+(\([\TuneSchemeVsRidgeLo, \TuneSchemeVsRidgeHi]\)) and
+\TuneSchemeVsGb{}pp for gradient boosting
+(\([\TuneSchemeVsGbLo, \TuneSchemeVsGbHi]\)), both intervals containing
+zero.
+
+\emph{What tuning selected is the result.} In \TuneRidgeFoldsEdge{} of
+\TuneOuterFolds{} folds the inner cross-validation chose the largest ridge
+penalty in the grid (\(\alpha = \TuneRidgeAlphaMax\)); in
+\TuneGbFoldsMinLr{} of \TuneOuterFolds{} it chose the slowest learning rate
+offered and in \TuneGbFoldsMaxLtwo{} of \TuneOuterFolds{} the heaviest L2
+penalty offered. Both model classes converged on the edge of the grid in the
+direction of maximum shrinkage: asked what the best card-feature model is,
+nested cross-validation answers \emph{one shrunk almost to a constant}. We
+report the boundary selection as a limitation of the grid and did not extend it
+after seeing which edge was hit, because extending a grid in response to a
+result is the retuning the pre-registration existed to prevent.
+
+\emph{One figure in that table deserves a caveat of its own.} The untuned
+gradient-boosting MAE has moved sharply twice under corrections that touched a
+handful of rows. The \texttt{mmlu\_llama} parser fix added
+\GbSensMmluRows{} rows of \Nrows{} and narrowed its losing margin by
+\GbSensMmluPct\%; the \texttt{gpqa\_diamond} item-count correction changed
+the analytic-noise feature on \GbSensNitemsRows{} rows and moved its MAE by
+\GbSensNitems{}pp, roughly forty times the movement of any other predictor
+and about a third of the whole effect this section reports. Both corrections
+were right and neither changed the sign, but a reader should treat that
+particular number as an estimate whose \emph{direction} we claim and whose
+digits we do not. The table above is rendered to match: the predictors that
+lose to the global mean carry three decimals, and only the shipped per-scheme
+mean and the global mean itself---the comparison the paper rests on---carry
+four. The estimator is sensitive to small changes in a
+\FeatCols-column design matrix, and no fit of it sees the whole corpus: the
+table is leave-one-family-out, so each fit is built from
+\LofoTrainRowsMin--\LofoTrainRowsMax{} of the \Nrows{} rows, clustered on
+\NBase{} base models. That is itself part of the negative result.
+
+So the honest statement is narrower than ``no signal'' and stronger than the
+claim it replaces. A sliver of card-feature signal exists; recovering it
+requires shrinking the model until it is nearly the global mean; it is worth
+about a third of what the \NpredNums-number shipped artifact already achieves;
+and at this sample size it is not distinguishable from that artifact. The
+shipped per-scheme mean is therefore \emph{not} unambiguously the
+best-scoring predictor we tested---tuned ridge scores better---but it remains
+the best \emph{justifiable} one: \NpredNums{} numbers against a tuned
+38-feature model whose advantage sits inside its own confidence interval. We
+state both halves because only stating the second would be the flattering
+version.
+All features tested are card-level; we did not compute any checkpoint-level
+statistic (weight kurtosis, activation outliers, singular-value structure)
+and feed it in as a predictor. Those directions are open.
+
+\paragraph{Why.} Estimating per-benchmark evaluation noise from near-lossless
+schemes---whose true delta should be approximately zero---gives a noise floor
+that accounts for anywhere from \NoiseMinPct\% of the observed variance to all of it across \NoiseNBench{} benchmarks. On GSM8K
+the deltas of supposedly lossless schemes have a standard deviation of \GsmNoiseSd{}pp, while the quantity being predicted has mean
+\(\TargetMean\)pp. The target is a difference of two noisy quantities that largely
+cancel: the numerically smallest and hardest-to-predict summary of quantization
+damage available. Two cautions on the noise figures. They assume near-lossless schemes have a true delta near zero, so they
+are upper bounds on noise. And \NoiseNSmall{} of the \NoiseNBench{} estimates rest on 10 or fewer rows; one, at \NoiseMaxPct\%, exceeds the total
+variance, which we attribute to sampling error rather than treat as a finding.
+
+\paragraph{Implication.} From card-level features, the entire fitted
+artifact is \NpredNums{} numbers.
+A raw per-scheme historical quantile band, with no model and no conformal
+machinery, is a serious competitor: it looked better covered in-sample, though under the strict protocol that advantage disappears (\S\ref{sec:audit}). What conformal contributes is a finite-sample guarantee under exchangeability, and the shipped intervals now carry it: centre and half-width come from disjoint sides of a fixed checkpoint partition (\S\ref{sec:method}). Earlier versions fitted both on the same rows and did not. What the machinery contributes to the shipped artifact is a principled rule for small-\(n\) schemes, not accuracy. We therefore describe the result as a \emph{calibrated historical
+baseline}, not a predictor.
+
+\section{Results}\label{sec:results}
+
+\paragraph{What this tool is for.} The scenario it answers is: a
+practitioner is considering a scheme on a checkpoint from a family already
+represented in the published record and wants a calibrated range for the
+accuracy delta with an honest verdict on whether the record supports that
+range for that cell. Within that scope, each cell returns an interval and
+one of three tier labels; outside it, the tool declines to speak. It is
+not a scheme-safety certificate, does not bound a scheme's worst case,
+and does not extrapolate to recipes or families the corpus has not
+already seen -- \S\ref{sec:tail} and \S\ref{sec:limits} state each of
+those out-of-scope cases directly.
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+scheme & 90\% interval (pp) & worst observed & \% losing \(>\)3pp & evals \\
+\midrule
+fp8         & [\LoFpeight, \HiFpeight]           & \WorstFpeight{}pp      & \SevFpeight\%      & \NFpeight \\
+w8a8\_int   & [\LoWeightint, \HiWeightint]       & \WorstWeightint{}pp    & \SevWeightint\%    & \NWeightint \\
+fp8\_dynamic& [\LoFpdyn, \HiFpdyn]               & \WorstFpdyn{}pp        & \SevFpdyn\%        & \NFpdyn \\
+w8a16       & [\LoWeightsixteen, \HiWeightsixteen]& \WorstWeightsixteen{}pp& \SevWeightsixteen\%& \NWeightsixteen \\
+w4a16       & [\LoWfour, \HiWfour]               & \WorstWfour{}pp        & \SevWfour\%        & \NWfour \\
+nvfp4       & [\LoNvfp, \HiNvfp]                 & \WorstNvfp{}pp         & \SevNvfp\%         & \NNvfp \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Prospective validation.} After freezing the method we harvested
+new checkpoints not used during development. The strict protocol
+(\texttt{verify/independent\_check.py}) excludes a prospective card on
+one of two grounds: any card whose family label overlaps a training
+family (Llama-3.* as one family under Definition B, and Qwen-3), or
+any card whose format informed a parser fix (Llama-4). The two grounds
+are separate; only Llama-4 is excluded for the parser reason. Under
+this protocol two-sided coverage
+is \(\ProspInsideScheme/\ProspN = \ProspCovScheme\%\) for the scheme-only
+envelope, before the size rule, and
+\(\ProspInside/\ProspN = \ProspCov\%\) once the widen-only size rule is applied
+as the tool applies it, against a nominal 90\% two-sided
+level, with a 95\% cluster-robust CI of \([\ProspCrLo, \ProspCrHi]\).
+
+\paragraph{Where these figures are computed, which is not where a reader
+would assume.} Every prospective figure in this section --- the row count, the
+covered count, the coverage percentage and both Clopper--Pearson bounds ---
+is computed by \texttt{verify/independent\_check.py}, a standard-library
+reimplementation that parses the raw cards itself and imports nothing from
+the pipeline. They are not the pipeline's own numbers. The pipeline computes
+the same five independently, and \texttt{paper/audit\_paper.py} compares the
+two arms row by row on every build; they agree exactly, and a disagreement
+fails the build. We report it this way round deliberately: a headline
+validation figure produced by the code under test is worth less than one
+produced by a second implementation, and if the two ever diverge we would
+rather the published number be the independent one. The cost is that the
+cross-check in \texttt{audit\_paper.py} is the only place the pipeline's own
+figure is held against it, so that check is load-bearing rather than
+decorative.
+
+\paragraph{Why the interval is clustered, and why it is narrower.} The
+\ProspN{} rows come from \ProspClusN{} quantization runs, up to
+\ProspRowsPerCkptMax{} from one, so the row is not the unit of independent
+evidence and the headline interval is the cluster-robust (sandwich) one for a
+ratio estimator under cluster sampling. That interval is \emph{narrower} than
+the row-level exact Clopper--Pearson interval it replaces
+(\([\ProspCILo, \ProspCIHi]\)), which is the opposite of what clustering
+usually does, so the reason belongs here rather than in a later section.
+Clustering does not inflate this statistic because the coverage
+\emph{indicator} is not clustered by checkpoint: the intraclass correlation is
+\ProspIcc{} and the design effect is \ProspDeff{}, so the cluster-robust
+standard error (\ProspCrSe{}pp) is \emph{smaller} than the naive binomial one
+(\ProspNaiveSe{}pp), a ratio of \ProspSeRatio{}. The mechanism is visible in
+the miss distribution: of \ProspTotalMisses{} misses,
+\ProspWorstCkptMisses{} fall on the worst single checkpoint but
+\ProspWorstBenchMisses{} fall on the worst single benchmark (GSM8K), and
+\ProspCkptsWithMiss{} checkpoints carry a miss against
+\ProspCkptsClean{} that are clean. A checkpoint's rows span easy and hard
+benchmarks, so a run is a heterogeneous bundle rather than a correlated one,
+and misses track benchmark difficulty rather than which model was quantized.
+The deltas within a run certainly are correlated; the binary inside-or-outside
+indicator is not, because the interval is wide relative to within-run spread.
+
+To be explicit that the narrowing is not a choice of the most flattering
+interval, it decomposes into two independent steps, both analytic:
+Clopper--Pearson (\ProspWidthCp{}pp wide) to a naive Wald interval on the same
+rows (\ProspWidthWald{}pp) accounts for \ProspNarrowEst{}pp and reflects only
+that Clopper--Pearson is exact and therefore conservative; the change of unit
+from row to checkpoint accounts for the remaining \ProspNarrowUnit{}pp
+(\ProspWidthCr{}pp). Both the row-level and checkpoint-level figures are
+computed and reported, so a reader preferring the conservative row-level
+interval can use it.
+Note the layering: this filter runs by name-pattern regex and does not
+implement the mechanistic family definition of \S\ref{sec:data}. Under
+that definition, \ProspInFamCkpts{} of the \ProspClusN{} strict
+checkpoints (all DeepSeek-R1-Distill of a Llama-3.* or Qwen-2.5 base)
+are in-family derivatives that the name-pattern filter let through. The pooled figure therefore mixes ``passed the strict
+filter'' with ``is in-family under \S\ref{sec:data}''. The
+family-split reporting below applies \S\ref{sec:data} to what survives
+the filter and states both sides separately. The \ProspN{} strict rows
+come from \ProspClusN{} distinct checkpoints, which we hand-classify
+against the training-family list. Under the
+definition of \S\ref{sec:data}, \ProspInFamCkpts{} of them are
+DeepSeek-R1-Distill of a Llama-3.* or Qwen-2.5 base that is in training and
+\ProspOutFamCkpts{} are not. An earlier version differenced those two halves
+and reported a checkpoint-cluster CI on the gap. That comparison is withdrawn:
+the second half is four-fifths Gemma-3 and the rest is three groups of one
+checkpoint each, so the label implied a result about transfer across families
+that the composition cannot carry. The per-group coverages are reported
+earlier in this section and we claim nothing from their differences. There is independent
+support for reading small coverage movements this cautiously. In
+correspondence, an author of \citet{tong2026compression} described using a
+90\% coverage target as a validity check rather than an estimand, with
+prediction-set size carrying the uncertainty signal, and noted that small
+movements around that target can arise from calibration and test sampling
+alone. That is the same effect our noise-floor estimate quantifies for
+accuracy deltas (\S\ref{sec:negative}), arrived at independently and on a
+different estimand. The aggregate
+out-of-family figure carried a Simpson caveat that we have since withdrawn
+along with the comparison itself; the per-group composition is reported
+earlier in this section instead. The classification is enumerated for these
+\ProspClusN{} checkpoints, not a general algorithm (\S\ref{sec:audit}).
+
+\paragraph{The band is split conformal, and until this version it was not.}
+The interval this paper calls calibrated was, in the shipped tool, centred and
+widened on the same rows: the half-width was the conformal quantile of
+\(|\delta - \bar{\delta}|\) over the very rows \(\bar{\delta}\) was computed
+from. That is the split-conformal formula evaluated in-sample, which is a
+description of spread presented with the arithmetic of a guarantee. It is now
+genuine split conformal --- the \NBase{} base models are partitioned once, by
+a fixed seed, into a fit side that supplies the centre and a disjoint
+calibration side that supplies the width. The partition is over base models
+rather than rows because rows from one quantization run share a model, a
+recipe and one harness invocation, and over base models rather than
+checkpoints because the \NQuantCkpt{} checkpoints are nested inside the
+\NBase{} base models: holding out a base model holds out every quantization
+of it, so the calibration side shares no base with the fit side. Until
+2026-10-11 this paragraph called that unit the checkpoint, which understated
+it.
+
+The clearest evidence that the old path was wrong is NVFP4. Its published
+interval moves from \([\LoNvfpOld, \HiNvfpOld]\) to
+\([\LoNvfp, \HiNvfp]\)pp, a factor of \NvfpWidenX{} wider. The in-sample band
+was understating that scheme's spread by about half --- on the scheme with the
+highest severe-loss rate in the corpus (\SevNvfp\% of evaluations losing more
+than \(3\)pp) and the one the tool already warns about hardest. A reader who
+wants one number for whether in-sample calibration mattered should take that
+one, not the pooled coverage figure.
+
+Calibration corrects in both directions and is not a blanket widening.
+\StratSchemesNarrower{} schemes get narrower. Across the corpus the pooled half-width grows from
+\InsampleHw{}pp to \CalibHw{}pp, and the number of \(>3\)pp losses falling
+below the interval floor drops from \BigLossBelowOld{} to
+\BigLossBelow{} of \BigLosses{}: the honest band catches five severe outcomes
+the optimistic one missed, which is the whole point of the exercise.
+
+Measured under leave-one-base-model-out over all \NBase{} base models, so
+that every row is scored by a band that never saw any checkpoint of its own
+base model, two-sided
+coverage is \CalibCov\% against a nominal \(\NominalPct\%\). Repeating the partition
+over \CalibPartitions{} seeds gives a median of \CalibCovMedian\% and a range
+of \CalibCovMin{}--\CalibCovMax\%; every one of the \CalibPartitions{} clears
+the threshold
+fixed in advance. The pre-registered partition is not the most flattering of
+them.
+Two consequences of that partition are worth stating because a reader will
+otherwise find them and think we did not. First, the centre and the width come
+from \emph{disjoint} sets of checkpoints, which is what makes the width a
+conformal quantile rather than a description of the rows it was fitted on. The
+centre therefore rests on the fit side only --- \CalibFitBases{} of the
+\NBase{} base models --- and a reader who compares the shipped centre against
+the scheme mean over the whole corpus will find they differ, by up to
+\CentreMoveMax{}pp. That is the cost of the guarantee, not a discrepancy.
+Second, only the centre and the width are partitioned. Every support and
+descriptive figure the tool prints --- how many evaluations exist, how many
+checkpoints and families they span, the worst observed loss, the observed
+percentiles --- is computed on all \Nrows{} rows, because those describe the
+published evidence and not the construction.
+
+\paragraph{What the widths actually rest on, which is less than the coverage
+suggests.} We fixed in advance that a finite \(\NominalPct\%\) conformal quantile needs
+\CalibUnitsFloor{} calibration units, and that the unit is the checkpoint.
+After the partition, not one scheme meets that: the per-scheme widths rest on
+between \CalibUnitsMin{} and \CalibUnitsMax{} independent checkpoints, and
+NVFP4's rests on \textbf{\CalibUnitsMin{}}. The
+quantile index itself counts calibration rows, of which every scheme has
+enough, so the widths exist and the coverage above is measured rather than
+assumed. But the quantity that determines how much a conformal guarantee is
+worth is the number of exchangeable units behind it, and ours is below the
+floor we set ourselves before looking.
+
+This also explains the over-coverage. On a calibration set of \(n\) rows the
+\(\NominalPct\%\) index \(\lceil (n+1)\cdot 0.9 \rceil\) falls within a few ranks of
+the largest residual --- second-largest on NVFP4's calibration set, fifth on
+the largest schemes --- so the width is effectively a near-maximum and the
+interval overshoots its nominal level. That is a correct conformal quantile at
+this sample size, and it is a statement about the corpus rather than about the
+construction. A reviewer should read the coverage figure as real and the
+guarantee behind it as thinner than a 90\% label normally implies.
+
+\paragraph{Size stratification does not survive calibration.} The envelope is
+conditioned on scheme alone; size enters only through a widen-only rule, where
+a (scheme, size-band) cell may raise the scheme's half-width and never lower
+it. The narrowing half was discarded earlier because it did not survive
+contact with unseen checkpoints. The widening half does not survive honest
+calibration either.
+
+Under the in-sample band, \SizeWidthsOld{} of the \StratCellsInSample{} cells
+it fitted raised their scheme's width. Under the calibrated band,
+\SizeWidths{} of \CalibCellsSurvived{} do. The two populations are not the
+same cells --- that is part of what fails here, not a detail of presentation
+--- and only \StratCellsBoth{} cells widen under both. \StratWidenGone{} of
+the old widenings disappear and \StratWidenNew{} new ones appear, and for
+W8A16 the two size bands exchange places: the
+in-sample band flags \(>\)10B as the wider-spread case, the calibrated band
+flags 2--10B instead. Membership and direction both move. We therefore report
+the per-cell verdicts, which are measured per cell and unaffected by this, and
+we do not claim that the size band identifies which models within a scheme
+carry more risk. Where a cell has no calibrated size-specific width the tool
+prints the scheme interval and says which of two reasons applies: the cell is
+below the support floor, or it has the rows but not enough held-out evidence
+to justify a separate width.
+
+\paragraph{Independent verification --- what and when.} The strict protocol
+above is implemented in \texttt{verify/independent\_check.py}, a from-scratch
+reimplementation that shares no code with the pipeline. It parses the raw
+model cards independently and recomputes the prospective-coverage figures
+this section reports. It is run against the card corpus on every corpus
+change, and its output \texttt{out/independent\_check.csv} holds
+\ProspAllRows{} prospective rows, of which \ProspN{} are the strict subset
+behind the numbers above. An earlier version of this paragraph said it had
+been run once, on a single date, and that its training-row comparisons had
+never fired against the shipped data. Both were out of date: the file has
+been regenerated repeatedly, and the training comparisons have fired and
+caught real defects --- a parser bug that silently dropped two rows, and a
+label-vocabulary divergence after the GPQA protocol split. It now reports
+\Nrows{} training rows on both sides, with zero rows found by only one side
+and zero delta or verdict disagreements.
+
+The card corpus itself is not committed (license and PII constraints;
+\texttt{PROVENANCE.md} 2026-09-27), so a reader without the cards cannot
+re-run the parse. What ships in its place is a tolerance-integrity gate on the
+committed output
+(\texttt{tests/test\_all.py::test\_independent\_check\_csv\_matches\_tolerance\_recomputation}):
+the gate recomputes each row's \texttt{inside} flag from its \texttt{lo},
+\texttt{hi} and \texttt{delta} under a $10^{-9}$ boundary tolerance, and
+fires if the frozen CSV disagrees with its own bounds. It is not a fresh
+independent parse.
+
+\paragraph{Merged-fold disclosure: Llama-3.1 vs 3.2 vs 3.3.} Under
+Definition B the six-fold LOFO merges Llama-3.1, Llama-3.2 and Llama-3.3
+into one Llama-3 fold. The merged mean can conceal that Llama-3.3
+alone consistently sits \LThreeGapMin--\LThreeGapMax{}pp below its cousins
+under every calibration family, so we break out the held-out Llama-3 fold by
+subgroup. Rows are the calibration family; columns are the three
+subgroups the merged fold contains.
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+calibration & Llama-3.1 & Llama-3.2 & Llama-3.3 & merged \\
+\midrule
+gemma-2  & \LThreeSubOneGem\% & \LThreeSubTwoGem\% & \LThreeSubThreeGem\% & \LThreeMergedGem\% \\
+granite  & \LThreeSubOneGra\% & \LThreeSubTwoGra\% & \LThreeSubThreeGra\% & \LThreeMergedGra\% \\
+mistral  & \LThreeSubOneMis\% & \LThreeSubTwoMis\% & \LThreeSubThreeMis\% & \LThreeMergedMis\% \\
+qwen2.5  & \LThreeSubOneQtf\% & \LThreeSubTwoQtf\% & \LThreeSubThreeQtf\% & \LThreeMergedQtf\% \\
+qwen3    & \LThreeSubOneQth\% & \LThreeSubTwoQth\% & \LThreeSubThreeQth\% & \LThreeMergedQth\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+Under every calibration family Llama-3.3 sits below both Llama-3.1 and
+Llama-3.2, by \LThreeGapMin{} to \LThreeGapMax{} points, and the merged mean
+is pulled up by the \LThreeCousinsWord{} better-covered subgroups. The table and the fold
+figures in this paragraph come from a per-scheme-mean centre with a
+Mondrian-by-scheme conformal width, which is not the band this paper ships;
+cell values are coverage on the held-out Llama-3 rows under one calibration
+family, and the fold figures are pooled over test points. Under an 8-family
+reporting this weakness would show as Llama-3.3's own held-out fold at
+\LThreeSubThreePooled\%, which rests on \LThreeSubThreeBasesWord{} base model;
+under Definition B it is folded into \LThreeMergedPooled\% on the merged
+Llama-3 mean. It is the weakest of the three Llama-3 subgroups and not the
+lowest fold in the corpus: under this estimator Qwen-3 covers
+\LofoQwenThreeTblDefA\% as its own fold, on \LofoFoldBasesQwenThree{} base
+models. We report the breakdown here so the merge does not hide the subgroup
+gap, and \S\ref{sec:limits} reports per-fold coverage under the shipped
+band.
+
+\paragraph{Prospective composition, and what it does not support.} The
+\ProspN{} strict rows are not a balanced sample across the groups they come from.
+DeepSeek-R1-Distill checkpoints of Llama-3 and Qwen-2.5 bases contribute
+\ProspDsRows{} rows from \ProspDsCkpts{} checkpoints at \ProspDsCov\%;
+Gemma-3 contributes \ProspGThreeRows{} rows from \ProspGThreeCkpts{}
+checkpoints (\ProspGThreeBases{} base models) at \ProspGThreeCov\%; SmolLM,
+SmolLM3 and Nemotron-Nano contribute \ProspTailRows{} rows from
+\ProspTailCkpts{} checkpoints (\ProspTailBases{} base models) between them,
+all covered. Throughout, a \emph{checkpoint} is a quantized model artifact
+--- one (base model, scheme) pair that was evaluated --- and a base model is
+the unquantized model several of those derive from. The \ProspClusN{}
+checkpoints come from \ProspBases{} base models. An earlier version of this section split those into
+``in-family'' and ``out-of-family'' and compared the halves, and also noted
+that Gemma-3 sat below nominal while the small groups pulled the aggregate
+up. We have withdrawn both. On the shipped band Gemma-3 sits \emph{above}
+nominal and the pull-up more than halves, so neither leg of that argument
+survives; and a comparison that reverses when the band is corrected is not one
+we should have been making. We state the per-group coverages and claim nothing
+from their differences in either direction. The reason is the composition
+rather than the arithmetic: the ``out-of-family'' half was four-fifths
+Gemma-3, and the three groups behind the remaining \ProspTailRows{} rows are
+one checkpoint each, so what read as a result about transfer across families
+was Gemma-3 against DeepSeek-R1-Distill with a label implying more.
+
+\paragraph{What the prospective set does and does not cover.} The \ProspN{} strict rows come from \ProspClusN{} quantized checkpoints,
+not \ProspN{} independent observations, which is why the headline interval is
+clustered on the checkpoint. A bootstrap that resamples whole checkpoints
+agrees with the sandwich estimator at \([\ProspClusLo, \ProspClusHi]\)\%.
+Neither is wider than the row-level interval, and the reason is measured
+rather than assumed: the coverage indicator has an intraclass correlation of
+\ProspIcc{} across checkpoints, so there is no within-run dependence left for
+a clustered interval to absorb. The rows cover only \ProspSchemes{} of the \Nsch{} schemes; FP8 and NVFP4
+have no prospective rows, so the figure says nothing about them.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+scheme & strict rows & checkpoints & covered (\%) \\
+\midrule
+w4a16       & \ProspRowsWfour & \ProspCkptsWfour & \ProspCovWfour \\
+w8a8\_int   & \ProspRowsWeightint & \ProspCkptsWeightint & \ProspCovWeightint \\
+fp8\_dynamic& \ProspRowsFpdyn & \ProspCkptsFpdyn & \ProspCovFpdyn \\
+w8a16       & \ProspRowsWeightsixteen & \ProspCkptsWeightsixteen & \ProspCovWeightsixteen \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+W4A16, the most common scheme, dominates the pooled figure; the other schemes rest on few
+checkpoints. Over all \ProspAllRows{} harvested prospective rows, before the strict filter, coverage is \ProspAllCov\%, so the filter
+did not manufacture the headline. That said, the pooled scheme-only
+\ProspCovScheme\% is
+pulled up by \ProspRowsFpdyn{} FP8-dynamic rows from \ProspCkptsFpdyn{}
+checkpoints and \ProspRowsWeightsixteen{} W8A16 rows from \ProspCkptsWeightsixteen{}
+checkpoint, both at \ProspCovFpdyn\% coverage. W4A16, at \ProspRowsWfour{}
+of the \ProspN{} strict rows (\ProspRowsWfourShare\%), covers at
+\ProspCovWfour\%, above nominal. The one scheme below nominal is W8A8-int at
+\ProspCovWeightint\% on \ProspRowsWeightint{} rows from
+\ProspCkptsWeightint{} checkpoints. Earlier versions of this paragraph named
+W4A16 as the below-nominal scheme; that was true of the in-sample band and
+reversed when the shipped band was corrected (\S\ref{sec:audit}). The pooled
+number should be read as an average across schemes with very different sample
+sizes, not as a coverage claim uniform across schemes.
+
+\paragraph{Size stratification: what survives and what does not.} Size
+enters the shipped envelope only through a widen-only rule --- a (scheme, size
+band) cell may raise its scheme's half-width and never lower it. Measured
+against the shipped band on the \StratRows{} strict prospective rows, that
+rule covers \StratWidenInside{} of them against \StratSchemeInside{} for the
+scheme-only envelope: \StratWidenGained{} rows more, and \StratWidenLost{}
+fewer. The direction is forced by the construction rather than observed,
+because a rule that can only raise a half-width cannot drop a covered row, so
+the widen-only inside-set must contain the scheme-only one and the only cost
+is width (\StratWidenWidth{}pp against \StratSchemeWidth{}pp). The data agrees
+on both populations: \StratWidenGainedAll{} rows gained and
+\StratWidenLostAll{} lost on the full prospective set as well. That
+monotonicity is why the rule is defensible rather than merely harmless --- no
+cell can be made falsely tight, and the worst case is an interval wider than
+it needed to be, which is the safer direction for a risk tool to err.
+
+Full stratification, a per-cell centre and width free to narrow, covers
+\StratFullInside{} of the same \StratRows{} rows at essentially unchanged mean
+width (\StratFullWidth{}pp). Against the scheme-only envelope it loses
+\StratFullLost{} rows and gains \StratFullGained{}: a two-way churn that only
+a rule permitted to narrow can produce. It tightens cells it should not and
+the prospective rows fall outside. That variant was discarded in an earlier
+version on a weaker measurement, in which the half-width was fitted in-sample;
+the conclusion survives the correction.
+
+What does not survive is any claim that the size band \emph{identifies} risk.
+Of the \StratCellsInSample{} cells the retracted in-sample band fitted,
+\SizeWidthsOld{} raised their scheme's width. Of the \CalibCellsSurvived{}
+the shipped band fits, \SizeWidths{} do, and \StratCellsBoth{} are the same
+cells. \StratBandReplaced{} scheme has its
+widening band \emph{replaced} rather than added or dropped --- W8A16, from
+\(>\)10B under the in-sample band to 2--10B under the shipped one. So the rule
+earns its place as a one-directional conservatism for thin small-model cells,
+and not as evidence that size predicts damage.
+
+\paragraph{What the envelope cannot do.} \IntervalsExclZero{} of \Nsch{}
+intervals exclude zero: the tool can never state that a scheme \emph{will}
+cost accuracy. And \BigLossBelow{} of \BigLosses{} observed losses worse
+than 3pp fell \emph{below} their interval floor---when real damage occurs,
+the interval usually misses it. This is the single most important caveat
+in the paper. The obvious mitigation, an asymmetric band, was tried and
+lost on both coverage and width where it was finite (\S\ref{sec:audit}),
+so there is no drop-in fix on offer.
+
+\section{The measured left tail}\label{sec:tail}
+
+The corpus contains only configurations someone chose to publish. To measure
+what it structurally cannot show, we rented an A100 and quantized real models
+under deliberately-faulted recipes.
+
+\paragraph{Result.} Worst measured loss \(\AdvWorst{}\)pp, against
+\(\WorstWfour{}\)pp as the worst loss anywhere in the published corpus.
+\AdvBadOver{} of \AdvBadRows{} faulted rows lost 3pp or more; separately,
+\AdvCtrlOver{} of \AdvCtrlRows{} rows from our correctly-configured control arm
+did too. The dominant single effect was wrong scale granularity---per-tensor
+instead of per-group.
+
+\paragraph{Scope, stated plainly.} This tail was measured only on models of
+\AdvMaxB{}B and below. It establishes that catastrophic damage is reachable; it
+is not a measured bound for larger models.
+
+The closest prior work points the other way on scale, which is worth stating
+because it cuts against our own framing. In correspondence, an author of
+\citet{tong2026compression} reported that in their experiments compression
+effects improved with model size---prediction-set inflation relative to the
+uncompressed model fell substantially as models grew---with task- and
+method-specific exceptions, and that they did not observe coverage worsening
+consistently with size; their takeaway is that scale helps without
+guaranteeing stability. If that pattern extends from uncertainty to accuracy
+damage, our small-model tail is plausibly a worst case rather than a floor on
+what larger models would show. We state that as a direction and not a result:
+we measured no large model under a faulted recipe, their result is on a
+different estimand, and a single counterexample at scale would overturn it.
+What does not change either way is the asymmetry the tail establishes---the
+published corpus cannot show damage it never published.
+
+\paragraph{The scoped next experiment.} The narrow test, suggested by an
+author of \citet{tong2026compression}, holds the family fixed and steps up one
+size: Qwen2.5-7B-Instruct, for which published W4A16 baselines already exist,
+under the standard setup plus the single worst-performing faulted recipe from
+this arm, at identical sample counts and seeds, escalating to larger models
+only if the pattern holds. That design answers the scale question with one GPU
+run rather than a sweep. It needs GPU time we have not spent, so it is scoped
+here and not run.
+
+\paragraph{A confound we found and did not resolve.} Re-running MMLU under
+the published protocol (5-shot, letter-scored) recovers accuracies in the
+range published on the cards: our Qwen2.5-0.5B-Instruct scores
+\BaseQwenSmall{} against the Instruct card's \PubQwenSmall{} (the base-model
+card gives \PubQwenSmallBase{}), and our Qwen2.5-1.5B-Instruct scores
+\BaseQwenMid{}. The harness question closed. Our control run then compared
+Instruct-model checkpoints against Red Hat's \emph{base-model} W4A16
+publications, because no Instruct W4A16 checkpoints are published: our
+correctly-configured Instruct control is \CtrlRatio\(\times\) more damaging
+than the base-model published W4A16 (mean gap \CtrlGap{}pp,
+\(z = \CtrlZmin\) and \(\CtrlZmax\)). This is not like-for-like---Instruct
+models could plausibly be more fragile under 4-bit quantization than their
+base counterparts---so the ratio is indicative rather than a clean estimate.
+A matched Instruct-vs-Instruct control is deferred future work. The pattern
+we observed is consistent with approximately \CalibRatio\(\times\) less
+calibration data than production defaults, though the attribution is not
+independently tested. Consequently, excess-over-control measures
+\emph{bad recipe versus mediocre recipe}, not versus production. It is an
+indicative anchor, not a bound, and we decline to publish a corrected point
+estimate: the correction moves by \ProtoSens{}pp depending on the anchor set,
+and we have only \ExcessN{} rows from two models.
+
+\section{Limitations}\label{sec:limits}
+
+\paragraph{Held-out coverage is not uniform across families.}
+Leave-one-family-out coverage under the shipped band ranges from
+\LofoFoldCovMin\% to \LofoFoldCovMax\% across the \Nfam{} folds.
+\LofoFoldsBelowNominalWordCap{} folds have point estimates below the \NominalPct\% nominal level: Qwen-3 at
+\LofoFoldCovQwenThree\% on \LofoFoldBasesQwenThree{} base models and Mistral
+at \LofoFoldCovMistral\% on \LofoFoldBasesMistral{}. Neither is shown to fall
+below nominal. Mistral's base-model-cluster interval,
+[\LofoFoldLoMistral, \LofoFoldHiMistral]\%, includes it. Qwen-3's fold rests
+on \LofoFoldBasesQwenThree{} base models, for which a cluster bootstrap has
+only \QwenThreeBootResamplesWord{} distinct resamples, so its interval
+[\LofoFoldLoQwenThree, \LofoFoldHiQwenThree]\% constrains little in either
+direction. The strict prospective validation contains no Qwen-3 checkpoint and
+does not address this fold.
+
+\paragraph{The guarantee is conditional, and absent where it matters most.}
+Split conformal gives exact coverage under exchangeability between calibration
+and test. Our calibration set is the set of configurations a publisher chose to
+release---a selection event. Conditional on selection, calibration points are
+not exchangeable with an arbitrary test point and the guarantee does not
+transfer~\cite{barber2023beyond,jin2024focal}. It holds for a new checkpoint
+drawn from the same publication process. It carries \textbf{no guarantee} for a recipe the
+reader tuned themselves and that no publisher would have released---which is the case
+a practitioner most wants covered.
+
+\paragraph{Accuracy is not the whole of deployment risk.}
+\citet{tong2026compression} show compression frequently decouples
+accuracy from uncertainty: a model can hold accuracy while its prediction sets
+inflate. A scheme this work calls low-risk on accuracy may still degrade
+uncertainty quality. We measure none of that.
+
+\paragraph{One publisher, one toolchain, and why.} See \S\ref{sec:data}. Our own
+control arm (\S\ref{sec:tail}) is direct evidence that practitioner and
+calibration volume can dominate scheme choice. We measured how confining this
+is: surveying \PubChecked{} publishers and \PubCards{} quantized model cards,
+\PubOthersPaired{} of \PubOthersCards{} cards from the other
+\PubOthersCount{} publishers carry paired before/after evaluations, \PubIntelPaired{} of them Intel's, so others
+do publish them. What the other publishers almost never provide is a
+\emph{Recovery} column, which is what lets each row be checked against
+\(100 \times \text{after}/\text{before}\) and rejected on disagreement: of
+their rows, \PubOthersVerified{} pass that gate, all from
+\PubOthersVerifiableCards{} card, against \PubCtrlVerified{} from the control
+publisher. The corpus is single-publisher not because others publish nothing,
+but because the control publisher's cards are, by a wide margin, the ones
+published in a self-verifying form.
+
+\paragraph{What can and cannot be re-run.} The supplement recomputes every tagged figure from the data files it ships. It cannot
+re-run the faulted-configuration experiments (they need a GPU; the recorded results are included), the harvest from raw model
+cards (the cards are not redistributed), or the prospective-card checks (those files are not included), and re-running the
+low-rank comparison mentioned in the supplement needs a checkout of BenchPress's released code.
+
+\paragraph{An attempt at re-running the calibration-data test.} We
+attempted to reproduce Red Hat's published W4A16 checkpoints for two of
+the corpus's most-measured base models, Qwen2.5-0.5B and Qwen2.5-1.5B,
+using the \texttt{llm-compressor} recipe at its documented defaults, in
+order to test whether the roughly \CalibRatio\(\times\) calibration-data
+ratio between our own control and production defaults accounts for the
+observed excess damage. Neither of these two cards pins a library version
+or names a calibration dataset; both record only the resulting weight
+representation (symmetric per-group INT4, group size 128 on 1.5B and
+group size 64 on 0.5B). Neither attempt succeeded. A first run at the
+current \texttt{llm-compressor} + \texttt{compressed-tensors} +
+\texttt{transformers} stack produced quantized models scoring at or below
+four-way random chance on 5-shot MMLU (\AnomQuantMinPct--\AnomQuantMaxPct\% absolute), well past the
+worst outcome anywhere in the corpus or the control arm, which we treat
+as a stack-level anomaly rather than a calibration-data finding. A second
+run at an era-appropriate pin inferred from the card wording
+(\texttt{llmcompressor==0.4.1}, \texttt{transformers==4.44.2}) could not
+resolve to a working import: the pinned \texttt{llmcompressor} requires
+a class that was only added to \texttt{transformers} in a later release,
+so the pin does not exist as a working combination. The calibration-data
+hypothesis therefore remains what the Results section already calls it,
+consistent with the observation but not independently tested. That the
+recipe recorded on these two cards is not sufficient to reproduce even
+the working-stack question, let alone the answer, is directly
+consistent with the sparsity of documentation reported in \S\ref{sec:data}.
+
+\paragraph{Rows are not independent.} Up to \MaxBenchmarksPerRun{} benchmark rows come from a
+single quantization run. We mitigate with group-conditional calibration, the
+support floor, and a headline interval clustered on the checkpoint rather than
+the row (\S\ref{sec:results}). That clustered interval does not come out
+wider, and we report why rather than leaving it as a coincidence: the coverage
+indicator's intraclass correlation across checkpoints is \ProspIcc{}, because
+misses track benchmark difficulty (\ProspWorstBenchMisses{} of
+\ProspTotalMisses{} on one benchmark) rather than which run produced the row
+(\ProspWorstCkptMisses{} on the worst run). The dependence we were worried
+about is real for the deltas and absent for the indicator, and that is a
+property of this corpus rather than a general result. The leave-family-out coverage measurement has the
+same dependence: each row is scored once under each of \PairsPerRow{} calibration families, so
+the \PooledPairs{} evaluations are not independent, and every coverage judgment in this paper
+resamples whole checkpoints rather than counting evaluations.
+
+\section{Audit}\label{sec:audit}
+
+We record errors found in our own work, including those that changed published
+claims. This section exists because the alternative---reporting only what
+survived---would misrepresent how the result was obtained.
+
+The record is split on one question: does a reviewer need an entry to judge
+the result? Here are the entries we think the answer is yes for --- corpus
+definitions that moved and took published figures with them, claims we
+withdrew, a threshold we chose knowing which cell it would move, and the
+places where the shipped artifact and its own pre-registration are different
+objects. Appendix~\ref{sec:process} holds the errors that were found, fixed,
+and leave nothing for a reader to discount. That appendix is a complete log
+and not a selection: every error we know of is in one half or the other, the
+split is editorial rather than evidential, and an entry there is one we judged
+a reviewer does not need rather than one we would rather they skipped. A
+reader who wants the list unsorted should read both.
+
+\paragraph{Errors that changed a published number.}
+\begin{itemize}
+  \item \emph{The training corpus originally counted Llama-3.1, Llama-3.2
+    and Llama-3.3 as three separate families.} Meta's own model cards
+    state that Llama-3.2 1B/3B were pretraining-time distillations from
+    Llama-3.1 8B/70B logits, that Llama-3.2 11B/90B are Llama-3.1
+    plus a vision adapter, and that Llama-3.3-70B is a Llama-3.1-70B
+    fine-tune. Under the mechanistic definition adopted in
+    \S\ref{sec:data} (a distillation is a member of its teacher's
+    family; a fine-tune inherits the base's family) they therefore
+    belong to a single Llama-3 family, and the corpus has
+    \Nfam{} training families rather than 8. Leave-one-family-out is
+    now run over \Nfam{} folds rather than 8. The prospective
+    coverage figures are unchanged (the strict subset never contained
+    a Llama-3.2 or Llama-3.3 checkpoint), but every LOFO-derived
+    figure moves. Under the subgroup estimator of
+    \S\ref{sec:results} --- not the band this paper ships --- the
+    aggregate LOFO coverage across held-out families, taken as the mean
+    over folds, changes from \LofoAggDefA\% to \LofoAggDefB\%, and
+    Llama-3.3 moves from \LThreeSubThreePooled\% as its own fold to
+    \LThreeMergedPooled\% once merged, pooled over test points in both
+    cases. An earlier version of this item called Llama-3.3 ``the
+    previously-worst held-out fold''. It was not: it is the weakest of
+    the three Llama-3 subgroups, it rests on \LThreeSubThreeBases{} base
+    model, and the lowest point estimate under either estimator is
+    Qwen-3's. Per-family LOFO on the merged fold is reported so the
+    subgroup gap does not disappear from view, and \S\ref{sec:limits}
+    now carries per-fold coverage under the shipped band, which is where
+    a corpus-wide lowest fold belongs; §\ref{sec:negative}'s ``how LOFO
+    looks fold-by-fold'' paragraph and the §\ref{sec:results} subgroup
+    table are where a reader checks the subgroup figures directly.
+  \item \emph{A retracted headline, then re-partitioned.} An early claim
+    that all \ProspClusN{} held-out checkpoints came from families never
+    used in construction was wrong. Under the definition adopted in
+    \S\ref{sec:data}, \ProspInFamCkpts{} of the \ProspClusN{} are
+    derivatives of a training family and \ProspOutFamCkpts{} are new
+    pretraining runs. We no longer compare the two sides: the
+    second is four-fifths one family, so the contrast carried a label
+    implying a result about transfer across families that its composition
+    cannot support, and \S\ref{sec:results} reports the groups separately
+    instead.
+  \item \emph{LOFO means different things for different schemes.}
+    Under the shipped calibration path, when a leave-one-family-out
+    calibration family has fewer than 9 rows of a scheme, the code
+    keeps the training-set half-width for that scheme and labels the
+    result as if it were calibrated. Under the \Nfam-family corpus
+    this fallback fires on \LofoFallbackPairs{} of \LofoTotalPairs{}
+    LOFO evaluations (\LofoFallbackRate\%), and the rate is highly
+    scheme-specific: \LofoFallRateFp\% for fp8, \LofoFallRateNvfp\%
+    for nvfp4, \LofoFallRateWsixteen\% for w8a16, \LofoFallRateFpdyn\%
+    for fp8\_dynamic, \LofoFallRateWint\% for w8a8\_int, and
+    \LofoFallRateWfour\% for w4a16 (never). A LOFO figure quoted at
+    the pooled level is therefore an average over a construction that
+    is genuinely held-out for w4a16, mostly held-out for fp8\_dynamic
+    and w8a8\_int, and predominantly in-sample for fp8, nvfp4 and
+    w8a16. On the held-out subset alone (fallback rows excluded),
+    pooled two-sided coverage moves from \PooledCellCov\% to
+    \LofoHeldoutCov\% and one-sided from \PooledOneSided\% to
+    \LofoHeldoutOneSided\%. We disclose here rather than exclude:
+    the shipped pipeline reports the pooled figure, and the reader
+    should know what the pool contains.
+  \item \emph{Independent implementations shared a float comparison.} The prospective-coverage figure sits on a floating point boundary at one row: gemma-3-1b-it W4A16 on TruthfulQA has an observed delta of exactly $+1.40$pp and a scheme upper bound of $+1.40$pp; in real arithmetic that is a closed-interval hit, but in float arithmetic the computed upper bound is $+1.3999999999999997$, so the comparison $\text{delta} \le \text{hi}$ returned False. All three reimplementations (the pipeline, the standard-library re-check, and the audit-side recomputation) agreed on the same 118/131 because they shared the strict comparison; the agreement was consistency, not correctness. The comparison sites were patched to add a $10^{-9}$ tolerance on each bound in the 2026-09-27 fix, which moved the strict figure from 118/131 to 119/131 as the corpus then stood; both bounds and both ratios are properties of that revision rather than of the present corpus, which is why they are literals here and not macros, and the commit that produced them is named in the accompanying record. The boundary case no longer arises: W4A16's upper bound is now \HiWfour{}pp rather than $+1.40$, so that row is inside by a clear margin, and the strict figure has since moved to \ProspInside/\ProspN{} for an unrelated reason --- the shipped band was corrected from an in-sample to a split-conformal construction. The tolerance patch should not be credited with that change. This is a real limit of independent reimplementation as a check: when two implementations share an assumption, they will agree on results the assumption is wrong about. Two further instances are on the record, and naming them is more use than counting them: the independent verifier and the pipeline both built the band in-sample and agreed with each other throughout (below), and the test that compared the shipped artifact against a freshly built one agreed because it rebuilt the same wrong construction (Appendix~\ref{sec:process}). An earlier version of this sentence claimed three; we can substantiate two.
+  \item \emph{GPQA was multiple protocols under one label.} The label
+    \texttt{gpqa} in the harvested corpus conflated several distinct
+    GPQA evaluation protocols. Every card was reopened and the label
+    text taken from the card itself rather than inferred from the
+    value; the result is the following mapping (verbatim card string
+    $\to$ corpus label, row counts in raw dataset.csv):
+    \texttt{GPQA (0-shot)} $\to$ \texttt{gpqa\_main}
+    (\NrowsGpqaMain);
+    \texttt{GPQA (Acc-Norm, 0-shot)} $\to$ \texttt{gpqa\_main\_norm}
+    (\NrowsGpqaMainNorm);
+    \texttt{GPQA CoT main (5-shot)} $\to$
+    \texttt{gpqa\_main\_cot\_5shot} (\NrowsGpqaMainCot);
+    \texttt{GPQA diamond} $\to$ \texttt{gpqa\_diamond}
+    (\NrowsGpqaDiamond);
+    \texttt{GPQA CoT diamond (5-shot)} $\to$
+    \texttt{gpqa\_diamond\_cot\_5shot} (\NrowsGpqaDiamondCot).
+    Two Llama-3.3-70B-Instruct rows (FP8-dynamic and w8a8) at
+    \texttt{acc\_before} = \GpqaAmbigAccBefore{} come from cards that carry
+    only the string \texttt{GPQA (0-shot)} -- the same string used for
+    the low-baseline \texttt{gpqa\_main} rows -- yet report a value
+    that disagrees with the same checkpoint's NVFP4 row's \texttt{GPQA
+    (0-shot)} = \GpqaMainNvfpAccBefore{} by \GpqaAmbigGap{}pp. These
+    \GpqaAmbigRows{} rows carry the placeholder label
+    \texttt{gpqa\_ambiguous\_46}: the card does not resolve which
+    protocol they measure, and we do not infer from the value. Three cards carry the string
+    \texttt{GPQA (Diamond, 0-shot)} --- the Qwen3-8B, Qwen3-14B and
+    Qwen3-32B NVFP4 cards, each reporting it alongside
+    \texttt{GPQA (0-shot)}. Two earlier versions of this paragraph got that
+    count wrong in opposite directions. Those Diamond rows were initially
+    absent from the corpus not because the string is absent from the
+    cards but because the harvester's first-table-wins rule discarded
+    them as duplicates of a label that was, at the time, collapsed.
+    While the split was being ported we kept that coarse GPQA
+    de-duplication slot deliberately, so that the port changed labels
+    only and not which rows survive, and recorded admitting the rows as
+    a data decision still to be taken. We have since taken it. GPQA
+    Diamond is a different question set from GPQA Main, so a card
+    reporting both has reported two measurements and not one twice, and
+    de-duplication is now per protocol label. That admitted 4 rows
+    across 4 cards --- two \texttt{gpqa\_diamond} (Qwen3-8B and
+    Qwen3-32B NVFP4) and two \texttt{gpqa\_diamond\_cot\_5shot}
+    (the Mistral-Small-3.1 w4a16 and w8a8 cards) --- each of which pairs a
+    Main row with a Diamond row in the same card. The third Qwen3 NVFP4
+    Diamond row, Qwen3-14B, is \emph{not} admitted: with the
+    de-duplication slot out of the way it reaches the recovery-integrity
+    gate, which rejects it because the card's own printed Recovery
+    percentage cannot be reproduced from its own printed accuracies. It
+    is logged in \texttt{data/rejected\_rows.csv} as
+    \texttt{recovery\_mismatch} rather than
+    \texttt{duplicate\_benchmark\_discarded}. That is worth stating as a
+    general lesson and not only as a row disposition: a conservative
+    de-duplication rule had been withholding a row from the gate built to
+    catch exactly that row's defect, so one gate was masking another's input.
+    The row was never in the corpus and no published figure was ever wrong
+    because of it, but the ordering meant the integrity gate's pass rate was
+    reported over a set that quietly excluded a card error. We found it only
+    because retiring the first rule let the second one run. Four rows lie under the
+    modeling-set filter's chance floor
+    (\texttt{acc\_before}$\geq$\MinAccBefore\%) and are excluded from the
+    fitted set exactly as before; the protocol split itself still adds
+    and removes no modelling-set rows, and the \Nrows{} figure moves
+    only because of the de-duplication decision above. The harvester has since adopted this
+    split, so a re-harvest reproduces the committed labels instead of
+    collapsing them; a test re-harvests the card corpus and fails if the
+    result disagrees with the committed dataset on any column, label
+    columns included.
+  \item \emph{Nine pre-registered prospective repos were dropped by a
+    name-gate.} The prospective set was pre-registered as
+    \ProspRegisteredRepos{} repositories. The harvester requires a
+    \texttt{<n>B} parameter-count token in the checkpoint name; the
+    \ProspNameGatedRepos{} pre-registered repos whose names lack that
+    token (phi-4 x3, Phi-4-mini x2, Mistral-Nemo x2, Devstral x2) are
+    rejected by the name-gate and never enter the harvested corpus.
+    The predictor is frozen and does not use size, so the gate is not
+    load-bearing on the method; it is load-bearing on which of the
+    pre-registered repos actually get scored. The paper reports on the
+    \ProspN-row frozen-and-scored set
+    (\ProspInsideScheme/\ProspN{} = \ProspCovScheme\% for the scheme-only
+    envelope,
+    \ProspInside/\ProspN{} = \ProspCov\% as the tool prints it). Earlier versions also quoted a with-them figure from an external audit,
+    said to show that the frozen-set number was not materially inflated by
+    the drop, and described it as not locally reproducible because the raw
+    cards for those repos were not shipped. That figure is retired, for three
+    reasons, and the third is the one worth stating plainly. It was measured
+    on the in-sample construction this paper retracts (\S\ref{sec:method}).
+    Its denominator cannot be reconstructed against the current corpus: it was
+    smaller than the ungated row count, and lifting a gate adds rows rather
+    than removing them, so no row set we can define reproduces it. And the
+    reproducibility disclaimer was false --- all \ProspNameGatedRepos{} cards
+    are and were present in \texttt{data/prospective\_cards/}, so the figure
+    has been recomputable in this repository since the day it was quoted,
+    and nobody tried. A limitation that sounds
+    candid and is simply untrue is the same failure as a check that passes
+    while verifying nothing, and it belongs in this section for that reason.
+    We have not replaced it with a recomputed version: that would be a
+    different quantity over a row set this paper has never described, and
+    introducing one is not a substitute for withdrawing a claim.
+  \item \emph{A correct number with the wrong object attached.} We reported
+    that size stratification "costs \(6.4\) points of coverage and buys no
+    tightening." The figure was right and the object was wrong: it measures
+    \emph{full} stratification, free to narrow, discarded in September. The
+    rule the artifact ships is widen-only, and on the same rows it
+    \emph{gains} \StratWidenGained{} covered rows and loses
+    \StratWidenLost{}. It was caught by a reader asking why the tool
+    still applied a rule we had just called worthless. The defect is a
+    different shape from the others here and no gate in this repository can
+    see it; Appendix~\ref{sec:process} says why.
+  \item \emph{The family classifier is enumerated.} The in-family /
+    out-of-family split of the \ProspClusN{} strict prospective checkpoints
+    was decided by inspecting each card and matching against the
+    training-family list; the code that emits the split is a regex specific
+    to this set (\texttt{DeepSeek-R1-Distill-(Llama|Qwen)}). It is not a
+    general implementation of the \S\ref{sec:data} definition. A
+    prospective checkpoint outside this pattern (e.g. a distillation from
+    another base, a fine-tune with an idiosyncratic name) would need a
+    manual re-classification. The definition itself is fixed; the code
+    path applies it to this set only.
+  \item \emph{A retracted single-publisher claim.} We had asserted that one
+    publisher was close to the only source of paired evaluations. A census of
+    \PubChecked{} publishers found \PubOthersPaired{} paired-evaluation cards
+    outside the control publisher, \PubIntelPaired{} of them Intel's; what
+    differs is whose rows can be verified (\S\ref{sec:limits}).\end{itemize}
+
+\paragraph{A regression we nearly shipped.} An audit indicated that a raw
+asymmetric empirical band appeared to cover better than the shipped symmetric
+conformal interval; at the time it read as a $\sim$3.8pp gap in the empirical
+band's favour, and since quantization damage is left-skewed a symmetric band
+looked like the wrong shape. Under the current corpus (the day-7
+regeneration made every value below live) the raw gap has shrunk to
+$\BandEmpCov - \BandConfCov \approx 0.4$pp: empirical
+\BandEmpCov\% versus conformal \BandConfCov\%. But that gap is not what it
+looks like: the empirical band returns $\pm\infty$ on
+\InfSharePct\% of rows (a two-sided empirical index requires more
+calibration points than are often available), and an infinite interval
+trivially covers everything. On the \FiniteN{} rows where both bands are
+actually defined, conformal beats empirical (\FiniteConfCov\% vs
+\FiniteEmpCov\%) and does so with a \FiniteConfWidth{}pp mean width against
+empirical's \FiniteEmpWidth{}pp -- roughly \(40\%\) narrower. The
+counterfactual is not "a wider band that covers better", it is a wider band
+that answers ``don't know'' on one row in four. The change was reversed.
+The apparent-gap shrinkage from $\sim$3.8 to $\sim$0.4pp is itself a
+regeneration effect: the earlier figure sat on an eight-family-corpus artifact
+that predated Definition B; §\ref{sec:audit}'s "artifact family regenerated"
+note enumerates every macro that moved.
+
+\paragraph{A state we built, could have made fire, and chose not to.} The
+verdict rule defines a \emph{refused} state that withholds the interval
+outright. It does not fire on this corpus, and we considered changing that.
+The paper no longer advertises three verdicts; it reports the two that fire and
+records the decision here, because the reasoning is more useful than the
+feature would have been.
+
+We wanted it to fire, and we can say exactly where. The adversarial arm
+(\S\ref{sec:tail}) measured its worst damage---\AdvWorst{}pp---on sub-2B
+W4A16 configurations, and \texttt{w4a16|<2B} is the cell covering that
+configuration. It is also the only cell whose checkpoint-bootstrap interval
+lies entirely below the refusal line, at
+[\BootLoWfourSmall, \BootHiWfourSmall]\% against a \RefuseBelow\% line, with
+one-sided coverage of \OneSidedCellWfourSmall\%. A risk tool that declines to
+answer anywhere ought to decline there. The single thing standing between that
+cell and a refusal is the \MinCkpt-checkpoint support floor; the cell has two.
+
+Lowering the floor to two would have produced the refusal, and three things
+argue against it. The constant does double duty: a floor of \MinCkpt{}
+checkpoints governs both the coverage verdict and the Tier-A support floor, and both halves came from the
+same external review, so lowering it weakens the support rule too. It would
+not have fired alone: \texttt{w8a16|<2B} also rests on two checkpoints, with
+a bootstrap interval collapsed onto its point estimate, so the same change
+promotes a degenerate cell to \emph{trusted}. And a confident refusal on
+\texttt{w4a16|<2B} would rest on \RowsCellWfourSmall{} rows from
+\CkptsCellWfourSmall{} checkpoints in one family --- thinner than anything
+this paper calls trusted. The counter-argument is available, that withholding
+an interval is the safe error, but we would be making it after choosing the
+threshold and knowing which cell it would move.
+
+That last point is the decisive one. We set these thresholds knowing where the
+adversarial arm found damage, and this section already concedes they were
+chosen for the behaviour they produced on two specific cells rather than from
+first principles. Bending the floor now, in the direction that produces the
+behaviour we wanted, is the same move a second time. The honest position is
+that the state exists, that this corpus does not contain evidence thin enough
+in the right way to trigger it, and that wanting it to trigger is a reason for
+suspicion of any change that would make it.
+
+\paragraph{Where the tool departs from its own pre-registration.} The
+protocol in the supplement fixes the calibration unit as the checkpoint, with
+a paragraph arguing that the row would be the self-serving choice because it
+multiplies the apparent calibration sample about twenty-fold. The
+implementation counts rows. We did not decide that; we failed to notice it.
+\texttt{fit\_calibrated} already carried a \texttt{len(g) >= 9} guard from an
+earlier version, that guard counts rows, and we reused it without checking it
+against what we had just written.
+
+The consequence is not cosmetic. At the registered unit, no scheme qualifies
+--- the per-scheme calibration sides hold \CalibUnitsMin{} to
+\CalibUnitsMax{} checkpoints against a floor of \CalibUnitsFloor{} --- and
+\emph{none} of the \CalibCellsAttempted{} size cells qualifies either, against the
+pre-registration's own trigger of fewer than eight surviving, which would have
+fired and restricted the tool to a pooled band. Under the row gate
+\CalibCellsSurvived{} of \CalibCellsAttempted{} cells survive and every scheme
+gets a per-scheme width. So the
+registered protocol and the shipped artifact are different objects, and the
+registered one is the more conservative.
+
+A second departure follows from the first. The pre-registration singled out
+NVFP4, which has \CalibUnitsMin{} calibration checkpoints, and fixed in
+advance that it would back off to the pooled quantile with the backoff flagged
+in the output and counted in the registry. Because \CalibRowsNvfp{}
+calibration rows clear the row gate, NVFP4 took a per-scheme width, the
+backoff never
+fired, and nothing is flagged. The registered handling for the scheme we had
+identified as the most fragile never executed.
+
+We are not changing the gate this week to make the claim true, and we are not
+claiming adherence. The shipped band is a row-gated split-conformal band whose
+measured coverage is real and whose guarantee rests on \CalibUnitsMin{} to
+\CalibUnitsMax{} exchangeable units per scheme, which \S\ref{sec:results}
+states. What pre-registration bought here was the construction choice, the
+decision bands and the primary/secondary designation, all fixed before any
+number existed. What it did not buy was agreement between the document and the
+code, because nothing mechanically compared them. The document ships in the
+supplement, which is what makes this discoverable by a reader rather than only
+by us --- an argument for shipping it, not against.
+
+\paragraph{What the independent verifier still derives, and what it now takes
+on trust.} \texttt{verify/independent\_check.py} parsed the raw cards and
+rebuilt the envelope with no project imports, which is why its agreement with
+the pipeline was worth reporting. Two things about that are now different and
+both belong on the record.
+
+It was agreeing for the wrong reason. Both it and the pipeline's prospective
+script built the band in-sample, so the cross-check in
+\texttt{paper/audit\_paper.py} reported zero disagreements throughout --- a
+comparison between two implementations of the same wrong premise. That is the
+float-boundary lesson of this section one level further down: the check was
+sound and the premise it rested on was not, and nothing in the check could
+have revealed that. Both arms now build the shipped split-conformal band and
+agree on it.
+
+And its independence is now partial, by necessity. The partition is drawn with
+a generator the standard library cannot reproduce, so the verifier reads
+\emph{which} checkpoints calibrate from a published list. Everything that list
+is used for it still derives itself: the checkpoint identity from the naming
+convention, the family label, the size band, the row assignment, the centres
+on the fit side, the conformal index and quantile on the calibration side, and
+the widen-only size rule. So the check no longer covers ``is this the
+partition they say it is'' and still covers ``given that partition, is every
+published number right''. A \CalibCalBases{}-name list is auditable by eye; a
+reimplemented generator is not.
+
+\paragraph{Provenance discipline.} Two parser fixes were informed by inspecting
+rows that were already in the test set. Rather than silently retain them, we
+record which fixes were test-informed and exclude the affected family from the
+strict headline.
+
+\paragraph{Mechanical verification.} The figures this paper reports as
+results are macros generated from a claims registry that recomputes each value
+from source artifacts, and the accompanying code fails a test if an
+outward-facing document contains an untraced numeric literal. The exceptions
+are historical figures in the error list above (row counts and the
+\(-68\)pp delta), which are quoted from the provenance record rather than
+recomputed.
+
+That check matched numerals, so for as long as the registry has existed any
+figure written as a \emph{word} has been invisible to it. A sweep found
+figures quoting registry values as words, two of them at sites whose macros
+already existed and were in use elsewhere in the same section, and one that
+was wrong rather than merely untraced. The check now also fails on a
+word-number governing something this paper counts, and --- because a
+hand-written list of such nouns would put the coverage boundary back into
+somebody's judgement --- that list is itself derived from the nouns the paper
+counts with numerals, and the build fails when the paper begins counting
+something the list does not cover.
+
+\section{Conclusion}
+
+Per-model prediction of quantization accuracy damage from card-level
+features does not work on published data, and the reason is largely
+measurement noise rather than model capacity; predictors that use
+checkpoint-level statistics were not tested and remain open. What does
+work is narrower: a per-scheme calibrated envelope that is validated at
+\(\ProspCovScheme\%\) two-sided coverage for the scheme-only envelope on
+unseen checkpoints
+for \ProspSchemes{} of the \Nsch{} schemes (\(\ProspCov\%\) with the
+widen-only size rule applied, as the tool applies it). Coverage is reported per group rather than
+split in-family against out-of-family; the composition behind that split does
+not support a claim in either direction (\S\ref{sec:results}). The envelope also says which of its own cells it cannot judge: a cell is
+either trusted or insufficient evidence, and in the latter case the interval
+is still shown but flagged and the scheme demoted. Today \NCellsInsuff{} of
+\NCellsTotal{} cells are insufficient evidence. A third verdict that
+withholds the interval is implemented and does not fire here
+(\S\ref{sec:audit}). The more useful contribution may be the limitation
+itself---the published record of quantized models is outcome-truncated, and we
+measured, on deliberately faulted recipes for models up to \AdvMaxB{}B, losses more than four times worse than anything it contains. A risk
+estimate built on that record is a floor on risk, not a ceiling, and should say
+so.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+
+\section{Process errors}\label{sec:process}
+
+This is the other half of \S\ref{sec:audit}, split on whether a reviewer
+needs an entry to judge the result. These are errors that were found and
+fixed and that leave nothing to discount in the figures this paper reports:
+the defect is gone, a gate that would catch its recurrence exists, and a
+reader who skips this appendix is not missing a qualification on any claim.
+They are on the record anyway, for two reasons. A paper that listed only the
+errors with surviving consequences would describe a cleaner process than the
+one that produced it. And several of these are the same mistake in different
+places, which is visible only when they are read together --- two are a check
+that passed while verifying nothing, and two are a fault in a protocol
+document that nothing mechanically checked, one in its reasoning and one in
+its internal consistency.
+
+\paragraph{Errors found, fixed, and without surviving consequence.}
+\begin{itemize}
+  \item \emph{Artifact family regenerated after Definition B.} The
+    Definition B corpus change (Tier 0.1, 8 $\to$ 6 families) shifted
+    the shape of every leave-one-family-out artifact. Seven files were
+    kept from an 8-family run for several commits after the code moved
+    to 6 families: \texttt{predictor\_comparison.json},
+    \texttt{final\_results.json}, \texttt{diagnostics.json},
+    \texttt{interval\_shape.json}, \texttt{interval\_shape\_finite.json},
+    \texttt{bias\_correction.json}, and
+    \texttt{bias\_correction\_empirical.json}. The registry read from
+    all seven silently. Regenerating them moved \texttt{mae\_global\_lofo}
+    from 0.7545 to 0.7553, \texttt{pred\_mae::ridge} from 0.764 to
+    0.776, \texttt{band\_emp\_coverage\_pct} from 93.4\% to \BandEmpCov\% (the
+    ``empirical clearly beats conformal'' claim we nearly shipped a
+    switch on sat on the stale artifact; see \S\ref{sec:audit}'s regression paragraph),
+    and Regime C mondrian coverage from 89.15\% at 168 folds to 90.01\%
+    at 60 folds. A staleness gate now fails if any consumed artifact
+    predates \texttt{data/dataset.csv}, so this class of silent-stale
+    cannot repeat.
+  \item \emph{A claim verified by fixing what we found, not by enumerating
+    what existed.} Having moved the shipped interval to split conformal, we
+    found three scripts still measuring the retracted in-sample band, fixed
+    them, and wrote that "all four arms now build the shipped band." That was
+    false when written. We had checked the three paths we knew of plus the one
+    we had just changed, which cannot detect a path that nobody had considered. A fifth
+    existed: \texttt{build\_envelope.py} built the band from a whole-corpus
+    mean and residual quantile and wrote it into the artifact the
+    command-line tool reads, so the tool printed
+    \([\LoNvfpOld, \HiNvfpOld]\) for NVFP4 where this paper printed
+    \([\LoNvfp, \HiNvfp]\), and the test comparing artifact to fresh build
+    passed because it rebuilt the same wrong construction. We then enumerated
+    instead: every caller of every quantile primitive, every interval
+    constructor, every consumer. That found eight band-constructing paths
+    where we had claimed four. "We fixed the instances we found" is a
+    statement about our search, not about the code. \S\ref{sec:audit} and
+    this appendix each record a check that passed while verifying nothing;
+    this is the same failure one level up, where the method rather than a single check was
+    what did not fire.
+  \item \emph{Two parser bugs.} A benchmark label typo cost 11 training rows;
+    separately, \texttt{MATH-500} was matched as \texttt{Math-Lvl-5},
+    contaminating 7 test rows with scores from a different benchmark.
+  \item \emph{A centring mismatch.} Calibration measured residuals about the
+    stratum mean while intervals centred on the scheme mean, mis-sizing every
+    calibrated width. Found only by independent reimplementation.
+  \item \emph{A column-order fault.} One card template orders columns
+    \([\text{recovery}, \text{base}, \text{quant}]\), which our parser turned into a spurious
+    \(-68\)pp delta. The integrity gate rejected 10 of 11 rows on that card,
+    passing only the one where \(\text{base} = \text{quant}\) made the check
+    degenerate.
+  \item \emph{A bootstrap on the wrong statistic.} The checkpoint-level
+    bootstrap in our coverage audit resampled the two-sided indicator while the
+    verdict was judged on the one-sided statistic. An external commenter asked
+    for it to wrap the one-sided figure, which exposed the mismatch
+    (\S\ref{sec:method}).
+  \item \emph{Inflated pair counts.} An earlier version of the tool reported
+    the number of (test row, calibration family) evaluations as if it were the
+    number of rows: with \Nfam{} families each row is scored \PairsPerRow{} times, so
+    \PooledPairs{} evaluations came from only \PooledRows{} rows. Every
+    row-count claim was recomputed on \texttt{distinct\_rows}.
+  \item \emph{Two levels judged differently.} Cells were judged on the
+    one-sided coverage statistic and refused when the point estimate fell
+    below the threshold, but schemes had been judged on the two-sided
+    statistic and refused only when the entire bootstrap interval fell below
+    it. A single classifier now judges both levels the same way, and the
+    envelope's refused list is a computed copy of the ranking tool's, checked
+    by a test.
+
+\end{itemize}
+
+\paragraph{A pre-registration that was wrong, and how it was wrong.}
+Before running the calibration comparison we fixed a protocol in writing,
+including what to do about NVFP4, which has \CalibUnitsMin{} calibration
+checkpoints and therefore cannot support a per-scheme conformal quantile at
+the checkpoint unit under any construction. We decided in advance that NVFP4
+would back off to the pooled quantile. We decided wrong, and the mechanism is
+worth recording because it is not obvious in advance and is obvious
+afterwards.
+
+Pooling takes the quantile over all schemes' residuals together. NVFP4 is by
+far the widest-spread scheme in the corpus, and the other five are much
+tighter, so the pooled quantile sits well below what NVFP4 needs: under
+jackknife+ the backoff gave NVFP4 a half-width \emph{narrower} than its own
+in-sample width, and its coverage fell to \JackknifeNvfpCov\% against a
+nominal \(\NominalPct\%\) --- the worst per-scheme figure anywhere in this work, and
+below the threshold we had pre-registered as a scheme-level failure. The
+pooled figure belongs beside it and had been missing: jackknife+ covers
+\JackknifeCov\% across the corpus, close to nominal and comfortably above the
+\(1-2\alpha = 80\%\) its construction actually guarantees. Reporting only the
+scheme it failed on would overstate the case against a construction we chose
+not to ship, in the direction that flatters the one we did. A backoff
+intended to be conservative was anti-conservative for the one scheme it was
+written for, because ``back off to the larger reference class'' and ``back off
+to a wider interval'' are not the same instruction, and we conflated them.
+
+We did not change the protocol after seeing this. The pre-registered primary
+construction, split conformal, does not have the defect --- NVFP4 keeps a
+per-scheme width there and over-covers --- so the shipped band is unaffected,
+and jackknife+ is reported as the secondary it was registered as, including
+the pooled coverage above, which a version of this paragraph that gave only
+the NVFP4 figure did not.
+
+That pooled figure obliges us to be exact about why split conformal is the
+shipped construction, because the measurement is not the reason and a reader
+who sees \JackknifeCov\% will ask. Jackknife+ performed acceptably. The reason
+is arithmetic and was fixed in advance: this paper wants to claim a \(\NominalPct\%\)
+interval, split conformal guarantees \(1-\alpha\) and jackknife+ guarantees
+\(1-2\alpha\), so a \(\NominalPct\%\) \emph{guarantee} from jackknife+ needs
+\(\alpha = 0.05\), whose conformal index needs \(19\) leave-one-out units per
+scheme --- and only \JackknifeSchemesNineteen{} of \Nsch{} schemes have them.
+Jackknife+ at a \(\NominalPct\%\) guarantee is therefore unavailable for the
+remaining schemes
+whatever it scores. It is run at \(\alpha = \Alpha\), where its guarantee is
+\(80\%\), and the NVFP4 figure above is its per-scheme worst case rather than
+the grounds for preferring the other construction. What we are
+recording is that the reasoning in the pre-registration was faulty on a point
+we had singled out as the one most at risk of being decided post-hoc. Deciding
+it in advance was right; the decision itself was wrong. The next version of
+this protocol should make a thin scheme's backoff the \emph{maximum} of the
+pooled and its own in-sample width, not the pooled alone.
+
+\paragraph{A pre-registration that contradicted itself.} The same document
+was also internally inconsistent: its construction section specified centres
+from the fit partition and widths from a disjoint one, which is split
+conformal, while its ``what is held fixed'' section said the centre was
+unchanged. Both cannot hold --- a centre estimated on all rows has seen the
+calibration residuals, which is the in-sample defect the item existed to
+remove. We resolved it for the construction section, the only reading under
+which the result is split conformal at all, and \S\ref{sec:results} reports
+the consequence: centres now rest on \CalibFitBases{} of \NBase{} base
+models. Pre-registration stopped us choosing a construction after seeing
+results and did not stop us writing two incompatible sentences about it; a
+protocol document needs the same internal-agreement check we apply to the
+paper.
+
+\paragraph{An overclaimed guarantee.} The artifact was described as carrying a
+coverage guarantee without qualification. Checking the method against the
+conformal literature rather than against our own earlier work showed the
+guarantee is conditional on exchangeability that selection breaks. Corrected in
+\S\ref{sec:limits}.
+
+\paragraph{An attempted extension of the adversarial arm to 3B.} On a fresh
+40\,GB A100 with a fresh dependency install, we re-ran the adversarial
+sweep to (i) verify that yesterday's numbers reproduce and (ii) add a
+Qwen2.5-3B-Instruct row. The regression check passed: base evaluations
+on Qwen2.5-0.5B-Instruct and SmolLM-135M-Instruct reproduced byte-for-byte,
+deterministic-quantization recipes (per-tensor RTN, w8a8 without smoothing)
+reproduced byte-for-byte, and stochastic GPTQ recipes stayed within
+\(\leq 0.85\)pp of yesterday, consistent with fp16 Hessian-accumulation
+noise. The 3B extension did not land: base evaluations on Qwen2.5-3B-Instruct
+completed, but all five quantization recipes hit
+\texttt{torch.cuda.OutOfMemoryError} during the paired-evaluation forward
+pass at batch size 2, not during quantization itself; the fp16 model
+weights (\(\approx 6\)\,GB), PyTorch's caching allocator fragmentation
+from unloaded prior states, and activation memory for a batch of 2 long
+sequences together exceeded the 40\,GB budget with roughly 10\,GB of
+free memory needed for the next allocation. A single 80\,GB card would
+be expected to accommodate this, so the constraint is hardware, not
+methodology. The adversarial arm therefore remains bounded at
+\(\leq\AdvMaxB\)B as before; \S\ref{sec:limits} states this scope
+directly.
+
+\paragraph{A fix that exhibited the class it was fixing.} The entry above
+records a correct figure attached to the wrong object. Its remediation is
+worth its own entry, because the remediation failed in the same way and the
+entries around it did not.
+
+When that error was first raised we registered the missing figure as a claim
+key and converted the sentence that had prompted the complaint. That looked
+like closure: the key existed, the macro resolved, the sentence quoted it, the
+build was green. A near-duplicate paragraph two pages earlier still carried the
+hand-typed version of the same figure, and it survived the fix by three days,
+until a sweep for something else reached it. Converting one site of a figure and
+registering its key produces every visible sign of having fixed it. So a fix
+must enumerate the figure's sites rather than the site that prompted it ---
+which is the enumeration lesson in this appendix applied to our own
+remediation, and the one instance in this record made \emph{after} we had
+written the lesson down rather than before.
+
+Other figures in that same paragraph pair were quoting registry values
+spelled out as words, where no gate could see them at all, and one of those
+was not merely untraced but wrong. The sweep that found them is described in
+\S\ref{sec:audit}'s mechanical-verification paragraph.
+
+\paragraph{A check can be correct and still not read the document.} The
+script that audits this paper strips LaTeX comments before scanning, with a
+pattern that treated every \texttt{\%} as the start of one. An escaped
+\texttt{\textbackslash\%} is a printed percent sign, so every line was cut at
+its first printed percentage.
+
+The figures below are historical rather than recomputed. They are measured
+against the paper as committed immediately before the fix, by executing that
+revision's own stripper rather than a reimplementation of it: at that revision
+the source held \PctEscaped{} escaped percent signs against
+\PctRealComments{} real comment marks. The broken rule removed
+\PctRunsRemoved{} runs of text: the \PctRealComments{} comments, which it
+was for, and \PctRunsProse{} runs of ordinary prose, which it was not. Those
+\PctRunsProse{} runs hold \PctProseChars{} characters, and the scanned body
+came out \PctHiddenChars{} characters shorter than it should have been ---
+the \PctSpacePerRun-character difference is the single space the stripper
+left in place of each run. Against a denominator of \PctDenominator{}
+characters, being the body with the \PctRealComments{} real comments
+removed, that is $\PctHidden\%$ never read by the hand-typed-numeral check,
+the spelled-out-figure check, the counted-noun derivation or the unit
+declarations. So the clean results those four checks had been reporting were
+computed over $\PctScanned\%$ of that revision. The named variant is affected
+almost identically, \PctNamedHiddenChars{} of \PctNamedDenominator{}, and
+has no real comments at all --- there the rule removed nothing but prose. The
+defect was present from the commit that introduced the checker to the commit
+that fixed it, a span of \PctExposureDays{} days and \PctExposureCommits{}
+commits; the fraction
+varied as the paper grew, and the figures quoted are for the final revision in
+that span. A script in the accompanying code reproduces them from history.
+
+What it hid was not hypothetical. The unread text contained
+\StripperHiddenFigsWord{} figure, the aggregate leave-one-family-out coverage
+this paper reports in \S\ref{sec:audit}, which had drifted \LofoAggBDrift{}pp as the corpus grew and which no check could see while the
+stripper was cutting the line it sat on. A further \StripperVisibleFigsWord{}
+figures in the same two sentences were visible to the checks and passed
+anyway, because each was exempt by name --- the other half of the same
+problem, and the reason an exemption now has to say what it is exempting.
+
+The retroactive part matters more than the fix. Nothing in the output
+distinguished a partial pass from a complete one: a check reading most of a
+document reports the same \emph{zero problems} as a check reading all of it.
+The four predicates were each correct. What was wrong was the copy of the
+document they were given, and no part of the apparatus made a claim about that
+copy. The recovered text held hand-typed numerals and spelled-out figures that
+no check had ever seen, one of them a count derived from a registered figure
+rather than registered itself.
+
+So a check that preprocesses its input is making a claim about the
+preprocessing, and that claim needs asserting like any other. Every reducing
+check in the accompanying code now reports bytes in against bytes scanned, the
+retained fraction is pinned within a band tight enough to fail on this
+specific defect --- verified by reintroducing it --- and each stripper carries
+a planted construct it must preserve. The same sweep found that the
+traceability checker removed fenced code blocks by accident of backtick
+pairing rather than by the rule written for them, and that the artifact
+freshness gate compared timestamps only, so a corpus edit that preserved its
+timestamp would have left every derived artifact looking current; the corpus
+content is now pinned by hash.
+
+\paragraph{Settling a definition did not reach the sentences that used the old
+one.} An earlier round fixed what this paper means by a checkpoint: a
+quantized model artifact, one (base model, scheme) pair that was evaluated,
+with the base model the unquantized model several of those derive from. That
+definition is stated in \S\ref{sec:results} and it is correct. It did not
+propagate.
+
+The corpus-scale figure was registered as \texttt{n\_checkpoints}, rendered as
+a macro named for checkpoints, and described in the registry --- accurately
+--- as counting distinct base models. The prose around it said
+``checkpoints'': in the abstract, in the method section, in the sentence
+describing the fit/calibration partition, and in four generated documents. The
+value was right, the description was right, and the claim was wrong, so no
+check could fire: every gate here compares a macro's value against the
+registry and none compared the registry's description against the noun in the
+sentence. The quantized-checkpoint count, \NQuantCkpt{}, had never been
+stated anywhere. Both figures are now registered and named for what they
+count, and a per-macro unit declaration fails the build when a macro is
+followed by a noun it does not count.
+
+So defining a term requires auditing its uses. This is adjacent to the entry
+above and not the same: there the fix was incomplete, here the fix was correct
+and simply did not reach far enough.
+
+\emph{Both corrections found in that sweep make the paper stronger, which is
+worth saying because the rest of this record runs the other way.} The
+partition and the leave-one-out evaluation both hold out a base model, not a
+quantization of one --- so the held-out unit shares no pretraining base with
+anything on the fit side, and holding out a base model holds out every
+checkpoint of it at once. That is a harder test than the labels claimed, and
+the procedure was renamed from leave-one-checkpoint-out to
+leave-one-base-model-out to say so. Neither correction changes a published
+coverage figure; both change what the figure is a measurement of, in the
+direction of more rigour rather than less.
+
+\paragraph{Why the stratification error was invisible to every gate.} The
+mis-attributed stratification figure in \S\ref{sec:audit} is not the same
+failure as the other entries, and the difference decides what could catch it.
+Elsewhere, prose asserted a relation the registry contradicts --- ``smaller
+than'', ``below nominal'' --- and a check comparing directional words against
+the relation the registry holds could in principle fire. In the
+stratification case nothing in the sentence was false about the number it
+named: the number was correctly
+computed, correctly registered and correctly quoted, and simply was not the
+number the claim required. No directional check sees that, because the defect
+lies in the correspondence between a key and the object a sentence is about,
+which lives in the registry's schema rather than in the prose. Every gate in
+this repository checks that a macro's value is right and that no literal is
+untraced; none can tell that the sentence around a correct macro is about
+something else.
+
+\end{document}

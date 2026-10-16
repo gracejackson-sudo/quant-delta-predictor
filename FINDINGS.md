@@ -8,7 +8,7 @@
 > The current headline coverage (post-A4 float-boundary fix) is **119/131 = 90.8%**,
 > 95% CI [84.5, 95.2] — the figures below still show the pre-fix values (118/131 = 90.1%,
 > [83.6, 94.6]) and are preserved as a dated record. For the current result, read the
-> paper (`paper/main.tex` or `paper/neurips_main.tex`) and the registry
+> paper (`paper/tmlr_main.tex`) and the registry
 > (`src/verify_claims.py`). See `AUDIT_DISCIPLINE.md` for why this doc is outside the
 > gate, and B4 in `EXTERNAL_FEEDBACK.md` for the audit finding that flagged it.
 

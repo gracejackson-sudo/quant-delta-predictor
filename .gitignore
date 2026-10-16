@@ -23,3 +23,5 @@ paper/*.aux
 paper/*.bbl
 paper/*.out
 paper/*.log
+paper/tmlr_main.blg
+paper/tmlr_main.bbl

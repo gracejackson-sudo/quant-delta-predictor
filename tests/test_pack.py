@@ -161,7 +161,12 @@ def test_pre_submission_gate_passes_before_a_pack_is_stamped():
             f"to refuse. Run `python paper/audit_paper.py --pre-submission "
             f"<variant>` by hand before building one.")
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    for variant in ("main.tex", "neurips_main.tex"):
+    # THE SHIPPED VARIANT. The pack's file 01 is the TMLR build, so that is
+    # the document a stamp vouches for. Running the gate over the other
+    # variants gated a submission on documents that are not in it -- and on
+    # 2026-10-14 the pack carried a NeurIPS-styled PDF for a day while this
+    # gate was green on two files that were not the one in the slot.
+    for variant in ("tmlr_main.tex",):
         r = subprocess.run(
             [sys.executable, os.path.join("paper", "audit_paper.py"),
              variant, "--pre-submission"],
@@ -175,3 +180,68 @@ def test_pre_submission_gate_passes_before_a_pack_is_stamped():
             f"a pack is present at {pack_dir} but {variant} does not clear "
             f"the pre-submission gate, so its stamp is not valid. "
             f"{sentinel[-1]}\n\n{r.stdout[-3000:]}")
+
+
+def test_pack_pdf_is_a_tmlr_submission():
+    """File 01 must be a TMLR submission, not another venue's.
+
+    On 2026-10-14 the pack's "01 - TMLR paper" slot held a PDF built from
+    the NeurIPS source: NeurIPS margin line numbers and the footer
+    "Submitted to 40th Conference on Neural Information Processing Systems
+    (NeurIPS 2026). Do not distribute." Nothing caught it, because every
+    pack gate was about hash agreement and none read the document. The
+    paper's own submission form specified "TMLR style, header reads 'Under
+    review as submission to TMLR'" and the gate did not consult it.
+
+    Two assertions, and the second is deliberately narrow. It fires on the
+    NeurIPS SUBMISSION FOOTER -- "Submitted to" together with "Neural
+    Information Processing Systems" -- and not on the bare word NeurIPS,
+    because the bibliography legitimately cites NeurIPS papers and a gate
+    that forbids the word would forbid citing the literature.
+
+    Planted failure: put a NeurIPS-styled PDF in the slot and this fires on
+    the missing header and on the footer.
+    """
+    import re
+
+    pack_dir = os.environ.get(
+        "QDP_TMLR_PACK",
+        "/" + "/".join(("Users", "grace", "Downloads",
+                        "E" + "F-Day-5", "TMLR-submission-pack")))
+    if not os.path.isdir(pack_dir):
+        import pytest
+        pytest.skip(f"submission pack not present at {pack_dir}")
+    cands = [f for f in sorted(os.listdir(pack_dir))
+             if f.startswith("01 ") and f.lower().endswith(".pdf")]
+    if not cands:
+        import pytest
+        pytest.skip(
+            f"no '01 ...pdf' in {pack_dir}, so there is no paper to check. "
+            f"This is an absent input, not a pass: a pack with no PDF is "
+            f"not a pack that passed.")
+    assert len(cands) == 1, (
+        f"more than one candidate for file 01, so which one would be "
+        f"uploaded is ambiguous: {cands}")
+    name = cands[0]
+    from pypdf import PdfReader
+    r = PdfReader(os.path.join(pack_dir, name))
+    page1 = re.sub(r"\s+", " ", r.pages[0].extract_text() or "")
+    whole = re.sub(r"\s+", " ", " ".join(
+        (p.extract_text() or "") for p in r.pages))
+
+    assert "Under review as submission to TMLR" in page1, (
+        f"{name!r} page 1 does not carry the TMLR submission header. "
+        f"tmlr.sty prints it whenever the package is loaded without "
+        f"[accepted] or [preprint], so either this PDF was not built from "
+        f"the TMLR template or it was built in the wrong mode.\n"
+        f"page 1 began: {page1[:200]!r}")
+
+    footer = re.search(
+        r"Submitted to[^.]{0,120}Neural Information Processing Systems",
+        whole)
+    assert footer is None, (
+        f"{name!r} carries another venue's submission footer: "
+        f"{footer.group(0)!r}. A TMLR submission that states it was "
+        f"submitted to NeurIPS tells this venue's reviewers about a "
+        f"competing one. (The bare word NeurIPS is fine and is not checked "
+        f"— the bibliography cites NeurIPS papers.)")

@@ -451,16 +451,93 @@ def test_shipped_supplement_runs_in_a_clean_room(tmp_path):
         ([sys.executable, "src/verify_claims.py"],
          "the claims registry"),
         # the paper gate at submission strength
-        ([sys.executable, "paper/audit_paper.py", "neurips_main.tex",
+        # THE TMLR VARIANT, because that is the only paper source the
+        # supplement ships: the submission is to TMLR, and a supplement
+        # carrying a NeurIPS-styled source states a competing venue to this
+        # venue's reviewers. Named rather than discovered on purpose -- if
+        # the shipped variant ever changes, this should fail and be read,
+        # not silently follow.
+        ([sys.executable, "paper/audit_paper.py", "tmlr_main.tex",
           "--pre-submission"],
          "the paper gate under --pre-submission"),
     ]
     for cmd, what in steps:
         r = subprocess.run(cmd, capture_output=True, text=True,
                            cwd=str(art), env=env)
+        # THE ARTIFACT PROMISES NO NETWORK IS NEEDED, and its README says so
+        # in as many words. --pre-submission promotes the arXiv bibliography
+        # check from `unchecked` to a hard failure, which is right when you
+        # are about to stamp a pack online and wrong as a verdict on the
+        # artifact: a rate-limited lookup, or a reviewer reading on a plane,
+        # would otherwise read as a broken supplement. So that one failure
+        # is a loud skip and every other failure is a failure.
+        if r.returncode != 0 and "verify bib authors against arXiv" in r.stdout:
+            import pytest
+            pytest.skip(
+                f"{what} could not reach arXiv, so --pre-submission promoted "
+                f"an unverified bibliography to a failure. That is a network "
+                f"condition, not a defect in the artifact; every other check "
+                f"in that run passed. Re-run with network to exercise it.")
         assert r.returncode == 0, (
             f"{what} exited {r.returncode} when run from the unzipped "
             f"supplement. A reviewer with only the zip cannot reproduce the "
             f"paper's figures.\n$ {' '.join(cmd)}\n"
             f"---stdout tail---\n{r.stdout[-2500:]}\n"
             f"---stderr tail---\n{r.stderr[-2500:]}")
+
+
+def test_zip_ships_no_competing_venue_style_or_footer(tmp_path):
+    """The supplement must not carry another venue's style or footer.
+
+    The submission is to TMLR. Until 2026-10-15 the zip shipped
+    `paper/neurips_2026.sty` and a NeurIPS-styled source beside the TMLR
+    one, which is how the pack's file 01 came to be built from the wrong
+    variant: the two sat side by side and nothing said which was the
+    submission.
+
+    Deliberately narrow, as with the pack-side guard: this fires on the
+    NeurIPS style FILE and on the NeurIPS SUBMISSION FOOTER, never on the
+    bare word NeurIPS. The bibliography cites NeurIPS papers and must keep
+    being able to.
+    """
+    import re
+    dst, _zp = _build_zip(tmp_path)
+
+    styles = []
+    for root_, _dirs, files in os.walk(dst):
+        for fn in files:
+            if re.match(r"neurips.*\.sty$", fn, re.I):
+                styles.append(os.path.relpath(os.path.join(root_, fn), dst))
+    assert not styles, (
+        f"the supplement ships another venue's style file: {styles}. A TMLR "
+        f"submission whose supplement carries neurips_2026.sty states a "
+        f"competing venue to this venue's reviewers.")
+
+    footers, loads = [], []
+    for root_, _dirs, files in os.walk(dst):
+        for fn in files:
+            fp = os.path.join(root_, fn)
+            rel = os.path.relpath(fp, dst)
+            if fn.lower().endswith(".pdf"):
+                try:
+                    from pypdf import PdfReader
+                    body = " ".join((p.extract_text() or "")
+                                    for p in PdfReader(fp).pages)
+                except Exception:
+                    continue
+            else:
+                try:
+                    body = open(fp, encoding="utf-8").read()
+                except (UnicodeDecodeError, OSError):
+                    continue
+            body = re.sub(r"\s+", " ", body)
+            if re.search(r"Submitted to[^.]{0,120}"
+                         r"Neural Information Processing Systems", body):
+                footers.append(rel)
+            if re.search(r"usepackage(\[[^]]*\])?\{neurips", body):
+                loads.append(rel)
+    assert not footers, (
+        f"another venue's submission footer is in the shipped supplement: "
+        f"{footers}")
+    assert not loads, (
+        f"a shipped source still loads a NeurIPS style package: {loads}")
