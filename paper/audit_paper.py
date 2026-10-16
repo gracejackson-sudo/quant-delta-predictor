@@ -128,13 +128,13 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "38",
           # Each sat after a printed percentage on its line, so no check
           # had ever read it.
           # The escaped-percent entry quotes the defect as measured at
-          # 708a84d, the last commit with it live: 132 escaped percent
+          # the pre-fix revision, the last commit with it live: 132 escaped percent
           # signs, 3{,}162 hidden characters, 97.0% of that revision
           # scanned. Historical and deliberately frozen -- recomputing them
           # against the current paper would answer a different question,
           # which is the error the entry itself is about. 7 and 3.0 are
           # already exempt above. See PROVENANCE.md 2026-10-11 (fifth).
-          # The escaped-percent entry quotes the defect at 708a84d,
+          # The escaped-percent entry quotes the defect at the pre-fix revision,
           # measured by executing that revision's own stripper:
           # 132 escaped percent signs, 7 real comments, 3{,}162 of
           # 103{,}841 characters hidden in the anonymous variant and
@@ -187,7 +187,7 @@ EXEMPT = {"1", "2", "3", "4", "5", "6", "8", "11", "38",
           # generalisable figures, so tagging them would be spurious.
           # 87.3 / 88.2 / 85.1 / 92.2 ARE NOT EXEMPT ANY MORE. They moved to
           # PENDING_FIGURES below on 2026-10-13: the aggregate LOFO figures
-          # entered the paper at 77873d9, BEFORE split conformal replaced the
+          # entered the paper at the Definition-B revision, BEFORE split conformal replaced the
           # in-sample band, and 88.2 no longer reproduces -- the same quantity
           # computes to 91.81% today. They stay in the build as warnings and
           # fail the pre-submission target.
@@ -219,7 +219,7 @@ PENDING_FIGURES = {
     # EMPTY, and that is the point of the category rather than its failure.
     #
     # It held twelve names. Four were the LOFO figures, which left on
-    # 2026-10-13 once they reproduced exactly at 77873d9 and became macros.
+    # 2026-10-13 once they reproduced exactly at the Definition-B revision and became macros.
     # Of the remaining twelve exempt-by-name numerals, measurement found that
     # only 31.63 and 46.10 appeared in the paper at all -- both acc_before
     # values of named rows, both exact -- and they are now per-row registry
@@ -367,8 +367,8 @@ WORD_EXEMPT = {
     #     site of a figure", "the one instance in this record"
     "one site", "one instance",
     # A verified interval between two named commits: the key was registered
-    # and its first site converted on 2026-10-08 (0d95501), the second site
-    # on 2026-10-11 (59f4cd9). An earlier draft said "five days", which the
+    # and its first site converted on 2026-10-08 (the split-conformal correction), the second site
+    # on 2026-10-11 (the second conversion). An earlier draft said "five days", which the
     # word gate surfaced once "days" entered the counted-noun vocabulary.
     "three days",
     # "one quantization run" is definitional -- it says what a checkpoint

@@ -109,6 +109,81 @@ def measure_one(src_lines, tex):
     }
 
 
+def measure_hidden_figures(src_lines, tex):
+    """-> how many figures the broken stripper hid, and how many it left.
+
+    The appendix says the unread text held ONE figure and that THREE more in
+    the same two sentences were visible and passed anyway. Both counts are
+    properties of 708a84d, so they are snapshotted here rather than
+    recomputed by the registry: the registry must load with no git at all.
+
+    Llama-3.3 is excluded from the visible count by the `-` in the
+    lookbehind: it is a version inside a model name, not a figure, which is
+    the judgement the shipped numeral check encodes too.
+    """
+    ns = {"re": re, "TEX": tex}
+    for line in src_lines[:3]:
+        exec(line, ns)                                       # noqa: S102
+    pre = ns["body"]
+    i = pre.find("but every LOFO-derived")
+    j = pre.find("92.2\\%.", i) + len("92.2\\%.")
+    if i < 0 or j <= i:
+        return None
+    seg = pre[i:j]
+    cut = re.compile(r"%.*")
+    num = re.compile(r"(?<![\w.\\-])\d+\.\d+")
+    hidden = num.findall(" ".join(m.group(0) for m in cut.finditer(seg)))
+    visible = num.findall(cut.sub(" ", seg))
+    return {"hidden_figures": len(hidden), "visible_figures": len(visible),
+            "hidden_values": hidden, "visible_values": visible,
+            "sentences": " ".join(seg.split())}
+
+
+def measure_lofo_at_before():
+    """-> the Definition-B aggregate LOFO coverage on 77873d9's corpus.
+
+    ONLY THE HISTORICAL HALF IS SNAPSHOTTED. The appendix describes a DRIFT
+    between that revision's corpus and the present one, and the present half
+    moves whenever the corpus does -- so freezing the difference would
+    freeze a figure that is half live. The registry subtracts this from its
+    own current aggregate, which keeps the drift honest and still needs no
+    git.
+    """
+    rev = "77873d9"
+    tex = _show(f"{rev}:data/dataset.csv")
+    if tex is None:
+        return None
+    import io
+    import pandas as pd
+    sys.path.insert(0, os.path.join(ROOT, "src"))
+    from predictor import SchemeMean, Conformal                # noqa: E402
+    import strata                                             # noqa: E402
+    d = pd.read_csv(io.StringIO(tex))
+    d = d[d.acc_before >= 20.0].reset_index(drop=True)
+    fams = sorted(d.family.unique())
+    per = {}
+    for t in fams:
+        te = d[d.family == t]
+        pool = d[d.family != t]
+        n = c = 0
+        for cf in sorted(pool.family.unique()):
+            ca = pool[pool.family == cf]
+            tr = pool[pool.family != cf]
+            if len(ca) < 19 or len(tr) < 50:
+                continue
+            m = SchemeMean().fit(tr)
+            k = Conformal(alpha=strata.ALPHA, mondrian_by="scheme").fit(m, ca)
+            _, lo, hi, _ = k.predict_interval(te)
+            y = te.delta.to_numpy(float)
+            n += len(y)
+            c += int(((y >= lo - 1e-9) & (y <= hi + 1e-9)).sum())
+        if n:
+            per[t] = 100.0 * c / n
+    return {"revision": rev, "modelling_rows": int(len(d)),
+            "aggb_pct": round(sum(per.values()) / len(per), 6),
+            "per_fold_pct": {k: round(v, 6) for k, v in sorted(per.items())}}
+
+
 def measure_exposure():
     """-> the span the defect was live, in days and commits, or None.
 
@@ -185,12 +260,31 @@ def main() -> int:
               f"history to run this.")
         return 3
     out["exposure"] = _exp
+    _hf = measure_hidden_figures(lines, _show(f"{BEFORE}:paper/neurips_main.tex"))
+    if _hf is None:
+        print("UNCHECKED: the two sentences the appendix describes are not "
+              "at the expected place in that revision; re-derive by hand.")
+        return 3
+    out["stripper"] = _hf
+    _lo = measure_lofo_at_before()
+    if _lo is None:
+        print("UNCHECKED: cannot read 77873d9:data/dataset.csv, so the "
+              "historical LOFO aggregate could not be snapshotted.")
+        return 3
+    out["lofo_at_before"] = _lo
 
     print(f"stripper source : {BEFORE}:paper/audit_paper.py (executed, not "
           f"reimplemented)")
     print(f"exposure        : {INTRODUCED} (added the checker) .. {FIX} "
           f"(fixed it) -- {out['exposure']['exposure_days']} days, "
           f"{out['exposure']['exposure_commits']} commits")
+    print(f"  stripper hid {out['stripper']['hidden_figures']} figure(s) "
+          f"{out['stripper']['hidden_values']}, left "
+          f"{out['stripper']['visible_figures']} visible "
+          f"{out['stripper']['visible_values']}")
+    print(f"  LOFO aggregate (Def B) at {out['lofo_at_before']['revision']} "
+          f"on {out['lofo_at_before']['modelling_rows']} rows: "
+          f"{out['lofo_at_before']['aggb_pct']:.4f}%")
     for v, m in out["variants"].items():
         print(f"\n  {BEFORE}:paper/{v}")
         for k in ("escaped_percent_signs", "real_comment_marks",

@@ -75,6 +75,32 @@ DROP_FILES: list[str] = [
                             # under out/; keep the bare name too in case a
                             # future build moves it back)
     "requests.log",
+    # --- 2026-10-15: files that cannot be anonymised, only withheld.
+    #
+    # A commit hash of ours resolves to this repository through GitHub's
+    # search, so none may ship. Prose hashes are relabelled to COMMIT-nn;
+    # these three hold hashes the CODE compares rather than prose a reader
+    # follows, so relabelling them produces a string that is not a revision
+    # and breaks the file. They are withheld instead.
+    "tools/measure_percent_defect.py",
+                            # FIX / BEFORE / INTRODUCED are passed to
+                            # `git show`. It needs history the zip does not
+                            # have, so it could never run here anyway.
+    "src/gen_feedback_doc.py",
+                            # builds EXTERNAL_FEEDBACK.md with 29 hashes
+                            # inside the strings it emits. The OUTPUT ships
+                            # and is relabelled; the generator does not.
+    "tests/_git_constants.py",
+                            # the trailer-gate baseline and the allowed-orphan
+                            # set. Both tests that import it skip loudly
+                            # without it, which is correct: a checkout with
+                            # no history has nothing for them to gate.
+    # .gitignore names private working files -- DAY_1.md,
+    # TALKING_POINTS.md, DAY_2_TALKING_POINTS.md, OVERNIGHT_RESEARCH.md,
+    # OUTREACH_POST_DRAFT.md, src/gen_talking_points.py. No author name, but
+    # "DAY_1/DAY_2" beside outreach drafts says accelerator cadence, which
+    # is a soft de-anonymiser in a double-blind submission. Found 2026-10-15.
+    ".gitignore",
 ]
 # Whole directories to skip.
 DROP_DIRS: list[str] = [
@@ -300,7 +326,28 @@ KNOWN_OURS_ORPHANED = {
 # our own commit hashes sitting in one is reported and fails the build,
 # which forces a decision about that specific site instead of leaving the
 # exclusion to cover it.
-RELABEL_EXTS = {".md", ".tex", ".py", ".txt", ".bib", ".html", ".cfg", ".ini"}
+# PROSE AND DOCS ONLY. NEVER EXECUTABLE CODE.
+#
+# `.py` was in this set and the relabeller rewrote hashes inside source. In
+# the shipped zip that turned `git show 708a84d:...` into
+# `git show COMMIT-14:...` and `BEFORE = "708a84d"` into
+# `BEFORE = "COMMIT-14"` -- strings that are not revisions. The code was
+# broken by its own anonymisation, and the supplement's documented
+# verification path did not run. Found 2026-10-15 by a clean-room run of the
+# shipped zip; before that, nothing had ever executed the zip's own code.
+#
+# A hash in a comment is prose and a hash in a string literal is an
+# argument, and no extension-level rule can tell them apart. So code is left
+# alone entirely and the hashes are kept out of it a different way: nothing
+# shipped may contain one, which
+# tests/test_all.py::test_no_relabelled_hash_in_any_shipped_executable
+# enforces from the other direction.
+RELABEL_EXTS = {".md", ".tex", ".txt", ".bib", ".html", ".cfg", ".ini"}
+
+# Extensions that are executable or import-able, listed so the intent is
+# explicit rather than implied by absence from the set above.
+CODE_EXTS = {".py", ".sh", ".bash", ".zsh", ".pl", ".rb", ".js", ".mjs",
+             ".sty", ".cls", ".mk", ".make", ".yml", ".yaml", ".toml"}
 
 # Named data files that DO get relabelled, by exception and one at a time.
 # The blanket rule excludes data because `[0-9a-f]{7,40}` matches a

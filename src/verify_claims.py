@@ -299,7 +299,7 @@ def registry():
     # is n_quant_checkpoints below and had never been stated anywhere.
     # The escaped-percent defect used to be registered here as five LIVE
     # keys measured from the current paper. They were removed on 2026-10-11:
-    # the appendix quotes the defect as it was at 708a84d, the last commit
+    # the appendix quotes the defect as it was at the pre-fix revision, the last commit
     # with it live, and a live measurement answers 'what would the broken
     # stripper read of TODAY'S paper' -- a different question, presented as
     # the historical one. That is the same correct-number-wrong-object error
@@ -319,7 +319,7 @@ def registry():
     # Per-fold held-out coverage under the SHIPPED band, and the subgroup
     # estimator's figures, registered 2026-10-13. Until then the paper carried
     # four hand-typed LOFO figures (87.3, 88.2, 85.1, 92.2) and the registry
-    # held none of them. They reproduce EXACTLY on the 77873d9 tree under the
+    # held none of them. They reproduce EXACTLY on the the Definition-B revision tree under the
     # subgroup estimator -- 87.2587, 88.1963, 85.1064, 92.2344 -- so they were
     # never computed under the retracted in-sample band; they had drifted
     # about a quarter-point with the corpus (817 -> 823 modelling rows).
@@ -433,16 +433,16 @@ def registry():
     add("lofo_agg_cov_pct_defb", sum(_tB.values()) / len(_tB), 0.05,
         "aggregate LOFO coverage across held-out families under Definition B, "
         "subgroup estimator, MEAN OVER FOLDS (reproduces the paper's 88.2 at "
-        "77873d9)")
+        "the Definition-B revision)")
     add("lofo_agg_cov_pct_defa", sum(_tA.values()) / len(_tA), 0.05,
         "the same under Definition A, 8 families (reproduces 87.3 at "
-        "77873d9)")
+        "the Definition-B revision)")
     add("lofo_l3sub3_pooled_pct", _tA["llama-3.3"], 0.05,
         "Llama-3.3's own held-out fold, Definition A, subgroup estimator, "
-        "POOLED OVER TEST POINTS (reproduces 85.1 at 77873d9)")
+        "POOLED OVER TEST POINTS (reproduces 85.1 at the Definition-B revision)")
     add("lofo_l3merged_pooled_pct", _tB["llama-3"], 0.05,
         "the merged Llama-3 fold, Definition B, same estimator, pooled "
-        "(reproduces 92.2 at 77873d9)")
+        "(reproduces 92.2 at the Definition-B revision)")
     add("lofo_qwen3_tbl_defa_pct", _tA["qwen3"], 0.05,
         "the qwen3 fold under the subgroup estimator, Definition A: the "
         "lowest point estimate under that estimator")
@@ -1670,53 +1670,46 @@ def registry():
     add("lofo_l3gap_max_pp", max(_gaps), 0.05, "and the largest")
 
     # --- The two counts the \S9 stripper entry quotes for what the defect
-    #     hid. Measured by replaying 708a84d's own comment-stripper line
-    #     against 708a84d's own document and splitting the numerals of the
+    #     hid. Measured by replaying the pre-fix revision's own comment-stripper line
+    #     against the pre-fix revision's own document and splitting the numerals of the
     #     two sentences into removed and retained, because the entry is a
     #     claim about that revision and not about this one. Llama-3.3 is
     #     excluded from the retained count: it is a version in a model
     #     name, not a figure, which is the same judgement the shipped
     #     numeral check's lookbehind encodes.
-    import subprocess as _sp
-    import subprocess as _sp_mod
-    import pandas as _pd_w
-
-    def _show(_rp):
-        _r = _sp.run(["git", "show", _rp], capture_output=True, text=True,
-                     cwd=os.path.join(HERE, ".."))
-        if _r.returncode != 0:
-            raise RuntimeError(
-                f"cannot read {_rp}: the stripper-defect counts in the "
-                f"appendix are measured from history, and this clone does "
-                f"not have it. Fetch the full history (git fetch --unshallow) "
-                f"and re-run.")
-        return _r.stdout
-
-    _sp_src = _show("708a84d:paper/audit_paper.py")
-    _sp_tex = _show("708a84d:paper/neurips_main.tex")
-    _sp_lines = [_l for _l in _sp_src.split("\n")
-                 if _l.startswith("body = re.sub(")]
-    if len(_sp_lines) != 4:
+    _hist_path = os.path.join(HERE, "..", "out", "percent_defect.json")
+    if not os.path.exists(_hist_path):
         raise RuntimeError(
-            f"expected 4 stripper lines at 708a84d, found {len(_sp_lines)}; "
-            f"the reduction moved, so re-derive these counts by hand rather "
-            f"than trusting this block.")
-    _sp_ns = {"re": re, "TEX": _sp_tex}
-    for _l in _sp_lines[:3]:
-        exec(_l, _sp_ns)                                        # noqa: S102
-    _sp_pre = _sp_ns["body"]
-    _sp_i = _sp_pre.find("but every LOFO-derived")
-    _sp_j = _sp_pre.find("92.2\\%.", _sp_i) + len("92.2\\%.")
-    if _sp_i < 0 or _sp_j <= _sp_i:
-        raise RuntimeError("the two sentences the appendix entry describes "
-                           "are not at 708a84d where this block looks for "
-                           "them; re-derive by hand.")
-    _sp_seg = _sp_pre[_sp_i:_sp_j]
-    _sp_cut = re.compile(r"%.*")
-    _sp_num = re.compile(r"(?<![\w.\\-])\d+\.\d+")
-    _sp_hidden = _sp_num.findall(
-        " ".join(_m.group(0) for _m in _sp_cut.finditer(_sp_seg)))
-    _sp_visible = _sp_num.findall(_sp_cut.sub(" ", _sp_seg))
+            f"{_hist_path} is missing. Every figure this registry takes from "
+            f"history is read from it, so that the registry loads with no "
+            f"git at all; regenerate with "
+            f"`python tools/measure_percent_defect.py --write`.")
+    _hist = json.load(open(_hist_path))
+    # NO GIT, EVER, IN ANYTHING THE SUPPLEMENT SHIPS. These counts are
+    # properties of the pre-fix revision and were computed by a live `git show`. The
+    # shipped zip has no .git, so the registry raised RuntimeError and could
+    # not load at all -- which took paper/audit_paper.py down with it and
+    # broke the supplement's whole documented verification path. Worse, the
+    # commit relabeller rewrote the hash inside this source, so the call
+    # read a relabelled stand-in rather than a revision and would have
+    # failed even with history present. Found 2026-10-15 by a clean-room run
+    # of the shipped zip. (The label is not written out here: a literal one
+    # in shipped code is what
+    # test_no_relabelled_hash_in_any_shipped_executable forbids, and it
+    # caught this very comment.)
+    #
+    # They are read from the committed snapshot instead, the same way the
+    # pct_* keys already were. tools/measure_percent_defect.py writes it and
+    # test_percent_defect_json_matches_a_fresh_measurement re-measures it
+    # against history where history exists, skipping loudly where it does
+    # not.
+    _spx = _hist.get("stripper")
+    if not _spx:
+        raise RuntimeError(
+            f"{_hist_path} has no 'stripper' block. Regenerate with "
+            f"`python tools/measure_percent_defect.py --write`.")
+    _sp_hidden = _spx["hidden_values"]
+    _sp_visible = _spx["visible_values"]
     # --- Three figures this paper stated in WORDS, registered 2026-10-13.
     #     Each had been exempted as self-evident or arithmetic. They are
     #     neither: a reader cannot check them and nothing recomputes them,
@@ -1734,7 +1727,7 @@ def registry():
     #     Registered 2026-10-13. Until then twelve figures in the appendix
     #     entry ABOUT figures no check could see were themselves hand-typed,
     #     while tools/measure_percent_defect.py reproduced every one of them
-    #     by executing 708a84d's own stripper lines against 708a84d's own
+    #     by executing the pre-fix revision's own stripper lines against the pre-fix revision's own
     #     documents. The tool now writes that JSON and this reads it, so the
     #     path from history to the paper is the same one every other figure
     #     takes: measurement -> registry -> macro.
@@ -1744,49 +1737,42 @@ def registry():
     #     registry run would make a shallow clone unable to load the
     #     registry at all. The test re-measures and compares, and skips
     #     loudly when the history is absent.
-    _pd_path = os.path.join(HERE, "..", "out", "percent_defect.json")
-    if not os.path.exists(_pd_path):
-        raise RuntimeError(
-            f"{_pd_path} is missing. The appendix's escaped-percent figures "
-            f"are read from it; regenerate with "
-            f"`python tools/measure_percent_defect.py --write`.")
-    _pd = json.load(open(_pd_path))
-    _pd_anon = _pd["variants"]["neurips_main.tex"]
-    _pd_named = _pd["variants"]["main.tex"]
-    add("pct_escaped_signs", _pd_anon["escaped_percent_signs"], 0,
+    _hist_anon = _hist["variants"]["neurips_main.tex"]
+    _hist_named = _hist["variants"]["main.tex"]
+    add("pct_escaped_signs", _hist_anon["escaped_percent_signs"], 0,
         "printed percent signs the broken comment rule treated as comment "
-        "starts, at 708a84d")
-    add("pct_real_comments", _pd_anon["real_comment_marks"], 0,
+        "starts, at the pre-fix revision")
+    add("pct_real_comments", _hist_anon["real_comment_marks"], 0,
         "real comment marks in the anonymous variant at that revision")
-    add("pct_runs_removed", _pd_anon["runs_removed"], 0,
+    add("pct_runs_removed", _hist_anon["runs_removed"], 0,
         "runs of text the broken rule removed")
-    add("pct_runs_prose", _pd_anon["runs_of_prose"], 0,
+    add("pct_runs_prose", _hist_anon["runs_of_prose"], 0,
         "of those, the runs that were ordinary prose rather than comments")
-    add("pct_chars_in_prose_runs", _pd_anon["chars_in_prose_runs"], 0,
+    add("pct_chars_in_prose_runs", _hist_anon["chars_in_prose_runs"], 0,
         "characters held by those prose runs")
-    add("pct_hidden_chars", _pd_anon["hidden_characters"], 0,
+    add("pct_hidden_chars", _hist_anon["hidden_characters"], 0,
         "characters by which the scanned body fell short")
-    add("pct_space_per_run", _pd_anon["space_left_per_run"], 0,
+    add("pct_space_per_run", _hist_anon["space_left_per_run"], 0,
         "the difference between the two, being the single space the "
         "stripper left in place of each removed run")
-    add("pct_denominator", _pd_anon["body_that_should_be_read"], 0,
+    add("pct_denominator", _hist_anon["body_that_should_be_read"], 0,
         "the body that should have been read: the anonymous variant with "
         "its real comments removed")
-    add("pct_hidden_pct", _pd_anon["hidden_pct"], 0.005,
+    add("pct_hidden_pct", _hist_anon["hidden_pct"], 0.005,
         "the fraction never read by the four checks")
-    add("pct_scanned_pct", _pd_anon["scanned_pct"], 0.005,
+    add("pct_scanned_pct", _hist_anon["scanned_pct"], 0.005,
         "the fraction they were in fact reading")
-    add("pct_named_hidden_chars", _pd_named["hidden_characters"], 0,
+    add("pct_named_hidden_chars", _hist_named["hidden_characters"], 0,
         "the same shortfall in the named variant")
-    add("pct_named_denominator", _pd_named["body_that_should_be_read"], 0,
+    add("pct_named_denominator", _hist_named["body_that_should_be_read"], 0,
         "and its denominator; it has no real comments at all, so there the "
         "rule removed nothing but prose")
-    add("pct_named_real_comments", _pd_named["real_comment_marks"], 0,
+    add("pct_named_real_comments", _hist_named["real_comment_marks"], 0,
         "real comment marks in the named variant: none")
-    add("pct_exposure_days", _pd["exposure"]["exposure_days"], 0,
-        "whole days the defect was live, db34a29 to 2aa90e4 (floored; the "
+    add("pct_exposure_days", _hist["exposure"]["exposure_days"], 0,
+        "whole days the defect was live, the checker-introducing revision to the fix revision (floored; the "
         "exact span is 18.26 days)")
-    add("pct_exposure_commits", _pd["exposure"]["exposure_commits"], 0,
+    add("pct_exposure_commits", _hist["exposure"]["exposure_commits"], 0,
         "commits in that span")
 
     # --- What the gradient-boosting design matrix is actually built from.
@@ -1854,30 +1840,29 @@ def registry():
         "pulled up by")
 
     # The drift the appendix calls "about a quarter-point": the aggregate
-    # under Definition B as it stood on 77873d9's corpus, against the same
-    # construction on today's. Measured by replaying the SAME estimator over
-    # the OLD rows, so the difference is corpus growth and nothing else.
-    _old = _sp_mod.run(["git", "show", "77873d9:data/dataset.csv"],
-                       capture_output=True, text=True,
-                       cwd=os.path.join(HERE, ".."))
-    if _old.returncode != 0:
+    # under Definition B as it stood on the Definition-B revision's corpus against the same
+    # construction on today's.
+    #
+    # ONLY THE HISTORICAL HALF IS SNAPSHOTTED, and the subtraction happens
+    # here. Freezing the difference would freeze a figure that is half live:
+    # the present-corpus half moves whenever the corpus does. This also
+    # removes the last `git show` from the registry -- it read
+    # `the Definition-B revision:data/dataset.csv` directly, which is why the shipped zip
+    # could not load it.
+    _lofo_hist = _hist.get("lofo_at_before")
+    if not _lofo_hist:
         raise RuntimeError(
-            "cannot read 77873d9:data/dataset.csv; the drift figure in the "
-            "appendix is measured against that revision's corpus. Fetch the "
-            "full history and re-run.")
-    import io as _io_w
-    _d_old = _pd_w.read_csv(_io_w.StringIO(_old.stdout))
-    _d_old = _d_old[_d_old.acc_before >= 20.0].reset_index(drop=True)
-    _t_old = _tbl_lofo(_d_old)
+            f"{_hist_path} has no 'lofo_at_before' block. Regenerate with "
+            f"`python tools/measure_percent_defect.py --write`.")
+    _agg_now = sum(_tB.values()) / len(_tB)
     add("lofo_aggb_drift_pp",
-        abs(sum(_t_old.values()) / len(_t_old)
-            - sum(_tB.values()) / len(_tB)), 0.01,
-        "how far the Definition-B aggregate moved between 77873d9's corpus "
+        abs(_lofo_hist["aggb_pct"] - _agg_now), 0.01,
+        "how far the Definition-B aggregate moved between the Definition-B revision's corpus "
         "and this one under the same estimator -- the drift the appendix's "
         "stripper entry describes")
 
     add("stripper_hidden_figures", len(_sp_hidden), 0,
-        "figures inside the text 708a84d's comment stripper removed from the "
+        "figures inside the text the pre-fix revision's comment stripper removed from the "
         "two sentences the appendix entry quotes, by replaying that "
         "revision's own stripper line")
     add("stripper_visible_figures", len(_sp_visible), 0,

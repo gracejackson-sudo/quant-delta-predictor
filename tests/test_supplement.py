@@ -346,3 +346,121 @@ def test_scan_catches_every_ident_variant_the_audit_named(tmp_path):
         assert hits, (
             f"variant {label!r} planted the string {planted!r} but the "
             f"scan returned no hits. Add coverage in IDENT_STRINGS.")
+
+
+def _build_zip(tmp_path):
+    """-> (build tree, zip path) for the shipped supplement."""
+    import subprocess
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dst = str(tmp_path / "tree")
+    zp = str(tmp_path / "supplement.zip")
+    r = subprocess.run(
+        [sys.executable, os.path.join("src", "build_supplement.py"), dst, zp],
+        capture_output=True, text=True, cwd=root)
+    assert r.returncode == 0, (
+        f"src/build_supplement.py exited {r.returncode}; the supplement does "
+        f"not build, so nothing below could be checked.\n"
+        f"{r.stdout[-3000:]}\n{r.stderr[-2000:]}")
+    return dst, zp
+
+
+def test_no_relabelled_hash_in_any_shipped_executable(tmp_path):
+    """COMMIT-nn must never appear in shipped code.
+
+    The relabeller rewrites this repository's commit hashes to stable
+    COMMIT-nn labels so the anonymous supplement does not identify the repo
+    through GitHub's commit search. Until 2026-10-15 it rewrote `.py` source
+    too, which turned `git show 708a84d:...` into `git show COMMIT-14:...`
+    and `BEFORE = "708a84d"` into `BEFORE = "COMMIT-14"`. Those are not
+    revisions. The shipped code was broken by its own anonymisation and the
+    supplement's documented verification path did not run -- found by a
+    clean-room run, because until then nothing had ever executed the zip's
+    own code.
+
+    A hash in a comment is prose and a hash in a string literal is an
+    argument, and no extension-level rule tells them apart, so the
+    relabeller now leaves code alone entirely. This asserts that from the
+    other side: if a COMMIT-nn label ever reaches shipped code again,
+    something has put code back into RELABEL_EXTS.
+
+    Planted failure: add ".py" back to RELABEL_EXTS in
+    src/build_supplement.py and this fires with the files named.
+    """
+    import re
+    dst, _zp = _build_zip(tmp_path)
+    CODE = {".py", ".sh", ".bash", ".zsh", ".pl", ".rb", ".js", ".mjs",
+            ".sty", ".cls", ".yml", ".yaml", ".toml"}
+    bad = []
+    for root_, _dirs, files in os.walk(dst):
+        for fn in files:
+            if os.path.splitext(fn)[1].lower() not in CODE:
+                continue
+            fp = os.path.join(root_, fn)
+            try:
+                body = open(fp, encoding="utf-8").read()
+            except (UnicodeDecodeError, OSError):
+                continue
+            for m in re.finditer(r"COMMIT-\d{2,}", body):
+                ln = body[:m.start()].count("\n") + 1
+                bad.append(f"{os.path.relpath(fp, dst)}:{ln} {m.group(0)}")
+    assert not bad, (
+        "relabelled commit labels reached shipped executable code. A label "
+        "is not a revision, so any code that passes one to git is broken in "
+        "the artifact while working in the repo:\n  " + "\n  ".join(bad[:40]))
+
+
+def test_shipped_supplement_runs_in_a_clean_room(tmp_path):
+    """The zip's documented entry point must work with no repo and no git.
+
+    THE CENTRAL CLAIM OF THE SUPPLEMENT is that every figure in the paper is
+    recomputed from the registry. On 2026-10-15 that could not be exercised
+    from the zip at all: `src/verify_claims.py` raised RuntimeError because
+    it shelled out to `git show` for figures measured from history, and the
+    zip has no `.git`. `paper/audit_paper.py` imports the registry, so it
+    went down too. Both had passed every test in the repo, where history
+    exists. Nothing tested the artifact as a reviewer receives it.
+
+    So this unzips the shipped archive into an empty directory and runs it
+    from there: the README's own quickstart, the registry, and the paper
+    gate at submission strength. All three must exit 0.
+
+    It deliberately does NOT pass the repo on sys.path or PYTHONPATH, and it
+    runs with cwd inside the extraction, so an accidental dependency on the
+    working tree shows up as a failure here rather than as a reviewer's bug
+    report.
+    """
+    import subprocess
+    import zipfile
+    _dst, zp = _build_zip(tmp_path)
+    room = tmp_path / "cleanroom"
+    room.mkdir()
+    with zipfile.ZipFile(zp) as z:
+        z.extractall(room)
+    art = room / "artifact"
+    assert art.is_dir(), f"the zip did not extract an artifact/ root: {os.listdir(room)}"
+    assert not (art / ".git").exists(), (
+        "the shipped zip contains a .git directory, which both leaks history "
+        "and would mask exactly the failure this test exists to catch")
+
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    steps = [
+        # the README's "Try it in about a minute"
+        ([sys.executable, "src/rank.py", "fp8_dynamic", "--size", "5B"],
+         "the README quickstart"),
+        # every figure in the paper, recomputed
+        ([sys.executable, "src/verify_claims.py"],
+         "the claims registry"),
+        # the paper gate at submission strength
+        ([sys.executable, "paper/audit_paper.py", "neurips_main.tex",
+          "--pre-submission"],
+         "the paper gate under --pre-submission"),
+    ]
+    for cmd, what in steps:
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           cwd=str(art), env=env)
+        assert r.returncode == 0, (
+            f"{what} exited {r.returncode} when run from the unzipped "
+            f"supplement. A reviewer with only the zip cannot reproduce the "
+            f"paper's figures.\n$ {' '.join(cmd)}\n"
+            f"---stdout tail---\n{r.stdout[-2500:]}\n"
+            f"---stderr tail---\n{r.stderr[-2500:]}")

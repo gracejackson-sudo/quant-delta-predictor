@@ -7,6 +7,32 @@
     "introduced": "db34a29",
     "measured_at": "708a84d"
   },
+  "lofo_at_before": {
+    "aggb_pct": 88.19634,
+    "modelling_rows": 817,
+    "per_fold_pct": {
+      "gemma-2": 94.915254,
+      "granite": 89.298246,
+      "llama-3": 92.234432,
+      "mistral": 86.481481,
+      "qwen2.5": 95.555556,
+      "qwen3": 70.693069
+    },
+    "revision": "77873d9"
+  },
+  "stripper": {
+    "hidden_figures": 1,
+    "hidden_values": [
+      "88.2"
+    ],
+    "sentences": "but every LOFO-derived figure moves: the aggregate LOFO coverage across held-out families changes from 87.3\\% to 88.2\\%, and the previously-worst held-out fold Llama-3.3 (85.1\\%) folds into the merged Llama-3 fold at 92.2\\%.",
+    "visible_figures": 3,
+    "visible_values": [
+      "87.3",
+      "85.1",
+      "92.2"
+    ]
+  },
   "variants": {
     "main.tex": {
       "body_that_should_be_read": 103710,

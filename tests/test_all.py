@@ -952,18 +952,17 @@ def test_external_feedback_doc_cites_only_real_commits():
     root = os.path.join(os.path.dirname(__file__), "..")
     if not os.path.isdir(os.path.join(root, ".git")):
         return
-    ORPHANS_ALLOWED = {
-        # M1 disclosure: earlier version of 99f1ca5, same commit message,
-        # replaced by rebase/amend. Retained on GitHub side by hash;
-        # cited in the "Where the value appears in git" bullet.
-        "1ba6159",
-        # Two more entries lived here from the 2026-10-13 history rewrite,
-        # for the superseded hashes the ledger then cited. Both were removed
-        # when those hashes came out of every document: an allowed orphan
-        # that no document cites is an exception for a citation that does
-        # not exist, and this gate is the one place that would otherwise
-        # keep it alive. Nothing to allow, so nothing allowed.
-    }
+    try:
+        from _git_constants import ORPHANS_ALLOWED
+    except ImportError:
+        import pytest
+        pytest.skip(
+            "tests/_git_constants.py is absent, so the set of deliberately "
+            "cited orphan commits is unknown and a citation that does not "
+            "resolve cannot be told from one that is disclosed on purpose. "
+            "That module is dropped from the supplement because a commit "
+            "hash of ours must not ship; this gate is for the repository, "
+            "not the artifact.")
     # EVERY DOC THAT CITES A COMMIT, not just this one. The check was scoped
     # to EXTERNAL_FEEDBACK.md, so AUDIT_DISCIPLINE.md's vacuous-gate ledger
     # -- which cites a commit per row -- was outside it, and the history
@@ -3204,7 +3203,7 @@ _REGISTRY_MANIFEST = {
     # figures, measured live from the paper. 2026-10-11 (fifth): those five
     # came back out -> 370. A live measurement answers "what would the broken
     # stripper read of TODAY'S paper", which is not the historical claim the
-    # appendix makes; the figures are frozen at 708a84d in the prose instead.
+    # appendix makes; the figures are frozen at the pre-fix revision in the prose instead.
     # 2026-10-13: +2 -> 372 for alpha and nominal_level_pct. The paper prints
     # 90% in a dozen places and nothing held it -- alpha lived in
     # strata.ALPHA and the printed figure was a hand-typed exempt constant.
@@ -3335,7 +3334,7 @@ _REGISTRY_MANIFEST = {
 # ---------------------------------------------------------------------------
 # Plant test for the recurrence of the M1 disclosure class (IP address of a
 # terminated Oracle Cloud instance in KURTOSIS_LORA_FINDINGS.md before
-# `cef5eff` removed it). That value was a routing artifact, not a credential,
+# `a later commit` removed it). That value was a routing artifact, not a credential,
 # but the discipline point stands: any public IPv4, credential-shaped token
 # or absolute personal path in the tracked working tree should fire before
 # commit, not surface in an external review five days later.
@@ -3351,7 +3350,7 @@ _REGISTRY_MANIFEST = {
 
 # ---------------------------------------------------------------------------
 # Trailer gate. Day-7 audit: 22 commits pushed to origin/main between the
-# day-6 rewrite and today's f09b9f0 reintroduced the
+# day-6 rewrite and today's the trailer-gate baseline reintroduced the
 # "Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" trailer, driven
 # by an unconditional system-reminder instruction that the standing user
 # override now supersedes. Existing 22 stay by decision (a force-push over
@@ -3373,7 +3372,10 @@ _REGISTRY_MANIFEST = {
 # authored AFTER this SHA must have a clean body. This value is a decision,
 # not a claim; do not change it without a corresponding user-approved
 # rewrite of the intervening history.
-_TRAILER_GATE_BASELINE = "f09b9f05f75a99880a99a5babe49376f943fbef4"
+try:
+    from _git_constants import TRAILER_GATE_BASELINE as _TRAILER_GATE_BASELINE
+except ImportError:                                   # dropped from the zip
+    _TRAILER_GATE_BASELINE = None
 _TRAILER_PATTERN = "Co-Authored-By:"
 
 
@@ -3384,6 +3386,12 @@ def test_no_co_author_trailer_in_new_commits():
         return
     # First check the baseline resolves in this clone -- if a shallow clone
     # or a fresh worktree cannot see it, skip rather than fail.
+    if _TRAILER_GATE_BASELINE is None:
+        import pytest
+        pytest.skip(
+            "tests/_git_constants.py is absent, so there is no baseline to "
+            "measure new commits against. It is dropped from the supplement "
+            "because a commit hash of ours must not ship.")
     r = subprocess.run(
         ["git", "cat-file", "-t", _TRAILER_GATE_BASELINE],
         cwd=root, capture_output=True, text=True)
@@ -4810,7 +4818,7 @@ def test_percent_defect_json_matches_a_fresh_measurement():
     The escaped-percent appendix entry quotes fourteen figures. They were
     hand-typed until 2026-10-13 -- in the entry about figures no check could
     see -- while tools/measure_percent_defect.py reproduced every one of them
-    by executing 708a84d's own stripper lines against 708a84d's own
+    by executing the pre-fix revision's own stripper lines against the pre-fix revision's own
     documents. The tool now writes the JSON, src/verify_claims.py reads it,
     and paper/gen_numbers.py renders the macros, so the figures take the same
     path as every other figure in the paper.
@@ -4822,7 +4830,7 @@ def test_percent_defect_json_matches_a_fresh_measurement():
     actually says, which is what this test exists to prevent.
 
     SKIPS LOUDLY, never passes, when the history is absent: a shallow clone
-    cannot read 708a84d, and "could not check" is not "matches". The tool
+    cannot read the pre-fix revision, and "could not check" is not "matches". The tool
     signals that with exit 3.
 
     Planted failure: change any value in out/percent_defect.json and this

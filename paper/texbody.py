@@ -5,8 +5,8 @@ WHY THIS IS A MODULE. paper/audit_paper.py used to build its scan body with
 four inline re.sub calls, one of which read every `%` as a comment mark. An
 escaped `\\%` is a printed percent sign, so every line was cut at its first
 printed percentage and 3,162 characters -- 3.05% of the body -- were invisible
-to four correct checks from the commit that introduced the checker (db34a29,
-2026-09-23) until it was fixed (2aa90e4, 2026-10-11).
+to four correct checks from the commit that introduced the checker
+(2026-09-23) until the commit that fixed it (2026-10-11).
 
 A test was then written to assert what each stripper removed, and it held its
 own private copies of the patterns. Planting the bug in audit_paper.py left
